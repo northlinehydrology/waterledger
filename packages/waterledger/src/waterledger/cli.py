@@ -13,7 +13,15 @@ def main(argv=None):
     bs = sub.add_parser("build-state", help="build a state's national-tier data from the public sources (resumes where it left off)")
     bs.add_argument("state")
     bs.add_argument("--out", default=None, help="write a build report here")
+    sn = sub.add_parser("snapshot", help="write a state's snapshot files from its built data (run build-state first)")
+    sn.add_argument("state")
+    sn.add_argument("--out", required=True)
+    sn.add_argument("--date", default=None)
     a = ap.parse_args(argv)
+    if a.cmd == "snapshot":
+        from waterledger.national.snapshot import write
+        print(write(a.state, a.out, a.date))
+        return
     if a.cmd == "build-state":
         from waterledger.national.build import build
         build(a.state, a.out)
