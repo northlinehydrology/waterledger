@@ -23,3 +23,22 @@ def test_nearest_plant(st, lat, lon, city, plant):
     P = ww.plants(st)
     assert ww.nearest(P, lat, lon, city)[0]["name"] == plant
     assert all(p["design_mgd"] is None or p["design_mgd"] > 0 for p in P)
+
+
+@pytest.mark.parametrize("st, fips, name, basin, reaches", [("OH", "39", "Columbus city", "Upper Scioto", "Ohio River"),
+                                                            ("VA", "51", "Loudoun County", "Middle Potomac-Catoctin", "Potomac River"),
+                                                            ("TX", "48", "Austin city", "Austin-Travis Lakes", "Colorado River")])
+def test_watersheds_and_downstream(st, fips, name, basin, reaches):
+    from waterledger_data import census, receiving as rc
+    pl = census.places(fips)
+    w = rc.watersheds_by_place(st, pl)[pl[pl.name == name].geoid.iloc[0]]
+    assert w["h8"]["name"] == basin and w["h12"][0]["share"] > 0.05
+    path = rc.downstream(w["h12"][0]["code"])
+    assert path[0]["code"] == w["h12"][0]["code"] and any(reaches in p["name"] for p in path)
+    assert any(p["listings"] for p in path)
+
+
+def test_statewide_impairment_table():
+    from waterledger_data import receiving as rc
+    H = rc.by_huc12("OH")
+    assert rc.organization("OH")[0] == "21OHIO" and len(H) > 1400 and sum(1 for v in H.values() if "i" in v) > 1000
