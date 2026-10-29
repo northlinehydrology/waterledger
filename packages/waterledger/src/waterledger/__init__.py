@@ -18,4 +18,4 @@ from waterledger.context import Context
 Estimate.model_rebuild()
 
 __all__ = ["data", "models", "scenario", "states", "place", "Place", "Facility", "DataCenter", "Range", "Flow", "WaterUse", "Site", "Estimate", "Context"]
-__version__ = "2.0.0"
+__version__ = "3.0.0"
