@@ -95,7 +95,22 @@ def context(state, place):
     jur = cx.Jurisdiction(provider="national", sources=["census_tiger"], name=place.name, kind=place.kind, county=place.county, state=state)
     return cx.Context(place=place, jurisdiction=jur, supply=supply,
                       wastewater=cx.Wastewater(provider="national", sources=["cwns2022", "echo"], plants=plants), receiving=receiving,
-                      climate=_climate(state, place))
+                      climate=_climate(state, place), energy=_energy(state, place))
+
+
+def _energy(state, place):
+    from waterledger import context as cx
+    from waterledger_data import energy as en
+    us = en.utilities_by_place(state, _places(state)).get(place.geoid, [])
+    L, W = en.loads(state), en.grid_water()
+    out = []
+    for u in en.ranked(us, L):
+        e = L.get(u["eia_id"]) or {}
+        w = W.get(u["balancing_authority"]) or {}
+        out.append(cx.Utility(name=u["name"].title(), type=(u["type"] or "").title(), share_of_place=u["share"], customers=e.get("customers"),
+                              avg_mw=round(e["mwh"] / 8760, 1) if e.get("mwh") else None, summer_peak_mw=e.get("summer_mw"),
+                              balancing_authority=u["balancing_authority"], power_plant_water_l_per_kwh=w.get("consumed_excl_hydro")))
+    return cx.Energy(provider="national", sources=["hifld_territories", "eia861", "siddik2024"], utilities=out)
 
 
 def _division(state, place):

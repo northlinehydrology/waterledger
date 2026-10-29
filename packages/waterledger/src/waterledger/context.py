@@ -85,10 +85,12 @@ class Climate(_Category):
 class Utility(BaseModel):
     name: str
     type: str
-    share_of_place: float
+    share_of_place: float                           # national tier: the territory's overlap ("may serve"; HIFLD often draws counties)
     customers: int | None = None
     avg_mw: float | None = None
     summer_peak_mw: float | None = None
+    balancing_authority: str | None = None          # EIA-930 code, e.g. "PJM"
+    power_plant_water_l_per_kwh: float | None = None    # water consumed at power plants there, 2022, excluding hydropower
 
 
 class Energy(_Category):
