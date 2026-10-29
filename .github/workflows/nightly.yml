@@ -38,6 +38,8 @@ jobs:
           enable-cache: true
       - run: uv sync --locked
       - run: uv run pytest -m live -v
+      - name: Reproduce Water Ledger's published estimates (30 years of weather, one Open-Meteo request)
+        run: WATERLEDGER_FETCH=1 uv run pytest -v tests/test_reproduction.py
   report:
     needs: [packages, sources]
     if: failure()
