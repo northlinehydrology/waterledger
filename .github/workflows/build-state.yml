@@ -25,7 +25,9 @@ jobs:
         with:
           python-version: "3.12"
       - run: uv sync --locked
-      - run: uv run waterledger build-state ${{ inputs.state }} --out build-report --no-checks
+      - name: Build the state (the national tier; Michigan is built from its own data in the snapshot step)
+        if: ${{ inputs.state != 'MI' }}
+        run: uv run waterledger build-state ${{ inputs.state }} --out build-report --no-checks
       - name: Check the state end to end
         if: ${{ contains(fromJSON('["OH","VA","TX"]'), inputs.state) }}
         run: |
@@ -34,8 +36,13 @@ jobs:
       - name: Write the snapshot and check it statewide
         run: |
           uv run waterledger snapshot ${{ inputs.state }} --out snapshot
-          uv run waterledger check-snapshot ${{ inputs.state }} --dir snapshot
-          cp build-report/${{ inputs.state }}_build.json snapshot/
+          if [ "${{ inputs.state }}" = "MI" ]; then
+            uv run pytest -m live -v tests/test_snapshot_michigan.py
+            echo '{"state": "MI", "note": "built from Water Ledger Michigan data"}' > snapshot/MI_build.json
+          else
+            uv run waterledger check-snapshot ${{ inputs.state }} --dir snapshot
+            cp build-report/${{ inputs.state }}_build.json snapshot/
+          fi
           du -ah snapshot | sort -h | tail -12
       - uses: actions/upload-artifact@v4
         with:
