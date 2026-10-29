@@ -11,7 +11,7 @@ import concurrent.futures as cf, json, os, time, urllib.parse, urllib.request
 import numpy as np
 
 from waterledger_data.config import CACHE
-from matplotlib.path import Path
+import shapely
 
 from waterledger_data.climate import atlas14_depths
 
@@ -109,7 +109,7 @@ def _inside_many(pts, rings):
     hits = np.zeros(len(pts), dtype=int)
     for ring in rings:
         if len(ring) >= 3:
-            hits += Path(np.asarray(ring, dtype=float)[:, :2]).contains_points(pts)
+            hits += shapely.contains_xy(shapely.Polygon(np.asarray(ring, dtype=float)[:, :2]), pts[:, 0], pts[:, 1])
     return hits % 2 == 1
 
 
