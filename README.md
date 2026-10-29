@@ -32,21 +32,48 @@ only), adding `[ensemble]`, `[bmi]`, `[stac]` or `[all]` for the optional parts.
 |---|---|---|
 | `waterledger-models` | `waterledger_models` | the models: data center cooling water, lake-source cooling, staff water, site runoff quality; ensembles, BMI, STAC |
 | `waterledger-data` | `waterledger_data` | public U.S. water data for any place, fetched once and cached |
-| `waterledger` | `waterledger` | scenarios and the state builders (`waterledger build mi`); `import waterledger as wl` brings everything |
+| `waterledger` | `waterledger` | the objects (Place, Context, Facility, Site, Estimate), state providers and builders (`waterledger build mi`); `import waterledger as wl` brings everything |
 
 ## Quickstart
 
 ```python
 import waterledger as wl
+
+place = wl.place("Gaines charter township, MI")      # or wl.place(geoid="2608131240")
+site = wl.Site(place=place, facility=wl.DataCenter(it_mw=300, cooling="hybrid"))
+est = site.estimate()
+
+est.water.withdrawn.avg          # Range(p10=..., p50=..., p90=...), million gallons a day
+est.water.withdrawn.peak_day     # on a 1-in-10-year peak day
+est.site.source, est.site.wastewater     # the choices, with defaults filled in
+est.model_dump_json()            # the whole estimate as JSON
+
+ctx = place.context()            # the public water facts around the place, by category
+ctx.supply.systems               # public water systems
+ctx.wastewater.plants            # sewer plants, nearest first
+ctx.receiving.downstream         # the path the water takes, with impaired waters and cleanup plans
+ctx.climate.design_storms_in     # NOAA Atlas 14 design storms
+ctx.energy.utilities             # electric utilities and their loads
+```
+
+The objects (Place, Context, Facility, Site, Estimate) are validated, round-trip through JSON, and are described in
+[docs/design/0001-schema-and-api.md](docs/design/0001-schema-and-api.md). Michigan is available now, from the same data
+as [waterledger.org/mi](https://waterledger.org/mi/); without a local copy, the published data files are downloaded once
+and cached. Other states are coming through the national tier.
+
+### The models directly
+
+```python
+from waterledger_models.datacenter import run_ensemble, summarize
 from waterledger_models.weather import fetch_open_meteo
 
 w = fetch_open_meteo(42.88, -85.52, cache=".cache/grand_rapids.json")     # 30 years of hourly ERA5 weather
-ds = wl.models.datacenter.run_ensemble(w.time.values, w.air_temperature.values, w.relative_humidity.values, mw=300, n=200)
-s = wl.models.datacenter.summarize(ds)              # (design, stat, quantile), staff water included
-s["withdrawn"].sel(design="towers", stat="peak_1in10")     # million gallons on a 1-in-10-year peak day
+ds = run_ensemble(w.time.values, w.air_temperature.values, w.relative_humidity.values, mw=300, n=200)
+s = summarize(ds)                                    # (design, stat, quantile), staff water included
+s["withdrawn"].sel(design="towers", stat="peak_1in10")      # million gallons on a 1-in-10-year peak day
 ```
 
-Step by step through BMI:
+### Step by step through BMI
 
 ```python
 from waterledger_models.datacenter import CoolingWaterBmi
