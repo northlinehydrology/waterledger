@@ -16,6 +16,8 @@ dependencies = ["numpy>=1.24"]
 [project.optional-dependencies]
 ensemble = ["xarray>=2023.1", "dask[array]>=2023.1"]      # vectorized Monte Carlo ensembles as xarray, dask across locations
 bmi = ["bmipy>=2.0", "pyyaml>=6", "xarray>=2023.1"]       # CSDMS Basic Model Interface components for coupling frameworks
+stac = ["pystac>=1.10", "zarr>=2.16", "xarray>=2023.1", "dask[array]>=2023.1"]   # publish ensemble results as zarr with a STAC catalog
+all = ["waterledger-models[ensemble,bmi,stac]"]
 
 [project.urls]
 Homepage = "https://waterledger.org"

@@ -4,7 +4,7 @@
 name = "waterledger-workspace"
 version = "0"
 requires-python = ">=3.11"
-dependencies = ["waterledger", "waterledger-models[ensemble,bmi]", "waterledger-data"]
+dependencies = ["waterledger", "waterledger-models[all]", "waterledger-data"]
 
 [tool.uv]
 package = false
