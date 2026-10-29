@@ -133,6 +133,16 @@ which ties API changes to number changes. Proposal: from 2.0.0, package versions
 `MODEL_VERSION` stays separate. The new API ships as **2.0.0** for all three packages, so everything under this
 design is one major version.
 
+## BMI
+
+Anything that steps through time is a CSDMS BMI 2.0 component with CSDMS Standard Names. Lookups and results (Place,
+Context, Estimate) are not; they connect to BMI instead.
+
+- **Every Facility type ships a BMI component.** The data center has `CoolingWaterBmi` and `LakeCoolingBmi` today.
+- **Sites configure it:** `site.to_bmi_config()` writes the component's config, with Context supplying the weather
+  forcing and the facility's settings.
+- **CI proves compliance:** CSDMS's `bmi-tester` runs on every component in CI, so compliance is tested, not claimed.
+
 ## Coupling (idea 3)
 
 A `WaterUsersBmi` component (later, in `waterledger-nextgen`) takes a list of Sites and reports each one's withdrawal and
@@ -151,3 +161,5 @@ a thin layer on top, not a separate system.
    ERA5 until a model change is reviewed.
 6. **Places nationally:** incorporated places in every state; townships (county subdivisions) only where they are
    governments (the 20 MCD states).
+7. **BMI:** every Facility type ships a BMI 2.0 component; `site.to_bmi_config()`; `bmi-tester` in CI; the NextGen
+   water-users component is BMI too.
