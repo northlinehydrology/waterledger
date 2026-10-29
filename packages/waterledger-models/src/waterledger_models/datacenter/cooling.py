@@ -28,10 +28,10 @@ Parameter ranges and their sources are in RANGES and documented on the Water Led
 """
 import numpy as np
 
-KWH_BTU = 3412.14
-HFG = 1050.0          # latent heat near tower temperatures, BTU/lb
-LB_GAL = 8.34
-DESIGNS = ["dry", "assist", "hybrid", "towers"]
+from waterledger_models.datacenter.physics import (DESIGNS as _DESIGNS, HFG, KWH_BTU, LB_GAL, RANGES, STAFF, TOPUP, _ramp,  # noqa: F401
+                                                   evaporative_ratio, hourly_rates, wet_bulb)
+
+DESIGNS = list(_DESIGNS)
 LABELS = {
     "dry": "Closed loop (designed to use no water for cooling)",
     "assist": "Closed loop with evaporative assist on the hottest days",
@@ -39,73 +39,10 @@ LABELS = {
     "towers": "Cooling towers (evaporative all year)",
 }
 
-# (low, high) uniform ranges sampled in the Monte Carlo; central values are the midpoints.
-RANGES = {
-    "utilization": (0.60, 0.90),       # average IT load ÷ IT capacity [estimate]
-    "hf_econ": (1.03, 1.08),           # heat factor with economizer cooling (pumps, fans, losses) [estimate]
-    "hf_chiller": (1.15, 1.25),        # heat factor with chillers running; compressor heat up to ~20% (DOE FEMP)
-    "wb_econ": (8.0, 12.0),            # wet-bulb (°C) below which the economizer carries the load [estimate]
-    "wb_chiller": (16.0, 20.0),        # wet-bulb (°C) above which chillers carry the load [estimate]
-    "er_adj": (-0.05, 0.05),           # uncertainty on the Rutberg evaporative ratio (USGS ±5–15% at baseload)
-    "coc": (3.0, 7.0),                 # cycles of concentration (DOE FEMP: 2–4 typical, 6+ possible)
-    "range_f": (8.0, 15.0),            # tower range, °F (USGS SIR 2013-5188 tower suite: 10–25)
-    "drift": (0.00005, 0.0005),        # drift fraction of circulating flow (EPA: <0.005% modern to 0.05%)
-    "fill_gal_per_mw": (2000.0, 6000.0),  # closed loop volume, gal per MW of IT capacity [estimate; Lowell reported a 1.2 million gallon fill]
-    "assist_on": (27.5, 31.0),         # dry-bulb °C where assist starts (Microsoft 85 °F = 29.4 °C)
-    "assist_share": (0.10, 0.30),      # assist water as a share of the full evaporative rate [estimate]
-    "hybrid_on": (21.0, 27.0),         # dry-bulb °C where hybrid starts evaporating [estimate; cold-climate variant]
-    "hybrid_full": (30.0, 33.0),       # dry-bulb °C where hybrid is fully evaporative [estimate]
-}
-# Share of the loop volume lost to small leaks and topped up each year (NIH 2023: closed loops typically lose under 5% a year), all of
-# it counted as lost. Sampled on its own random stream (where model 1.1 drew its base-use share), so the other draws are unchanged.
-TOPUP = (0.01, 0.05)
-
-# Staff water [estimates]. People on site on a typical day (employees, security, contractors) = a fixed core plus a little per MW of
-# IT capacity: Michigan's sales tax exemption needs at least 30 new jobs, and hyperscale campuses employ tens to a few hundred people.
-# Gallons per person per day covers restrooms, kitchens and cleaning (office buildings use about 10 to 20; more with a cafeteria).
-# About 10% of it is used up and the rest goes down the drain (USGS Great Lakes consumptive-use coefficients for commercial use).
-STAFF = {"core": (20.0, 60.0), "per_mw": (0.1, 0.5), "gpcd": (15.0, 30.0), "used": (0.05, 0.15)}
-
-
-def wet_bulb(t_c, rh):
-    """Stull (2011) wet-bulb approximation, °C, valid for RH 5–99% and typical temperatures."""
-    rh = np.clip(rh, 5, 99)
-    return (t_c * np.arctan(0.151977 * np.sqrt(rh + 8.313659)) + np.arctan(t_c + rh) - np.arctan(rh - 1.676331)
-            + 0.00391838 * rh ** 1.5 * np.arctan(0.023101 * rh) - 4.686035)
-
-
-def evaporative_ratio(t_c, adj=0.0):
-    """Rutberg et al. 2011 dry-bulb relation (as used in USGS SIR 2013-5188): share of heat rejected by evaporation."""
-    er = 1 - (-0.000279 * t_c ** 3 + 0.00109 * t_c ** 2 - 0.345 * t_c + 26.7) / 100
-    return np.clip(er + adj, 0.55, 1.0)
-
-
-def _ramp(x, lo, hi):
-    return np.clip((x - lo) / (hi - lo), 0.0, 1.0)
-
 
 def hourly(tdb, twb, design, p):
-    """Gallons per IT kWh, by hour: (withdrawn, consumed, returned)."""
-    hf = p["hf_econ"] + (p["hf_chiller"] - p["hf_econ"]) * _ramp(twb, p["wb_econ"], p["wb_chiller"])
-    btu = KWH_BTU * hf
-    evap_full = btu * evaporative_ratio(tdb, p["er_adj"]) / HFG / LB_GAL
-    circ = btu / (LB_GAL * p["range_f"])                    # gal circulated per kWh (BTU / (8.34 × range))
-    if design == "towers":
-        w = np.ones_like(tdb)
-    elif design == "hybrid":
-        w = _ramp(tdb, p["hybrid_on"], p["hybrid_full"])
-    elif design == "assist":
-        w = _ramp(tdb, p["assist_on"], p["assist_on"] + 4.0) * p["assist_share"]
-    else:
-        w = np.zeros_like(tdb)
-    evap = evap_full * w
-    drift = circ * p["drift"] * (w > 0)
-    blow = evap / (p["coc"] - 1.0)
-    topup = np.full_like(tdb, p["fill_gal_per_mw"] * p["topup"] / 365.0 / (24 * 1000 * p["utilization"]))   # gal/day per MW, as gal per IT kWh
-    withdrawn = evap + drift + blow + topup
-    consumed = evap + drift + topup
-    returned = blow
-    return withdrawn, consumed, returned
+    """Gallons per IT kWh, by hour: (withdrawn, consumed, returned). See physics.hourly_rates."""
+    return hourly_rates(tdb, twb, design, p)
 
 
 def sample(rng, n):
