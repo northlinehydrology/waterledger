@@ -46,7 +46,9 @@ def table(rows, widths):
 
 
 def pct(x):
-    return f"{100 * x:.0f}%" if x is not None else "n/a"
+    if x is None:
+        return "n/a"
+    return f"{100 * x:.1f}%" if 0.99 < x < 1 else f"{100 * x:.0f}%"          # 99.7% is not 100%
 
 
 def mgd(r):
@@ -58,7 +60,7 @@ def example(state):
     """The worked example: EXAMPLE_MW at one place in the state, every cooling design."""
     import waterledger as wl
     place = wl.place(EXAMPLES[state])
-    rows = [["Design", "Withdrawn, average day", "Withdrawn, peak day", "Used up, average day", "Water from / to"]]
+    rows = [["Design", "Withdrawn, average day", "Withdrawn, peak day", "Consumed, average day", "Source / wastewater"]]
     for c, label in DESIGNS:
         e = wl.Site(place=place, facility=wl.DataCenter(it_mw=EXAMPLE_MW, cooling=c)).estimate()
         rows.append([label, mgd(e.water.withdrawn.avg), mgd(e.water.withdrawn.peak_day), mgd(e.water.consumed.avg),
@@ -81,10 +83,9 @@ def brief(state):
          Paragraph(f"Model version {m['model_version']} · data snapshot {m['date']} · waterledger.org · github.com/northlinehydrology/waterledger", SUB)]
 
     S += [Paragraph("What it estimates", H2),
-          Paragraph(f"For any {'city or township' if mi else 'city, town, village, township or county'} in {name}, Water Ledger estimates how much water a data center campus "
-                    "of a given size and cooling design would take, use up and send back, on an average day and on a 1-in-10-year peak day, and "
-                    "sets that beside the public water system, the sewer plant, the streams downstream and the electric utility that would serve "
-                    "it. It uses public data only and is a screening estimate, not a design.", BODY)]
+          Paragraph(f"For any {'city or township' if mi else 'city, town, village, township or county'} in {name}, Water Ledger estimates the water a data center campus of a "
+                    "given size and cooling design would withdraw, consume and return on an average day and on a 1-in-10-year peak day, and "
+                    "compares it with the local water system, sewer plant, downstream waters and electric utility. All inputs are public data.", BODY)]
 
     rows = [["Category", "Source", f"In {name}"],
             ["Places", "Census TIGERweb: county subdivisions (Michigan's cities and townships)" if mi else
@@ -105,44 +106,47 @@ def brief(state):
              f"{len(en['loads'])} utilities with loads; grid regions: {', '.join(sorted(en['grid_water']))}"]]
     S += [Paragraph("Data", H2), table(rows, [1.0, 3.6, 2.4])]
 
-    S += [Paragraph("How an estimate is made", H2),
-          Paragraph("<b>Cooling water.</b> Hour by hour over 30 years of weather, the campus's heat load is turned into evaporation, drift and "
-                    "blowdown for each cooling design: cooling towers, hybrid (evaporative only in warm weather), closed loop with evaporative "
-                    "assist on the hottest hours, and closed loop with no water for cooling. The evaporative share follows Rutberg et al. (2011); "
-                    "blowdown follows the DOE FEMP water balance.", BODY),
-          Paragraph("<b>Uncertainty.</b> The model runs 200 times with its 15 cooling parameters drawn from published or estimated ranges (marked [A] "
-                    "where they stand in for a facility's own data). Results are the 10th, 50th and 90th percentiles; the peak day is the 90th "
-                    "percentile of each year's highest day.", BODY),
-          Paragraph("<b>Staff water and loop top-ups</b> are added at the campus's size (people on site, and small leaks from closed loops).", BODY),
-          Paragraph("<b>Source and wastewater.</b> The campus uses the public water system mapped in the place; with none mapped, a closed "
-                    "loop uses the nearest system serving over 3,300 people if it is within 10 km, and anything else uses new wells. Wastewater goes to the sewer when a plant is in reach and, for evaporative "
-                    "designs, has room for the blowdown; otherwise a septic system (closed loop) or the campus's own discharge.", BODY),
-          Paragraph("<b>Downstream.</b> Each place's main watershed is followed downstream (up to 25 watersheds, across state lines), with "
-                    "the impairments and cleanup plans (TMDLs) EPA lists for each.", BODY)]
+    S += [Paragraph("Method", H2),
+          Paragraph("<b>Cooling water.</b> Hourly temperature and humidity for 1995-2024 drive the heat rejected by the campus under four "
+                    "cooling designs: cooling towers; hybrid, evaporative in warm weather only; closed loop with evaporative assist on the "
+                    "hottest hours (dry-bulb above roughly 82-88 F); and closed loop with no evaporative cooling. Evaporation is the heat load "
+                    "times the evaporative fraction of Rutberg et al. (2011), as used in the USGS cooling tower method. Blowdown is evaporation "
+                    "divided by cycles of concentration minus one (DOE FEMP).", BODY),
+          Paragraph("<b>Uncertainty.</b> Each estimate is 200 Monte Carlo runs, sampling 15 cooling parameters from published or estimated "
+                    "ranges; estimated ranges are marked [A]. We report the 10th, 50th and 90th percentiles. The peak day is the 1-in-10-year "
+                    "maximum day, taken as the 90th percentile of the annual maximum daily withdrawal.", BODY),
+          Paragraph("<b>Other water.</b> Staff use, scaled to the number of people on site, and make-up water for closed loops, which lose "
+                    "1-5% of their volume a year to leaks.", BODY),
+          Paragraph("<b>Source and wastewater.</b> If a community water system is mapped in the place, the campus is served by it. If not, a "
+                    "closed loop connects to the nearest system serving more than 3,300 people when it is within 10 km; all other cases use new "
+                    "wells. Discharge goes to the nearest sewer plant if it is within reach and, for evaporative designs, has enough unused "
+                    "capacity for the blowdown. Otherwise closed loops use an on-site septic system and evaporative designs discharge directly.", BODY),
+          Paragraph("<b>Downstream.</b> The place's main HUC-12 watershed is traced downstream for up to 25 watersheds, across state lines "
+                    "where needed, with the EPA-listed impairments and TMDLs for each.", BODY)]
 
     if mi:
         S += [Paragraph("What Michigan adds", H2),
-              Paragraph("Michigan is the full version: its own climate regions, EGLE's reported water use by county and sector, household "
-                        "wells (EGLE Wellogic), designated trout streams (Michigan DNR), lake-source cooling on the Great Lakes, and Michigan's "
-                        "rules (Part 327 withdrawals, Part 22 septic limits, Part 91 soil erosion, Rule 57 and temperature standards). A data "
-                        "center proposal and moratorium tracker is kept by hand on waterledger.org.", BODY)]
+              Paragraph("Michigan adds its own climate regions, EGLE reported water use by county and sector, domestic wells (EGLE "
+                        "Wellogic), designated trout streams (Michigan DNR), Great Lakes lake-source cooling, and Michigan rules (Part 327 "
+                        "withdrawals, Part 22 septic limits, Part 91 soil erosion, Rule 57 and temperature standards). waterledger.org also "
+                        "tracks Michigan data center proposals and moratoria.", BODY)]
     else:
         n = collections.Counter(v["station"] for v in divs.values())
         st = "; ".join(f"{k.title()}" + (f" ({c} divisions)" if c > 1 else "") for k, c in n.items())
         S += [Paragraph("How this differs from Michigan", H2),
-              Paragraph(f"<b>Weather.</b> {name} uses NOAA station records ({st}). Michigan uses ERA5 reanalysis. For cooling towers the two "
-                        "agree within about 1% in Michigan, but for hybrid and assist, which use water only on the hottest hours, station "
-                        "records give higher averages (4-50% higher in southern Michigan, 2-5 times at Traverse City and Alpena), so hybrid and assist figures are not strictly comparable "
-                        "across the two.", BODY),
-              Paragraph("<b>Not yet included here:</b> state-reported water use by sector, household wells, coldwater streams, lake-source "
-                        "cooling and state rules (\"state rules not yet reviewed\"). Utilities are listed by customers served, since the national "
-                        "territory map draws many small utilities as whole counties.", BODY)]
+              Paragraph(f"<b>Weather.</b> {name} uses NOAA station records ({st}); Michigan uses ERA5 reanalysis. Run on station records in "
+                        "Michigan, cooling tower estimates agree with ERA5 within about 1%. Hybrid and assist estimates, which depend on the "
+                        "hottest hours, are 4-50% higher in southern Michigan and 2-5 times higher at Traverse City and Alpena, so hybrid and "
+                        "assist results are not directly comparable between Michigan and other states.", BODY),
+              Paragraph(f"<b>Not yet included for {name}:</b> state-reported water use by sector, domestic wells, coldwater streams, "
+                        "lake-source cooling and state rules. Utilities are ordered by number of customers, because the national territory "
+                        "layer draws many small utilities as whole counties.", BODY)]
 
     place, rows = example(state)
     S += [Paragraph(f"Example: {EXAMPLE_MW} MW of IT capacity in {place.name}", H2),
-          Paragraph("Million gallons a day: median, with the 10th to 90th percentile range in brackets. Peak day is the "
-                    "1-in-10-year highest day. \"Used up\" is water evaporated or otherwise not returned. Defaults for water source and "
-                    "wastewater are filled in by the rules above (muni: public system; sewer: the nearest plant).", SMALL),
+          Paragraph("Million gallons per day, median with the 10th-90th percentile range. Peak day is the 1-in-10-year maximum day. "
+                    "Consumed water is evaporated or otherwise not returned. Source and wastewater are the defaults described above (muni: "
+                    "community water system; sewer: nearest sewer plant).", SMALL),
           table(rows, [1.5, 1.45, 1.45, 1.45, 1.15])]
     S[-3:] = [KeepTogether(S[-3:])]
 
@@ -150,20 +154,20 @@ def brief(state):
         sample = (m.get("checks") or {}).get("sampled")
         errs = len((m.get("checks") or {}).get("errors", []))
         S += [Paragraph("Checks on this snapshot", H2),
-              Paragraph(f"Coverage of the state's places: water system {pct(cov.get('water_system'))}, watersheds {pct(cov.get('watersheds'))}, "
+              Paragraph(f"Coverage of {name}'s places: water system {pct(cov.get('water_system'))}, watersheds {pct(cov.get('watersheds'))}, "
                         f"utilities {pct(cov.get('utilities'))}, climate division {pct(cov.get('climate_division'))}, a sewer plant within 40 km "
-                        f"{pct(cov.get('sewer_plant_within_40km'))}. {sample} places chosen at random ran through every step and cooling design "
-                        f"with {errs} errors. Places with no mapped water system are mostly rural areas on private wells.", BODY)]
+                        f"{pct(cov.get('sewer_plant_within_40km'))}. {sample} randomly selected places were run through every step and cooling design "
+                        f"with {errs} errors. Most places without a mapped water system are rural areas on private wells.", BODY)]
     elif mi:
         S += [Paragraph("Checks on this snapshot", H2),
-              Paragraph("Michigan's snapshot carries the site's own files; tests confirm its answers are identical either way, and that the "
-                        "shared files agree with Michigan's for places chosen at random.", BODY)]
+              Paragraph("The Michigan snapshot includes the site's own data files, so results are identical from either source. Tests "
+                        "also confirm that the shared-format files match Michigan's for a random sample of places.", BODY)]
 
     S += [Paragraph("Limits", H2),
-          Paragraph("These are screening estimates from public data, for comparing designs and sizes before an applicant's numbers exist. "
-                    "They do not replace a facility's design data, a utility's capacity analysis or a permit review. The watershed path is "
-                    "followed watershed to watershed, not stream by stream. EPA assessments reflect each state's latest report. Weather is the "
-                    "past 30 years.", BODY),
+          Paragraph("These are screening estimates from public data, intended for comparing designs and sizes before an applicant's "
+                    "figures are available. They are not a substitute for facility design data, a utility capacity analysis or a permit "
+                    "review. Downstream paths are traced between HUC-12 watersheds, not along individual stream reaches. EPA assessments are "
+                    "from each state's most recent integrated report. Weather covers 1995-2024.", BODY),
           Spacer(1, 6),
           Paragraph("Planning-level hydrologic assessment. Not engineering design. Built with the open waterledger Python packages "
                     f"(waterledger {m['packages']['waterledger']}); methods, parameters and sources: waterledger.org and the package "
