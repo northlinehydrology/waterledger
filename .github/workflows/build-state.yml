@@ -1,6 +1,7 @@
 name: build-state
-# Build one state's national-tier data from the public sources on GitHub's machines (design 0003, step 1). Run by hand:
-# Actions -> build-state -> Run workflow -> state. No upload yet; the build report is kept as an artifact.
+# Build one state's data from the public sources on GitHub's machines, check it, write its snapshot (design 0003), and,
+# when asked, upload the snapshot to Cloudflare R2 (data.waterledger.org). Run by hand: Actions -> build-state -> Run
+# workflow. Uploading needs the repository secrets R2_ACCOUNT_ID, R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY.
 on:
   workflow_dispatch:
     inputs:
@@ -8,6 +9,10 @@ on:
         description: "State postal code"
         required: true
         default: "OH"
+      upload:
+        description: "Upload the snapshot to R2"
+        type: boolean
+        default: false
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,8 +29,27 @@ jobs:
       - name: Check the state end to end
         if: ${{ contains(fromJSON('["OH","VA","TX"]'), inputs.state) }}
         run: uv run pytest -m live -v tests/test_national_places.py tests/test_national_water.py tests/test_national_context.py tests/test_national_estimate.py -k "${{ inputs.state == 'OH' && 'Columbus or OH or 39' || inputs.state == 'VA' && 'Loudoun or Richmond or VA or 51' || 'Austin or TX or 48' }}"
-      - run: du -sh $WATERLEDGER_CACHE/* | sort -h
+      - name: Write the snapshot
+        run: |
+          uv run waterledger snapshot ${{ inputs.state }} --out snapshot
+          cp build-report/${{ inputs.state }}_build.json snapshot/
+          du -ah snapshot | sort -h | tail -12
       - uses: actions/upload-artifact@v4
         with:
-          name: build-${{ inputs.state }}
-          path: build-report/
+          name: snapshot-${{ inputs.state }}
+          path: snapshot/
+      - name: Upload to R2 (data.waterledger.org)
+        if: ${{ inputs.upload }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2: https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          ST: ${{ inputs.state }}
+        run: |
+          DATE=$(ls snapshot/$ST)
+          aws s3 cp --recursive snapshot/$ST/$DATE s3://waterledger-data/$ST/$DATE --endpoint-url $R2
+          aws s3 cp snapshot/${ST}_build.json s3://waterledger-data/$ST/$DATE/build.json --endpoint-url $R2
+          echo "{\"state\": \"$ST\", \"latest\": \"$DATE\"}" > latest.json
+          aws s3 cp latest.json s3://waterledger-data/$ST/latest.json --endpoint-url $R2 --cache-control "max-age=300"
+          echo "published https://data.waterledger.org/$ST/$DATE/manifest.json"
