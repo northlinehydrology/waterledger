@@ -28,7 +28,9 @@ jobs:
       - run: uv run waterledger build-state ${{ inputs.state }} --out build-report --no-checks
       - name: Check the state end to end
         if: ${{ contains(fromJSON('["OH","VA","TX"]'), inputs.state) }}
-        run: uv run pytest -m live -v tests/test_national_places.py tests/test_national_water.py tests/test_national_context.py tests/test_national_estimate.py -k "${{ inputs.state == 'OH' && 'Columbus or OH or 39' || inputs.state == 'VA' && 'Loudoun or Richmond or VA or 51' || 'Austin or TX or 48' }}"
+        run: |
+          st=$(echo "${{ inputs.state }}" | tr '[:upper:]' '[:lower:]')
+          WATERLEDGER_DATA=live uv run pytest -m "live and state_$st" -v tests/test_national_places.py tests/test_national_water.py tests/test_national_context.py tests/test_national_estimate.py
       - name: Write the snapshot and check it statewide
         run: |
           uv run waterledger snapshot ${{ inputs.state }} --out snapshot
