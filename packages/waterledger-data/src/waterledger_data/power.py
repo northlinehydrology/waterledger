@@ -88,9 +88,10 @@ def fetch_eia861(year):
     return d
 
 
-def utility_loads(year=None):
-    """{EIA id: {"mwh", "customers", "summer_mw", "winter_mw"}} for Michigan. Sales are bundled plus delivery-only customers (everyone on
-    the utility's wires); short-form filers report sales only. Peaks are Michigan-reported only (a multistate utility's Michigan peak is absent)."""
+def utility_loads(year=None, state="MI"):
+    """{EIA id: {"mwh", "customers", "summer_mw", "winter_mw"}} for one state (Michigan by default). Sales are bundled plus delivery-only
+    customers (everyone on the utility's wires); short-form filers report sales only. Peaks are as reported for the state (a multistate
+    utility's peak in another state is absent)."""
     import pandas as pd
     year = year or eia_year()
     d = os.path.join(RAW, f"eia861_{year}")
@@ -98,15 +99,15 @@ def utility_loads(year=None):
     s.columns = ["id", "part", "state", "mwh", "cust"]
     num = lambda col: pd.to_numeric(col, errors="coerce")      # EIA marks withheld or missing values with '.' or '..'
     s["mwh"], s["cust"] = num(s.mwh), num(s.cust)
-    s = s[(s.state == "MI") & s.part.isin(["A", "C"])].groupby("id")[["mwh", "cust"]].sum()
+    s = s[(s.state == state) & s.part.isin(["A", "C"])].groupby("id")[["mwh", "cust"]].sum()
     f = pd.read_excel(os.path.join(d, f"Short_Form_{year}.xlsx"))
-    f = f[f["State"] == "MI"].set_index("Utility Number")[["Total Sales (MWh)", "Total Customers"]]
+    f = f[f["State"] == state].set_index("Utility Number")[["Total Sales (MWh)", "Total Customers"]]
     f.columns = ["mwh", "cust"]
     f["mwh"], f["cust"] = num(f.mwh), num(f.cust)
     o = pd.read_excel(os.path.join(d, f"Operational_Data_{year}.xlsx"), header=None, skiprows=3).iloc[:, [1, 3, 6, 7]]
     o.columns = ["id", "state", "summer", "winter"]
     o["summer"], o["winter"] = num(o.summer), num(o.winter)
-    o = o[o.state == "MI"].set_index("id")
+    o = o[o.state == state].set_index("id")
     val = lambda v: float(v) if v == v and v is not None else None
     out = {}
     for uid, r in pd.concat([s, f]).iterrows():
