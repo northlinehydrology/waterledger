@@ -1,0 +1,24 @@
+# Water Ledger: a uv workspace of separate packages that depend on each other in one direction
+# (models <- data <- waterledger). Each is built and published on its own.
+[project]
+name = "waterledger-workspace"
+version = "0"
+requires-python = ">=3.11"
+dependencies = ["waterledger", "waterledger-models", "waterledger-data"]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.uv.sources]
+waterledger = { workspace = true }
+waterledger-models = { workspace = true }
+waterledger-data = { workspace = true }
+
+[dependency-groups]
+dev = ["pytest>=7"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
