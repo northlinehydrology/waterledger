@@ -603,7 +603,3 @@ def main(n=200):
         json.dump(round_tree(data), f, separators=(",", ":"))
     print("wrote", OUT, os.path.getsize(OUT), "bytes")
 
-
-if __name__ == "__main__":
-    import sys
-    {"waters": build_waters, "moratoria": build_moratoria, "power": build_power}.get((sys.argv[1:] or [""])[0], main)()
