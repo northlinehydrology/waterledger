@@ -25,7 +25,7 @@ Five nouns, each a typed object with a JSON form:
 | Object | What it is | Identified by |
 |---|---|---|
 | `Place` | where: a state, county, city, township or point | Census GEOID (or lat/lon) |
-| `Context` | the public water facts around a place, in layers | the place, plus a dated source for each layer |
+| `Context` | the public water facts around a place, in categories of layers | the place, plus a dated source for each layer |
 | `Facility` | what is proposed: a data center now, other large users later | a type and its inputs (size, cooling design) |
 | `Site` | a facility at a place, with its choices (source, wastewater, land) | place + facility + choices |
 | `Estimate` | what the model says: water taken, used up, returned; impacts | the site, model version, data date |
@@ -45,6 +45,37 @@ est.to_dict(); est.to_xarray()                        # JSON for websites, xarra
 
 The current low-level modules stay underneath and keep working: `waterledger_models.datacenter.*` and
 `waterledger_data.*`. The new objects are the front door.
+
+A **Place** is any area or point Water Ledger can describe: a state, county, city, township, or a latitude and longitude.
+This is broader than the Census Bureau's "place" (which leaves out townships and counties). A **Site** is a proposed
+facility at a place.
+
+## Context categories
+
+The context is split by the question people ask. Each category is its own typed object with its own schema, providers
+and change history, and it loads only when asked for:
+
+| Category | Question | Layers |
+|---|---|---|
+| `jurisdiction` | who decides, under what rules | city or township, county, state; state and federal rules; moratoria and proposals on record |
+| `supply` | where the water comes from | public water systems and their wholesale chain; reported water use nearby; groundwater and wells |
+| `wastewater` | where used water goes | sewer plants (design capacity, current flow); discharge permits |
+| `receiving` | what is downstream | watershed and downstream path; impaired waters and TMDLs; coldwater streams; later gauges and low flows |
+| `climate` | the weather behind demand and runoff | weather station or region; rainfall normals; design storms |
+| `energy` | the power behind the facility | electric utility territory and load; the water used to generate it |
+| `land` (later) | the ground the site sits on | land cover, soils, wetlands, floodplain |
+
+```python
+ctx = place.context()
+ctx.supply.systems
+ctx.receiving.impaired_downstream
+ctx.climate.storms
+ctx.jurisdiction.rules
+```
+
+The categories line up with the impacts: a supply impact reads `supply`, a stream impact reads `receiving`, and so on.
+They also follow the way Northline frames a site: approving jurisdiction, then the water system chain, then the
+watershed or aquifer.
 
 ## National and state layers
 
@@ -110,7 +141,8 @@ a thin layer on top, not a separate system.
 
 ## Decisions to agree
 
-1. **The five objects:** Place, Context, Facility, Site, Estimate, with these names.
+1. ~~The five objects~~ **Agreed (Oct 29):** Place, Context, Facility, Site, Estimate; Place defined broadly (above);
+   Context split into the seven categories above.
 2. **Layers:** national providers with state overrides, provenance on every value, and rules as per-state TOML.
 3. **Validation:** pydantic (typed, validated, JSON Schema for free; one more dependency in `waterledger`) vs. plain
    dataclasses (no dependency, schema written by hand). Proposal: pydantic in `waterledger` only; the models stay numpy.
