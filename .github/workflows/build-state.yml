@@ -1,0 +1,31 @@
+name: build-state
+# Build one state's national-tier data from the public sources on GitHub's machines (design 0003, step 1). Run by hand:
+# Actions -> build-state -> Run workflow -> state. No upload yet; the build report is kept as an artifact.
+on:
+  workflow_dispatch:
+    inputs:
+      state:
+        description: "State postal code"
+        required: true
+        default: "OH"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      WATERLEDGER_CACHE: ${{ github.workspace }}/.wlcache
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv sync --locked
+      - run: uv run waterledger build-state ${{ inputs.state }} --out build-report
+      - name: Check the state end to end
+        if: ${{ contains(fromJSON('["OH","VA","TX"]'), inputs.state) }}
+        run: uv run pytest -m live -v tests/test_national_places.py tests/test_national_water.py tests/test_national_context.py tests/test_national_estimate.py -k ${{ inputs.state == 'OH' && 'Columbus or OH or 39' || inputs.state == 'VA' && 'Loudoun or Richmond or VA or 51' || 'Austin or TX or 48' }}
+      - run: du -sh $WATERLEDGER_CACHE/* | sort -h
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ inputs.state }}
+          path: build-report/
