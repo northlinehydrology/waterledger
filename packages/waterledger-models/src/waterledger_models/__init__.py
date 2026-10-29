@@ -3,13 +3,14 @@
     datacenter.cooling   weather-driven cooling water by design, Monte Carlo over the published parameter ranges, staff water
     datacenter.lake      lake-source (once-through) cooling
     runoff               runoff, sediment, nutrients, salt and fuel from a developed site
+    hydrology            screening hydrology: curve-number storm runoff, Theis drawdown, Glover stream depletion
     weather              hourly ERA5 weather from Open-Meteo, as xarray, for the ensembles and BMI components
 
 MODEL_VERSION is Water Ledger's model version (the numbers); __version__ is the package version (the code, semver).
 They change independently. Every published estimate names the model version that produced it.
 """
-from waterledger_models import datacenter, runoff, weather
+from waterledger_models import datacenter, hydrology, runoff, weather
 
-__all__ = ["datacenter", "runoff", "weather", "MODEL_VERSION"]
+__all__ = ["datacenter", "hydrology", "runoff", "weather", "MODEL_VERSION"]
 MODEL_VERSION = "1.2"
 __version__ = "2.0.0"
