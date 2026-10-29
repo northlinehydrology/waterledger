@@ -9,7 +9,9 @@ from waterledger import states
 
 STAGES = ["places", "supply", "wastewater", "receiving", "climate", "energy", "checks"]
 # The least share of a state's places each layer must cover; a build below these fails (a source may have broken).
-COVERAGE_MIN = {"watersheds": 0.99, "utilities": 0.95, "climate_division": 1.0, "sewer_plant_within_40km": 0.5}
+# climate_division: a county NOAA's table leaves out (Poquoson, Virginia) uses the nearest division's station, so a sliver short
+# of 100% is expected; a larger gap would mean the table or the county codes changed.
+COVERAGE_MIN = {"watersheds": 0.99, "utilities": 0.95, "climate_division": 0.99, "sewer_plant_within_40km": 0.5}
 SAMPLE = 50
 
 
