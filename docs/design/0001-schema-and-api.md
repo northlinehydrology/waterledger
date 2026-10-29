@@ -154,12 +154,15 @@ a thin layer on top, not a separate system.
 1. ~~The five objects~~ **Agreed (Oct 29):** Place, Context, Facility, Site, Estimate; Place defined broadly (above);
    Context split into the seven categories above.
 2. **Layers:** national providers with state overrides, provenance on every value, and rules as per-state TOML.
-3. **Validation:** pydantic (typed, validated, JSON Schema for free; one more dependency in `waterledger`) vs. plain
-   dataclasses (no dependency, schema written by hand). Proposal: pydantic in `waterledger` only; the models stay numpy.
+3. **Validation:** pydantic in `waterledger` only. It validates inputs with clear errors, reads and writes JSON, and
+   generates the site format's JSON Schema from the code. The models stay numpy-only for coupling frameworks and HPC,
+   where a small install matters and validation belongs at the front door, not inside the physics.
 4. **Versions:** decouple package semver from `MODEL_VERSION`; ship the new API as 2.0.0.
 5. **National weather source:** NOAA ISD stations (observed, free, every state) for the national tier; Michigan keeps
    ERA5 until a model change is reviewed.
-6. **Places nationally:** incorporated places in every state; townships (county subdivisions) only where they are
-   governments (the 20 MCD states).
+6. **Places nationally:** cities, towns and villages (incorporated places) in every state; townships and towns (county
+   subdivisions) in the roughly 20 states where they are local governments; and every county, standing for the
+   unincorporated land it governs (Connecticut's planning regions and Rhode Island's counties, which have no county
+   government, are geographic units only). Every point in the country then falls inside a place that decides.
 7. **BMI:** every Facility type ships a BMI 2.0 component; `site.to_bmi_config()`; `bmi-tester` in CI; the NextGen
    water-users component is BMI too.
