@@ -13,6 +13,10 @@ def main(argv=None):
     bs = sub.add_parser("build-state", help="build a state's national-tier data from the public sources (resumes where it left off)")
     bs.add_argument("state")
     bs.add_argument("--out", default=None, help="write a build report here")
+    bs.add_argument("--no-checks", action="store_true", help="skip the statewide checks (run them on the snapshot instead)")
+    ck = sub.add_parser("check-snapshot", help="run the statewide checks on a written snapshot and record them in its manifest")
+    ck.add_argument("state")
+    ck.add_argument("--dir", required=True, help="the snapshot root (the --out given to snapshot)")
     sn = sub.add_parser("snapshot", help="write a state's snapshot files from its built data (run build-state first)")
     sn.add_argument("state")
     sn.add_argument("--out", required=True)
@@ -24,7 +28,11 @@ def main(argv=None):
         return
     if a.cmd == "build-state":
         from waterledger.national.build import build
-        build(a.state, a.out)
+        build(a.state, a.out, run_checks=not a.no_checks)
+        return
+    if a.cmd == "check-snapshot":
+        from waterledger.national.build import check_snapshot
+        check_snapshot(a.state, a.dir)
         return
     m = builder(a.state)
     parts = {"estimates": m.main, "waters": m.build_waters, "power": m.build_power}

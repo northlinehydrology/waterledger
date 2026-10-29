@@ -53,7 +53,7 @@ def checks(state, pl, sample=SAMPLE, seed=1):
     return result
 
 
-def build(state, out=None, n=200):
+def build(state, out=None, n=200, run_checks=True):
     """Run every stage for `state` and write a manifest of what was built (counts, timings, sources' dates) to `out`."""
     from waterledger.national import climate as nc
     from waterledger.national.data import LiveData
@@ -82,9 +82,31 @@ def build(state, out=None, n=200):
     stage("receiving", lambda: {"huc12": len(receiving.by_huc12(state)), "places_with_watersheds": len(receiving.watersheds_by_place(state, pl))})
     stage("climate", lambda: {"divisions": len(nc.division_runs(state, n)), "counties_with_storms": len(nc.storms_and_rain(state)[0])})
     stage("energy", lambda: {"places_with_utilities": len(energy.utilities_by_place(state, pl)), "utilities_with_loads": len(energy.loads(state))})
-    stage("checks", lambda: checks(state, pl))
+    if run_checks:
+        stage("checks", lambda: checks(state, pl))
     report["seconds"] = round(time.time() - t_all, 1)
     if out:
         os.makedirs(out, exist_ok=True)
         json.dump(report, open(os.path.join(out, f"{state}_build.json"), "w"), indent=1)
     return report
+
+
+def check_snapshot(state, root):
+    """Run the statewide checks against a written snapshot (root/<ST>/<date>/) instead of the live services, and record the
+    results in its manifest. Much faster than checking live: the downstream paths are already in the snapshot."""
+    import os
+
+    from waterledger.national import data
+    state = state.upper()
+    date = sorted(os.listdir(os.path.join(root, state)))[-1]
+    folder = os.path.join(root, state, date)
+    os.environ["WATERLEDGER_DATA_URL"] = "file://" + os.path.abspath(root)
+    os.environ["WATERLEDGER_DATA_DATE"] = date
+    data.state_data.cache_clear()
+    sd = data.state_data(state)
+    result = checks(state, sd.places())
+    m = json.load(open(os.path.join(folder, "manifest.json")))
+    m["checks"] = result
+    json.dump(m, open(os.path.join(folder, "manifest.json"), "w"), separators=(",", ":"))
+    print(f"{state} snapshot {date} checks: {result}")
+    return result
