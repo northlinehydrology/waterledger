@@ -5,10 +5,11 @@
     runoff               runoff, sediment, nutrients, salt and fuel from a developed site
     weather              hourly ERA5 weather from Open-Meteo, as xarray, for the ensembles and BMI components
 
-MODEL_VERSION is Water Ledger's model version; every published estimate names the version that produced it.
+MODEL_VERSION is Water Ledger's model version (the numbers); __version__ is the package version (the code, semver).
+They change independently. Every published estimate names the model version that produced it.
 """
 from waterledger_models import datacenter, runoff, weather
 
 __all__ = ["datacenter", "runoff", "weather", "MODEL_VERSION"]
 MODEL_VERSION = "1.2"
-__version__ = "1.2.1"
+__version__ = "2.0.0"

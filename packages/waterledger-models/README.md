@@ -19,4 +19,5 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
 - `runoff`: runoff, sediment, nutrients, road salt and fuel from a developed site.
 - `weather`: hourly ERA5 weather from the Open-Meteo archive.
 
-`MODEL_VERSION` is Water Ledger's model version (1.2); the package version starts with it.
+`MODEL_VERSION` is Water Ledger's model version (1.2), which changes when the numbers do; the package version (semver)
+changes with the code. They are independent.

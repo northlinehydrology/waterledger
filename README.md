@@ -56,8 +56,7 @@ ctx.climate.design_storms_in     # NOAA Atlas 14 design storms
 ctx.energy.utilities             # electric utilities and their loads
 ```
 
-These objects are on `main` and ship in waterledger 2.0 (until then, `pip install waterledger` gives 0.1.x, whose
-entry points are the models below and `waterledger.scenario`). They are validated, round-trip through JSON, and are described in
+They are validated, round-trip through JSON, and are described in
 [docs/design/0001-schema-and-api.md](docs/design/0001-schema-and-api.md). Michigan is available now, from the same data
 as [waterledger.org/mi](https://waterledger.org/mi/); without a local copy, the published data files are downloaded once
 and cached. Other states are coming through the national tier.
@@ -90,9 +89,12 @@ More in [examples/](examples/): a BMI coupling loop, eight Michigan locations in
 
 ## Model version
 
-The model is versioned on its own: `waterledger_models.MODEL_VERSION` (now 1.2), and the `waterledger-models` package
-version starts with it (1.2.x). A change to the numbers is a new model version; the golden test fails until it is made
-deliberately. Every published estimate names the model version that produced it.
+Three version numbers, each with one meaning:
+
+- **Package versions** (semver) change with the code: a major version for breaking changes.
+- **`waterledger_models.MODEL_VERSION`** (now 1.2) changes when the numbers change; the golden test fails until that is
+  done deliberately. Every published estimate names the model version that produced it.
+- **The site format version** changes when the published data files' structure does.
 
 ## Development
 

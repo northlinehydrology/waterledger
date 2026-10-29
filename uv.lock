@@ -2096,7 +2096,7 @@ wheels = [
 
 [[package]]
 name = "waterledger"
-version = "0.1.1"
+version = "2.0.0"
 source = { editable = "packages/waterledger" }
 dependencies = [
     { name = "openpyxl" },
@@ -2117,7 +2117,7 @@ requires-dist = [
 
 [[package]]
 name = "waterledger-data"
-version = "0.1.0"
+version = "2.0.0"
 source = { editable = "packages/waterledger-data" }
 dependencies = [
     { name = "matplotlib" },
@@ -2137,7 +2137,7 @@ requires-dist = [
 
 [[package]]
 name = "waterledger-models"
-version = "1.2.1"
+version = "2.0.0"
 source = { editable = "packages/waterledger-models" }
 dependencies = [
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
