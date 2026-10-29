@@ -9,6 +9,8 @@ represent each, county rainfall normals and NOAA Atlas 14 design storms. Cached 
 """
 import json, math, os, urllib.request
 
+from tqdm.auto import tqdm
+
 from waterledger_data import climate
 from waterledger_data.config import CACHE
 
@@ -59,7 +61,7 @@ def division_stations(state_fips, counties):
                 divs.setdefault(d, []).append(c)
         stations = climate.isd_stations(FIRST, LAST)
         out = {}
-        for d, cs in sorted(divs.items()):
+        for d, cs in tqdm(sorted(divs.items()), desc=f"{state_fips} stations", unit="division", disable=None):
             lat = sum(c["lat"] for c in cs) / len(cs)
             lon = sum(c["lon"] for c in cs) / len(cs)
             near = sorted((_km(lat, lon, s["lat"], s["lon"]), s) for s in stations)
@@ -79,7 +81,7 @@ def rain_in(state, counties):
     """{county FIPS: mean annual precipitation 1991-2020, inches}."""
     def fetch():
         out = {}
-        for c in counties:
+        for c in tqdm(counties, desc=f"{state} rainfall", unit="county", disable=None):
             url = CAG.format(st=state, county=c["geoid"][2:])
             try:
                 d = json.load(urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "waterledger"}), timeout=120))
@@ -94,7 +96,7 @@ def rain_in(state, counties):
 def design_storms(counties):
     """{county FIPS: {"2", "10", "100": 24-hour depth, inches}} from NOAA Atlas 14 at each county's internal point."""
     out = {}
-    for c in counties:
+    for c in tqdm(counties, desc="design storms", unit="county", disable=None):
         try:
             pf, meta = climate.atlas14_depths(c["lat"], c["lon"], f"county_{c['geoid']}")
         except Exception:

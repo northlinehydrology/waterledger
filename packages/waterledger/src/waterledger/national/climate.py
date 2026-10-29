@@ -22,8 +22,9 @@ def division_runs(state, n=200):
     if os.path.exists(path):
         return json.load(open(path))
     fips = next(f for f, s in states.FIPS.items() if s == state)
+    from tqdm.auto import tqdm
     out = {}
-    for d, s in divisions.division_stations(fips, counties(state)).items():
+    for d, s in tqdm(divisions.division_stations(fips, counties(state)).items(), desc=f"{state} cooling runs", unit="division", disable=None):
         t, T, RH, _ = climate.isd_hourly(s, divisions.FIRST, divisions.LAST)
         out[d] = {"name": f"{state} climate division {int(d[2:])}", "station": s["name"], "station_id": s["id"],
                   "lat": s["lat"], "lon": s["lon"], "share_observed": s["share_observed"], "per_100mw": cw.run_location(t, T, RH, n=n, mw=100.0)}

@@ -34,7 +34,8 @@ def _downstream(state, starts):
     reaches = {h: {"n": v["n"], "i": v.get("i", [])} for h, v in H.items()}
     exits = {}
     paths = {}
-    for s in starts:
+    from tqdm.auto import tqdm
+    for s in tqdm(starts, desc=f"{state} downstream paths", unit="watershed", disable=None):
         path, h = [], s
         while h and len(path) < DOWNSTREAM_HUCS:
             if h in H:
