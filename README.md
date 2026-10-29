@@ -141,4 +141,12 @@ asked) publishes a state's snapshot.
 Paths (download cache, site output) come from `WATERLEDGER_CACHE` / `WATERLEDGER_SITE` or a `waterledger.toml` (see
 `waterledger_data.config`).
 
+## Contributing and project standards
+
+Corrections, bug reports and proposals are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md). Contributions follow EPA's
+guidance on environmental models and the federal Information Quality Act guidelines, and the
+[data problem](https://github.com/northlinehydrology/waterledger/issues/new?template=data-problem.yml) form is the
+project's request-for-correction process. Also: [governance](GOVERNANCE.md), [code of conduct](CODE_OF_CONDUCT.md),
+[security policy](SECURITY.md) and [how to cite](CITATION.cff).
+
 BSD 3-Clause. Copyright Northline Hydrology.
