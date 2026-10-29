@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use Water Ledger in your work, please cite it as below."
+title: "Water Ledger: open tools for estimating the water use of large new water users and the public water data around any U.S. place"
+type: software
+authors:
+  - family-names: Sommerlot
+    given-names: Andrew
+    affiliation: Northline Hydrology
+version: 3.0.0
+date-released: 2026-10-29
+license: BSD-3-Clause
+repository-code: "https://github.com/northlinehydrology/waterledger"
+url: "https://waterledger.org"
+keywords:
+  - hydrology
+  - water use
+  - data centers
+  - cooling water
+  - water quality
+  - BMI
