@@ -217,6 +217,7 @@ def fetch_snapshot(state, date=None, url=None):
             data = _get(f"{url}/{state}/{date}/{name}", timeout=300)
             if hashlib.sha256(data).hexdigest() != f["sha256"]:
                 raise DataUnavailable(f"{state} snapshot {date}: {name} does not match its manifest checksum")
+            os.makedirs(os.path.dirname(path), exist_ok=True)       # Michigan's site files sit in michigan/
             open(path, "wb").write(data)
     return folder
 
