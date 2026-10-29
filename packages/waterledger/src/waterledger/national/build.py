@@ -1,0 +1,46 @@
+"""Build one state's national-tier data from the public sources, stage by stage, with timings: the work a snapshot job
+does (design 0003). Each stage caches what it fetches or computes, so a stopped build resumes where it left off.
+
+    waterledger build-state OH [--out DIR]
+"""
+import json, os, time
+
+from waterledger import states
+
+STAGES = ["places", "supply", "wastewater", "receiving", "climate", "energy"]
+
+
+def build(state, out=None, n=200):
+    """Run every stage for `state` and write a manifest of what was built (counts, timings, sources' dates) to `out`."""
+    from waterledger.national import climate as nc
+    from waterledger.national.provider import _places
+    from waterledger_data import energy, receiving, supply, wastewater
+    from waterledger_models import MODEL_VERSION
+    state = state.upper()
+    fips = next(f for f, s in states.FIPS.items() if s == state)
+    report, t_all = {"state": state, "fips": fips, "model_version": MODEL_VERSION, "stages": {}}, time.time()
+
+    def stage(name, fn):
+        t = time.time()
+        print(f"{state} {name} ...", flush=True)
+        result = fn()
+        report["stages"][name] = {"seconds": round(time.time() - t, 1), **result}
+        print(f"{state} {name} done in {report['stages'][name]['seconds']} s: {result}", flush=True)
+
+    pl = None
+
+    def places():
+        nonlocal pl
+        pl = _places(state)
+        return {"places": int(len(pl)), "by_level": {k: int(v) for k, v in pl.level.value_counts().items()}}
+    stage("places", places)
+    stage("supply", lambda: {"systems": int(len(supply.water_systems(state))), "places_served": len(supply.systems_by_place(state, pl))})
+    stage("wastewater", lambda: {"plants": len(wastewater.plants(state))})
+    stage("receiving", lambda: {"huc12": len(receiving.by_huc12(state)), "places_with_watersheds": len(receiving.watersheds_by_place(state, pl))})
+    stage("climate", lambda: {"divisions": len(nc.division_runs(state, n)), "counties_with_storms": len(nc.storms_and_rain(state)[0])})
+    stage("energy", lambda: {"places_with_utilities": len(energy.utilities_by_place(state, pl)), "utilities_with_loads": len(energy.loads(state))})
+    report["seconds"] = round(time.time() - t_all, 1)
+    if out:
+        os.makedirs(out, exist_ok=True)
+        json.dump(report, open(os.path.join(out, f"{state}_build.json"), "w"), indent=1)
+    return report
