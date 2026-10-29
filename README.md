@@ -14,7 +14,8 @@ sewer plants, weather and design storms.
 - **Vectorized ensembles** as xarray Datasets, with dask across many locations.
 - **CSDMS Basic Model Interface (BMI 2.0) components**, so coupling frameworks such as NOAA's NextGen can drive the
   models step by step.
-- **Public data for any place**, fetched once and cached: Census, EPA, USGS, NOAA and EIA.
+- **Public data for any U.S. place**, fetched once and cached: Census, EPA, USGS, NOAA and EIA, with each place's
+  downstream path traced across state lines. Michigan, Ohio, Virginia and Texas are published as checked snapshots.
 - **Reproducible**: tests reproduce the published Water Ledger estimates exactly, and the data sources are checked nightly.
 
 [waterledger.org](https://waterledger.org) is powered by these packages.
@@ -57,9 +58,33 @@ ctx.energy.utilities             # electric utilities and their loads
 ```
 
 They are validated, round-trip through JSON, and are described in
-[docs/design/0001-schema-and-api.md](docs/design/0001-schema-and-api.md). Michigan is available now, from the same data
-as [waterledger.org/mi](https://waterledger.org/mi/); without a local copy, the published data files are downloaded once
-and cached. Other states are coming through the national tier.
+[docs/design/0001-schema-and-api.md](docs/design/0001-schema-and-api.md).
+
+### States
+
+| State | Places | Weather | Methods |
+|---|---|---|---|
+| Michigan | 1,541 cities and townships | ERA5 at eight regions | [waterledger.org/methods/mi](https://waterledger.org/methods/mi/), [brief](docs/methods/mi.pdf) |
+| Ohio | 2,318 cities, villages, townships and counties | NOAA stations, 10 climate divisions | [waterledger.org/methods/oh](https://waterledger.org/methods/oh/), [brief](docs/methods/oh.pdf) |
+| Virginia | 322 cities, towns and counties | NOAA stations, 6 climate divisions | [waterledger.org/methods/va](https://waterledger.org/methods/va/), [brief](docs/methods/va.pdf) |
+| Texas | 1,481 cities, towns and counties | NOAA stations, 10 climate divisions | [waterledger.org/methods/tx](https://waterledger.org/methods/tx/), [brief](docs/methods/tx.pdf) |
+
+Michigan has its own layers (state-reported water use, domestic wells, trout streams, lake-source cooling, state rules)
+and matches [waterledger.org/mi](https://waterledger.org/mi/) exactly. The other states use national datasets only
+([design 0002](docs/design/0002-national-tier.md)); any other state can be built locally with `waterledger build-state ST`.
+
+### Data
+
+Each state's data is a dated snapshot at [data.waterledger.org](https://data.waterledger.org), checked against its
+manifest and cached on first use ([design 0003](docs/design/0003-data-releases.md)). Offline, the newest cached snapshot is
+used. If no snapshot can be had, the package can build the state from the public sources instead (15 to 30 minutes the
+first time, resumable):
+
+| Setting | Values |
+|---|---|
+| `WATERLEDGER_FALLBACK` | `ask` (default at a terminal), `build`, `fail` (default in scripts) |
+| `WATERLEDGER_DATA` | `snapshot` (default) or `live` (skip snapshots, build from the sources) |
+| `WATERLEDGER_DATA_DATE` | pin a snapshot date to reproduce an old result |
 
 ### The models directly
 
@@ -94,7 +119,8 @@ Three version numbers, each with one meaning:
 - **Package versions** (semver) change with the code: a major version for breaking changes.
 - **`waterledger_models.MODEL_VERSION`** (now 1.2) changes when the numbers change; the golden test fails until that is
   done deliberately. Every published estimate names the model version that produced it.
-- **The site format version** changes when the published data files' structure does.
+- **The snapshot format version** (now 1, in each snapshot's manifest) changes when the structure of a state's data
+  files does.
 
 ## Development
 
@@ -103,11 +129,14 @@ uv sync                  # one environment with all three packages, editable
 uv run pytest            # unit tests, the golden model test and the ensemble-to-loop checks
 uv run pytest -m live    # every public data source still answers
 WATERLEDGER_FETCH=1 uv run pytest tests/test_reproduction.py    # reproduce the published estimates (downloads weather)
+uv run waterledger build-state OH       # build a state from the public sources (cached by stage, resumable)
+uv run waterledger snapshot OH --out snapshots && uv run waterledger check-snapshot OH --dir snapshots
 ```
 
 Checks: `tests` runs on every push (lint, tests on Python 3.11 to 3.13); `nightly` builds the packages, tests the built
 wheels in a clean environment, checks the data sources and reproduces the published estimates, and opens an issue if
-anything fails; `publish` releases to PyPI from a `v*` tag by trusted publishing.
+anything fails; `publish` releases to PyPI from a `v*` tag by trusted publishing; `build-state` builds, checks and (when
+asked) publishes a state's snapshot.
 
 Paths (download cache, site output) come from `WATERLEDGER_CACHE` / `WATERLEDGER_SITE` or a `waterledger.toml` (see
 `waterledger_data.config`).
