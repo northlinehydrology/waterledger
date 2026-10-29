@@ -97,15 +97,16 @@ class Energy(_Category):
 
 
 class Context(BaseModel):
-    """All categories for one place (land is planned)."""
+    """All categories for one place (land is planned). A category is None where the national tier doesn't have it yet for
+    that state (climate and energy arrive in design 0002 steps 4 and 5)."""
     model_config = ConfigDict(frozen=True)
     place: "Place"
     jurisdiction: Jurisdiction
     supply: Supply
     wastewater: Wastewater
     receiving: Receiving
-    climate: Climate
-    energy: Energy
+    climate: Climate | None = None
+    energy: Energy | None = None
 
 
 from waterledger.place import Place  # noqa: E402

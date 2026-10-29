@@ -4,8 +4,7 @@ import functools
 
 from waterledger import states
 
-STEPS = {"context": "steps 3 to 5 (supply, wastewater, receiving waters, climate, energy)",
-         "estimate": "steps 4 and 6 (climate and the generic estimate)"}
+STEPS = {"estimate": "steps 4 and 6 (climate and the generic estimate)"}
 
 
 class NotYet(NotImplementedError):
@@ -52,8 +51,50 @@ def place(state, geoid):
                  lat=round(float(r.lat), 4), lon=round(float(r.lon), 4))
 
 
+SYS_POP = 3300          # a "sizable" public water system serves more than this many people (as waterledger.scenario)
+PLANTS_KM, PLANTS_MAX, DOWNSTREAM_HOPS = 40, 10, 25       # the downstream path lists up to 25 HUC12s, as Michigan's does
+
+
 def context(state, place):
-    _not_yet("context", state)
+    """The national context for a place: jurisdiction, supply (EPA water systems), wastewater (CWNS and ECHO sewer plants),
+    receiving waters (USGS watersheds; the downstream path with EPA ATTAINS impairments, across state lines). Climate and
+    energy come in design 0002 steps 4 and 5."""
+    import geopandas as gpd
+
+    from waterledger import context as cx
+    from waterledger_data import receiving as rc
+    from waterledger_data import supply as sp
+    from waterledger_data import wastewater as ww
+    from waterledger_data.waters import LABELS
+    pl = _places(state)
+    r = pl[pl.geoid == place.geoid].iloc[0]
+    sys_ = lambda w: cx.WaterSystem(pwsid=w["pwsid"], name=w["name"].title(), population=w.get("population"),
+                                    connections=w.get("connections"), share_of_place=w.get("share"))
+    mine = sp.systems_by_place(state, pl).get(place.geoid, [])
+    near, near_km = None, None
+    if not mine:                                    # the nearest sizable system, edge to edge
+        sy = sp.water_systems(state)
+        sy = sy[sy.population > SYS_POP].to_crs(sp.ALBERS)
+        pt = gpd.GeoSeries(gpd.points_from_xy([place.lon], [place.lat]), crs=4326).to_crs(sp.ALBERS).iloc[0]
+        if len(sy):
+            d = sy.distance(pt)
+            i = d.idxmin()
+            near = sys_({"pwsid": sy.pwsid[i], "name": sy.name[i], "population": int(sy.population[i]), "connections": int(sy.connections[i] or 0)})
+            near_km = round(float(d[i]) / 1000, 1)
+    supply = cx.Supply(provider="national", sources=["epa_sa"], systems=[sys_(w) for w in mine], nearest_system=near, nearest_system_km=near_km)
+    plants = [cx.SewerPlant(npdes=q["id"], name=q["name"], design_mgd=q["design_mgd"], flow_mgd=q["flow_mgd"], km=round(q["km"], 1),
+                            receiving_water=q["receiving"] or None, combined_sewer=q["cso"], lagoon=q["lagoon"])
+              for q in ww.nearest(ww.plants(state), place.lat, place.lon, r.base, km=PLANTS_KM)[:PLANTS_MAX]]
+    sheds = rc.watersheds_by_place(state, pl).get(place.geoid, {"h12": [], "h8": None})
+    path = rc.downstream(sheds["h12"][0]["code"], hops=DOWNSTREAM_HOPS - 1) if sheds["h12"] else []   # the start and 24 more
+    receiving = cx.Receiving(provider="national", sources=["usgs_wbd", "attains"],
+                             watersheds=[cx.Watershed(huc12=w["code"], name=w["name"], share_of_place=w["share"]) for w in sheds["h12"]],
+                             basin=cx.Watershed(huc12=sheds["h8"]["code"], name=sheds["h8"]["name"]) if sheds["h8"] else None,
+                             downstream=[cx.Reach(huc12=p["code"], name=p["name"], impairments=[LABELS[g] for g, _, _ in p["listings"]],
+                                                  tmdl=[LABELS[g] for g, t, _ in p["listings"] if t]) for p in path])
+    jur = cx.Jurisdiction(provider="national", sources=["census_tiger"], name=place.name, kind=place.kind, county=place.county, state=state)
+    return cx.Context(place=place, jurisdiction=jur, supply=supply,
+                      wastewater=cx.Wastewater(provider="national", sources=["cwns2022", "echo"], plants=plants), receiving=receiving)
 
 
 def estimate(state, site):
