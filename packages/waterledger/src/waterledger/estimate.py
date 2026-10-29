@@ -1,5 +1,10 @@
 """Estimates: what the model says a site would take, use up and send back, as ranges (p10, p50, p90 of the Monte Carlo)."""
+from typing import TYPE_CHECKING
+
 from pydantic import BaseModel, ConfigDict
+
+if TYPE_CHECKING:
+    from waterledger.site import Site
 
 
 class Range(BaseModel):
@@ -33,3 +38,13 @@ class WaterUse(BaseModel):
     to_sewer: Range
     lake_source: bool = False
     reuse: bool = False
+
+
+class Estimate(BaseModel):
+    """What the model says about a site: its water use, with every choice resolved (defaults filled in), the model version
+    that produced it and the date of the data behind it."""
+    model_config = ConfigDict(frozen=True)
+    site: "Site"
+    water: WaterUse
+    model_version: str
+    data_date: str
