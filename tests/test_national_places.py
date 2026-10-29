@@ -31,3 +31,13 @@ def test_counts_and_independent_cities_once():
     assert (va.level == "county").sum() == 95 and (va.name == "Richmond city").sum() == 1
     oh = census.places("39")
     assert (oh.level == "township").sum() > 1300 and oh.county.notna().all()
+
+
+@pytest.mark.parametrize("lat, lon, name", [
+    (39.997, -82.998, "Columbus"),               # downtown Columbus
+    (39.0438, -77.4874, "Loudoun County"),       # Ashburn data center alley: unincorporated Loudoun County
+    (30.2672, -97.7431, "Austin"),
+    (41.0947, -80.7608, "Austintown Township"),  # outside any village: the township governs
+])
+def test_place_at_a_point(lat, lon, name):
+    assert wl.place(lat=lat, lon=lon).name == name

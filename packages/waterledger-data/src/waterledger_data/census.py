@@ -86,3 +86,25 @@ def places(state_fips):
     g.loc[is_county, "county_fips"] = g.loc[is_county, "geoid"]
     g = g[~(is_county & (g.kind.str.lower() == "city"))]          # independent cities: already listed as places
     return g.sort_values(["name", "county"]).reset_index(drop=True)
+
+
+def state_at(lat, lon):
+    """The state FIPS code at a point (Census counties layer), or None offshore or outside the U.S."""
+    d = _get(LAYERS["county"], {"geometry": f"{lon},{lat}", "geometryType": "esriGeometryPoint", "inSR": 4326,
+                                "spatialRel": "esriSpatialRelIntersects", "outFields": "STATE", "returnGeometry": "false", "f": "json"})
+    f = d.get("features", [])
+    return f[0]["attributes"]["STATE"] if f else None
+
+
+def place_at(lat, lon, state_fips=None):
+    """The GEOID of the most local government at a point: a city, town or village if the point is in one, else a township
+    where townships govern, else the county."""
+    state_fips = state_fips or state_at(lat, lon)
+    if state_fips is None:
+        return None
+    g = places(state_fips)
+    hit = g[g.contains(shapely.Point(lon, lat))]
+    if not len(hit):
+        return None
+    rank = {"place": 0, "township": 1, "county": 2}
+    return hit.assign(r=hit.level.map(rank)).sort_values("r").iloc[0].geoid

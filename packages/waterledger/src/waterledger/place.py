@@ -24,9 +24,21 @@ class Place(BaseModel):
         return states.provider(self.state).context(self)
 
 
-def place(query=None, *, geoid=None, state=None, county=None):
-    """Find a place: wl.place("Gaines charter township, MI"), wl.place("gaines", state="MI", county="Kent") or
-    wl.place(geoid="2608131240")."""
+def place(query=None, *, geoid=None, state=None, county=None, lat=None, lon=None):
+    """Find a place: wl.place("Gaines charter township, MI"), wl.place("gaines", state="MI", county="Kent"),
+    wl.place(geoid="2608131240"), or the government at a point: wl.place(lat=39.04, lon=-77.49)."""
+    if lat is not None and lon is not None:
+        from waterledger_data import census
+        fips = census.state_at(lat, lon)
+        if fips is None:
+            raise KeyError(f"no U.S. state at {lat}, {lon}")
+        st = states.state_for_fips(fips)
+        if st.lower() in states.STATES and hasattr(states.provider(st).own, "place_at"):
+            geoid = states.provider(st).place_at(lat, lon)
+        else:
+            geoid = census.place_at(lat, lon, fips)
+        if geoid is None:
+            raise KeyError(f"no place found at {lat}, {lon}")
     if geoid is None and query and re.fullmatch(r"\d{5,10}", str(query)):
         geoid = str(query)
     if geoid is not None:
