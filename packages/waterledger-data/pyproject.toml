@@ -4,9 +4,19 @@ version = "0.1.0"
 description = "Public U.S. water data for any place, fetched once and cached: Census places, EPA water systems and sewer plants, USGS watersheds, EPA ATTAINS, NOAA weather and design storms, EIA utilities"
 readme = "README.md"
 license = "BSD-3-Clause"
-authors = [{ name = "Andrew Sommerlot" }]
+authors = [{ name = "Northline Hydrology", email = "info@northlinehydrology.com" }]
 requires-python = ">=3.11"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Hydrology",
+]
 dependencies = ["numpy>=1.24", "pandas>=2.0", "matplotlib>=3.7", "openpyxl>=3.1"]
+
+[project.urls]
+Homepage = "https://waterledger.org"
+Source = "https://github.com/northlinehydrology/waterledger"
+Issues = "https://github.com/northlinehydrology/waterledger/issues"
 
 [build-system]
 requires = ["hatchling"]

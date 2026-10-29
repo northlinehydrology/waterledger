@@ -20,5 +20,14 @@ waterledger-data = { workspace = true }
 [dependency-groups]
 dev = ["pytest>=7"]
 
+[tool.ruff]
+line-length = 150
+
+[tool.ruff.lint]
+select = ["F", "E9"]      # real errors (pyflakes) and syntax; the code keeps its dense one-line style
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["tests"]
+markers = ["live: reaches the public data sources over the network (nightly)"]
+addopts = "-m 'not live'"

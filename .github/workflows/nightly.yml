@@ -1,0 +1,55 @@
+name: nightly
+# Each night: build the three packages, install them from the built wheels in a clean environment and run the tests against
+# those (what PyPI users would get), and check that every public data source still answers. A failure opens an issue.
+on:
+  schedule:
+    - cron: "17 8 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  packages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv build --all-packages -o dist
+      - run: uvx twine check dist/*
+      - name: Test the built wheels in a clean environment
+        run: |
+          uv venv /tmp/wheels --python 3.12
+          uv pip install --python /tmp/wheels/bin/python dist/*.whl pytest
+          /tmp/wheels/bin/python -c "import waterledger as wl; print('waterledger', wl.__version__, 'model', wl.models.MODEL_VERSION)"
+          /tmp/wheels/bin/python -m pytest -p no:cacheprovider tests
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+  sources:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run pytest -m live -v
+  report:
+    needs: [packages, sources]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open an issue (once) when the nightly build fails
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [ -z "$(gh issue list --label nightly --state open --json number --jq '.[].number')" ]; then
+            gh label create nightly --color B60205 --force
+            gh issue create --label nightly --title "Nightly build failed" \
+              --body "The nightly build or a data source check failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          fi

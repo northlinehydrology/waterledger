@@ -1,5 +1,5 @@
 """Smoke tests for the three packages: they import as one, the model runs on synthetic weather, paths resolve."""
-import importlib, os, subprocess, sys
+import os, subprocess, sys
 
 import numpy as np
 

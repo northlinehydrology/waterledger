@@ -4,12 +4,22 @@ version = "0.1.0"
 description = "Water Ledger: public estimates of what large new water users mean for local water and streams, state by state (import waterledger as wl)"
 readme = "README.md"
 license = "BSD-3-Clause"
-authors = [{ name = "Andrew Sommerlot" }]
+authors = [{ name = "Northline Hydrology", email = "info@northlinehydrology.com" }]
 requires-python = ">=3.11"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Hydrology",
+]
 dependencies = ["waterledger-models>=1.2,<1.3", "waterledger-data>=0.1", "pandas>=2.0", "openpyxl>=3.1"]
 
 [project.scripts]
 waterledger = "waterledger.cli:main"
+
+[project.urls]
+Homepage = "https://waterledger.org"
+Source = "https://github.com/northlinehydrology/waterledger"
+Issues = "https://github.com/northlinehydrology/waterledger/issues"
 
 [build-system]
 requires = ["hatchling"]

@@ -6,7 +6,6 @@ the heat-balance method used by USGS for once-through power plants (Diehl et al.
 the share of added heat that leaves as evaporation is dE / (dE + dC + dR), where evaporation and conduction share the same
 wind function and radiation does not. Natural surface temperatures are NOAA GLERL daily long-term averages for each lake.
 """
-import math
 
 import numpy as np
 
