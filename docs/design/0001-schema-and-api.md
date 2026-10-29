@@ -104,6 +104,17 @@ A context is a stack of layers. Each layer has one schema and one or more provid
 - **Rules are data, not code:** one TOML file per state (thresholds, citations), so adding a state's rules is reviewable
   text.
 
+### A clean path for each state
+
+- **Each state is its own folder**, `waterledger/states/<st>/`, holding three kinds of file:
+  - providers that override national layers;
+  - state-only layers;
+  - `rules.toml` with citations.
+- **New states start from a template:** `waterledger new-state <st>` creates the folder with the national tier already
+  working. State work is then additive and never touches the national code or other states.
+- **Each state has its own tests and its own data date**, so one state's broken source doesn't block another's release.
+- **Written guidance:** `docs/adding-a-state.md` describes the steps.
+
 ## Facility types
 
 `Facility` is a small protocol: inputs, `water_use(climate) -> WaterUse`, `electricity()`, and `land()`. `DataCenter`
@@ -153,16 +164,17 @@ a thin layer on top, not a separate system.
 
 1. ~~The five objects~~ **Agreed (Oct 29):** Place, Context, Facility, Site, Estimate; Place defined broadly (above);
    Context split into the seven categories above.
-2. **Layers:** national providers with state overrides, provenance on every value, and rules as per-state TOML.
-3. **Validation:** pydantic in `waterledger` only. It validates inputs with clear errors, reads and writes JSON, and
+2. **Agreed (Oct 29):** national providers with state overrides, provenance on every value, rules as per-state TOML, and
+   a clean path for state work (one folder per state, a template, per-state tests and data dates).
+3. **Agreed (Oct 29):** pydantic in `waterledger` only. It validates inputs with clear errors, reads and writes JSON, and
    generates the site format's JSON Schema from the code. The models stay numpy-only for coupling frameworks and HPC,
    where a small install matters and validation belongs at the front door, not inside the physics.
-4. **Versions:** decouple package semver from `MODEL_VERSION`; ship the new API as 2.0.0.
-5. **National weather source:** NOAA ISD stations (observed, free, every state) for the national tier; Michigan keeps
+4. **Agreed (Oct 29):** decouple package semver from `MODEL_VERSION`; ship the new API as 2.0.0.
+5. **Pending confirmation. National weather source** (decision 2 applied to climate, but it changes numbers): NOAA ISD stations (observed, free, every state) for the national tier; Michigan keeps
    ERA5 until a model change is reviewed.
-6. **Places nationally:** cities, towns and villages (incorporated places) in every state; townships and towns (county
+6. **Agreed (Oct 29). Places nationally:** cities, towns and villages (incorporated places) in every state; townships and towns (county
    subdivisions) in the roughly 20 states where they are local governments; and every county, standing for the
    unincorporated land it governs (Connecticut's planning regions and Rhode Island's counties, which have no county
    government, are geographic units only). Every point in the country then falls inside a place that decides.
-7. **BMI:** every Facility type ships a BMI 2.0 component; `site.to_bmi_config()`; `bmi-tester` in CI; the NextGen
+7. **Agreed (Oct 29). BMI:** every Facility type ships a BMI 2.0 component; `site.to_bmi_config()`; `bmi-tester` in CI; the NextGen
    water-users component is BMI too.
