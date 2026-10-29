@@ -11,4 +11,4 @@ from waterledger_models import datacenter, runoff, weather
 
 __all__ = ["datacenter", "runoff", "weather", "MODEL_VERSION"]
 MODEL_VERSION = "1.2"
-__version__ = "1.2.0"
+__version__ = "1.2.1"
