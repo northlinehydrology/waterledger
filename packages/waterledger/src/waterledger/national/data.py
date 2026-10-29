@@ -204,8 +204,11 @@ def fetch_snapshot(state, date=None, url=None):
     folder = os.path.join(CACHE, "snapshots", state, date)
     os.makedirs(folder, exist_ok=True)
     mpath = os.path.join(folder, "manifest.json")
-    if not os.path.exists(mpath):
+    try:                                    # always the published manifest (small), so a same-date republish is picked up
         open(mpath, "wb").write(_get(f"{url}/{state}/{date}/manifest.json"))
+    except Exception:
+        if not os.path.exists(mpath):
+            raise
     manifest = json.load(open(mpath))
     for name, f in manifest["files"].items():
         path = os.path.join(folder, name)
