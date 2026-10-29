@@ -4,7 +4,7 @@ import functools
 
 from waterledger import states
 
-STEPS = {"estimate": "steps 4 and 6 (climate and the generic estimate)"}
+STEPS = {}
 
 
 class NotYet(NotImplementedError):
@@ -94,8 +94,67 @@ def context(state, place):
                                                   tmdl=[LABELS[g] for g, t, _ in p["listings"] if t]) for p in path])
     jur = cx.Jurisdiction(provider="national", sources=["census_tiger"], name=place.name, kind=place.kind, county=place.county, state=state)
     return cx.Context(place=place, jurisdiction=jur, supply=supply,
-                      wastewater=cx.Wastewater(provider="national", sources=["cwns2022", "echo"], plants=plants), receiving=receiving)
+                      wastewater=cx.Wastewater(provider="national", sources=["cwns2022", "echo"], plants=plants), receiving=receiving,
+                      climate=_climate(state, place))
+
+
+def _division(state, place):
+    from waterledger.national import climate as nc
+    from waterledger_data import divisions
+    d = divisions.county_divisions().get(place.county_fips)
+    runs = nc.division_runs(state)
+    if d not in runs:                     # a county NOAA leaves out: the nearest division's station
+        d = min(runs, key=lambda k: (runs[k]["lat"] - place.lat) ** 2 + (runs[k]["lon"] - place.lon) ** 2)
+    return d, runs
+
+
+def _climate(state, place):
+    from waterledger import context as cx
+    from waterledger.national import climate as nc
+    d, runs = _division(state, place)
+    storms, rain = nc.storms_and_rain(state)
+    return cx.Climate(provider="national", sources=["noaa_isd", "noaa_cag", "noaa_atlas14"], region=d, region_name=runs[d]["name"],
+                      station=runs[d]["station"], rain_in=rain.get(place.county_fips), design_storms_in=storms.get(place.county_fips, {}))
+
+
+SEWER_KM = 10           # with no water system mapped, a large plant this close is assumed reachable (as waterledger.scenario)
 
 
 def estimate(state, site):
-    _not_yet("estimate", state)
+    """Water use for a site anywhere: the cooling model at the place's climate division station, plus staff water, with the
+    page's rules for the water source and wastewater (waterledger.scenario), on national data."""
+    from waterledger import scenario as sc
+    from waterledger.estimate import Estimate, Flow, Range, WaterUse
+    from waterledger_models import MODEL_VERSION
+    f, place = site.facility, site.place
+    if f.cooling == "lake":
+        raise ValueError("lake-source cooling is modeled for the Great Lakes only (Michigan); choose another design")
+    d, runs = _division(state, place)
+    D = {"regions": runs, "staff": {"runs": _staff_runs()}}
+    ctx = place.context()
+    src = site.source
+    if src is None:
+        reach = ctx.supply.nearest_system_km is not None and ctx.supply.nearest_system_km <= SEWER_KM
+        src = "muni" if ctx.supply.systems or (reach and f.cooling not in ("towers", "hybrid")) else "wells"
+    dest = site.wastewater
+    if dest is None:
+        sew = sc.cooling_estimate(D, d, f.cooling, f.it_mw, "sewer")["sewer"]["mid"]
+        q = ctx.wastewater.plants[0] if ctx.wastewater.plants else None
+        reach = q is not None and (bool(ctx.supply.systems) or q.km <= SEWER_KM)
+        room = (q.design_mgd - q.flow_mgd) if q and q.design_mgd and q.flow_mgd else None
+        evap = f.cooling in ("towers", "hybrid")
+        why = "far" if not reach else "full" if evap and room is not None and sew > room else ""
+        dest = ("water" if evap else "septic") if why else "sewer"
+    E, R = sc.cooling_estimate(D, d, f.cooling, f.it_mw, dest), Range.from_band
+    water = WaterUse(withdrawn=Flow(avg=R(E["wAvg"]), peak_day=R(E["wPeak"])), withdrawn_annual_mg=R(E["wAnn"]),
+                     consumed=Flow(avg=R(E["cAvg"]), peak_day=R(E["cPeak"])), returned=Flow(avg=R(E["rAvg"]), peak_day=R(E["rPeak"])),
+                     to_sewer=R(E["sewer"]), lake_source=False, reuse=E["reuse"])
+    resolved = site.model_copy(update={"source": src, "wastewater": dest})
+    import datetime
+    return Estimate(site=resolved, water=water, model_version=MODEL_VERSION, data_date=datetime.date.today().isoformat())
+
+
+@functools.lru_cache(maxsize=1)
+def _staff_runs(n=200):
+    from waterledger_models.datacenter import cooling as cw
+    return cw.staff_runs(n)

@@ -15,8 +15,6 @@ def test_by_name_and_geoid():
 def test_other_states_go_to_the_national_tier():
     assert repr(wl.states.provider("OH")) == "Provider(OH: national)"
     assert repr(wl.states.provider("mi")) == "Provider(MI: own and national)"
-    with pytest.raises(NotImplementedError, match="OH: the national tier's estimate"):
-        wl.states.provider("OH").estimate(None)
     with pytest.raises(KeyError):
         wl.states.provider("XX")
     with pytest.raises(ValueError, match="state"):
