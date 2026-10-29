@@ -129,6 +129,14 @@ Loudoun County 2.43; Austin 2.66.
   Austin. Michigan uses MPSC territories, which are drawn to actual boundaries, and keeps its shares.
 - Every place in Ohio and Texas, and 315 of 322 in Virginia, has at least one territory.
 
+## Trackers (Oct 29, 2026)
+
+Proposal and moratorium trackers are a waterledger.org feature, not part of the packages. The working files (Michigan's
+moratoria spreadsheet and proposals list, each entry with its sources and verification date) stay private in the
+Northline repo, and the information is public on the site. The packages answer what a facility would mean for water at
+a place; they don't carry tracker data, and Context's jurisdiction category does not list moratoria or proposals. The
+moratoria builder now in `waterledger.states.mi` moves to Northline.
+
 ## Still to decide or build
 
 - USGS county water use as a comparison layer.
