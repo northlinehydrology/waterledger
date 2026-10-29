@@ -1,6 +1,6 @@
 # 0001: Water Ledger schema and API (proposal)
 
-Status: **proposal, for agreement before building the national version.** Oct 29, 2026.
+Status: **agreed, Oct 29, 2026.** The decisions below govern the 2.0 releases.
 
 ## Why
 
@@ -170,7 +170,7 @@ a thin layer on top, not a separate system.
    generates the site format's JSON Schema from the code. The models stay numpy-only for coupling frameworks and HPC,
    where a small install matters and validation belongs at the front door, not inside the physics.
 4. **Agreed (Oct 29):** decouple package semver from `MODEL_VERSION`; ship the new API as 2.0.0.
-5. **Pending confirmation. National weather source** (decision 2 applied to climate, but it changes numbers): NOAA ISD stations (observed, free, every state) for the national tier; Michigan keeps
+5. **Agreed (Oct 29). National weather source** (decision 2 applied to climate, but it changes numbers): NOAA ISD stations (observed, free, every state) for the national tier; Michigan keeps
    ERA5 until a model change is reviewed.
 6. **Agreed (Oct 29). Places nationally:** cities, towns and villages (incorporated places) in every state; townships and towns (county
    subdivisions) in the roughly 20 states where they are local governments; and every county, standing for the
