@@ -82,3 +82,12 @@ def test_eia_861():
 @pytest.mark.parametrize("url", [power.MPSC, waters.TROUT, waters.WELLOGIC], ids=["mpsc_territories", "mdnr_trout", "egle_wellogic"])
 def test_michigan_layers(url):
     assert arcgis_count(url) > 0
+
+
+def test_published_michigan_data(tmp_path, monkeypatch):
+    """Without a local site, waterledger.scenario reads the files waterledger.org publishes."""
+    from waterledger import scenario as sc
+    monkeypatch.setattr(sc, "DATA", str(tmp_path / "none"))
+    monkeypatch.setattr(sc, "CACHE", str(tmp_path / "cache"))
+    monkeypatch.setattr(sc, "_cache", {})
+    assert sc.place(sc.find("gaines charter township"))["c"] == "Kent"

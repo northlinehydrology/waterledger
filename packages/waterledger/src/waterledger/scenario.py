@@ -1,13 +1,15 @@
 """A scenario: a proposal of a given kind at any Michigan place, before anything is filed. Public data only.
 
 Reads Water Ledger's data files (<site>/mi/data/*.json), which waterledger.states.mi writes, so anything built on this
-package and the public page use the same numbers; estimate() mirrors the page's est().
+package and the public page use the same numbers; estimate() mirrors the page's est(). Without a local site, the files
+waterledger.org publishes are downloaded once and cached (PUBLISHED), so the package works on its own.
 """
 import json, math, os
 
-from waterledger_data.config import SITE
+from waterledger_data.config import CACHE, SITE
 
 DATA = os.path.join(SITE, "mi", "data")
+PUBLISHED = "https://waterledger.org/mi/data/{name}.json"     # the same files, as published
 DESIGNS = {"dry": "Closed loop (designed to use no water for cooling)", "hybrid": "Hybrid", "towers": "Cooling towers", "lake": "Lake-source (once-through)"}
 SOURCE_LABEL = {"muni": "a public water system", "wells": "new wells in the aquifer", "lake": "lake surface water"}
 DEST_LABEL = {"sewer": "the public sewer", "septic": "a septic system on site", "water": "a river or lake (its own discharge)", "reuse": "treatment and reuse on site"}
@@ -18,8 +20,18 @@ _cache = {}
 
 
 def data(name):
+    """One of Michigan's data files: the local site's if there is one, else the published file (downloaded once)."""
     if name not in _cache:
-        _cache[name] = json.load(open(os.path.join(DATA, name + ".json")))
+        path = os.path.join(DATA, name + ".json")
+        if not os.path.exists(path):
+            path = os.path.join(CACHE, "published", "mi", name + ".json")
+            if not os.path.exists(path):
+                import urllib.request
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                req = urllib.request.Request(PUBLISHED.format(name=name), headers={"User-Agent": "waterledger (python package)"})
+                with urllib.request.urlopen(req, timeout=120) as r, open(path, "wb") as f:
+                    f.write(r.read())
+        _cache[name] = json.load(open(path))
     return _cache[name]
 
 
