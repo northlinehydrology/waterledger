@@ -1,0 +1,6 @@
+# CoolingWaterBmi config for CSDMS bmi-tester: a 100 MW campus with cooling towers, one day of hourly steps, inputs set
+# through set_value (no forcing file).
+design: towers
+it_capacity_mw: 100
+time_step: 3600
+end_time: 86400

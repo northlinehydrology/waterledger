@@ -18,7 +18,10 @@ waterledger-models = { workspace = true }
 waterledger-data = { workspace = true }
 
 [dependency-groups]
-dev = ["pytest>=7"]
+dev = [
+    "bmi-tester>=0.5.10",
+    "pytest>=7",
+]
 
 [tool.ruff]
 line-length = 150

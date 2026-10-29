@@ -68,6 +68,21 @@ wheels = [
 ]
 
 [[package]]
+name = "bmi-tester"
+version = "0.5.10"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "importlib-resources", marker = "python_full_version < '3.12'" },
+    { name = "model-metadata" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "pytest" },
+    { name = "pytest-dependency" },
+    { name = "standard-names" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c5/e7/b7541b6dd3f419608124e591a93af57ed46f3fc3586f4f7953bde205f9ce/bmi_tester-0.5.10.tar.gz", hash = "sha256:4ae4bc6e557f6f7006839e32163467db4fbf35945fdcce0c7b79b8375aea7805", size = 15807, upload-time = "2025-06-05T20:08:54.062Z" }
+
+[[package]]
 name = "bmipy"
 version = "2.0.1"
 source = { registry = "https://pypi.org/simple" }
@@ -467,6 +482,15 @@ wheels = [
 ]
 
 [[package]]
+name = "importlib-resources"
+version = "7.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e4/06/b56dfa750b44e86157093bc8fca0ab81dccbf5260510de4eaf1cb69b5b99/importlib_resources-7.1.0.tar.gz", hash = "sha256:0722d4c6212489c530f2a145a34c0a7a3b4721bc96a15fada5930e2a0b760708", size = 44985, upload-time = "2026-04-12T16:36:09.232Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8a/db/55a262f3606bebcae07cc14095338471ad7c0bbcaa37707e6f0ee49725b7/importlib_resources-7.1.0-py3-none-any.whl", hash = "sha256:1bd7b48b4088eddb2cd16382150bb515af0bd2c70128194392725f82ad2c96a1", size = 37232, upload-time = "2026-04-12T16:36:08.219Z" },
+]
+
+[[package]]
 name = "iniconfig"
 version = "2.3.1"
 source = { registry = "https://pypi.org/simple" }
@@ -826,6 +850,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/68/d7/a9fde05d87c3c853f233ec20c5b5c3a1c86035e1ed4bfa397cd54d46ec90/matplotlib-3.11.2-pp311-pypy311_pp73-macosx_11_0_arm64.whl", hash = "sha256:eac4b07d4e3743b172451e122ea964f72f152879d4f9adcf3f3d33e518f12ead", size = 9287753, upload-time = "2026-09-11T19:05:24.677Z" },
     { url = "https://files.pythonhosted.org/packages/ec/79/ea2ae4eab84f011c1dc8145864f78e5a63adda8efb95557ef36cc38e6da2/matplotlib-3.11.2-pp311-pypy311_pp73-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:7ef7a53b66780e5d942923724f08577fbc5be1f7322da0f0f3f9dcaa45dd803d", size = 9848259, upload-time = "2026-09-11T19:05:27.455Z" },
 ]
+
+[[package]]
+name = "model-metadata"
+version = "0.8.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "importlib-resources", marker = "python_full_version < '3.12'" },
+    { name = "jinja2" },
+    { name = "packaging" },
+    { name = "pyyaml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0b/3e/d532409e93de54d6420a54ab0c7b01405d4748b0b78c6322c4a4ade58113/model_metadata-0.8.2.tar.gz", hash = "sha256:3f8f238b70f0ff21f31f8207ab021e74379c5a3b0860a0e89d202a511c0c974e", size = 19274, upload-time = "2024-10-15T21:28:34.18Z" }
 
 [[package]]
 name = "msgspec"
@@ -1881,6 +1917,16 @@ wheels = [
 ]
 
 [[package]]
+name = "pytest-dependency"
+version = "0.6.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pytest" },
+    { name = "setuptools" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c2/ea/84509533e0f6477960b8a9179d240d93c909c6543e4dd8209932026d7815/pytest_dependency-0.6.1.tar.gz", hash = "sha256:246c24d2a5fc743a942cec4408853640e56a05ba58d46e5b213a1d4b738a2464", size = 20837, upload-time = "2026-02-15T18:08:43.927Z" }
+
+[[package]]
 name = "python-dateutil"
 version = "3.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1983,6 +2029,15 @@ wheels = [
 ]
 
 [[package]]
+name = "setuptools"
+version = "84.2.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/70/b3/c19426f783614d625699a4b247faf628ea9ab1db228674491767b417f9e1/setuptools-84.2.1.tar.gz", hash = "sha256:3ff8b3b5492a0aa66960f4419365a86b84e013070d4313e4d4a6894f5d64d6bc", size = 1230289, upload-time = "2026-10-20T19:01:37.742Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ef/55/6dc6d6bb953bdfc52519a0059592c52b6e3b8ad51cf8256dffceb55b0610/setuptools-84.2.1-py3-none-any.whl", hash = "sha256:ca140b45d5325a9478f880e351484f62fef15f336462e449ca0c03c873d589c2", size = 876263, upload-time = "2026-10-20T19:01:35.678Z" },
+]
+
+[[package]]
 name = "six"
 version = "1.17.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1990,6 +2045,15 @@ sdist = { url = "https://files.pythonhosted.org/packages/94/e7/b2c673351809dca68
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274", size = 11050, upload-time = "2024-12-04T17:35:26.475Z" },
 ]
+
+[[package]]
+name = "standard-names"
+version = "0.2.9"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "packaging" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/44/9b/143bddb1961301c9c38aa29923b68ecb0c44b79d919556c3a28561ae530c/standard_names-0.2.9.tar.gz", hash = "sha256:e224d1ceae89fb7ebb4439eb9d7e25da190d6a2d289b38e1e7404ecbd85439e3", size = 93295, upload-time = "2024-03-04T03:14:53.907Z" }
 
 [[package]]
 name = "toolz"
@@ -2135,6 +2199,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "bmi-tester" },
     { name = "pytest" },
 ]
 
@@ -2146,7 +2211,10 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=7" }]
+dev = [
+    { name = "bmi-tester", specifier = ">=0.5.10" },
+    { name = "pytest", specifier = ">=7" },
+]
 
 [[package]]
 name = "xarray"

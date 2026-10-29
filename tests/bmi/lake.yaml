@@ -1,0 +1,3 @@
+# LakeCoolingBmi config for CSDMS bmi-tester: a 100 MW campus, ten daily steps, inputs set through set_value.
+it_capacity_mw: 100
+end_time: 864000

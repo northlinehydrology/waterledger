@@ -23,3 +23,8 @@ jobs:
       - run: uv sync --locked
       - run: uvx ruff check .
       - run: uv run pytest
+      - name: CSDMS bmi-tester on every BMI component
+        working-directory: tests/bmi
+        run: |
+          uv run bmi-test waterledger_models.datacenter.bmi:CoolingWaterBmi --root-dir . --config-file cooling.yaml
+          uv run bmi-test waterledger_models.datacenter.bmi:LakeCoolingBmi --root-dir . --config-file lake.yaml
