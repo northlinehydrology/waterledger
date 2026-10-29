@@ -56,7 +56,8 @@ ctx.climate.design_storms_in     # NOAA Atlas 14 design storms
 ctx.energy.utilities             # electric utilities and their loads
 ```
 
-The objects (Place, Context, Facility, Site, Estimate) are validated, round-trip through JSON, and are described in
+These objects are on `main` and ship in waterledger 2.0 (until then, `pip install waterledger` gives 0.1.x, whose
+entry points are the models below and `waterledger.scenario`). They are validated, round-trip through JSON, and are described in
 [docs/design/0001-schema-and-api.md](docs/design/0001-schema-and-api.md). Michigan is available now, from the same data
 as [waterledger.org/mi](https://waterledger.org/mi/); without a local copy, the published data files are downloaded once
 and cached. Other states are coming through the national tier.
