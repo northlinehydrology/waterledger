@@ -2,6 +2,14 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.0.0 (unreleased)
+
+- **Breaking:** `waterledger.states.mi.build_moratoria` and the `moratoria` part of `waterledger build mi` are removed.
+  Proposal and moratorium trackers are a waterledger.org service maintained in Northline, not part of the packages.
+- The national tier (design 0002): places, water systems, sewer plants, receiving waters (with the watershed tracer,
+  formerly attains-trace), climate and energy for any state; `site.estimate()` anywhere; `waterledger build-state`.
+- `waterledger_models.hydrology`: curve-number runoff, Theis drawdown and Glover stream depletion (from Northline).
+
 ## 2.0.0 (Oct 29, 2026)
 
 The 2.0 API, per [design 0001](docs/design/0001-schema-and-api.md). Model version 1.2; numbers unchanged.

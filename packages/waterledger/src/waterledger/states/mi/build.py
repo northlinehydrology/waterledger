@@ -3,7 +3,7 @@
 Public data only. Every value carries a source id from SOURCES. Run from the repo root:
     python -m waterledger.states.mi              (or: waterledger build mi)
 """
-import datetime, json, math, os, re
+import datetime, json, math, os
 
 import pandas as pd
 
@@ -11,7 +11,7 @@ from waterledger_data import places as pl
 from waterledger_data.climate import hourly_weather
 from waterledger_models.datacenter import cooling as cw
 from waterledger_models.datacenter import lake as lc
-from waterledger_data.config import CACHE, SITE as SITE_ROOT, setting
+from waterledger_data.config import CACHE, SITE as SITE_ROOT
 
 from waterledger_models import MODEL_VERSION
 STATE = "mi"      # Water Ledger is organized by state: site/waterledger/<state>/
@@ -404,76 +404,6 @@ def build_power():
     with open(OUT_POWER, "w") as f:
         json.dump(data, f, separators=(",", ":"))
     print("wrote", OUT_POWER, os.path.getsize(OUT_POWER), "bytes;", len(utils), "utilities;", sum(1 for v in by_place.values() if v), "places with a utility")
-
-
-MORATORIA_CSV = setting("mi_moratoria_csv")        # the hand-kept list of Michigan moratoria (public sources)
-OUT_MORATORIA = os.path.join(SITE, "data", "moratoria.json")
-
-
-def build_moratoria():
-    """site/waterledger/mi/data/moratoria.json: Michigan data center moratoria from public sources (docs/research/moratoria-michigan.csv),
-    each placed on the map. Cities and townships match Water Ledger's places; villages use the Census point and take their water
-    facts from the township around them; counties sit at the county's center."""
-    import csv
-    from waterledger_data import places as pl
-    places = json.load(open(OUT_PLACES))["places"]
-    counties = {c["name"]: c for c in pl.counties()}
-    bounds = json.load(open(os.path.join(RAW_PLACES, "boundaries.json")))
-    by = {(p["c"], p["n"].lower()): p for p in places}
-
-    def villages():
-        path = os.path.join(RAW_PLACES, "villages_mi.json")
-        if not os.path.exists(path):
-            d = pl._get("https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Places_CouSub_ConCity_SubMCD/MapServer/4/query",
-                        {"where": "STATE='26' AND LSADC='47'", "outFields": "BASENAME,GEOID,INTPTLAT,INTPTLON", "returnGeometry": "false", "resultRecordCount": 2000, "f": "json"})
-            json.dump([f["attributes"] for f in d["features"]], open(path, "w"))
-        return json.load(open(path))
-    vill = villages()
-
-    def township_at(lon, lat):
-        for g, rings in bounds.items():
-            if pl._inside(lon, lat, rings):
-                return g
-        return None
-
-    out, missing = [], []
-    for r in csv.DictReader(open(MORATORIA_CSV)):
-        name, kind, county = r["name"].strip(), r["kind"].strip().lower(), r["county"].strip().replace(" County", "")
-        rec = {k: (r.get(k) or "").strip() for k in ("name", "kind", "county", "action", "adopted", "length_months", "expires", "status", "proposal",
-                                                       "source_title", "source_publisher", "source_date", "source_url", "verified", "notes")}
-        rec["county"] = county
-        g = x = y = None
-        if kind in ("city", "township", "charter township"):
-            stem = re.sub(r"^(city|village|charter township|township) of\s+", "", name, flags=re.I)
-            stem = re.sub(r"\s+(charter township|township|city)$", "", stem, flags=re.I).strip().lower()
-            for k in ([f"{stem} {kind}"] + ([f"{stem} charter township", f"{stem} township"] if "township" in kind else [f"{stem} city"])):
-                if (county, k) in by:
-                    p = by[(county, k)]; g, x, y = p["g"], p["x"], p["y"]
-                    break
-        elif kind == "village":
-            stem = re.sub(r"^village of\s+", "", name, flags=re.I).replace(" Village", "").strip().lower()
-            hits = [v for v in vill if v["BASENAME"].lower() == stem]
-            for v in hits:
-                lat, lon = float(v["INTPTLAT"]), float(v["INTPTLON"])
-                c = counties.get(county)
-                if c and not pl._inside(lon, lat, c["rings"]):
-                    continue
-                x, y = proj(lon, lat)
-                g = township_at(lon, lat)
-                rec["within"] = g
-                break
-        elif kind == "county" and county in counties:
-            x, y = proj(counties[county]["lon"], counties[county]["lat"])
-        if x is None:
-            missing.append(f"{name} ({kind}, {county})")
-        rec.update(g=g if kind != "village" else None, x=x, y=y)
-        if kind == "village" and rec.get("within"):
-            rec["g"] = rec["within"]   # water facts come from the township around the village
-        out.append(rec)
-    out.sort(key=lambda r: (r["county"], r["name"]))
-    json.dump({"updated": datetime.date.today().isoformat(), "source": "Public sources listed on each entry; compiled by Water Ledger", "moratoria": out},
-              open(OUT_MORATORIA, "w"), separators=(",", ":"))
-    print("wrote", OUT_MORATORIA, len(out), "entries;", len(missing), "not placed:", missing[:20])
 
 
 def round_tree(x, nd=5):
