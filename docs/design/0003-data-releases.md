@@ -48,7 +48,8 @@ week apart can get different answers).
 6. **Versions stay separate.** Code (package semver), numbers (`MODEL_VERSION`) and data (the snapshot date) each move
    on their own. Pinning `data="2026-11-01"` reproduces an old result.
 7. **Some inputs stay manual.** Inputs a person maintains live in an inputs area of R2 that the build jobs read:
-   Michigan's EGLE water-use file (the site refuses scripted downloads) and the hand-kept trackers.
+   Michigan's EGLE water-use file (the site refuses scripted downloads). The proposal and moratorium trackers are not
+   part of the snapshots: they are a Northline service behind waterledger.org.
 
 8. **Michigan moves to the same snapshot format (agreed Oct 29, 2026).** Every state then looks alike to the package and
    the site. It moves in two steps, each checked:
