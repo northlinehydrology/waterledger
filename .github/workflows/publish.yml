@@ -1,6 +1,7 @@
 name: publish
 # Push a tag v* (for example v2026.10.29) to release: the tests run, the three packages are built, and each is published to PyPI
-# by trusted publishing (no stored token). A package whose version is already on PyPI is skipped, so bump only what changed.
+# by trusted publishing (no stored token) from the environment pypi-<package>. A package whose version is already on PyPI is
+# skipped, so bump only what changed.
 on:
   push:
     tags: ["v*"]
@@ -14,18 +15,23 @@ jobs:
           python-version: "3.12"
       - run: uv sync --locked
       - run: uv run pytest
-      - run: uv build --all-packages -o dist
-      - run: uvx twine check dist/*
+      - run: |
+          for p in waterledger-models waterledger-data waterledger; do uv build --package $p -o dist/$p; done
+          uvx twine check dist/*/*
       - uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/
   pypi:
+    # one run per package; each publishes from the environment pypi-<package>, which its PyPI trusted publisher names
     needs: build
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [waterledger-models, waterledger-data, waterledger]
     environment:
-      name: pypi
-      url: https://pypi.org/project/waterledger/
+      name: pypi-${{ matrix.package }}
+      url: https://pypi.org/project/${{ matrix.package }}/
     permissions:
       id-token: write
     steps:
@@ -35,4 +41,5 @@ jobs:
           path: dist/
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
+          packages-dir: dist/${{ matrix.package }}/
           skip-existing: true
