@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Methods for each state
+    url: https://waterledger.org/methods/
+    about: How the estimates are made, the data behind them and their limits.
+  - name: Security or data integrity issue
+    url: https://github.com/northlinehydrology/waterledger/security/advisories/new
+    about: Report privately. Do not open a public issue (see SECURITY.md).

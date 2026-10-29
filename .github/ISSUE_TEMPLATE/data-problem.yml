@@ -1,0 +1,55 @@
+name: Data or estimate problem
+description: A number, place, water system, sewer plant, watershed or utility that looks wrong. This is the project's request-for-correction process.
+labels: ["data"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. Corrections are reviewed against the cited source and, if accepted, fixed in the next snapshot or release and noted in the changelog.
+  - type: input
+    id: place
+    attributes:
+      label: Place
+      description: As Water Ledger names it, with the state (for example "Columbus city, OH"), or its Census GEOID.
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: What is affected
+      options:
+        - Place or boundary
+        - Water system
+        - Sewer plant
+        - Watershed, impairment or TMDL
+        - Weather or climate station
+        - Electric utility
+        - Water use estimate
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: shown
+    attributes:
+      label: What Water Ledger shows
+      description: The value or record, and where you saw it (package call, waterledger.org page, snapshot file).
+    validations:
+      required: true
+  - type: textarea
+    id: correct
+    attributes:
+      label: What you believe is correct
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Source
+      description: A public document, dataset or record that supports the correction. Water Ledger uses public data only.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Package version and snapshot date
+      description: 'For example "waterledger 3.0.0, OH snapshot 2026-10-29" (est.data_date gives the date).'

@@ -1,0 +1,29 @@
+name: Bug report
+description: Something in the packages fails or behaves unexpectedly.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you ran, what you expected and what happened instead. Include the full error.
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Minimal example
+      render: python
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versions
+      description: 'Output of: python -c "import waterledger, sys; print(waterledger.__version__, sys.version)"'
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system

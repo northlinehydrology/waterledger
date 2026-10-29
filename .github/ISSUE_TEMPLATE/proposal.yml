@@ -1,0 +1,38 @@
+name: Method change, new state or feature
+description: Propose a change to the model, its data, a new state's layers or rules, or a new feature.
+labels: ["proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Changes to the numbers and significant changes follow GOVERNANCE.md: they are discussed here first, and larger ones get a short design note in docs/design.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of change
+      options:
+        - Model (equations, parameter ranges, assumptions)
+        - Data source
+        - New state, or a state's own layers or rules
+        - API or command
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should change and why.
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources and evidence
+      description: Literature, agency methods, observations or data that support the change.
+  - type: textarea
+    id: effect
+    attributes:
+      label: Expected effect on published estimates
+      description: Which results would change and roughly by how much, if known.
