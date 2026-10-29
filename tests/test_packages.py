@@ -34,3 +34,10 @@ def test_paths_from_waterledger_toml(tmp_path):
     code = "from waterledger_data import config as c; print(c.CACHE); print(c.SITE)"
     out = subprocess.run([sys.executable, "-c", code], env=env, cwd=tmp_path / "sub", capture_output=True, text=True, check=True).stdout.split()
     assert out == [str(tmp_path / "raw"), str(tmp_path / "web")]
+
+
+def test_entry_points_load_on_first_use():
+    import waterledger as wl
+    dc = wl.models.datacenter
+    assert dc.run_ensemble.__module__ == "waterledger_models.datacenter.ensemble"
+    assert dc.CoolingWaterBmi.__name__ == "CoolingWaterBmi" and dc.stac.write_catalog
