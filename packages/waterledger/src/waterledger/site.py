@@ -24,3 +24,26 @@ class Site(BaseModel):
     def estimate(self) -> Estimate:
         """Water taken, used up and returned, as the state's provider computes it (same numbers as waterledger.org)."""
         return states.provider(self.place.state).estimate(self)
+
+    def to_bmi_config(self, path=None, forcing=None, end_time=None):
+        """The BMI component that runs this site step by step, and its configuration: (entry point, config dict). With `path`,
+        the config is also written there as YAML. `forcing` is an optional weather file (Open-Meteo JSON for the hourly
+        cooling component, a daily lake-temperature CSV for the lake-source one); without it, inputs come through set_value.
+
+            entry, cfg = site.to_bmi_config("site.yaml")
+            m = CoolingWaterBmi(); m.initialize("site.yaml")
+        """
+        f = self.facility
+        if f.cooling == "lake":
+            entry = "waterledger_models.datacenter.bmi:LakeCoolingBmi"
+            cfg = {"it_capacity_mw": f.it_mw, "end_time": end_time or 365 * 86400}
+        else:
+            entry = "waterledger_models.datacenter.bmi:CoolingWaterBmi"
+            cfg = {"design": f.cooling, "it_capacity_mw": f.it_mw, "time_step": 3600, "end_time": end_time or 365 * 86400}
+        if forcing:
+            cfg["forcing"] = str(forcing)
+        if path:
+            import yaml
+            with open(path, "w") as fh:
+                yaml.safe_dump(cfg, fh, sort_keys=False)
+        return entry, cfg
