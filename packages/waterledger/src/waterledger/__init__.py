@@ -9,6 +9,9 @@
 import waterledger_data as data
 import waterledger_models as models
 from waterledger import scenario, states
+from waterledger.estimate import Flow, Range, WaterUse
+from waterledger.facility import DataCenter, Facility
+from waterledger.place import Place, place
 
-__all__ = ["data", "models", "scenario", "states"]
+__all__ = ["data", "models", "scenario", "states", "place", "Place", "Facility", "DataCenter", "Range", "Flow", "WaterUse"]
 __version__ = "0.1.1"
