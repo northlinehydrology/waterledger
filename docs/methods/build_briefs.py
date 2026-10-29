@@ -81,7 +81,7 @@ def brief(state):
          Paragraph(f"Model version {m['model_version']} · data snapshot {m['date']} · waterledger.org · github.com/northlinehydrology/waterledger", SUB)]
 
     S += [Paragraph("What it estimates", H2),
-          Paragraph(f"For any city, town, village, township or county in {name}, Water Ledger estimates how much water a data center campus "
+          Paragraph(f"For any {'city or township' if mi else 'city, town, village, township or county'} in {name}, Water Ledger estimates how much water a data center campus "
                     "of a given size and cooling design would take, use up and send back, on an average day and on a 1-in-10-year peak day, and "
                     "sets that beside the public water system, the sewer plant, the streams downstream and the electric utility that would serve "
                     "it. It uses public data only and is a screening estimate, not a design.", BODY)]
@@ -97,7 +97,7 @@ def brief(state):
              f"{len(plants):,} plants" + (f"; {pct(cov.get('sewer_plant_within_40km'))} of places have one within 40 km" if cov else "")],
             ["Receiving waters", f"USGS Watershed Boundary Dataset; EPA ATTAINS ({att.get('organization', '')}, {att.get('cycle', '')} report)",
              f"{len(rec['downstream']):,} watersheds with a downstream path; {len(rec['reaches']):,} watersheds on those paths"],
-            ["Climate", "ERA5 reanalysis (Open-Meteo), 1995-2024, at eight Michigan regions" if mi else
+            ["Climate", "ERA5 reanalysis (Open-Meteo), 1995-2024, at eight Michigan regions; Atlas 14 design storms; Climate at a Glance rainfall" if mi else
              "NOAA ISD station records, 1995-2024, one station per NOAA climate division; Atlas 14 design storms; Climate at a Glance rainfall",
              f"{len(divs)} {'regions' if mi else 'climate divisions'}"],
             ["Energy", "MPSC territories; EIA-861 sales and peaks" if mi else
