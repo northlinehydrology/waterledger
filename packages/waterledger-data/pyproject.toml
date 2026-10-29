@@ -17,12 +17,19 @@ dependencies = [
     "openpyxl>=3.1",
     "geopandas>=1.0",
     "shapely>=2.0",
+    "requests>=2.28",
 ]
 
 [project.urls]
 Homepage = "https://waterledger.org"
 Source = "https://github.com/northlinehydrology/waterledger"
 Issues = "https://github.com/northlinehydrology/waterledger/issues"
+
+[project.optional-dependencies]
+postgis = ["psycopg[binary]>=3.1"]      # mirror a region into PostGIS and trace with recursive SQL (waterledger_data.trace.postgis)
+
+[project.scripts]
+waterledger-trace = "waterledger_data.trace.cli:main"
 
 [build-system]
 requires = ["hatchling"]
