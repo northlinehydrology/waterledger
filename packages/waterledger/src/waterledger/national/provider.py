@@ -1,24 +1,15 @@
-"""The national provider: answers for any state from federal data (design 0002). Each function takes the state it
-answers for; the parts not built yet say which step of design 0002 brings them."""
-import functools
+"""The national provider: answers for any state from federal data (design 0002), through the state's data (design 0003):
+its hosted snapshot, or a local build as the fallback (waterledger.national.data)."""
 
-from waterledger import states
+from waterledger.national.data import state_data
 
-STEPS = {}
-
-
-class NotYet(NotImplementedError):
-    """A national-tier part that is still being built."""
+SYS_POP = 3300          # a "sizable" public water system serves more than this many people (as waterledger.scenario)
+SEWER_KM = 10           # with no water system mapped, a large plant this close is assumed reachable (as waterledger.scenario)
+PLANTS_KM, PLANTS_MAX = 40, 10
 
 
-def _not_yet(part, state):
-    raise NotYet(f"{state}: the national tier's {part} is not built yet; it comes in design 0002 {STEPS[part]}. Michigan is available now.")
-
-
-@functools.lru_cache(maxsize=8)
 def _places(state):
-    from waterledger_data import census
-    return census.places(next(f for f, s in states.FIPS.items() if s == state))
+    return state_data(state).places()
 
 
 def _display(r):
@@ -51,42 +42,25 @@ def place(state, geoid):
                  lat=round(float(r.lat), 4), lon=round(float(r.lon), 4))
 
 
-SYS_POP = 3300          # a "sizable" public water system serves more than this many people (as waterledger.scenario)
-PLANTS_KM, PLANTS_MAX, DOWNSTREAM_HOPS = 40, 10, 25       # the downstream path lists up to 25 HUC12s, as Michigan's does
-
-
 def context(state, place):
     """The national context for a place: jurisdiction, supply (EPA water systems), wastewater (CWNS and ECHO sewer plants),
-    receiving waters (USGS watersheds; the downstream path with EPA ATTAINS impairments, across state lines). Climate and
-    energy come in design 0002 steps 4 and 5."""
-    import geopandas as gpd
-
+    receiving waters (USGS watersheds; the downstream path with EPA ATTAINS impairments, across state lines), climate and energy."""
     from waterledger import context as cx
-    from waterledger_data import receiving as rc
-    from waterledger_data import supply as sp
     from waterledger_data import wastewater as ww
     from waterledger_data.waters import LABELS
-    pl = _places(state)
-    r = pl[pl.geoid == place.geoid].iloc[0]
+    sd = state_data(state)
+    base = _places(state).set_index("geoid").base.get(place.geoid, place.name)
     sys_ = lambda w: cx.WaterSystem(pwsid=w["pwsid"], name=w["name"].title(), population=w.get("population"),
                                     connections=w.get("connections"), share_of_place=w.get("share"))
-    mine = sp.systems_by_place(state, pl).get(place.geoid, [])
-    near, near_km = None, None
-    if not mine:                                    # the nearest sizable system, edge to edge
-        sy = sp.water_systems(state)
-        sy = sy[sy.population > SYS_POP].to_crs(sp.ALBERS)
-        pt = gpd.GeoSeries(gpd.points_from_xy([place.lon], [place.lat]), crs=4326).to_crs(sp.ALBERS).iloc[0]
-        if len(sy):
-            d = sy.distance(pt)
-            i = d.idxmin()
-            near = sys_({"pwsid": sy.pwsid[i], "name": sy.name[i], "population": int(sy.population[i]), "connections": int(sy.connections[i] or 0)})
-            near_km = round(float(d[i]) / 1000, 1)
-    supply = cx.Supply(provider="national", sources=["epa_sa"], systems=[sys_(w) for w in mine], nearest_system=near, nearest_system_km=near_km)
+    mine = sd.systems_for(place.geoid)
+    near, near_km = (None, None) if mine else sd.nearest_system(place.geoid)
+    supply = cx.Supply(provider="national", sources=["epa_sa"], systems=[sys_(w) for w in mine],
+                       nearest_system=sys_(near) if near else None, nearest_system_km=near_km)
     plants = [cx.SewerPlant(npdes=q["id"], name=q["name"], design_mgd=q["design_mgd"], flow_mgd=q["flow_mgd"], km=round(q["km"], 1),
                             receiving_water=q["receiving"] or None, combined_sewer=q["cso"], lagoon=q["lagoon"])
-              for q in ww.nearest(ww.plants(state), place.lat, place.lon, r.base, km=PLANTS_KM)[:PLANTS_MAX]]
-    sheds = rc.watersheds_by_place(state, pl).get(place.geoid, {"h12": [], "h8": None})
-    path = rc.downstream(sheds["h12"][0]["code"], hops=DOWNSTREAM_HOPS - 1) if sheds["h12"] else []   # the start and 24 more
+              for q in ww.nearest(sd.plants(), place.lat, place.lon, base, km=PLANTS_KM)[:PLANTS_MAX]]
+    sheds = sd.sheds_for(place.geoid)
+    path = sd.downstream(sheds["h12"][0]["code"]) if sheds["h12"] else []
     receiving = cx.Receiving(provider="national", sources=["usgs_wbd", "attains"],
                              watersheds=[cx.Watershed(huc12=w["code"], name=w["name"], share_of_place=w["share"]) for w in sheds["h12"]],
                              basin=cx.Watershed(huc12=sheds["h8"]["code"], name=sheds["h8"]["name"]) if sheds["h8"] else None,
@@ -101,10 +75,10 @@ def context(state, place):
 def _energy(state, place):
     from waterledger import context as cx
     from waterledger_data import energy as en
-    us = en.utilities_by_place(state, _places(state)).get(place.geoid, [])
-    L, W = en.loads(state), en.grid_water()
+    sd = state_data(state)
+    L, W = sd.loads(), sd.grid_water()
     out = []
-    for u in en.ranked(us, L):
+    for u in en.ranked(sd.utilities_for(place.geoid), L):
         e = L.get(u["eia_id"]) or {}
         w = W.get(u["balancing_authority"]) or {}
         out.append(cx.Utility(name=u["name"].title(), type=(u["type"] or "").title(), share_of_place=u["share"], customers=e.get("customers"),
@@ -114,10 +88,9 @@ def _energy(state, place):
 
 
 def _division(state, place):
-    from waterledger.national import climate as nc
-    from waterledger_data import divisions
-    d = divisions.county_divisions().get(place.county_fips)
-    runs = nc.division_runs(state)
+    sd = state_data(state)
+    runs = sd.division_runs()
+    d = sd.division_of(place.county_fips)
     if d not in runs:                     # a county NOAA leaves out: the nearest division's station
         d = min(runs, key=lambda k: (runs[k]["lat"] - place.lat) ** 2 + (runs[k]["lon"] - place.lon) ** 2)
     return d, runs
@@ -125,27 +98,26 @@ def _division(state, place):
 
 def _climate(state, place):
     from waterledger import context as cx
-    from waterledger.national import climate as nc
+    sd = state_data(state)
     d, runs = _division(state, place)
-    storms, rain = nc.storms_and_rain(state)
     return cx.Climate(provider="national", sources=["noaa_isd", "noaa_cag", "noaa_atlas14"], region=d, region_name=runs[d]["name"],
-                      station=runs[d]["station"], rain_in=rain.get(place.county_fips), design_storms_in=storms.get(place.county_fips, {}))
-
-
-SEWER_KM = 10           # with no water system mapped, a large plant this close is assumed reachable (as waterledger.scenario)
+                      station=runs[d]["station"], rain_in=sd.rain().get(place.county_fips), design_storms_in=sd.storms().get(place.county_fips, {}))
 
 
 def estimate(state, site):
     """Water use for a site anywhere: the cooling model at the place's climate division station, plus staff water, with the
     page's rules for the water source and wastewater (waterledger.scenario), on national data."""
+    import datetime
+
     from waterledger import scenario as sc
     from waterledger.estimate import Estimate, Flow, Range, WaterUse
     from waterledger_models import MODEL_VERSION
     f, place = site.facility, site.place
     if f.cooling == "lake":
         raise ValueError("lake-source cooling is modeled for the Great Lakes only (Michigan); choose another design")
+    sd = state_data(state)
     d, runs = _division(state, place)
-    D = {"regions": runs, "staff": {"runs": _staff_runs()}}
+    D = {"regions": runs, "staff": {"runs": sd.staff_runs()}}
     ctx = place.context()
     src = site.source
     if src is None:
@@ -165,11 +137,4 @@ def estimate(state, site):
                      consumed=Flow(avg=R(E["cAvg"]), peak_day=R(E["cPeak"])), returned=Flow(avg=R(E["rAvg"]), peak_day=R(E["rPeak"])),
                      to_sewer=R(E["sewer"]), lake_source=False, reuse=E["reuse"])
     resolved = site.model_copy(update={"source": src, "wastewater": dest})
-    import datetime
-    return Estimate(site=resolved, water=water, model_version=MODEL_VERSION, data_date=datetime.date.today().isoformat())
-
-
-@functools.lru_cache(maxsize=1)
-def _staff_runs(n=200):
-    from waterledger_models.datacenter import cooling as cw
-    return cw.staff_runs(n)
+    return Estimate(site=resolved, water=water, model_version=MODEL_VERSION, data_date=sd.date or datetime.date.today().isoformat())

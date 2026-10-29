@@ -7,8 +7,8 @@ from waterledger import states
 
 @functools.lru_cache(maxsize=8)
 def counties(state):
-    from waterledger.national.provider import _places
-    pl = _places(state)
+    from waterledger_data import census
+    pl = census.places(next(f for f, s in states.FIPS.items() if s == state))
     return [{"geoid": r.geoid, "lat": float(r.lat), "lon": float(r.lon)} for r in pl[pl.level == "county"].itertuples()]
 
 

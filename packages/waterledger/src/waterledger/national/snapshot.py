@@ -57,7 +57,6 @@ def _downstream(state, starts):
 def write(state, out, date=None, checks=None):
     """Write the snapshot for `state` under out/<ST>/<date>/ from the cached layers; returns the snapshot folder."""
     from waterledger.national import climate as nc
-    from waterledger.national.provider import _places
     from waterledger_data import divisions, energy, receiving, supply, wastewater
     from waterledger_models import MODEL_VERSION
     from waterledger_models.datacenter import cooling as cw
@@ -68,7 +67,8 @@ def write(state, out, date=None, checks=None):
     date = date or datetime.date.today().isoformat()
     folder = os.path.join(out, state, date)
     os.makedirs(folder, exist_ok=True)
-    pl = _places(state)
+    from waterledger.national.data import LiveData as _Live
+    pl = _Live(state).places()
     cd = divisions.county_divisions()
 
     pl.to_parquet(os.path.join(folder, "places.parquet"))
@@ -78,9 +78,14 @@ def write(state, out, date=None, checks=None):
         for r in pl.itertuples()]})
 
     sy = supply.water_systems(state)
+    by = supply.systems_by_place(state, pl)
+    from waterledger.national.data import LiveData
+    live = LiveData(state)
+    # places with no system mapped: the nearest sizable one, edge to edge
+    nearest = {g: [w["pwsid"], km] for g, (w, km) in live.nearest_systems([g for g in pl.geoid if g not in by]).items() if w}
     _write(os.path.join(folder, "supply.json"), {
         "systems": {r.pwsid: {"name": r.name, "population": int(r.population or 0), "connections": int(r.connections or 0)} for r in sy.itertuples()},
-        "by_place": {g: [[w["pwsid"], w["share"]] for w in ws] for g, ws in supply.systems_by_place(state, pl).items()}})
+        "by_place": {g: [[w["pwsid"], w["share"]] for w in ws] for g, ws in by.items()}, "nearest": nearest})
 
     _write(os.path.join(folder, "wastewater.json"), {"plants": wastewater.plants(state)})
 

@@ -56,7 +56,7 @@ def checks(state, pl, sample=SAMPLE, seed=1):
 def build(state, out=None, n=200):
     """Run every stage for `state` and write a manifest of what was built (counts, timings, sources' dates) to `out`."""
     from waterledger.national import climate as nc
-    from waterledger.national.provider import _places
+    from waterledger.national.data import LiveData
     from waterledger_data import energy, receiving, supply, wastewater
     from waterledger_models import MODEL_VERSION
     state = state.upper()
@@ -74,7 +74,7 @@ def build(state, out=None, n=200):
 
     def places():
         nonlocal pl
-        pl = _places(state)
+        pl = LiveData(state).places()
         return {"places": int(len(pl)), "by_level": {k: int(v) for k, v in pl.level.value_counts().items()}}
     stage("places", places)
     stage("supply", lambda: {"systems": int(len(supply.water_systems(state))), "places_served": len(supply.systems_by_place(state, pl))})
