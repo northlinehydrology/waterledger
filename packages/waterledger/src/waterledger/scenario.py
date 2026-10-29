@@ -20,11 +20,16 @@ _cache = {}
 
 
 def data(name):
-    """One of Michigan's data files: the local site's if there is one, else the published file (downloaded once)."""
+    """One of Michigan's data files: the local site's if there is one, else Michigan's snapshot (data.waterledger.org, which
+    carries the site files as published), else the file waterledger.org publishes (downloaded once)."""
     if name not in _cache:
         path = os.path.join(DATA, name + ".json")
         if not os.path.exists(path):
-            path = os.path.join(CACHE, "published", "mi", name + ".json")
+            try:
+                from waterledger.national.data import fetch_snapshot
+                path = os.path.join(fetch_snapshot("MI"), "michigan", name + ".json")
+            except Exception:                                           # noqa: BLE001  no snapshot reachable: the published file
+                path = os.path.join(CACHE, "published", "mi", name + ".json")
             if not os.path.exists(path):
                 import urllib.request
                 os.makedirs(os.path.dirname(path), exist_ok=True)

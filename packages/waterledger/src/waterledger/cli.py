@@ -23,8 +23,12 @@ def main(argv=None):
     sn.add_argument("--date", default=None)
     a = ap.parse_args(argv)
     if a.cmd == "snapshot":
-        from waterledger.national.snapshot import write
-        print(write(a.state, a.out, a.date))
+        if a.state.upper() == "MI":                       # Michigan: from its own data, with its site files carried along
+            from waterledger.states.mi.snapshot import write as write_mi
+            print(write_mi(a.out, a.date))
+        else:
+            from waterledger.national.snapshot import write
+            print(write(a.state, a.out, a.date))
         return
     if a.cmd == "build-state":
         from waterledger.national.build import build
