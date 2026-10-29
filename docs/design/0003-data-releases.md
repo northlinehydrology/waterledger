@@ -50,6 +50,13 @@ week apart can get different answers).
 7. **Some inputs stay manual.** Inputs a person maintains live in an inputs area of R2 that the build jobs read:
    Michigan's EGLE water-use file (the site refuses scripted downloads) and the hand-kept trackers.
 
+8. **Michigan moves to the same snapshot format (agreed Oct 29, 2026).** Every state then looks alike to the package and
+   the site. It moves in two steps, each checked:
+   - **The package:** Michigan's snapshot is built in the new format alongside its current files, and the package reads
+     it. Every Michigan number must come out identical (the parity tests, the site tests, the six data files).
+   - **The site:** waterledger.org/mi switches to the new files when the state pages are rebuilt on the shared format,
+     with the page-vs-Python parity check passing. The old files are retired only after that.
+
 ## Build order
 
 1. A "build one state" workflow, run on Ohio in Actions without uploading, to prove the jobs work there.
