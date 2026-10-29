@@ -41,3 +41,9 @@ def test_counts_and_independent_cities_once():
 ])
 def test_place_at_a_point(lat, lon, name):
     assert wl.place(lat=lat, lon=lon).name == name
+
+
+@pytest.mark.parametrize("lat, lon, name", [(42.8641, -85.6008, "Gaines Charter Township"), (42.4734, -83.2219, "Southfield")])
+def test_michigan_point_lookup_uses_michigan_places(lat, lon, name):
+    p = wl.place(lat=lat, lon=lon)
+    assert p.name == name and len(p.geoid) == 10

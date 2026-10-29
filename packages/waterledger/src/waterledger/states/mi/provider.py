@@ -64,3 +64,13 @@ def context(place):
     jur = cx.Jurisdiction(provider="MI", sources=["census_tiger"], name=place.name, kind=place.kind, county=place.county, state="MI")
     return cx.Context(place=place, jurisdiction=jur, supply=supply, wastewater=cx.Wastewater(provider="MI", sources=["echo", "cwns2022"], plants=plants),
                       receiving=receiving, climate=climate, energy=energy)
+
+
+def place_at(lat, lon):
+    """Michigan places are its county subdivisions (cities and townships), so a point maps to the subdivision containing it."""
+    from waterledger_data.census import LAYERS
+    from waterledger_data.places import _get
+    d = _get(LAYERS["cousub"], {"geometry": f"{lon},{lat}", "geometryType": "esriGeometryPoint", "inSR": 4326,
+                                "spatialRel": "esriSpatialRelIntersects", "outFields": "GEOID", "returnGeometry": "false", "f": "json"})
+    f = d.get("features", [])
+    return f[0]["attributes"]["GEOID"] if f else None
