@@ -109,7 +109,8 @@ def by_huc12(state):
 def downstream(huc12, hops=100, network=None):
     """The HUC12s the water passes through from `huc12`, to the outlet and across state lines, with the impairments of the
     assessed waters in each: [{code, name, listings: [[group, tmdl, []]], assessed}], via the watershed tracer
-    (waterledger_data.trace). `group` is one of waters.ORDER; `tmdl` is 1 when every unit listing that cause has a TMDL."""
+    (waterledger_data.trace). `group` is one of waters.ORDER; `tmdl` is 1 when a unit listing that cause has a TMDL for it
+    (category 4A), the rule Water Ledger Michigan and by_huc12 use."""
     from waterledger_data.trace import ServiceNetwork, trace
     t = trace(huc12, "downstream", network or ServiceNetwork(), max_hops=hops)
     if t.path.empty:
@@ -123,7 +124,7 @@ def downstream(huc12, hops=100, network=None):
                 by_huc[r.huc12][g].append(str(r.parametercategorycode).upper().startswith("4A"))
     assessed = set(t.waters.loc[t.waters["isassessed"] == "Y", "huc12"])
     return [{"code": r.huc12, "name": r.name, "assessed": r.huc12 in assessed,
-             "listings": [[g, int(all(by_huc[r.huc12][g])), []] for g in ORDER if g in by_huc[r.huc12]]}
+             "listings": [[g, int(any(by_huc[r.huc12][g])), []] for g in ORDER if g in by_huc[r.huc12]]}
             for r in t.path.itertuples()]
 
 
