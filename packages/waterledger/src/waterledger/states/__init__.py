@@ -1,5 +1,6 @@
 """One folder per state (states/<st>/): a builder that writes the state's site data, and a provider that answers for its
-places (Place, Context, Estimate). Michigan is the full version; others follow from the national tier."""
+places (Place, Context, Estimate). A state without a folder, or a part its folder doesn't provide, is answered by the
+national tier (waterledger.national). Michigan is the full version."""
 import importlib
 
 STATES = {"mi": "Michigan"}
@@ -25,13 +26,29 @@ def builder(state):
     return importlib.import_module(f"waterledger.states.{state}.build")
 
 
+class Provider:
+    """Answers for one state: each call goes to the state's own provider if it has that function, else to the national one."""
+
+    def __init__(self, state):
+        self.state = state.upper()
+        self.own = importlib.import_module(f"waterledger.states.{state.lower()}.provider") if state.lower() in STATES else None
+        self.national = importlib.import_module("waterledger.national.provider")
+
+    def __getattr__(self, name):
+        if self.own is not None and hasattr(self.own, name):
+            return getattr(self.own, name)
+        fn = getattr(self.national, name)
+        return lambda *a, **k: fn(self.state, *a, **k)
+
+    def __repr__(self):
+        return f"Provider({self.state}: {'own and national' if self.own else 'national'})"
+
+
 def provider(state):
-    """The module that answers for a state's places. Only Michigan so far; the national tier will cover every state."""
-    st = state.lower()
-    if st not in STATES:
-        raise NotImplementedError(f"{state.upper()} is not available yet: Michigan is the first state; the national tier "
-                                  "(every state, from federal data) is in progress")
-    return importlib.import_module(f"waterledger.states.{st}.provider")
+    """The provider for a state (postal code): its own where it has one, national for the rest."""
+    if state.upper() not in FIPS.values():
+        raise KeyError(f"no state {state!r}")
+    return Provider(state)
 
 
 def __getattr__(name):
