@@ -107,7 +107,7 @@ Counts: Ohio 669 plants, Virginia 217, Texas 1,059.
 300 MW, cooling towers, average withdrawal (million gallons a day): Gaines (Michigan, ERA5) 2.34; Columbus 2.40;
 Loudoun County 2.43; Austin 2.66.
 
-## Energy (in progress, Oct 29, 2026)
+## Energy (Oct 29, 2026)
 
 - Utility territories:
   - Michigan: MPSC.
@@ -122,6 +122,12 @@ Loudoun County 2.43; Austin 2.66.
     Siddik et al. (2024, LBNL Water IMPACT), weighted by electricity use, excluding hydropower reservoir evaporation, as
     Michigan's MISO figure does.
   - MISO 1.570 L/kWh (Michigan's published figure), PJM 1.298, ERCOT 0.730, SPP 0.940, TVA 0.955, Southern 1.517.
+
+- Order of a place's utilities: by EIA customers in the state. Area shares are kept but shown as "may serve": HIFLD draws
+  many small utilities as whole counties, so Westerville's municipal utility "covers" 99% of Columbus. Ranking by
+  customers gives AEP Ohio for Columbus, Dominion (Virginia Electric & Power) for Loudoun County and Austin Energy for
+  Austin. Michigan uses MPSC territories, which are drawn to actual boundaries, and keeps its shares.
+- Every place in Ohio and Texas, and 315 of 322 in Virginia, has at least one territory.
 
 ## Still to decide or build
 
