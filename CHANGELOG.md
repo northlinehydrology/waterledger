@@ -58,6 +58,11 @@ Model version 1.3: parameters checked against primary sources for publication (`
   package); the manifest records the water-use sources and `water_use_years`. Snapshots in format 1 read as having no
   county water use. `waterledger build-state` gains a `wateruse` stage, and the statewide checks a `county_water_use`
   coverage minimum.
+- **Assist design** (`design="assist"`, not on the pages) is now dry coolers with adiabatic pre-cooling, calculated from pad effectiveness,
+  wet-bulb depression, coil air rise and fan slowing: `assist_share` is replaced by `assist_eff`, `assist_on` is 20-30 °C, and
+  `assist_dt_air` and `assist_bleed` are new (`physics.ADIABATIC`, their own random stream). No drift. It now overlaps hybrid. Other designs'
+  draws are unchanged.
+- Citations: Lei and Masanet's values cite the preprint they were read from; UPS range corrected to 90-99%; no numbers change.
 
 ## 3.1.0 (Oct 30, 2026)
 

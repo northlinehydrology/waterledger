@@ -252,7 +252,7 @@ error found in one state is checked and fixed in every state, to the same standa
 
 **Cooling physics.** The parameters marked estimates were traced (`physics.py` comments give each source):
 - Derived from sourced inputs (no published value exists): heat factor with economizer 1.03-1.10 (was 1.08 top), from
-  Lei and Masanet (2022) Table 3 component losses (UPS 97-99%, distribution 0-2%, fans 1.4-9.2% of IT); economizer and
+  Lei and Masanet's Table 3 component losses (UPS 90-99%, distribution 0-2%, fans 1.4-9.2% of IT; see the source check below), with the top set by measured large-campus overhead; economizer and
   chiller wet-bulb limits 5-12 and 14-22 °C (were 8-12 and 16-20), from chilled-water supply 12.8-18 °C (FEMP Data
   Center Design guide, 2024, p. 17) less tower and heat-exchanger approaches (Lei Table 3), split at their midpoints
   so each draw ramps upward; FEMP (p. 19): economizers suit climates below 55 °F wet-bulb for 3,000+ hours a year.
@@ -262,21 +262,51 @@ error found in one state is checked and fixed in every state, to the same standa
   +/-18% overall, pp. 28-29); tower range 7-15 °F (Lei Table 3: 4-6 °C); drift 0.0005-0.02% of circulating flow (EPA
   WaterSense at Work 2012, section 6.3: modern eliminators under 0.005%; AP-42 13.4, Table 13.4-1: induced draft
   0.020%); closed-loop volume 2,000-12,000 gal per MW (Crusoe 2026: 1.7 million gal for a 200 MW building; Vantage
-  Port Washington: about 11.8 million gal for about 1 GW); assist start 27-32 °C (Microsoft's 85 °F; ASHRAE allowable
-  inlet to 32 °C, FEMP 2024 Table 3-1); hybrid wet-mode start 21-28 °C (US Patent 12,426,214 B1, 2025: 70-95 °F,
+  Port Washington: about 11.8 million gal for about 1 GW); hybrid wet-mode start 21-28 °C (US Patent 12,426,214 B1, 2025: 70-95 °F,
   example 82 °F).
 - Kept and re-cited: chiller heat factor 1.15-1.25 (FEMP: compressor heat "up to 20%" of heat rejected; COP 5-8 gives
   1.13-1.20); cycles of concentration 3-7 (FEMP BMP #10); loop top-ups 1-5% a year (NIH 2023; the 1% floor is an
   assumption, and poorly kept loops can lose 25% a month).
-- Still assumptions [A], to calibrate and test for sensitivity: assist share 0.10-0.30 and hybrid fully evaporative
-  at 30-33 °C.
+- Still an assumption [A], to calibrate: hybrid fully evaporative at 30-33 °C. The assist share is replaced (below).
 - Method notes for the paper: LBNL and Lei count all tower heat as evaporation (Lei Eq. 5); this model's evaporative
-  ratio below 1 gives towers about 10-25% less water than that method. The "closed loop with assist" design's 85 °F
-  start comes from Microsoft's direct-air evaporative design, not a closed loop with assist (the pages do not show this
-  design). Drift is applied in assist and hybrid hours, though adiabatic pads have no tower drift.
+  ratio below 1 gives towers about 10-25% less water than that method. Drift is applied in hybrid hours; the assist design has none (below).
 - Effect on the stored test weather, model 1.2 to 1.3 at the median: cooling towers about 16% less water, hybrid about
   28% less, closed-loop top-ups about 60 gal/day per 100 MW (was 30); the non-cooling term adds about 4,500 gal/day at
   300 MW.
+
+**Lei and Masanet: source check (Oct 30).** The published article (Resources, Conservation and Recycling 182: 106323) is closed
+access and could not be read: ScienceDirect refuses automated reads, and OpenAlex and Semantic Scholar list no open copy. Values were
+checked against its preprint on Research Square (Lei and Masanet 2021, doi:10.21203/rs.3.rs-769999/v1, CC-BY 4.0), which is not on
+arXiv; the 2020 Energy paper and arXiv 2006.06819 are other works. Preprint Table 3, large-scale cases: distribution 0-2%, tower
+approach 2.8-6.7 °C, heat exchanger approach 1.7-2.8 °C and tower range 4-6 °C match what was cited; fans 1.4-9.2% of IT reproduces from
+its CRAH pressure (300-1000 Pa), fan efficiency (65-90%) and air temperature (13.9-19.4 °C) ranges. **UPS 97-99% was wrong:** the table says
+90-99% (LBNL 2024 Table 4.3 also 90-99%), and no source for 97-99% turned up. With every term at one end the sum is 1.02-1.22, so the
+component sum alone does not give the old top of 1.10. The top stays 1.10 for a different reason, stated now: heat through the water
+loop cannot exceed the facility's overhead, and large campuses measure 1.09 (Google 2025) to 1.14 (IEA 2025) with cooling included (LBNL
+2024, about 1.12 with towers). No numbers change. To check with library access: the published Table 3 and its numbering (the method
+became "hybrid physical-statistical" and 16 climate zones became 15, so renumbering is plausible). Until then these values cite the
+preprint.
+
+**Assist design: relabelled and re-sourced (Oct 30).** Microsoft's 85 °F is, in its own words, for "direct evaporative cooling", air
+side, not a closed loop with assist, so the design took its start from a different system and its share (0.10-0.30) had no source. It is
+now dry coolers with adiabatic pre-cooling (the taxonomy of Masanet 2026, arXiv 2610.04735, Table 2), a physical calculation:
+- Evaporated share of the heat = d / (on + rise - T + d), with d = effectiveness x wet-bulb depression, capped at 1. The air flow is what
+  carries the heat with the air leaving the coil where it did at the switch point, since fans slow in wet mode (Mokkapati and Das 2026,
+  a preprint, describe this operation). At full air flow the share can pass 1 and overstates water.
+- Effectiveness 0.70-0.80: EVAPCO (2018, p. 2) measured 72-78% at 400-700 fpm over 10 pads, and none reached 90% in the normal range, against
+  supplier claims of 65-97% and ASHRAE's (2016, ch. 41) 70 to over 95% for rigid media. Spray pre-coolers (SCE ET13SCE1020, 20-80%) are
+  not modeled.
+- Switch point 20-30 °C [A]: no maker publishes one; it is a selection and control output (EVAPCO, p. 2; BAC; Guentner). Uptime Institute
+  (2025) reports 20 °C or higher; Vertiv's energy-first example, 8 °C, is left out; the top is an assumption. No authoritative source for a
+  typical 25-30 °C was found.
+- Coil air rise 9-13 K [estimate]: makers' selection sheets on resale listings (Thermokey 11.2 K, Kelvion 12.8 K; both energy balances
+  close). Not a citation for a journal without a better source.
+- Bleed 0-0.5 of evaporation: none for once-through pads (Guentner; Spinazzola 2021), 10-50% for recirculating (SCE, p. 29); ASHRAE's
+  5-100% is wider, for water hardness. No drift: pads have no tower drift. A new random stream keeps every other design's draws unchanged.
+- Result on the stored test weather: about 0.06 L/kWh used up (0.015-0.14), about the same as hybrid (0.05), so the two overlap rather than
+  rank, which makes sense since they are close to the same technology; the test no longer requires assist below hybrid. Mokkapati and Das
+  give about 0.05-0.25 L/kWh for arid western cities (my conversion), so a cool climate at the low end is plausible. No operator
+  has published water use for an adiabatic dry cooler site. The pages do not show this design.
 
 **Short form (methods pages, briefs).** Electricity: the computers are taken to draw 50 to 80% of their capacity on
 average (EPRI 2026 measurements; IEA 2025), plus cooling and power losses by design (LBNL 2024; checked against
@@ -302,8 +332,7 @@ operators and NIH.
 - Sensitivity analysis (Sobol or one at a time) for the paper, above all for the derived and assumed parameters
   (heat factors, wet-bulb limits, assist share, hybrid temperatures, utilization).
 - Check Lei and Masanet's published Table 3 (Resources, Conservation and Recycling 182: 106323) against the preprint
-  used here.
-- Assist design: re-source or relabel; drop drift in adiabatic hours.
+  used here, with library access; a better source for the dry cooler air rise; metered water at an adiabatic site.
 - Landscape irrigation as an optional, climate-specific term.
 - Why Siddik's 2022 regional values exceed 2024 plant data in the eastern regions.
 - Station distance: how far places are from their division's station, and how much a nearer station changes the
