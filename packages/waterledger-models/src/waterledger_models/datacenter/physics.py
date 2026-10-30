@@ -25,14 +25,17 @@ RANGES = {
     # (AI training). Load over a site's own peak (EPRI: 88-94%) is a different ratio and does not bound this one.
     "utilization": (0.50, 0.80),
     # Heat rejected per unit of IT energy (model 1.3, derived; no published value). Economizer: IT plus fans, UPS and distribution
-    # losses, from Lei and Masanet 2022 Table 3 (large-scale: UPS 97-99%, distribution 0-2%, fans 1.4-9.2% of IT at their pressure and
-    # efficiency ranges). Chillers: plus compressor heat, "up to 20% of the total heat" (DOE FEMP, cooling water efficiency for data
-    # centers); COP 5-8 gives 1.13-1.20 over IT.
+    # losses. Lei and Masanet's Table 3 (Research Square preprint rs-769999/v1, 2021; large-scale cases: UPS 90-99%, also LBNL 2024
+    # Table 4.3; distribution 0-2%; CRAH fans 1.4-9.2% of IT at its pressure, efficiency and air temperature ranges) gives 1.02-1.22 with
+    # every term at one end. All of them at the bad end is not a large new campus: heat through the water loop cannot exceed the
+    # facility's overhead, and large campuses measure 1.09 (Google 2025) to 1.14 (IEA 2025) with cooling included (LBNL 2024: about 1.12 with
+    # towers), so the top is 1.10. Chillers: plus compressor heat, "up to 20% of the total heat" (DOE FEMP, cooling water efficiency for
+    # data centers); COP 5-8 gives 1.13-1.20 over IT.
     "hf_econ": (1.03, 1.10),
     "hf_chiller": (1.15, 1.25),
     # Wet-bulb (°C) limits of economizer and chiller operation (model 1.3, derived; no published value): chilled-water supply 12.8-18 °C
     # (FEMP Data Center Design guide 2024, p. 17: 55 °F or higher) less the tower (2.8-6.7 °C) and heat exchanger (1.7-2.8 °C) approaches
-    # (Lei and Masanet 2022 Table 3) gives 3.3-13.5 °C for full economizer; the return (supply plus a 5-10 °C rise) less the approaches
+    # (Lei and Masanet preprint, Table 3) gives 3.3-13.5 °C for full economizer; the return (supply plus a 5-10 °C rise) less the approaches
     # gives 8.3-23.5 °C for full chiller operation. FEMP (p. 19): economizers suit climates below 55 °F (12.8 °C) wet-bulb 3,000+ h a year.
     # The two ranges are split at their midpoints so every draw ramps upward.
     "wb_econ": (5.0, 12.0),
@@ -42,7 +45,7 @@ RANGES = {
     # et al.) puts tower evaporation error at +/-5-15% (p. 24) and +/-18% overall (pp. 28-29).
     "er_adj": (-0.10, 0.05),
     "coc": (3.0, 7.0),                 # cycles of concentration: DOE FEMP BMP #10, two to four typical, six or more possible
-    "range_f": (7.0, 15.0),            # tower range, °F (model 1.3, was 8-15): Lei and Masanet 2022 Table 3, 4-6 °C (7.2-10.8 °F); 10 °F rating
+    "range_f": (7.0, 15.0),            # tower range, °F (model 1.3, was 8-15): Lei and Masanet preprint, Table 3, 4-6 °C (7.2-10.8 °F); 10 °F rating
     # Drift as a share of circulating flow (model 1.3, was 0.005-0.05%): modern eliminators under 0.005% (EPA WaterSense at Work 2012,
     # section 6.3, p. 6-9) to EPA AP-42 13.4's induced-draft 0.020% (Table 13.4-1).
     "drift": (0.000005, 0.0002),

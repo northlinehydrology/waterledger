@@ -45,6 +45,7 @@ SOURCES = {
     "eia923_2024": ("U.S. Energy Information Administration. Thermoelectric cooling water data, 2024 (Form EIA-923 Schedule 8D water withdrawal and consumption by plant and cooling system, with EIA-860 cooling types). Michigan, 2024: 2,001,748 million gallons withdrawn, 61 L per kWh of the state's 124.2 TWh net generation, about 1% consumed.", "https://www.eia.gov/electricity/data/water/"),
     "lbnl2024": ("Shehabi, A., et al. (2024). 2024 United States Data Center Energy Usage Report. Lawrence Berkeley National Laboratory, LBNL-2001637.", "https://doi.org/10.71468/P1WC7Q"),
     "lei2022": ("Lei, N., & Masanet, E. (2022). Climate- and technology-specific PUE and WUE estimations for U.S. data centers using a hybrid statistical and thermodynamics-based approach. Resources, Conservation and Recycling 182: 106323.", "https://doi.org/10.1016/j.resconrec.2022.106323"),
+    "lei2021": ("Lei, N., & Masanet, E. (2021). Climate- and technology-specific PUE and WUE predictions for U.S. data centers using a physics-based approach. Research Square preprint of Lei & Masanet (2022); the values used here were read from this version.", "https://doi.org/10.21203/rs.3.rs-769999/v1"),
     "lei2025": ("Lei, N., Lu, J., Shehabi, A., & Masanet, E. (2025). The water use of data center workloads: A review and assessment of key determinants. Resources, Conservation and Recycling 219: 108310.", "https://doi.org/10.1016/j.resconrec.2025.108310"),
     "usgs2013": ("Diehl, T. H., Harris, M. A., Murphy, J. C., Hutson, S. S., & Ladd, D. E. (2013). Methods for estimating water consumption for thermoelectric power plants in the United States. U.S. Geological Survey Scientific Investigations Report 2013-5188 (eq. 9 gives the Rutberg et al. 2011 dry-bulb evaporation relation).", "https://doi.org/10.3133/sir20135188"),
     "femp_bmp10": ("U.S. Department of Energy, Federal Energy Management Program. Best Management Practice #10: Cooling Tower Management.", "https://www.energy.gov/femp/best-management-practice-10-cooling-tower-management"),
@@ -150,8 +151,8 @@ SHORT = {"lbnl2024": "LBNL 2024", "lbnl2025": "LBNL 2025", "epri2026": "EPRI 202
          "egle_dc_faq": "EGLE data center FAQ", "wleb_dap": "Lake Erie action plan", "nri2017": "USDA NRI 2017", "wellogic": "EGLE Wellogic", "wwat": "EGLE WWAT"}
 
 PARAM_SOURCES = {
-    "utilization": ["epri2026", "iea2025", "lbnl2024", "lbnl2025"], "hf_econ": ["femp_dc"], "hf_chiller": ["femp_dc"], "wb_econ": ["femp_dc"], "wb_chiller": ["femp_dc"],
-    "er_adj": ["usgs2013"], "coc": ["femp_bmp10"], "range_f": ["usgs2013"], "drift": ["epa_wsaw"], "fill_gal_per_mw": ["lowell_firstlook"], "topup": ["nih_closedloop"],
+    "utilization": ["epri2026", "iea2025", "lbnl2024", "lbnl2025"], "hf_econ": ["lei2021", "lbnl2024", "google2025", "iea2025"], "hf_chiller": ["femp_dc"], "wb_econ": ["femp_dc", "lei2021"], "wb_chiller": ["femp_dc", "lei2021"],
+    "er_adj": ["usgs2013"], "coc": ["femp_bmp10"], "range_f": ["usgs2013", "lei2021"], "drift": ["epa_wsaw"], "fill_gal_per_mw": ["lowell_firstlook"], "topup": ["nih_closedloop"],
     "staff_core": ["jlarc2024", "gilroy2022"], "staff_per_mw": ["meta_richland", "meta_elpaso", "oracle_saline2026", "gilroy2022"],
     "staff_gpcd": ["epa_onsite2002", "mi_septic", "gilroy2022"], "staff_used": ["usgs_cu2007"],
     "assist_on": ["msft2026"], "assist_share": ["lei2025"], "hybrid_on": ["lei2025", "han2026"], "hybrid_full": ["lei2025"],
