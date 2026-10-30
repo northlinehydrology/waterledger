@@ -2,6 +2,10 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.2.1 (Oct 30, 2026)
+
+- **State builds on a machine with no cache**: `power.utility_rtos` downloads EIA-861 when none is cached, as `utility_loads` does; in 3.2.0 `waterledger build-state` stopped at the energy stage with `FileNotFoundError`. No change to any number.
+
 ## 3.2.0 (Oct 30, 2026)
 
 Model version 1.3: parameters checked against primary sources for publication (`docs/methods/methods-log.md`, Oct 30,

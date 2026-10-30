@@ -351,6 +351,12 @@ component losses and setpoints (Lei and Masanet 2022; DOE FEMP); evaporation fro
 uncertainty that leans low in cold weather (USGS 2013); drift, cycles, loop volume and top-ups from EPA, DOE FEMP,
 operators and NIH.
 
+## Oct 30, 2026: 3.2.1 and the Ohio, Virginia and Texas snapshots
+
+3.2.1 fixes a crash in state builds on a machine with no cached EIA-861 (`power.utility_rtos`) and changes no number. The
+Ohio, Virginia and Texas snapshots of this date were built from `main` at 888f4d5, which has the fix but is still numbered
+3.2.0, so their manifests record 3.2.0. Model version 1.3 in both.
+
 ## Open
 
 - Model 1.3 is on the branch `defensible-parameters`, not released. Release steps: rebuild Michigan's site data and
