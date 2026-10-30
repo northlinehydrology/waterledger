@@ -16,6 +16,7 @@ written as zero. "total" is the sum of the categories present.
     usgs_2015(state=None)   USGS revised 2015 county estimates (Sleckman, Ross and Cook 2026), any state
     ohio(year=None)         ODNR Water Withdrawal Facility Registration, totaled by county
     texas(year=None)        TWDB Water Use Survey, historical estimates by county (report 7)
+    virginia(year=2024)     DEQ Annual Water Resources Report, Table 21 (localities, excluding power)
     state_layer(state)      the state's own layer, or None where Water Ledger has none
 """
 import calendar, csv, datetime, glob, html, io, json, os, re, urllib.parse, urllib.request, zipfile
@@ -415,11 +416,126 @@ def texas(year=None, path=None, fips=None):
 
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Virginia: DEQ Annual Water Resources Report, Table 21 (withdrawals within localities, excluding power generation)
 
-STATE_LAYERS = {"OH": ohio, "TX": texas}
+VA_REPORTS = {2024: "https://rga.lis.virginia.gov/Published/2025/RD1017/PDF"}     # data year: DEQ's report to the General Assembly
+# localities DEQ still lists that are no longer county-equivalents: folded into the county that absorbed them
+VA_FORMER_CITIES = {"BEDFORD": "Bedford County", "CLIFTON FORGE": "Alleghany County", "SOUTH BOSTON": "Halifax County"}
+VA_BASIS = {
+    "source": "va_deq_awrr", "kind": "reported", "measure": "withdrawals", "units": "Mgal/d", "source_units": "Mgal/d",
+    "citation": "Virginia Department of Environmental Quality. Annual Water Resources Report (in DEQ's consolidated annual report "
+                "to the General Assembly), Appendix 2, Table 21: Water Withdrawals Within Localities",
+    "threshold": "withdrawals averaging more than 10,000 gallons a day in any month (1 million gallons a month for crop "
+                 "irrigation) are reported (9VAC25-200)",
+    "categories": {"total": "every reporting facility in the locality, permitted and unpermitted, ground plus surface, "
+                            "excluding power generation"},
+    "caveats": ["Totals only: DEQ does not publish the split by use type in bulk (its Water Withdrawal Dashboard shows it by facility)",
+                "Power generation is excluded",
+                "The locality is where water is taken: Loudoun County buys much of its water from Fairfax Water's intakes",
+                "A locality's value can jump when an intake is reassigned between localities",
+                "Gross withdrawals; DEQ does not estimate consumption",
+                "Former cities DEQ still lists (Bedford, Clifton Forge, South Boston) are added to the counties that absorbed them",
+                "The 2024 table's Total row (1,277.03 Mgal/d) is larger than its rows' sum (about 1,181); the rows are used as printed"],
+}
+
+
+def va_report(year=2024):
+    """DEQ's report PDF for a data year (about 80 MB), downloaded once."""
+    path = os.path.join(RAW, f"va_deq_report_{year}.pdf")
+    if not os.path.exists(path):
+        _download(VA_REPORTS[year], path, timeout=900)
+    return path
+
+
+def va_table21_rows(pdf):
+    """Table 21's rows as [(locality, ground, surface, total)], its Total row, and the table's data year, read with pypdf.
+    Each row's ground plus surface must equal its total, and the ground and surface columns must add up to the Total row's
+    within 2%, or the table is refused. (The 2024 table's Total row reads 1,277.03 Mgal/d although its ground and surface
+    totals, and its rows, add up to about 1,182: the rows are used as printed.)"""
+    import logging
+
+    from pypdf import PdfReader
+    logging.getLogger("pypdf").setLevel(logging.ERROR)          # the report's images log decoding noise
+    rd = PdfReader(pdf)
+    start, year = None, None
+    for i, p in enumerate(rd.pages):
+        m = re.search(r"Table 21: Water Withdrawals Within Localities in (\d{4})", p.extract_text() or "")
+        if m:
+            start, year = i, int(m.group(1))
+            break
+    if start is None:
+        raise SourceUnavailable(f"Table 21 not found in {pdf}")
+    rows = []
+    row = re.compile(r"^(.+?)\s+(\d+\.\d\d)\s+(\d+\.\d\d)\s+(\d+\.\d\d)\s+(\d+\.\d\d)\s*$")
+    for p in rd.pages[start:start + 6]:
+        for line in (p.extract_text() or "").splitlines():
+            m = row.match(line.strip())
+            if m:
+                if m.group(1).replace(" ", "") == "Total":          # pypdf may split the word ("T otal")
+                    total = tuple(float(m.group(i)) for i in (2, 3, 4))
+                    bad = [r[0] for r in rows if abs(r[1] + r[2] - r[3]) > 0.015]
+                    off = [i for i in (1, 2) if abs(sum(r[i] for r in rows) - total[i - 1]) > 0.02 * max(total[i - 1], 1)]
+                    if len(rows) < 100 or bad or off:
+                        raise SourceUnavailable(f"Table 21 in {pdf} doesn't read cleanly: {len(rows)} rows; rows whose ground plus "
+                                                f"surface isn't their total: {bad[:5]}; columns off their Total row: {off}")
+                    return rows, total, year
+                rows.append((m.group(1).strip(), float(m.group(2)), float(m.group(3)), float(m.group(4))))
+    raise SourceUnavailable(f"Table 21's Total row not found in {pdf}")
+
+
+def va_table21(year=2024, refresh=False):
+    """Table 21 as {"year", "url", "pdf_sha256", "rows"}, cached as wateruse/va_table21_<year>.json (so the PDF is read once)."""
+    import hashlib
+    path = os.path.join(RAW, f"va_table21_{year}.json")
+    if refresh or not os.path.exists(path):
+        pdf = va_report(year)
+        rows, total, yr = va_table21_rows(pdf)
+        if yr != year:
+            raise ValueError(f"{VA_REPORTS[year]} holds {yr} data, not {year}")
+        sha = hashlib.sha256(open(pdf, "rb").read()).hexdigest()
+        t = {"year": yr, "url": VA_REPORTS[year], "pdf_sha256": sha, "retrieved": datetime.date.today().isoformat(),
+             "columns": ["locality", "ground_mgd", "surface_mgd", "total_mgd"], "rows": rows, "total_row": total}
+        os.makedirs(RAW, exist_ok=True)
+        json.dump(t, open(path, "w"))
+    return json.load(open(path))
+
+
+def _va_locality(name, fips):
+    m = re.match(r"City of (.+)$", name)
+    if m:
+        base = m.group(1).upper()
+        if base in VA_FORMER_CITIES:
+            return fips[VA_FORMER_CITIES[base]]
+        return fips.get(base + " CITY")
+    return fips.get(name)
+
+
+def virginia(year=2024, table=None, fips=None):
+    """DEQ reported withdrawals by locality (counties and independent cities), excluding power, in Mgal/d. Totals only."""
+    t = table or va_table21(year)
+    fips = fips or county_fips("VA")
+    out = {}
+    for name, gw, sw, tot in t["rows"]:
+        cf = _va_locality(name, fips)
+        if cf is None:
+            raise ValueError(f"DEQ locality {name!r} not matched to Census")
+        rec = out.setdefault(cf, {"name": None, "mgd": {}, "ground_mgd": {}, "surface_mgd": {}, "source_values": {}})
+        rec["source_values"][name] = {"ground": gw, "surface": sw, "total": tot}
+        for k, v in (("ground_mgd", gw), ("surface_mgd", sw), ("mgd", tot)):
+            rec[k]["total"] = _r(rec[k].get("total", 0) + v, 2)
+    names = _names(fips)
+    for cf, rec in out.items():
+        rec["name"] = names.get(cf)
+    basis = {**VA_BASIS, "year": t["year"], "url": t["url"], "retrieved": t.get("retrieved"), "pdf_sha256": t.get("pdf_sha256")}
+    return {"basis": basis, "counties": dict(sorted(out.items()))}
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+STATE_LAYERS = {"OH": ohio, "TX": texas, "VA": virginia}
 
 
 def state_layer(state, **kw):
-    """The state's own county layer (Ohio, Texas), or None where Water Ledger uses only the USGS estimates."""
+    """The state's own county layer (Ohio, Texas, Virginia), or None where Water Ledger uses only the USGS estimates."""
     fn = STATE_LAYERS.get(state.upper())
     return fn(**kw) if fn else None

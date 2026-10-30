@@ -4,7 +4,7 @@
     places    Census cities and townships, EPA water system service areas, USGS watersheds
     waters    EPA ATTAINS impaired waters, ECHO and CWNS sewer plants, county rainfall, household wells
     power     electric utility territories and EIA-861 loads
-    wateruse  water use by county: USGS 2015 estimates for every state
+    wateruse  water use by county: USGS 2015 estimates for every state; Ohio, Texas and Virginia's own figures
 
 Submodules load on first use, so `import waterledger_data` stays light.
 """

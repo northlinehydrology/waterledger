@@ -1,5 +1,5 @@
 """County water use from the public sources, against the values in docs/methods/water-use-sources.md (nightly; pytest -m live).
-Texas downloads TWDB's report through its SSRS viewer."""
+Texas downloads TWDB's report through its SSRS viewer, and Virginia reads DEQ's report PDF (about 80 MB, cached)."""
 import pytest
 
 from waterledger_data import wateruse as wu
@@ -41,3 +41,9 @@ def test_texas_travis_2024():
     assert sv["Municipal"]["total"] == 209045 and sv["Total"]["total"] == 228721
     assert sv["Municipal"]["ground"] + sv["Municipal"]["surface"] + sv["Municipal"]["reuse"] == 209045
     assert len(t["counties"]) == 254
+
+
+def test_virginia_loudoun_2024():
+    v = wu.virginia(2024)
+    assert v["counties"]["51107"]["mgd"]["total"] == 17.19 and v["counties"]["51107"]["ground_mgd"]["total"] == 1.59
+    assert len(v["counties"]) == 133                       # 95 counties and 38 independent cities

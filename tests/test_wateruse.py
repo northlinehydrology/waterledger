@@ -12,6 +12,10 @@ FIPS_OH = {"Franklin County": "39049", "FRANKLIN": "39049", "Van Wert County": "
 FIPS_TX = {"Travis County": "48453", "TRAVIS": "48453"}
 
 
+FIPS_VA = {"Loudoun County": "51107", "LOUDOUN": "51107", "Richmond city": "51760", "RICHMOND CITY": "51760",
+           "Richmond County": "51159", "RICHMOND": "51159", "Bedford County": "51019", "BEDFORD": "51019"}
+
+
 def test_categories_are_fixed():
     assert wu.CATEGORIES[-1] == "total" and len(set(wu.CATEGORIES)) == len(wu.CATEGORIES)
     assert set(wu.USGS_CATS) | {"other", "total"} == set(wu.CATEGORIES)
@@ -107,8 +111,48 @@ def test_texas_converts_acre_feet(tmp_path):
         wu.texas(year=2023, path=str(p), fips=FIPS_TX)
 
 
+def test_virginia_localities_and_former_cities():
+    table = {"year": 2024, "url": "u", "retrieved": "2026-10-30", "pdf_sha256": "x",
+             "rows": [["Loudoun County", 1.59, 15.61, 17.19], ["City of Richmond", 0.02, 69.72, 69.75], ["Richmond County", 0.32, 0.0, 0.32],
+                      ["City of Bedford", 1.3, 17.84, 19.14], ["Bedford County", 0.0, 0.0, 0.0]]}
+    v = wu.virginia(table=table, fips=FIPS_VA)
+    C = v["counties"]
+    assert v["basis"]["kind"] == "reported" and v["basis"]["year"] == 2024
+    assert C["51107"]["mgd"] == {"total": 17.19} and C["51107"]["ground_mgd"] == {"total": 1.59}
+    assert C["51760"]["name"] == "Richmond city" and C["51760"]["mgd"]["total"] == 69.75
+    assert C["51159"]["mgd"]["total"] == 0.32
+    assert C["51019"]["mgd"]["total"] == 19.14 and set(C["51019"]["source_values"]) == {"City of Bedford", "Bedford County"}
+    with pytest.raises(ValueError, match="Atlantis"):
+        wu.virginia(table={**table, "rows": [["City of Atlantis", 0, 0, 0]]}, fips=FIPS_VA)
+
+
+def test_virginia_table_read_from_a_pdf(tmp_path):
+    """Table 21 as pypdf reads DEQ's report (the Total row's word may come out split)."""
+    canvas = pytest.importorskip("reportlab.pdfgen.canvas")             # a dev dependency, not in the published wheels' tests
+    pdf = str(tmp_path / "report.pdf")
+    c = canvas.Canvas(pdf)
+    c.drawString(40, 800, "Some other page")
+    c.showPage()
+    lines = ["Table 21: Water Withdrawals Within Localities in 2024 (MGD)",
+             "Locality GW Withdrawal SW Withdrawal GW + SW Total Percent of Total Withdrawal"]
+    rows = [(f"Locality {i} County", 0.10, 1.00, 1.10, 0.5) for i in range(120)] + [("City of Richmond", 0.02, 69.72, 69.75, 5.46)]
+    lines += [f"{n} {g:.2f} {s:.2f} {t:.2f} {p:.2f}" for n, g, s, t, p in rows]
+    lines += [f"T otal {sum(r[1] for r in rows):.2f} {sum(r[2] for r in rows):.2f} {sum(r[3] for r in rows):.2f} 100.00"]
+    y = 800
+    for line in lines:
+        c.drawString(40, y, line)
+        y -= 12
+        if y < 40:
+            c.showPage()
+            y = 800
+    c.save()
+    got, total, year = wu.va_table21_rows(pdf)
+    assert year == 2024 and len(got) == 121 and got[-1] == ("City of Richmond", 0.02, 69.72, 69.75)
+    assert total[1] == pytest.approx(sum(r[2] for r in rows))
+
+
 def test_state_layers():
-    assert set(wu.STATE_LAYERS) == {"OH", "TX"} and wu.state_layer("WY") is None
+    assert set(wu.STATE_LAYERS) == {"OH", "TX", "VA"} and wu.state_layer("WY") is None
 
 
 def test_days():
