@@ -1,7 +1,15 @@
-"""waterledger build <state> [all|estimates|waters|power]: write a state's site data (paths from waterledger_data.config)."""
-import argparse
+"""waterledger build-state <ST>: build a state's data. waterledger build <state> [all|estimates|waters|power]: Michigan's site
+data, part by part (paths from waterledger_data.config); kept for scripts, build-state MI runs the same build."""
+import argparse, sys
 
 from waterledger.states import STATES, builder
+
+
+def _build_site(state, part="all"):
+    m = builder(state)
+    parts = {"estimates": m.main, "waters": m.build_waters, "power": m.build_power}
+    for p in (["estimates", "waters", "power"] if part == "all" else [part]):
+        parts[p]()
 
 
 def main(argv=None):
@@ -10,7 +18,7 @@ def main(argv=None):
     b = sub.add_parser("build", help="write a state's site data")
     b.add_argument("state", choices=sorted(STATES))
     b.add_argument("part", nargs="?", default="all", choices=["all", "estimates", "waters", "power"])
-    bs = sub.add_parser("build-state", help="build a state's national-tier data from the public sources (resumes where it left off)")
+    bs = sub.add_parser("build-state", help="build a state's data: Michigan from its own sources, others from the national sources (resumes where it left off)")
     bs.add_argument("state")
     bs.add_argument("--out", default=None, help="write a build report here")
     bs.add_argument("--no-checks", action="store_true", help="skip the statewide checks (run them on the snapshot instead)")
@@ -31,6 +39,9 @@ def main(argv=None):
             print(write(a.state, a.out, a.date))
         return
     if a.cmd == "build-state":
+        if a.state.lower() in STATES:                     # a state with its own data (Michigan) builds from that, not the national tier
+            _build_site(a.state.lower())
+            return
         from waterledger.national.build import build
         build(a.state, a.out, run_checks=not a.no_checks)
         return
@@ -38,10 +49,9 @@ def main(argv=None):
         from waterledger.national.build import check_snapshot
         check_snapshot(a.state, a.dir)
         return
-    m = builder(a.state)
-    parts = {"estimates": m.main, "waters": m.build_waters, "power": m.build_power}
-    for p in (["estimates", "waters", "power"] if a.part == "all" else [a.part]):
-        parts[p]()
+    if a.part == "all":
+        print(f"note: `waterledger build-state {a.state.upper()}` runs the same build; `waterledger build` stays for building one part", file=sys.stderr)
+    _build_site(a.state, a.part)
 
 
 if __name__ == "__main__":
