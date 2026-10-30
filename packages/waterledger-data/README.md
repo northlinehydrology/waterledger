@@ -16,7 +16,8 @@ pip install waterledger-data
 | `divisions` | NOAA climate divisions, one long-record ISD station for each, county rainfall and Atlas 14 design storms |
 | `climate` | hourly ERA5 (Open-Meteo) and NOAA ISD weather, Atlas 14 depths |
 | `energy` | electric utility territories (HIFLD), EIA-861 sales and peaks, power-plant water per kWh by grid region (Siddik et al. 2024) |
-| `places`, `waters`, `power` | Michigan's own layers (cities and townships, EGLE water use and wells, MPSC territories) |
+| `power` | EIA-861 retail sales and residential use for any state (`state_retail_mwh`, `residential`); Michigan's MPSC territories |
+| `places`, `waters` | Michigan's own layers (cities and townships, EGLE water use and wells) |
 
 Downloads are cached under `WATERLEDGER_CACHE` (default `~/.cache/waterledger`) or the `cache` path in a
 `waterledger.toml`. A build that stops part way resumes from the cache.
