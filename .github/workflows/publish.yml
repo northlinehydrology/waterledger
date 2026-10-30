@@ -1,7 +1,7 @@
 name: publish
 # Push a tag v* (for example v2026.10.29) to release: the tests run, the three packages are built, and each is published to PyPI
 # by trusted publishing (no stored token) from the environment pypi-<package>. A package whose version is already on PyPI is
-# skipped, so bump only what changed.
+# skipped, so bump only what changed. Each tag then gets a GitHub release, its notes from that version's section of CHANGELOG.md.
 on:
   push:
     tags: ["v*"]
@@ -43,3 +43,17 @@ jobs:
         with:
           packages-dir: dist/${{ matrix.package }}/
           skip-existing: true
+  github-release:
+    needs: pypi
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v=${GITHUB_REF_NAME#v}
+          awk -v h="## $v " 'index($0,h)==1{on=1;next} /^## /{on=0} on' CHANGELOG.md > notes.md
+          test -s notes.md
+          gh release create "$GITHUB_REF_NAME" --verify-tag --title "waterledger $v" --notes-file notes.md
