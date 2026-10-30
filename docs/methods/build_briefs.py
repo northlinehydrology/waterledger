@@ -104,7 +104,7 @@ def brief(state):
              "NOAA ISD station records, 1995-2024, one station per NOAA climate division; Atlas 14 design storms; Climate at a Glance rainfall",
              f"{len(divs)} {'regions' if mi else 'climate divisions'}"],
             ["Energy", "MPSC territories; EIA-861 sales and peaks" if mi else
-             "HIFLD retail service territories (PNNL copy); EIA-861 sales and peaks; Siddik et al. 2024 water per kWh by grid region",
+             "HIFLD retail service territories (PNNL copy); EIA-861 sales and peaks; EIA-923 plant reports for power-plant water",
              f"{len(en['loads'])} utilities with loads; grid regions: {', '.join(sorted(en['grid_water']))}"]]
     S += [Paragraph("Data", H2), table(rows, [1.0, 3.6, 2.4])]
 
@@ -114,15 +114,16 @@ def brief(state):
                     "station records gave cooling tower estimates within about 1%, and hybrid and assist estimates 4-50% higher (2-5 times "
                     "higher at the coolest sites).", BODY),
           Paragraph("<b>Cooling water.</b> Hourly temperature and humidity drive the heat rejected by the campus under four "
-                    "cooling designs: cooling towers; hybrid, evaporative in warm weather only; closed loop with evaporative assist on the "
-                    "hottest hours (dry-bulb above roughly 82-88 F); and closed loop with no evaporative cooling. Evaporation is the heat load "
+                    "cooling designs: cooling towers; hybrid, evaporative in warm weather only; dry coolers with adiabatic pre-cooling above "
+                    "a switch temperature (20-30 C, assumed); and closed loop with no evaporative cooling. Evaporation is the heat load "
                     "times the evaporative fraction of Rutberg et al. (2011), as used in the USGS cooling tower method. Blowdown is evaporation "
                     "divided by cycles of concentration minus one (DOE FEMP).", BODY),
-          Paragraph("<b>Uncertainty.</b> Each estimate is 200 Monte Carlo runs, sampling 15 cooling parameters from published or estimated "
+          Paragraph("<b>Uncertainty.</b> Each estimate is 200 Monte Carlo runs, sampling 17 cooling parameters from published or estimated "
                     "ranges; estimated ranges are marked [A]. We report the 10th, 50th and 90th percentiles. The peak day is the 1-in-10-year "
                     "maximum day, taken as the 90th percentile of the annual maximum daily withdrawal.", BODY),
-          Paragraph("<b>Other water.</b> Staff use, scaled to the number of people on site, and make-up water for closed loops, which lose "
-                    "1-5% of their volume a year to leaks.", BODY),
+          Paragraph("<b>Other water.</b> Staff use, 10-30 gallons a person a day, scaled to the number of people on site; maintenance and "
+                    "cleaning, up to 2,000 gallons a day plus 2-20 per MW, bracketed by applicants' projections; and make-up water for closed "
+                    "loops, which lose 1-5% of their volume a year to leaks.", BODY),
           Paragraph("<b>Source and wastewater.</b> If a community water system is mapped in the place, the campus is served by it. If not, a "
                     "closed loop connects to the nearest system serving more than 3,300 people when it is within 10 km; all other cases use new "
                     "wells. Discharge goes to the nearest sewer plant if it is within reach and, for evaporative designs, has enough unused "
@@ -130,7 +131,9 @@ def brief(state):
           Paragraph("<b>Downstream.</b> The place's main HUC-12 watershed is traced downstream for up to 25 watersheds, across state lines "
                     "where needed, with the EPA-listed impairments and TMDLs for each.", BODY),
           Paragraph("<b>Electricity.</b> Utilities come from the national retail territory layer, ordered by number of customers because "
-                    "it draws many small utilities as whole counties. States can add their own layers (reported water use, wells, "
+                    "it draws many small utilities as whole counties. Power-plant water is each state's own: 2024 plant reports to EIA, with "
+                    "Macknick et al. (2012) factors where a report is implausible or missing, weighted for imports, updated with 2022 reports "
+                    "and Siddik et al. (2024) on the same basis. States can add their own layers (reported water use, wells, "
                     "coldwater streams, state rules) on top of this method.", BODY)]
 
     S += [Paragraph(f"What is specific to {name}", H2)]
