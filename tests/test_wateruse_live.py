@@ -23,3 +23,12 @@ def test_usgs_2015(usgs, fips, public, total, delivered):
 def test_usgs_covers_every_county(usgs):
     assert len(usgs) > 3200 and usgs["26081"]["mgd"]["golf"] == 1.91 and usgs["51107"]["mgd"]["commercial"] == 0.05
     assert sum(1 for f in usgs if f.startswith("39")) == 88 and sum(1 for f in usgs if f.startswith("48")) == 254
+
+
+def test_ohio_franklin_2024():
+    o = wu.ohio(2024)
+    sv = o["counties"]["39049"]["source_values"]
+    assert round(sv["Public"]["total"]) == 63017 and round(sum(v["total"] for v in sv.values())) == 92441
+    assert round(sv["Mineral Extraction"]["total"]) == 28094
+    assert o["counties"]["39049"]["mgd"]["public_supply"] == pytest.approx(172.18, abs=0.01)
+    assert len(o["counties"]) == 88 and wu.ohio()["basis"]["year"] >= 2024

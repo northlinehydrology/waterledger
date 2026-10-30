@@ -1,5 +1,6 @@
-"""Water use by county: the USGS 2015 estimates for every state. Cached under <cache>/wateruse/. Sources, structure
-and caveats are in the methods note docs/methods/water-use-sources.md.
+"""Water use by county: the USGS 2015 estimates for every state, and the reported (or state-estimated) county totals that
+Ohio, Texas and Virginia publish. Cached under <cache>/wateruse/. Sources, structure and caveats are in the methods note
+docs/methods/water-use-sources.md.
 
 Every layer returns the same shape:
 
@@ -13,8 +14,9 @@ Categories are a small fixed set (CATEGORIES); a category is left out where the 
 written as zero. "total" is the sum of the categories present.
 
     usgs_2015(state=None)   USGS revised 2015 county estimates (Sleckman, Ross and Cook 2026), any state
+    ohio(year=None)         ODNR Water Withdrawal Facility Registration, totaled by county
 """
-import calendar, json, os, urllib.request, zipfile
+import calendar, datetime, json, os, urllib.request, zipfile
 
 from waterledger_data.config import CACHE
 
@@ -50,6 +52,36 @@ def _total(rec):
             rec[k] = {c: rec[k][c] for c in CATEGORIES if c in rec[k] and c != "total"}
             rec[k]["total"] = _r(sum(rec[k].values()))
     return rec
+
+
+def county_fips(state):
+    """{county name as written by Census ("Franklin County", "Richmond city"): FIPS} and the same keyed by upper-case base
+    name ("FRANKLIN"; independent cities as "RICHMOND CITY"), from Census TIGERweb (cached with the state's places)."""
+    from waterledger_data import census
+    fips = next(f for f, s in _STATES.items() if s == state)
+    out = {}
+    for f in census._features("county", fips):
+        a = f["a"]
+        out[a["NAME"]] = a["GEOID"]
+        base = a["BASENAME"].upper()
+        out[base + " CITY" if a["NAME"].lower().endswith(" city") else base] = a["GEOID"]
+    return out
+
+
+def _names(fips):
+    """{FIPS: Census name} from a county_fips() lookup (its mixed-case keys are Census's names)."""
+    return {v: k for k, v in fips.items() if not k.isupper()}
+
+
+# postal codes by state FIPS (as waterledger.states.FIPS; repeated so waterledger_data stays independent of waterledger)
+_STATES = {"01": "AL", "02": "AK", "04": "AZ", "05": "AR", "06": "CA", "08": "CO", "09": "CT", "10": "DE", "11": "DC", "12": "FL",
+           "13": "GA", "15": "HI", "16": "ID", "17": "IL", "18": "IN", "19": "IA", "20": "KS", "21": "KY", "22": "LA", "23": "ME",
+           "24": "MD", "25": "MA", "26": "MI", "27": "MN", "28": "MS", "29": "MO", "30": "MT", "31": "NE", "32": "NV", "33": "NH",
+           "34": "NJ", "35": "NM", "36": "NY", "37": "NC", "38": "ND", "39": "OH", "40": "OK", "41": "OR", "42": "PA", "44": "RI",
+           "45": "SC", "46": "SD", "47": "TN", "48": "TX", "49": "UT", "50": "VT", "51": "VA", "53": "WA", "54": "WV", "55": "WI",
+           "56": "WY"}
+
+
 # ---------------------------------------------------------------------------------------------------------------------
 # USGS: revised 2015 county estimates, every state
 
@@ -140,3 +172,127 @@ def usgs_2015(state=None):
         df = df[df["State"] == state.upper()]
     cols = [c for c in df.columns if "-W" in c]
     return {"basis": USGS_BASIS, "counties": {r["fips"]: usgs_record(r, cols) for r in df.to_dict("records")}}
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Ohio: ODNR Water Withdrawal Facility Registration
+
+ODNR = "https://services5.arcgis.com/ajRlmtxbNBjZggOT/arcgis/rest/services/Water_Withdrawal_Facility/FeatureServer"
+ODNR_FIRST_YEAR = 2015
+# ODNR's primary use (one per facility) -> Water Ledger's category. ODNR's own names are kept in source_values.
+OHIO_CATS = {"Public": "public_supply", "Industry": "industrial", "Power": "thermoelectric", "Golf Course": "golf",
+             "Agriculture": "irrigation", "Mineral Extraction": "mining", "Hydro Fracturing": "mining", "Misc": "other"}
+OHIO_BASIS = {
+    "source": "odnr_wwfr", "kind": "reported", "measure": "withdrawals", "units": "Mgal/d", "source_units": "million gallons per year",
+    "citation": "Ohio Department of Natural Resources, Division of Water Resources. Water Withdrawal Facility Registration "
+                "(annual reports by facility; ArcGIS feature service Water_Withdrawal_Facility)",
+    "url": ODNR, "threshold": "facilities able to withdraw 100,000 gallons a day or more register and report each year (ORC 1521.16)",
+    "categories": {"public_supply": "Public", "industrial": "Industry", "thermoelectric": "Power", "golf": "Golf Course",
+                   "irrigation": "Agriculture (mostly crop, nursery and sod irrigation; a few livestock and poultry farms)",
+                   "mining": "Mineral Extraction (mostly quarry dewatering) and Hydro Fracturing; each kept in source_values",
+                   "other": "Misc", "total": "every facility in the county, surface plus ground"},
+    "caveats": ["One primary use per facility: a facility's whole withdrawal counts in that use",
+                "The county is where the facility is, not where its water comes from",
+                "Mineral extraction is mostly quarry dewatering, pumped away rather than used",
+                "Public-system customers don't register; homes on private wells are not counted",
+                "Return flows are reported inconsistently, so consumption is not derived",
+                "Million gallons a year converted to Mgal/d over the days in the year"],
+}
+
+
+def _odnr_query(layer, where, fields):
+    from waterledger_data.places import _get
+    out, off = [], 0
+    while True:
+        d = _get(f"{ODNR}/{layer}/query", {"where": where, "outFields": fields, "returnGeometry": "false", "orderByFields": "OBJECTID",
+                                           "resultOffset": off, "resultRecordCount": 2000, "f": "json"})
+        rows = [f["attributes"] for f in d.get("features", [])]
+        out += rows
+        if not d.get("exceededTransferLimit") and len(rows) < 2000:
+            return out
+        off += len(rows)
+
+
+def ohio_raw(refresh=False):
+    """ODNR's facilities (layer 0) and annual surface (table 2) and ground (table 3) withdrawals since ODNR_FIRST_YEAR,
+    with the date retrieved; cached as wateruse/odnr_registration.json."""
+    path = os.path.join(RAW, "odnr_registration.json")
+    if refresh or not os.path.exists(path):
+        where = f"Year>={ODNR_FIRST_YEAR}"
+        raw = {"retrieved": datetime.date.today().isoformat(), "url": ODNR,
+               "facilities": _odnr_query(0, "1=1", "RegistrationNumber,Name,CountyName,FacilityPrimaryUseType,Status"),
+               "surface": _odnr_query(2, where, "RegistrationNumber,Year,Total"),
+               "ground": _odnr_query(3, where, "RegistrationNumber,Year,Total")}
+        os.makedirs(RAW, exist_ok=True)
+        json.dump(raw, open(path, "w"))
+    return json.load(open(path))
+
+
+def ohio_years(raw=None):
+    """{year: facilities reporting}; a year counts as complete when at least 90% as many facilities report as the year before
+    (reports for a year arrive the following spring)."""
+    raw = raw or ohio_raw()
+    n = {}
+    for r in raw["surface"] + raw["ground"]:
+        n.setdefault(r["Year"], set()).add(r["RegistrationNumber"])
+    return {y: len(v) for y, v in sorted(n.items())}
+
+
+def _latest_complete(counts):
+    ys = sorted(counts)
+    for y in reversed(ys):
+        prev = counts.get(y - 1)
+        if prev is None or counts[y] >= 0.9 * prev:
+            return y
+    return ys[-1]
+
+
+def ohio(year=None, raw=None, fips=None):
+    """ODNR reported withdrawals by county for `year` (default: the latest complete year), in Mgal/d."""
+    raw = raw or ohio_raw()
+    year = year or _latest_complete(ohio_years(raw))
+    fips = fips or county_fips("OH")
+    names = _names(fips)
+    fac = {f["RegistrationNumber"]: f for f in raw["facilities"]}
+    out, unknown = {}, set()
+    for part, rows in (("surface_mgd", raw["surface"]), ("ground_mgd", raw["ground"])):
+        for r in rows:
+            f = fac.get(r["RegistrationNumber"])
+            if r["Year"] != year or f is None or not r.get("Total"):
+                continue
+            cf = fips.get((f["CountyName"] or "").strip().upper())
+            if cf is None:
+                unknown.add(f["CountyName"])
+                continue
+            use = f["FacilityPrimaryUseType"] or "Misc"
+            rec = out.setdefault(cf, {"name": names.get(cf, f["CountyName"].title() + " County"), "mgd": {}, "ground_mgd": {}, "surface_mgd": {},
+                                      "source_values": {}})
+            cat = OHIO_CATS.get(use, "other")
+            rec[part][cat] = rec[part].get(cat, 0.0) + r["Total"]
+            sv = rec["source_values"].setdefault(use, {"surface": 0.0, "ground": 0.0})
+            sv["surface" if part == "surface_mgd" else "ground"] += r["Total"]
+    if unknown:
+        raise ValueError(f"ODNR counties not matched to Census: {sorted(unknown)}")
+    days = _days(year)
+    for rec in out.values():
+        for part in ("surface_mgd", "ground_mgd"):
+            rec[part] = {c: v / days for c, v in rec[part].items()}
+        rec["mgd"] = {c: _r(rec["surface_mgd"].get(c, 0) + rec["ground_mgd"].get(c, 0)) for c in {*rec["surface_mgd"], *rec["ground_mgd"]}}
+        for part in ("surface_mgd", "ground_mgd"):
+            rec[part] = {c: _r(v) for c, v in rec[part].items()}
+        rec["source_values"] = {u: {k: round(v, 2) for k, v in {**sv, "total": sv["surface"] + sv["ground"]}.items()}
+                                for u, sv in sorted(rec["source_values"].items())}
+        _total(rec)
+    basis = {**OHIO_BASIS, "year": year, "retrieved": raw.get("retrieved")}
+    return {"basis": basis, "counties": dict(sorted(out.items()))}
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+STATE_LAYERS = {"OH": ohio}
+
+
+def state_layer(state, **kw):
+    """The state's own county layer (Ohio), or None where Water Ledger uses only the USGS estimates."""
+    fn = STATE_LAYERS.get(state.upper())
+    return fn(**kw) if fn else None
