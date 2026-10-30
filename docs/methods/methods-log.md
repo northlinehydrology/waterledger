@@ -311,6 +311,15 @@ now dry coolers with adiabatic pre-cooling (the taxonomy of Masanet 2026, arXiv 
   give about 0.05-0.25 L/kWh for arid western cities (my conversion), so a cool climate at the low end is plausible. No operator
   has published water use for an adiabatic dry cooler site. The main calculator does not offer this design; the detailed calculator does.
 
+**Sensitivity analysis (Oct 30; `docs/methods/sensitivity/`).** Sobol indices (N = 8,192 per design; Saltelli and Jansen estimators, bootstrap
+intervals) and Morris screening of every parameter over the stored West Michigan weather, per 100 MW; the non-cooling term at 300 MW.
+Repeatable: fixed seed, and a second full run gave byte-identical results files (only the commit and runtime in `run_info.json` differ). Results,
+total-order: cooling towers are led by utilization (0.82 on water used up) and the evaporative ratio adjustment; hybrid by its switch
+temperature (about 0.85 annually) and assist by its own (0.93), both operator settings, better taken from an applicant or shown as scenarios
+than treated as physical uncertainty. The derived heat factors and wet-bulb limits sum to about 0.01 for annual tower water, so they need no
+further work. Non-cooling water is led by maintenance per MW (0.62), bracketed only by applicants, so metered use at an operating campus is
+the most useful single figure. Limits: one climate, two years of weather (so the 1-in-10 peak is close to the hotter year's record).
+
 **Short form (methods pages, briefs).** Electricity: the computers are taken to draw 50 to 80% of their capacity on
 average (EPRI 2026 measurements; IEA 2025), plus cooling and power losses by design (LBNL 2024; checked against
 Google's and IEA's reported PUE). Power plants: each state's figure comes from its plants' 2024 reports to EIA (with
@@ -332,8 +341,7 @@ operators and NIH.
   a state-mix power option from `state_power_water` as the starting point, `wind_solar` with the state's PV share,
   withdrawal factors on every option, maintenance in the page's staff water), and put the short form above on the
   methods pages and in the briefs.
-- Sensitivity analysis (Sobol or one at a time) for the paper, above all for the derived and assumed parameters
-  (heat factors, wet-bulb limits, assist share, hybrid temperatures, utilization).
+- Sensitivity analysis: repeat with a hotter climate's weather (West Michigan only so far); the repo has no other hourly weather.
 - Check Lei and Masanet's published Table 3 (Resources, Conservation and Recycling 182: 106323) against the preprint
   used here, with library access; metered water at an adiabatic site.
 - Landscape irrigation as an optional, climate-specific term.
