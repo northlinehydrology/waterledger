@@ -424,9 +424,24 @@ replaces the heat factor `hf_econ`, `hf_chiller` and the wet-bulb limits `wb_eco
 
 Withdrawn to two significant figures, evaporated to the same place, wastewater the difference, in `scenario.cooling_estimate` and `WQ.split`, so what is shown adds up (before, the middle values were rounded separately and a tile could read 74,000 beside a table's 73,600). The ranges stay the model's own. `Estimate` middle values carry this rounding.
 
+## Oct 30, 2026: a typical golf course in every state
+
+One basis: the median facility, gallons a day averaged over the year, reported data where the state reports it. `waterledger_data.wateruse.GOLF`.
+- Michigan: EGLE 2025, median of 453 facilities, 43,500 (name-matched; unchanged).
+- Ohio: ODNR Water Withdrawal Facility Registration, facilities with use type Golf Course and more than 0 reported: medians 32,500 (2022, n=280), 33,300 (2023, n=272), 43,100 (2024, n=265); the middle, 33,300, is used because 2024 stands well above the other two. Only facilities able to withdraw 100,000 gal/day register, so it may run high. The 2024 sum, 15.4 Mgal/d, is close to USGS's 16.2.
+- Virginia: GCSAA (2022), Golf Course Environmental Profile, Phase III, Vol. I (2020 data; Shaddox and Unruh), Table 2, p. 7: Transition region, median 38.5 acre-feet a facility, 34,400 gal/day at 325,851 gallons an acre-foot. DEQ's "commercial" (13.41 Mgal/d in 2024) includes resorts and universities, so golf is not separable; facility rows are only in its dashboard.
+- Texas: GCSAA by region, Southeast 111.1 acre-feet (99,200 gal/day) and Southwest 375.7 (335,400). One state number would hide a 3.4-fold difference. The report's Figure 1 (p. 3) is a map with no county list, so climate divisions are assigned by reading it [A]: High Plains, Low Rolling Plains, Trans-Pecos, Edwards Plateau, Southern and Lower Valley to the Southwest (Phase II puts San Antonio there), the rest to the Southeast. Cabrera et al. (2013), about 364 acre-feet a course (325,000 gal/day), is potential use, acres x rate, not metered, and is near the Southwest figure.
+- Rejected: USGS 2015 county golf (IG): no course counts, and zero in every Texas county.
+- Check: GCSAA's North Central figure (40.5 acre-feet, 36,200 gal/day) is within about 20% of the reported Michigan and Ohio medians, which supports it where no reports exist. Limits: a survey, and 9-hole facilities pull medians down.
+
+## Oct 30, 2026: starting cooling design
+
+**Question.** Should hot states start at hybrid or cooling towers? **Finding.** Heat does not predict the stated design. Named projects with a stated design, nearly all developer claims and not a sample (counts are floors; the state lists are unreviewed): Michigan 5 closed or air, 1 mixed; Texas 5 closed or air (Crusoe Abilene, Google Wilbarger, Skybox read; Vantage Frontier and Google Panhandle from summaries), 1 towers (Meta El Paso); Ohio 3-4, weak, 0 water-based; Virginia 0-1 closed, 1 water (Google Botetourt). ICPRB: about 40% of Potomac facilities air-only, many hybrid. JLARC 598 gives no design counts. Evaporative designs tend to stay silent, so closed loop is probably overcounted. LBNL 2024 Fig. 4.2 (chart reading) models the 2023 hyperscale fleet as about 85% airside economizer with adiabatic cooling: the fleet looks hybrid while announcements look closed, though that is national and older than the proposals.
+**Decision.** Closed loop as the start everywhere, stated as an assumption with each state's own note, and every design shown beside the first number ("Water Used by Cooling Design"), so no reader leaves with only the lowest figure. Alternatives: hybrid everywhere, the case from LBNL's fleet; by climate, not supported.
+
 ## Oct 30, 2026: starting assumptions by state
 
-Pages no longer use another state's evidence. Each state's data carries its starting cooling design and a note (`state.defaults.cool`, `cool_note`). Only Michigan's proposals have been reviewed for cooling design; the others say closed loop is assumed. The runoff standard is described as a typical post-construction standard on other states' pages; the source list still cites the Michigan permit it comes from.
+Pages no longer use another state's evidence. Each state's data carries its starting cooling design and a note (`state.defaults.cool`, `cool_note`). Only Michigan's proposals have been reviewed for cooling design; the others state what was found and that closed loop is assumed. The runoff standard is described as a typical post-construction standard on other states' pages; the source list still cites the Michigan permit it comes from.
 
 ## Open
 

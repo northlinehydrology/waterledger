@@ -556,3 +556,22 @@ def inputs(state):
         t = va_table21()
         out[f"va_table21_{t['year']}.json"] = json.dumps(t, separators=(",", ":")).encode()
     return out
+
+
+# A typical golf course's water, gallons a day averaged over the year, on one basis: the median facility, reported where the state reports it, else the GCSAA
+# survey for the state's agronomic region. GCSAA (2022), Golf Course Environmental Profile, Phase III, Vol. I (2020 data; Shaddox and Unruh), Table 2, p. 7: median
+# acre-feet per facility regardless of holes, at 325,851 gallons an acre-foot. Regions are read from its Figure 1 map (p. 3), which has no state or county list.
+GOLF = {
+    "OH": {"gpd": 33300, "sources": ["odnr_wwfr"], "note": "This is the median of Ohio courses reporting to ODNR, the middle of the 2022 to 2024 yearly medians (32,500, 33,300 and 43,100). Only courses able to withdraw 100,000 gallons a day register, so it may run high."},
+    "VA": {"gpd": 34400, "sources": ["gcsaa2022"], "note": "This is a national survey's median for the Transition region (38.5 acre-feet a year), since Virginia's reports do not separate golf. It is a survey, not metered."},
+    "TX": {"gpd": 99200, "sources": ["gcsaa2022"],
+           "note": "This is a national survey's median for this part of Texas, which the survey splits between its Southeast region (111.1 acre-feet a year) and much drier Southwest region (375.7). Which climate division falls in which region is read from the survey's map [A]. It is a survey, not metered.",
+           # NOAA climate divisions: High Plains, Low Rolling Plains, Trans-Pecos, Edwards Plateau, Southern and Lower Valley in the Southwest [A]
+           "by_region": {"4101": 335400, "4102": 335400, "4103": 99200, "4104": 99200, "4105": 335400, "4106": 335400, "4107": 99200, "4108": 99200, "4109": 335400, "4110": 335400}},
+}
+
+
+def golf(state):
+    """A typical golf course's water in `state`: {"gpd", "sources", "note", and "by_region" where it differs within the state}, or None."""
+    return GOLF.get(state.upper())
+
