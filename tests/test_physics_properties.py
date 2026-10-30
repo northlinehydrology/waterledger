@@ -52,8 +52,9 @@ def test_dry_design_uses_loop_topups_only():
 def test_staff_water():
     s = model.central_staff()
     w, c, r = model.staff_water(s, 300)
-    assert w == pytest.approx((40 + 0.3 * 300) * 20 / 1e6)
-    assert c == pytest.approx(0.1 * w) and w == pytest.approx(c + r)
+    people, maint = (40 + 0.3 * 300) * 20 / 1e6, (1000 + 11 * 300) / 1e6      # staff plus maintenance (model 1.3)
+    assert w == pytest.approx(people + maint)
+    assert c == pytest.approx(0.1 * people + 0.09 * maint) and w == pytest.approx(c + r)
     # it grows with the people on site, more slowly than the computers
     assert model.staff_water(s, 1000)[0] < 1000 / 300 * w
     runs = model.sample_staff(50, seed=13)

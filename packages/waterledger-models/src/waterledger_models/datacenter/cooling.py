@@ -57,18 +57,31 @@ def central():
     return {**{k: (a + b) / 2 for k, (a, b) in RANGES.items()}, "topup": sum(TOPUP) / 2}
 
 
+STAFF_KEYS = ("core", "per_mw", "gpcd", "used", "maint_base", "maint_per_mw", "maint_used")
+
+
 def staff_runs(n=200, seed=13):
-    """Staff water parameters per run, [core people, people per MW, gal per person a day, share used up], on their own stream."""
+    """Non-cooling water parameters per run, on their own stream: [core people, people per MW, gal per person a day, share used up,
+    maintenance gal a day for the campus, maintenance gal a day per MW, maintenance share used up]."""
     rng = np.random.default_rng(seed)
-    return [[float(rng.uniform(*STAFF[k])) for k in ("core", "per_mw", "gpcd", "used")] for _ in range(n)]
+    return [[float(rng.uniform(*STAFF[k])) for k in STAFF_KEYS] for _ in range(n)]
 
 
-def staff_q(runs, mw):
-    """Staff water at `mw` MW of IT capacity, MGD: {"withdrawn"|"consumed"|"returned": {"p10","p50","p90"}}. Same as WQ.staff on the page."""
-    g = np.array([(c + k * mw) * gpcd / 1e6 for c, k, gpcd, u in runs])
-    u = np.array([r[3] for r in runs])
+def _nc(r, mw):
+    """One run's non-cooling water at `mw` MW, MGD: (withdrawn, consumed). Runs of four (before model 1.3) have no maintenance."""
+    g = (r[0] + r[1] * mw) * r[2] / 1e6
+    m = (r[4] + r[5] * mw) / 1e6 if len(r) > 4 else 0.0
+    return g + m, g * r[3] + (m * r[6] if len(r) > 4 else 0.0)
+
+
+def staff_q(runs, mw, part=None):
+    """Non-cooling water (staff plus maintenance) at `mw` MW of IT capacity, MGD: {"withdrawn"|"consumed"|"returned": {"p10","p50","p90"}}.
+    part="staff" or "maint" gives one part only. Same as WQ.staff on the page."""
+    if part:
+        runs = [r[:4] + [0.0, 0.0, 0.0] if part == "staff" else [0.0, 0.0, 0.0, 0.0] + list(r[4:]) for r in runs]
+    wc = np.array([_nc(r, mw) for r in runs])
     q = lambda v: {"p10": float(np.quantile(v, 0.1)), "p50": float(np.quantile(v, 0.5)), "p90": float(np.quantile(v, 0.9))}
-    return {"withdrawn": q(g), "consumed": q(g * u), "returned": q(g * (1 - u))}
+    return {"withdrawn": q(wc[:, 0]), "consumed": q(wc[:, 1]), "returned": q(wc[:, 0] - wc[:, 1])}
 
 
 def daily_stats(day_index, ndays, years, gal_per_kwh_hour, kw, months=None):
@@ -105,10 +118,9 @@ def daily(times, temps, rhs, design, mw, p=None):
     days = np.array([t[:10] for t in times])
     uniq, idx = np.unique(days, return_inverse=True)
     kw = mw * 1000 * p["utilization"]
-    core, per_mw, gpcd, used = (sum(STAFF[k]) / 2 for k in ("core", "per_mw", "gpcd", "used"))
-    g = (core + per_mw * mw) * gpcd / 1e6
+    g, gu = _nc([sum(STAFF[k]) / 2 for k in STAFF_KEYS], mw)
     wd = np.bincount(idx, weights=w * kw, minlength=len(uniq)) / 1e6 + g
-    rd = np.bincount(idx, weights=r * kw, minlength=len(uniq)) / 1e6 + g * (1 - used)
+    rd = np.bincount(idx, weights=r * kw, minlength=len(uniq)) / 1e6 + g - gu
     return [str(d) for d in uniq], wd.tolist(), rd.tolist()
 
 

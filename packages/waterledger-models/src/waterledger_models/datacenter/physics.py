@@ -49,7 +49,14 @@ PARAMETERS = tuple(RANGES) + ("topup",)
 # no source): EPA 2002 Table 3-4 gives 7-16 (13 typical) per office or industrial employee per workday, about 9 per calendar day; Michigan's
 # septic design criteria give 35 per factory worker per shift, and Gilroy's applicant 1,800 gpd for about 50 employees (about 30). About
 # 10% is used up (Shaffer and Runkle 2007, Table 9: commercial, Great Lakes Basin, median 10%, quartiles 8-15%); the rest goes to the sewer.
-STAFF = {"core": (20.0, 60.0), "per_mw": (0.1, 0.5), "gpcd": (10.0, 30.0), "used": (0.05, 0.15)}
+# Maintenance and other non-cooling water (model 1.3): equipment and floor washdown, janitorial and fire-system testing, loop flushing,
+# a campus base plus a little per MW, bracketed by applicant projections rather than measured (none published): Hermantown, MN (Google;
+# loop maintenance about 2,000 gal per building a month) at the low end, Crusoe's 200 MW building (about 2 million gal a year for
+# restrooms, kitchens, maintenance and washdown, less its staff water) at the high end; checked against Microsoft at Tyrone, GA (2,000
+# gpd per building), Saline Township (about 20,000 gpd for 1.4 GW) and Mount Pleasant, WI. Mostly to the sewer: 3-15% used up (USGS
+# commercial coefficients). Landscape irrigation is site- and climate-specific and is not included. Gallons a day.
+STAFF = {"core": (20.0, 60.0), "per_mw": (0.1, 0.5), "gpcd": (10.0, 30.0), "used": (0.05, 0.15),
+         "maint_base": (0.0, 2000.0), "maint_per_mw": (2.0, 20.0), "maint_used": (0.03, 0.15)}
 STAFF_PARAMETERS = tuple(f"staff_{k}" for k in STAFF)
 
 
@@ -134,7 +141,10 @@ def central_staff():
 
 
 def staff_water(s, mw):
-    """Staff water at `mw` MW of IT capacity, million gallons per day: (withdrawn, consumed, returned). s holds
-    the staff parameters (scalars or arrays, as from sample_staff or central_staff)."""
+    """Non-cooling water at `mw` MW of IT capacity, million gallons per day: (withdrawn, consumed, returned): staff water plus
+    maintenance (absent maintenance keys count as none). s holds the parameters (scalars or arrays, as from sample_staff or
+    central_staff)."""
     g = (s["staff_core"] + s["staff_per_mw"] * mw) * s["staff_gpcd"] / 1e6
-    return g, g * s["staff_used"], g * (1 - s["staff_used"])
+    m = (s.get("staff_maint_base", 0.0) + s.get("staff_maint_per_mw", 0.0) * mw) / 1e6
+    used = g * s["staff_used"] + m * s.get("staff_maint_used", 0.0)
+    return g + m, used, g + m - used
