@@ -27,7 +27,8 @@ publish, so each state can use its own numbers where they exist and the national
 | Newer | Modeled 2000-2020 public supply, irrigation and thermoelectric by HUC12 or service area (Water Data Companion API), industrial and mining 2020 by county; no single year with every category. Later, as a labeled 2020 update |
 
 Test values (revised 2015, Mgal/d): Kent MI public supply 9.01, total 27.76 (golf 1.91, delivered to homes 31.78);
-Franklin OH 155.82 / 188.31; Travis TX 122.10 / 134.11; Loudoun VA 6.86 / 11.57 (delivered to homes 27.08).
+Franklin OH 155.82 / 188.31; Travis TX 122.10 / 134.11; Loudoun VA 6.86 / 11.62 (11.57 without commercial, 0.05;
+delivered to homes 27.08).
 
 ## Ohio: ODNR Water Withdrawal Facility Registration
 
@@ -75,3 +76,51 @@ Dashboard 2024 public water supply about 11.8 Mgal/d (cross-check only).
 
 Context: JLARC Report 598 (Dec 2024): data centers used about 2.1 billion gallons in 2023, a third of it reclaimed,
 under 0.5% of state withdrawals; 0.2-21% of use at six utilities.
+
+## As built (Oct 30, 2026)
+
+`waterledger_data.wateruse`. Every layer returns `{"basis", "counties"}`: per county FIPS, Mgal/d by category (`mgd`,
+`ground_mgd`, `surface_mgd`, and `reuse_mgd` for Texas), the source's own categories in its own units
+(`source_values`), and, for USGS, public supply delivered to homes. Categories: public_supply, domestic, commercial,
+industrial, irrigation, golf, livestock, aquaculture, mining, thermoelectric, other, total. A category the source has
+no value for is left out, not set to zero. `place.context().supply.county_water_use` is the state's layer where there is
+one, else USGS; `county_water_use_usgs` is always USGS (for deliveries to homes and comparison). Snapshots (format 2)
+carry `wateruse.json` and the downloaded inputs under `inputs/wateruse/`.
+
+| Layer | Function | Basis | Category mapping |
+|---|---|---|---|
+| USGS 2015 | `usgs_2015()` | estimate, withdrawals | PS, DO, CO, IN; irrigation IC + IR, golf IG; LI, AQ, MI; thermoelectric PO + PC |
+| Ohio | `ohio()` | reported withdrawals, 2024 | Public, Industry, Power, Golf Course, Agriculture to irrigation, Mineral Extraction and Hydro Fracturing to mining, Misc to other |
+| Texas | `texas()` | estimate (TWDB's "use"), 2024 | Municipal to public_supply, Manufacturing to industrial, Mining, Power to thermoelectric, Irrigation, LiveStock |
+| Virginia | `virginia()` | reported withdrawals excluding power, 2024 | total only |
+| Michigan | `states.mi.provider.egle_layer()` | reported withdrawals, 2025 | EGLE's groups as on the page; bottled water to industrial |
+
+Decisions and deviations from the plan above:
+
+- **USGS:** read from the release's parquet zip (the xlsx is the fallback; both hold the same table). The Dieter and
+  Linsey 2018 CSV fallback is not built, since the revised file reads. Values: Franklin 155.82 / 188.31, Travis 122.10 /
+  134.11, Loudoun 6.86 / 11.62 (delivered 27.08), Kent 9.01 / 27.76 (golf 1.91, delivered 31.78).
+- **Ohio:** from the ArcGIS feature service (layer 0, tables 2 and 3, joined on RegistrationNumber, paged), years 2015
+  onward cached. The latest complete year is the newest with at least 90% as many facilities reporting as the year
+  before. ODNR's "Agriculture" is mostly crop, nursery and sod irrigation, with a few poultry and livestock farms, so it
+  maps to irrigation. Hydraulic fracturing water is counted as mining, as USGS and TWDB do; ODNR's own use types stay
+  apart in `source_values`. Million gallons a year are divided by the days in the year (366 for 2024): Franklin 2024
+  public 63,017 MG (172.18 Mgal/d), total 92,441 MG (252.57).
+- **Texas:** `fetch_twdb()` walks the report viewer (session, form post with the year, CSV export) and saves
+  `county_<year>_<downloaded>.csv`; if the viewer changes it raises `SourceUnavailable` naming the step, and
+  `texas(path=...)` reads a copy downloaded by hand or carried in a snapshot. Labeled an **estimate**, not reported:
+  TWDB calls the series historical water use estimates, and rural domestic, irrigation, livestock and oil and gas mining
+  are TWDB's estimates. From TWDB's definitions (updated Sept 23, 2023): municipal is public systems' intake less sales to
+  other systems and industry, plus estimated self-supplied rural domestic use; data centers (NAICS 518210) fall in
+  municipal; self-supplied golf courses are in irrigation; aquaculture is in livestock; steam-electric is consumption
+  only; seawater is not counted. Acre-feet are divided by the days in the year: Travis 2024 municipal 209,045 acre-feet
+  is 186.11 Mgal/d over 366 days (186.6 over 365, as above), total 228,721 is 203.63 (204.2).
+- **Virginia:** Table 21 read with pypdf (now a dependency of waterledger-data: pure Python, no dependencies of its
+  own); the PDF (about 80 MB) is downloaded once and the parsed table cached. Each row's ground plus surface must equal
+  its total, and the columns must add up to the Total row's ground and surface within 2%. The 2024 Total row reads
+  1,277.03 Mgal/d, but its rows add up to 1,181.36 (ground 151.32, surface 1,030.02, against the Total row's 152.31 and
+  1,031.00): the rows are used as printed and the difference is noted in the basis. DEQ still lists three former
+  cities; they are added to the counties that absorbed them (Bedford to Bedford County, which DEQ lists at 0.00 while
+  the City of Bedford carries 19.14; Clifton Forge to Alleghany; South Boston to Halifax). 133 localities; Loudoun 17.19.
+- Not built: Virginia's sector split (the dashboard has no bulk download), Ohio return flows, and USGS's newer modeled
+  2020 layers.

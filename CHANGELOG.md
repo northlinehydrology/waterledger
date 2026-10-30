@@ -2,6 +2,33 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## Unreleased
+
+Model version 1.2; no estimate changes. Michigan's numbers are unchanged.
+
+- **`waterledger_data.wateruse`**: water use by county and category for any state, each layer with a basis block
+  (source, year, reported or estimate, withdrawals or use, threshold, what each category holds, caveats):
+  - `usgs_2015(state=None)`: USGS's revised 2015 county estimates (Sleckman, Ross and Cook 2026, doi:10.5066/P14Q6AVK),
+    fresh plus saline, ground and surface, and public supply delivered to homes; labeled an estimate.
+  - `ohio(year=None)`: ODNR Water Withdrawal Facility Registration, facility reports totaled by county and primary use
+    (latest complete year, 2024; years since 2015 cached).
+  - `texas(year=None, path=None)`: TWDB Water Use Survey historical estimates by county (report 7), downloaded through
+    TWDB's report viewer into dated copies (`fetch_twdb`); a clear error says what to do if the viewer changes.
+  - `virginia(year=2024)`: DEQ's locality totals (Annual Water Resources Report, Table 21; excluding power), read from
+    the report PDF; totals only.
+  - Categories are a fixed set: public_supply, domestic, commercial, industrial, irrigation, golf, livestock,
+    aquaculture, mining, thermoelectric, other, total. Each source's own categories are kept in `source_values`.
+  - `pypdf` becomes a dependency of `waterledger-data` (pure Python, no dependencies of its own).
+- **`place.context().supply`** gains `county_water_use` (the state's own figures where Water Ledger has them, else
+  USGS's) and `county_water_use_usgs` (USGS's 2015 estimates, with deliveries to homes), as `CountyWaterUse` records;
+  the national tier also fills `county_use_mgd`. Michigan's `county_water_use` is EGLE's reported withdrawals (the
+  figures waterledger.org/mi shows, in the shared categories); its `county_use_mgd` is unchanged.
+- **Snapshot format 2:** a `wateruse.json` (format 1 of that file: `national` and `state` layers) and the downloaded
+  inputs behind it under `inputs/wateruse/`, listed in the manifest's `inputs` with checksums (not downloaded by the
+  package); the manifest records the water-use sources and `water_use_years`. Snapshots in format 1 read as having no
+  county water use. `waterledger build-state` gains a `wateruse` stage, and the statewide checks a `county_water_use`
+  coverage minimum.
+
 ## 3.1.0 (Oct 30, 2026)
 
 Model version 1.2; no numbers change.

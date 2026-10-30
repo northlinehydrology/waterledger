@@ -17,6 +17,7 @@ pip install waterledger-data
 | `climate` | hourly ERA5 (Open-Meteo) and NOAA ISD weather, Atlas 14 depths |
 | `energy` | electric utility territories (HIFLD), EIA-861 sales and peaks, power-plant water per kWh by grid region (Siddik et al. 2024) |
 | `power` | EIA-861 retail sales and residential use for any state (`state_retail_mwh`, `residential`); Michigan's MPSC territories |
+| `wateruse` | water use by county and category: USGS's revised 2015 estimates for every state (`usgs_2015`), and the states' own figures for Ohio (ODNR registration, `ohio`), Texas (TWDB Water Use Survey, `texas`) and Virginia (DEQ locality totals, `virginia`), each with its basis (year, reported or estimate, withdrawals or use) |
 | `places`, `waters` | Michigan's own layers (cities and townships, EGLE water use and wells) |
 
 Downloads are cached under `WATERLEDGER_CACHE` (default `~/.cache/waterledger`) or the `cache` path in a

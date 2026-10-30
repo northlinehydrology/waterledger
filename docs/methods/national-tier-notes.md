@@ -31,8 +31,12 @@ counties); Texas 1,481. Census-designated places (Ashburn, Virginia) are not gov
 - With no system mapped in a place: the nearest system serving more than 3,300 people (EPA's medium size and up).
   - Michigan: measured center to center.
   - National tier: measured edge to edge.
-- Michigan also has EGLE's reported county water use by sector. The national tier will use USGS county estimates as an
-  optional, dated comparison layer (design 0002, decision 6).
+- County water use (Oct 30, 2026; `waterledger_data.wateruse`, details in [water-use-sources.md](water-use-sources.md)):
+  - Michigan: EGLE's reported withdrawals by sector (2025).
+  - National tier: USGS's revised 2015 county estimates for every state (labeled estimates), replaced by a state's own
+    figures where Water Ledger reads them: Ohio ODNR registration (reported withdrawals, 2024), Texas TWDB Water Use
+    Survey (TWDB's "use", 2024), Virginia DEQ locality totals (reported withdrawals excluding power, 2024).
+  - The estimate and impacts don't depend on it (design 0002, decision 6).
 
 Checks: Columbus 98% Columbus Public Water; Richmond 99.8% its own system; Austin 67% Austin Water; Loudoun County 26%
 Loudoun Water (most of the county is on wells).
@@ -139,7 +143,6 @@ moratoria builder now in `waterledger.states.mi` moves to Northline.
 
 ## Still to decide or build
 
-- USGS county water use as a comparison layer.
 - Per-state rules files (federal only at first; "state rules not yet reviewed").
 - The station nearest each place instead of one per division.
 - Reconciling Michigan's ERA5 with station records (a future model version).
