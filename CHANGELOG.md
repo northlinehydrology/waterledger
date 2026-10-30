@@ -2,6 +2,17 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.1.0 (Oct 30, 2026)
+
+Model version 1.2; no numbers change.
+
+- `waterledger_data.power.state_retail_mwh(state, year=None)`: all retail electricity sold in any state in a year
+  (EIA-861 Parts A, B and D, as EIA sums them for a state). `michigan_retail_mwh` now uses it and gives the same answer.
+- `waterledger_data.power.residential(state, year=None)`: a state's residential customers and average monthly use per
+  home, from the same EIA-861 file.
+- `waterledger_data.power.latest_eia861()`: the newest EIA-861 year on disk, or the newest year EIA has posted.
+- Methods briefs (`docs/methods/`): an overall method shared by every state, then what is specific to each state.
+
 ## 3.0.0 (Oct 29, 2026)
 
 Water Ledger for any state. Model version 1.2; Michigan's numbers unchanged.
