@@ -22,6 +22,7 @@ NAMES = {"MI": "Michigan", "OH": "Ohio", "VA": "Virginia", "TX": "Texas"}
 EXAMPLES = {"MI": "Gaines charter township, MI", "OH": "Columbus city, OH", "VA": "Loudoun County, VA", "TX": "Austin city, TX"}
 DESIGNS = (("towers", "Cooling towers"), ("hybrid", "Hybrid"), ("assist", "Closed loop with assist"), ("dry", "Closed loop"))
 EXAMPLE_MW = 300
+AGENCIES = {"21MICH": "Michigan EGLE", "21OHIO": "Ohio EPA", "21VASWCB": "Virginia DEQ", "TCEQMAIN": "TCEQ"}   # ATTAINS organization IDs
 INK, MUTED, ACCENT, LINE = colors.HexColor("#142231"), colors.HexColor("#5A6672"), colors.HexColor("#1C6B8A"), colors.HexColor("#D8DCDB")
 H1 = ParagraphStyle("h1", fontName="Helvetica-Bold", fontSize=17, leading=21, textColor=INK, spaceAfter=2)
 SUB = ParagraphStyle("sub", fontName="Helvetica", fontSize=9, leading=12, textColor=MUTED, spaceAfter=8)
@@ -76,6 +77,7 @@ def brief(state):
     cov = (m.get("checks") or {}).get("coverage", {})
     divs = clim["divisions"]
     att = rec.get("attains") or {}
+    agency = AGENCIES.get(att.get("organization"), att.get("organization", ""))
     out = os.path.join(HERE, f"{state.lower()}.pdf")
     doc = SimpleDocTemplate(out, pagesize=letter, leftMargin=0.75 * inch, rightMargin=0.75 * inch, topMargin=0.6 * inch, bottomMargin=0.6 * inch,
                             title=f"Water Ledger {name}: methods brief", author="Northline Hydrology")
@@ -96,7 +98,7 @@ def brief(state):
              f"{len(supply['systems']):,} systems; {pct(cov.get('water_system'))} of places have one mapped" if cov else f"{len(supply['systems']):,} systems"],
             ["Wastewater", "EPA Clean Watersheds Needs Survey 2022 (design flow) matched to ECHO (recent flow, receiving water)",
              f"{len(plants):,} plants" + (f"; {pct(cov.get('sewer_plant_within_40km'))} of places have one within 40 km" if cov else "")],
-            ["Receiving waters", f"USGS Watershed Boundary Dataset; EPA ATTAINS ({att.get('organization', '')}, {att.get('cycle', '')} report)",
+            ["Receiving waters", f"USGS Watershed Boundary Dataset; EPA ATTAINS ({agency}, {att.get('cycle', '')} report)",
              f"{len(rec['downstream']):,} watersheds with a downstream path; {len(rec['reaches']):,} watersheds on those paths"],
             ["Climate", "ERA5 reanalysis (Open-Meteo), 1995-2024, at eight Michigan regions; Atlas 14 design storms; Climate at a Glance rainfall" if mi else
              "NOAA ISD station records, 1995-2024, one station per NOAA climate division; Atlas 14 design storms; Climate at a Glance rainfall",
@@ -106,8 +108,12 @@ def brief(state):
              f"{len(en['loads'])} utilities with loads; grid regions: {', '.join(sorted(en['grid_water']))}"]]
     S += [Paragraph("Data", H2), table(rows, [1.0, 3.6, 2.4])]
 
-    S += [Paragraph("Method", H2),
-          Paragraph("<b>Cooling water.</b> Hourly temperature and humidity for 1995-2024 drive the heat rejected by the campus under four "
+    S += [Paragraph("Overall method (all states)", H2),
+          Paragraph("<b>Weather.</b> Hourly NOAA station records, 1995-2024, one station per NOAA climate division. Hybrid and assist "
+                    "estimates depend on the hottest hours and so on the weather source: in tests against ERA5 reanalysis at eight sites, "
+                    "station records gave cooling tower estimates within about 1%, and hybrid and assist estimates 4-50% higher (2-5 times "
+                    "higher at the coolest sites).", BODY),
+          Paragraph("<b>Cooling water.</b> Hourly temperature and humidity drive the heat rejected by the campus under four "
                     "cooling designs: cooling towers; hybrid, evaporative in warm weather only; closed loop with evaporative assist on the "
                     "hottest hours (dry-bulb above roughly 82-88 F); and closed loop with no evaporative cooling. Evaporation is the heat load "
                     "times the evaporative fraction of Rutberg et al. (2011), as used in the USGS cooling tower method. Blowdown is evaporation "
@@ -122,25 +128,33 @@ def brief(state):
                     "wells. Discharge goes to the nearest sewer plant if it is within reach and, for evaporative designs, has enough unused "
                     "capacity for the blowdown. Otherwise closed loops use an on-site septic system and evaporative designs discharge directly.", BODY),
           Paragraph("<b>Downstream.</b> The place's main HUC-12 watershed is traced downstream for up to 25 watersheds, across state lines "
-                    "where needed, with the EPA-listed impairments and TMDLs for each.", BODY)]
+                    "where needed, with the EPA-listed impairments and TMDLs for each.", BODY),
+          Paragraph("<b>Electricity.</b> Utilities come from the national retail territory layer, ordered by number of customers because "
+                    "it draws many small utilities as whole counties. States can add their own layers (reported water use, wells, "
+                    "coldwater streams, state rules) on top of this method.", BODY)]
 
+    S += [Paragraph(f"What is specific to {name}", H2)]
     if mi:
-        S += [Paragraph("State data and rules", H2),
-              Paragraph("Weather is ERA5 reanalysis at eight climate regions. The Michigan build also uses EGLE reported water use by "
-                        "county and sector, domestic wells (EGLE Wellogic), designated trout streams (Michigan DNR), Great Lakes lake-source "
-                        "cooling, and Michigan rules (Part 327 withdrawals, Part 22 septic limits, Part 91 soil erosion, Rule 57 and "
-                        "temperature standards). waterledger.org also tracks Michigan data center proposals and moratoria.", BODY)]
+        S += [Paragraph("<b>Weather.</b> ERA5 reanalysis at eight Michigan climate regions instead of station records. Michigan stays on "
+                        "ERA5 until a reviewed model update.", BODY),
+              Paragraph("<b>Places and electricity.</b> Cities and townships only (county subdivisions); utility territories from the "
+                        "Michigan Public Service Commission.", BODY),
+              Paragraph("<b>State layers.</b> EGLE reported water use by county and sector, domestic wells (EGLE Wellogic), designated "
+                        "trout streams (Michigan DNR), Great Lakes lake-source cooling, and Michigan rules (Part 327 withdrawals, Part 22 "
+                        "septic limits, Part 91 soil erosion, Rule 57 and temperature standards). waterledger.org also tracks Michigan data "
+                        "center proposals and moratoria.", BODY)]
     else:
         n = collections.Counter(v["station"] for v in divs.values())
         st = "; ".join(f"{k.title()}" + (f" ({c} divisions)" if c > 1 else "") for k, c in n.items())
-        S += [Paragraph("Weather and state data", H2),
-              Paragraph(f"<b>Weather.</b> NOAA station records, one station per climate division ({st}). The weather source matters "
-                        "most for hybrid and assist designs, which depend on the hottest hours. In tests against ERA5 reanalysis at eight "
-                        "sites, station records gave cooling tower estimates within about 1%, and hybrid and assist estimates 4-50% higher "
-                        "(2-5 times higher at the coolest sites).", BODY),
-              Paragraph(f"<b>Not yet included:</b> {name}'s reported water use by sector, domestic wells, coldwater streams, lake-source "
-                        "cooling and state rules. Utilities are ordered by number of customers, because the national territory layer draws "
-                        "many small utilities as whole counties.", BODY)]
+        S += [Paragraph(f"{name} follows the overall method with national data throughout. What is particular to it:", BODY),
+              Paragraph(f"<b>Weather.</b> {len(divs)} NOAA climate divisions, with these stations: {st}.", BODY),
+              Paragraph(f"<b>Places.</b> " + "; ".join(f"{levels[k]:,} {w}" for k, w in (("place", "cities, towns and villages"),
+                        ("township", "townships that are governments"), ("county", "counties")) if levels.get(k)) +
+                        ". Counties are included so that unincorporated land is covered.", BODY),
+              Paragraph(f"<b>Water quality.</b> Impairments and TMDLs from {agency}'s {att.get('cycle', '')} integrated "
+                        "report, through EPA ATTAINS.", BODY),
+              Paragraph(f"<b>Not yet added:</b> {name}'s reported water use by sector, domestic wells, coldwater streams, lake-source "
+                        "cooling and state rules.", BODY)]
 
     place, rows = example(state)
     S += [Paragraph(f"Example: {EXAMPLE_MW} MW of IT capacity in {place.name}", H2),
