@@ -54,8 +54,10 @@ def context(state, place):
                                     connections=w.get("connections"), share_of_place=w.get("share"))
     mine = sd.systems_for(place.geoid)
     near, near_km = (None, None) if mine else sd.nearest_system(place.geoid)
-    supply = cx.Supply(provider="national", sources=["epa_sa"], systems=[sys_(w) for w in mine],
-                       nearest_system=sys_(near) if near else None, nearest_system_km=near_km)
+    use, usgs = county_water_use(state, place.county_fips)
+    supply = cx.Supply(provider="national", sources=["epa_sa", *dict.fromkeys(u.source for u in (use, usgs) if u)], systems=[sys_(w) for w in mine],
+                       nearest_system=sys_(near) if near else None, nearest_system_km=near_km,
+                       county_use_mgd=use.mgd if use else {}, county_water_use=use, county_water_use_usgs=usgs)
     plants = [cx.SewerPlant(npdes=q["id"], name=q["name"], design_mgd=q["design_mgd"], flow_mgd=q["flow_mgd"], km=round(q["km"], 1),
                             receiving_water=q["receiving"] or None, combined_sewer=q["cso"], lagoon=q["lagoon"])
               for q in ww.nearest(sd.plants(), place.lat, place.lon, base, km=PLANTS_KM)[:PLANTS_MAX]]
@@ -70,6 +72,29 @@ def context(state, place):
     return cx.Context(place=place, jurisdiction=jur, supply=supply,
                       wastewater=cx.Wastewater(provider="national", sources=["cwns2022", "echo"], plants=plants), receiving=receiving,
                       climate=_climate(state, place), energy=_energy(state, place))
+
+
+def water_use_record(rec, basis, county_fips):
+    """A CountyWaterUse from one county's record in a water-use layer and the layer's basis (waterledger_data.wateruse)."""
+    from waterledger import context as cx
+    return cx.CountyWaterUse(county=rec.get("name"), county_fips=county_fips, source=basis["source"], citation=basis["citation"],
+                             url=basis.get("url"), year=basis["year"], kind=basis["kind"], measure=basis["measure"], units=basis["units"],
+                             mgd=rec["mgd"], ground_mgd=rec.get("ground_mgd") or {}, surface_mgd=rec.get("surface_mgd") or {},
+                             reuse_mgd=rec.get("reuse_mgd") or {}, delivered_to_homes_mgd=rec.get("delivered_to_homes_mgd"),
+                             threshold=basis.get("threshold"), categories=basis.get("categories") or {}, caveats=basis.get("caveats") or [])
+
+
+def county_water_use(state, county_fips):
+    """(the county's water use from the state's own source if it has one, else USGS's 2015 estimate; USGS's estimate), each
+    a CountyWaterUse or None."""
+    W = state_data(state).water_use() or {}
+    got = {}
+    for k in ("state", "national"):
+        layer = W.get(k)
+        if layer and county_fips in layer["counties"]:
+            got[k] = water_use_record(layer["counties"][county_fips], layer["basis"], county_fips)
+    usgs = got.get("national")
+    return got.get("state") or usgs, usgs
 
 
 def _energy(state, place):

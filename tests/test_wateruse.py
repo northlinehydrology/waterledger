@@ -1,17 +1,12 @@
 """County water use (waterledger_data.wateruse): each layer's arithmetic, category mapping and basis, on small fixtures."""
-import math
+import json, math
 
 import pytest
 
 from waterledger_data import wateruse as wu
 
-
 FIPS_OH = {"Franklin County": "39049", "FRANKLIN": "39049", "Van Wert County": "39161", "VAN WERT": "39161"}
-
-
 FIPS_TX = {"Travis County": "48453", "TRAVIS": "48453"}
-
-
 FIPS_VA = {"Loudoun County": "51107", "LOUDOUN": "51107", "Richmond city": "51760", "RICHMOND CITY": "51760",
            "Richmond County": "51159", "RICHMOND": "51159", "Bedford County": "51019", "BEDFORD": "51019"}
 
@@ -153,6 +148,32 @@ def test_virginia_table_read_from_a_pdf(tmp_path):
 
 def test_state_layers():
     assert set(wu.STATE_LAYERS) == {"OH", "TX", "VA"} and wu.state_layer("WY") is None
+
+
+def test_snapshot_water_use_reads_and_prefers_the_state(tmp_path, monkeypatch):
+    """The provider takes a county's figures from the state's layer when the snapshot has one, else USGS's; a format 1
+    snapshot (before water use) gives none."""
+    from waterledger.national import data, provider
+    basis = lambda src, kind: {"source": src, "citation": src, "year": 2024, "kind": kind, "measure": "withdrawals", "units": "Mgal/d"}
+    W = {"format": 1, "national": {"basis": {**basis("usgs_wu2015", "estimate"), "year": 2015}, "counties": {
+             "39049": {"name": "Franklin County", "mgd": {"public_supply": 155.82, "total": 188.31}, "delivered_to_homes_mgd": 63.89},
+             "39001": {"name": "Adams County", "mgd": {"total": 2.0}}}},
+         "state": {"basis": basis("odnr_wwfr", "reported"), "counties": {"39049": {"name": "Franklin County", "mgd": {"total": 252.571}}}}}
+    folder = tmp_path / "OH" / "2000-01-01"
+    folder.mkdir(parents=True)
+    (folder / "wateruse.json").write_text(json.dumps(W))
+    (folder / "manifest.json").write_text(json.dumps({"date": "2000-01-01", "files": {"wateruse.json": {}}}))
+    sd = data.SnapshotData("OH", str(folder))
+    monkeypatch.setattr(provider, "state_data", lambda st: sd)
+    use, usgs = provider.county_water_use("OH", "39049")
+    assert (use.source, use.kind, use.mgd["total"]) == ("odnr_wwfr", "reported", 252.571)
+    assert (usgs.year, usgs.kind, usgs.delivered_to_homes_mgd) == (2015, "estimate", 63.89)
+    use, usgs = provider.county_water_use("OH", "39001")
+    assert use == usgs and use.source == "usgs_wu2015"
+    (folder / "manifest.json").write_text(json.dumps({"date": "2000-01-01", "files": {}}))
+    old = data.SnapshotData("OH", str(folder))
+    monkeypatch.setattr(provider, "state_data", lambda st: old)
+    assert provider.county_water_use("OH", "39049") == (None, None)
 
 
 def test_days():

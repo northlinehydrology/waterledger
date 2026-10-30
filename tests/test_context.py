@@ -12,6 +12,10 @@ def test_gaines():
     assert set(c.climate.design_storms_in) >= {"2", "10", "100"} and c.climate.region == "west"
     assert c.energy.utilities and 0 < c.energy.utilities[0].share_of_place <= 1
     assert wl.Context.model_validate_json(c.model_dump_json()) == c
+    w = c.supply.county_water_use                       # EGLE's figures, the same numbers the page shows, in the shared categories
+    assert (w.source, w.kind, w.year, w.county_fips) == ("egle2025", "reported", 2025, "26081")
+    assert w.mgd["public_supply"] == c.supply.county_use_mgd["Public water systems"]
+    assert w.mgd["total"] == round(sum(c.supply.county_use_mgd.values()), 3)
 
 
 def test_plants_and_systems_match_the_page():

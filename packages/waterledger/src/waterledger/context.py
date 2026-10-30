@@ -26,12 +26,39 @@ class WaterSystem(BaseModel):
     share_of_place: float | None = None
 
 
+class CountyWaterUse(BaseModel):
+    """Water already used in the place's county, by category, from one source, with that source's basis. Categories are
+    public_supply, domestic, commercial, industrial, irrigation, golf, livestock, aquaculture, mining, thermoelectric, other
+    and total; a category the source has no value for is absent, not zero."""
+    model_config = ConfigDict(frozen=True)
+    county: str | None = None
+    county_fips: str
+    source: str                                     # source id, e.g. "usgs_wu2015", "odnr_wwfr", "twdb_wus", "va_deq_awrr", "egle2025"
+    citation: str
+    url: str | None = None
+    year: int
+    kind: str                                       # "reported" (by the users, to the state) or "estimate" (USGS's 2015 estimates)
+    measure: str                                    # "withdrawals", or "use" (TWDB: intake less sales; power plants' consumption)
+    units: str = "Mgal/d"
+    mgd: dict[str, float] = {}
+    ground_mgd: dict[str, float] = {}
+    surface_mgd: dict[str, float] = {}
+    reuse_mgd: dict[str, float] = {}                # Texas
+    delivered_to_homes_mgd: float | None = None     # USGS: public supply delivered to homes in the county
+    threshold: str | None = None                    # who has to report
+    categories: dict[str, str] = {}                 # what each category holds in the source's own terms
+    caveats: list[str] = []
+
+
 class Supply(_Category):
     """Where the water comes from."""
     systems: list[WaterSystem] = []                 # public water systems mapped in the place
     nearest_system: WaterSystem | None = None       # with none mapped: the nearest sizable one
     nearest_system_km: float | None = None
-    county_use_mgd: dict[str, float] = {}           # reported withdrawals in the county by use, million gallons a day
+    county_use_mgd: dict[str, float] = {}           # water used in the county by category, million gallons a day (as county_water_use.mgd;
+                                                    # Michigan: EGLE's reported withdrawals under its own labels)
+    county_water_use: CountyWaterUse | None = None  # the state's own county figures where Water Ledger has them, else USGS's 2015 estimates
+    county_water_use_usgs: CountyWaterUse | None = None   # USGS's 2015 estimates (withdrawals and deliveries to homes), for comparison
     household_wells: dict | None = None             # wells in glacial deposits and bedrock: count, depth, water level (ft)
 
 

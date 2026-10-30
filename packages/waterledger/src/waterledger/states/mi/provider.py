@@ -1,6 +1,7 @@
 """Michigan's provider: answers for Michigan places from Water Ledger Michigan's data files (the same ones waterledger.org/mi
 reads), through waterledger.scenario, so the package and the page agree."""
 from waterledger import scenario as sc
+from waterledger.national.provider import water_use_record
 
 # EGLE's groups on waterledger.org/mi -> the county water-use categories (waterledger_data.wateruse.CATEGORIES)
 EGLE_CATS = {"Public water systems": "public_supply", "Industry": "industrial", "Bottled water": "industrial", "Farm irrigation": "irrigation",
@@ -40,9 +41,12 @@ def context(place):
     sys_ = lambda w: cx.WaterSystem(pwsid=w["pwsid"], name=w["name"].title(), population=w.get("pop"), connections=w.get("connections"), share_of_place=w.get("share"))
     near = None if r["w"] else sc.near_system(r)
     wells = Wd["wells"].get(r["g"])
+    L = egle_layer()
+    egle = L["counties"].get(r["cf"])
     supply = cx.Supply(provider="MI", sources=["epa_sa", "egle2025", "wellogic"], systems=[sys_(w) for w in r["w"]],
                        nearest_system=sys_(near["w"]) if near else None, nearest_system_km=round(near["km"], 1) if near else None,
                        county_use_mgd=E["county_uses_mgd"].get(r["c"], {}),
+                       county_water_use=water_use_record(egle, L["basis"], r["cf"]) if egle else None,
                        household_wells=dict(zip(("drift_n", "drift_depth_ft", "drift_level_ft", "rock_n", "rock_depth_ft", "rock_level_ft"), wells)) if wells else None)
     plants = [cx.SewerPlant(npdes=q["id"], name=q["n"], design_mgd=q.get("design"), flow_mgd=q.get("flow"), km=round(q["km"], 1),
                             receiving_water=q.get("recv") or None, combined_sewer=bool(q.get("cso")), lagoon=bool(q.get("lagoon")))
