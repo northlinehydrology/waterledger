@@ -31,3 +31,10 @@ Rules, the same for every state:
   the blend, and the Siddik et al. (2024) balancing-authority value for 2022 (excluding hydropower).
 
 `flagged_plants_2024.csv` lists every flagged plant with its reported and adjusted values.
+
+## Reconciliation with Siddik et al. (proposal)
+
+`reconcile.py` rebuilds Siddik et al.'s 2022 values from EIA data and splits the gap to ours into steps (`recon_ba_2022_2024.csv`).
+`combine.py` then writes `state_power_water_combined_2024.csv`, the 2024 plant data updated with 2022 evidence on the same basis. Write-up:
+[reconciliation.md](reconciliation.md). Extra inputs in the work folder: `dl2022/`, `dl2023/` and `dl2024/` (cooling detail, EIA-923 under `x923/`,
+and EIA-930 six-month files for 2022 and 2024).
