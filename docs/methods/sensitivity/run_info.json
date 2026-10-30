@@ -1,6 +1,6 @@
 {
- "model_version": "1.3",
- "code_commit": "5153bb54cf89ba7fa6a099a8b5a3be23a40f1365",
+ "model_version": "1.4",
+ "code_commit": "0623f04cbbd2863b6f2b22795060876011b0f4d8",
  "numpy": "2.5.4",
  "seed": 20261030,
  "weather": "ERA5 hourly 2 m temperature and relative humidity via the Open-Meteo archive (CC BY 4.0), 42.88 N 85.52 W (West Michigan), 2023-2024",
@@ -10,27 +10,11 @@
  "morris_trajectories": 100,
  "morris_levels": 4,
  "bootstrap": 1000,
- "model_runs_per_design": 157448,
+ "model_runs_per_design": 331580,
  "cooling_parameters": {
   "utilization": [
    0.5,
    0.8
-  ],
-  "hf_econ": [
-   1.03,
-   1.1
-  ],
-  "hf_chiller": [
-   1.15,
-   1.25
-  ],
-  "wb_econ": [
-   5.0,
-   12.0
-  ],
-  "wb_chiller": [
-   14.0,
-   22.0
   ],
   "er_adj": [
    -0.1,
@@ -79,6 +63,106 @@
   "assist_bleed": [
    0.0,
    0.5
+  ],
+  "ups": [
+   0.9,
+   0.99
+  ],
+  "dist_loss": [
+   0.0,
+   0.02
+  ],
+  "light": [
+   0.0,
+   0.002
+  ],
+  "shr": [
+   0.95,
+   0.99
+  ],
+  "supply_air": [
+   27.0,
+   35.0
+  ],
+  "air_rise": [
+   13.9,
+   19.4
+  ],
+  "coil_eff": [
+   0.7,
+   0.9
+  ],
+  "water_rise": [
+   5.0,
+   10.0
+  ],
+  "crah_pa": [
+   300.0,
+   700.0
+  ],
+  "fan_eff": [
+   0.65,
+   0.9
+  ],
+  "tower_fan_pa": [
+   100.0,
+   400.0
+  ],
+  "lg": [
+   0.2,
+   4.0
+  ],
+  "tower_approach": [
+   2.8,
+   6.7
+  ],
+  "hx_approach": [
+   1.7,
+   2.8
+  ],
+  "pump_chw_kpa": [
+   114.9,
+   172.4
+  ],
+  "pump_tower_kpa": [
+   166.9,
+   250.4
+  ],
+  "pump_econ_kpa": [
+   114.9,
+   172.4
+  ],
+  "pump_eff": [
+   0.6,
+   0.8
+  ],
+  "carnot_water": [
+   0.62,
+   0.78
+  ],
+  "carnot_air": [
+   0.45,
+   0.55
+  ],
+  "dc_approach": [
+   5.0,
+   10.0
+  ],
+  "dc_fan_pa": [
+   100.0,
+   250.0
+  ],
+  "liquid_water": [
+   32.0,
+   45.0
+  ],
+  "liquid_air_share": [
+   0.1,
+   0.3
+  ],
+  "liquid_share": [
+   0.0,
+   1.0
   ]
  },
  "noncooling_parameters": {
@@ -111,7 +195,7 @@
    0.15
   ]
  },
- "runtime_s": 198.4,
+ "runtime_s": 3449.3,
  "quick": false,
  "warnings": []
 }

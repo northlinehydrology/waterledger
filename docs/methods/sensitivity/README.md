@@ -1,4 +1,23 @@
-# Global sensitivity analysis of the data center water model (model 1.3)
+# Global sensitivity analysis of the data center water model
+
+## Model 1.4 (Oct 30, 2026): electricity added
+
+The CSVs and `run_info.json` here are the model 1.4 run: 38 cooling parameters (`physics.POWER` added, the heat factor parameters gone), N = 8192, West Michigan weather, 2023-2024, with two new outputs: annual PUE and PUE in the 1-in-10-year hottest hour. No warnings. The sections below describe the method, and their result tables and discussion are from the model 1.3 run; read current values from the CSVs.
+
+Total-order indices (ST), largest first:
+
+| Design | Annual PUE | Hottest-hour PUE |
+|---|---|---|
+| Closed loop | UPS 0.65, liquid share 0.20, supply air 0.05 | liquid share 0.41, liquid water temperature 0.30, UPS 0.29 |
+| Assist | UPS 0.65, liquid share 0.18, supply air 0.06 | liquid share 0.55, UPS 0.24, dry cooler approach 0.07 |
+| Hybrid | UPS 0.73, liquid share 0.15, supply air 0.03 | liquid share 0.45, UPS 0.35, supply air 0.06 |
+| Towers | UPS 0.71, L/G 0.10, liquid share 0.08 | liquid share 0.44, UPS 0.34, supply air 0.07 |
+
+- **UPS efficiency drives annual PUE in every design.** 90-99% is Lei and Masanet's and LBNL's large-scale range, and all of it is sampled uniformly. New large campuses likely sit in the upper part, so this is the first range to narrow with evidence, and it affects electricity without telling designs apart.
+- **The liquid-cooled share drives the peak**, which is the number a utility plans for, and it is an unsourced assumption [A]. It is the strongest case for asking applicants directly.
+- **The dry cooler assumptions matter little:** approach at most 0.07, others smaller, so having no citable value for them is not a large weakness in this climate. This is one climate; hot sites may differ.
+- **Water:** towers remain led by utilization (0.81 on water used up), hybrid by its switch point (0.82), assist by its switch point (0.95). The heat balance terms hardly matter for water (UPS 0.03 at most).
+
 
 Oct 30, 2026. Code: `sensitivity.py` in this folder. Results: `sobol_indices.csv`, `morris.csv`, `convergence.csv`,
 `output_summary.csv`, `run_info.json`.

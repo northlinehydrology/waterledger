@@ -46,7 +46,8 @@ R_MORRIS = 100             # Morris trajectories
 LEVELS = 4                 # Morris grid levels; step = LEVELS / (2 (LEVELS - 1)) = 2/3
 N_BOOT = 1000
 BATCH = 512
-COOL_OUTPUTS = ("consumed_avg", "withdrawn_avg", "withdrawn_peak_1in10")
+WATER_OUTPUTS = ("consumed_avg", "withdrawn_avg", "withdrawn_peak_1in10")
+COOL_OUTPUTS = WATER_OUTPUTS + ("pue_avg", "pue_hottest_hour")       # model 1.4: electricity from the same heat balance
 NC_OUTPUTS = ("nc_withdrawn", "nc_consumed")
 
 
@@ -55,7 +56,7 @@ NC_OUTPUTS = ("nc_withdrawn", "nc_consumed")
 def cooling_space():
     """[(name, low, high)] for the cooling model: physics.RANGES, topup and physics.ADIABATIC, in the order of physics.PARAMETERS. The
     package samples topup and ADIABATIC on their own streams; here all are independent uniforms on one design."""
-    bounds = {**ph.RANGES, "topup": ph.TOPUP, **ph.ADIABATIC}
+    bounds = {**ph.RANGES, "topup": ph.TOPUP, **ph.ADIABATIC, **ph.POWER}
     return [(k, float(bounds[k][0]), float(bounds[k][1])) for k in ph.PARAMETERS]
 
 
@@ -101,6 +102,9 @@ def cooling_outputs(wx, design, X, space):
         out["consumed_avg"][i:i + BATCH] = cd.mean(1)
         out["withdrawn_avg"][i:i + BATCH] = wd.mean(1)
         out["withdrawn_peak_1in10"][i:i + BATCH] = np.quantile(ann_max, 0.9, axis=1)
+        pue = ph.hourly_heat_power(wx["tdb"], wx["twb"], design, p)[0]
+        out["pue_avg"][i:i + BATCH] = pue.mean(1)
+        out["pue_hottest_hour"][i:i + BATCH] = np.quantile(np.stack([pue[:, np.repeat(wx["years"], 24) == y].max(1) for y in ys], axis=1), 0.9, axis=1)
     return out
 
 
@@ -123,7 +127,7 @@ def check_against_package(wx, space, rng):
             kw = MW * 1000 * p["utilization"]
             sw = cw.daily_stats(day_index, len(wx["days"]), wx["years"], w, kw)
             sc = cw.daily_stats(day_index, len(wx["days"]), wx["years"], c, kw)
-            got = [mine[k][r] / 1e6 for k in COOL_OUTPUTS]
+            got = [mine[k][r] / 1e6 for k in WATER_OUTPUTS]
             want = [sc["avg"], sw["avg"], sw["peak_1in10"]]
             np.testing.assert_allclose(got, want, rtol=1e-9, atol=1e-15)
 
@@ -242,7 +246,7 @@ def run(quick=False):
         mu, mu_star, sigma = analyse_morris(y_m, morder, mstep, k)
         base = y[:2 * n]
         sd = base.std(ddof=1)
-        units = "gal/day per 100 MW IT" if design != "non-cooling" else f"gal/day at {NC_MW:.0f} MW IT"
+        units = "kWh per IT kWh" if o.startswith("pue") else "gal/day per 100 MW IT" if design != "non-cooling" else f"gal/day at {NC_MW:.0f} MW IT"
         srows.append({"design": design, "output": o, "units": units, "mean": base.mean(), "sd": sd,
                       "p10": np.quantile(base, 0.1), "p50": np.quantile(base, 0.5), "p90": np.quantile(base, 0.9),
                       "sum_S1": np.nansum(S1), "sum_ST": np.nansum(ST), "n_base": n, "model_runs": len(y)})

@@ -418,7 +418,7 @@ replaces the heat factor `hf_econ`, `hf_chiller` and the wet-bulb limits `wb_eco
 
 **Results, state averages.** Median annual PUE, closed loop / towers, liquid share sampled: Michigan 1.122 / 1.129, Ohio 1.131 / 1.130, Virginia 1.137 / 1.132, Texas 1.172 / 1.141. Hottest hour: 1.289 / 1.201, 1.299 / 1.211, 1.306 / 1.204, 1.331 / 1.209. West Michigan, 300 MW, model 1.3 to 1.4, medians: average MW closed loop 222 to 216, assist 222 to 214, hybrid 220 to 213, towers 216 to 217; peak MW 372 to 387, 372 to 373, 351 to 361, 348 to 360. Water used up: towers -0.4%, hybrid +8.3%, assist -0.7%.
 
-**Open.** The liquid share is the largest structural assumption, and a user-settable share is not on the pages. Part-load behavior is proportional to the IT load. Lake-source cooling is not in the hourly model; the towers stand in. The Michigan ERA5 and station weather difference still applies. Sensitivity: `sensitivity/`, rerun with the electricity outputs.
+**Open.** The liquid share is the largest structural assumption, and a user-settable share is not on the pages. Part-load behavior is proportional to the IT load. Lake-source cooling is not in the hourly model; the towers stand in. The Michigan ERA5 and station weather difference still applies. Sensitivity (`sensitivity/`, 38 parameters, West Michigan): UPS efficiency leads annual PUE in every design (ST 0.65-0.73), so its 90-99% range is the first to narrow; the liquid share leads the hottest hour (0.41-0.55) and is unsourced; dry cooler assumptions matter little (at most 0.07). Water hardly responds to the heat balance terms.
 
 ## Oct 30, 2026: one rounding rule on the pages
 
