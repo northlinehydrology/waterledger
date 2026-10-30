@@ -148,7 +148,7 @@ def brief(state):
         st = "; ".join(f"{k.title()}" + (f" ({c} divisions)" if c > 1 else "") for k, c in n.items())
         S += [Paragraph(f"{name} follows the overall method with national data throughout. What is particular to it:", BODY),
               Paragraph(f"<b>Weather.</b> {len(divs)} NOAA climate divisions, with these stations: {st}.", BODY),
-              Paragraph(f"<b>Places.</b> " + "; ".join(f"{levels[k]:,} {w}" for k, w in (("place", "cities, towns and villages"),
+              Paragraph("<b>Places.</b> " + "; ".join(f"{levels[k]:,} {w}" for k, w in (("place", "cities, towns and villages"),
                         ("township", "townships that are governments"), ("county", "counties")) if levels.get(k)) +
                         ". Counties are included so that unincorporated land is covered.", BODY),
               Paragraph(f"<b>Water quality.</b> Impairments and TMDLs from {agency}'s {att.get('cycle', '')} integrated "
