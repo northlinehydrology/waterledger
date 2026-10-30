@@ -67,8 +67,17 @@ def territories(state, bounds):
         os.makedirs(RAW, exist_ok=True)
         json.dump(out, open(path, "w"))
     from waterledger_data.census import _polygon
+    from waterledger_data.power import utility_rtos
+    rto = utility_rtos()
+
+    def ba(a):
+        # the territory layer's control area; where it gives none (Texas delivery companies are listed as NOT AVAILABLE), the one RTO
+        # EIA-861 lists the utility in
+        uid = int(a["id"]) if str(a["id"]).isdigit() else None
+        return BALANCING_AUTHORITIES.get(a["cntrl_area"]) or rto.get(uid)
+
     rows = [{"eia_id": int(f["a"]["id"]) if str(f["a"]["id"]).isdigit() else None, "name": f["a"]["name"], "type": f["a"]["type"],
-             "balancing_authority": BALANCING_AUTHORITIES.get(f["a"]["cntrl_area"]), "geometry": _polygon(f["rings"])} for f in json.load(open(path))]
+             "balancing_authority": ba(f["a"]), "geometry": _polygon(f["rings"])} for f in json.load(open(path))]
     g = gpd.GeoDataFrame(rows, geometry="geometry", crs=4326)
     return g[g.geometry.notna() & ~g.geometry.is_empty].reset_index(drop=True)
 
@@ -79,7 +88,14 @@ def utilities_by_place(state, places):
     ground, so shares can add to more than 1)."""
     path = os.path.join(RAW, f"{state}_by_place.json")
     if os.path.exists(path):
-        return json.load(open(path))
+        out = json.load(open(path))
+        missing = [u for us in out.values() for u in us if not u["balancing_authority"]]
+        if missing:                         # caches written before the EIA-861 fallback (territories) have none for these
+            from waterledger_data.power import utility_rtos
+            rto = utility_rtos()
+            for u in missing:
+                u["balancing_authority"] = rto.get(u["eia_id"])
+        return out
     t = territories(state, tuple(places.total_bounds)).to_crs(ALBERS)
     t["geometry"] = shapely.make_valid(t.geometry.values)
     pl = places[["geoid", "geometry"]].to_crs(ALBERS)

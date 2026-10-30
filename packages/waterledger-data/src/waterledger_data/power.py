@@ -83,7 +83,7 @@ def fetch_eia861(year):
     d = os.path.join(RAW, f"eia861_{year}")
     os.makedirs(d, exist_ok=True)
     for n in z.namelist():
-        if n.startswith(("Sales_Ult_Cust_", "Short_Form_", "Operational_Data_")):
+        if n.startswith(("Sales_Ult_Cust_", "Short_Form_", "Operational_Data_", "Utility_Data_")):
             open(os.path.join(d, os.path.basename(n)), "wb").write(z.read(n))
     return d
 
@@ -116,6 +116,27 @@ def utility_loads(year=None, state="MI"):
         pk = o.loc[uid] if uid in o.index else None
         out[int(uid)] = {"mwh": float(r.mwh), "customers": int(r.cust) if r.cust == r.cust else None,
                          "summer_mw": val(pk.summer) if pk is not None else None, "winter_mw": val(pk.winter) if pk is not None else None}
+    return out
+
+
+# EIA-861 Utility Data, "Operating in these RTOs" -> the grid-water table's balancing authority codes
+RTO_BA = {"ERCOT": "ERCO", "PJM": "PJM", "MISO": "MISO", "SPP": "SWPP", "NYISO": "NYIS", "ISONE": "ISNE", "CAISO": "CISO"}
+
+
+def utility_rtos(year=None):
+    """{EIA utility id: balancing authority code} for utilities EIA-861 lists in exactly one RTO (Utility Data, "Operating in these
+    RTOs"). Used where the service-territory layer gives no control area (e.g. Texas delivery companies listed as NOT AVAILABLE)."""
+    import pandas as pd
+    year = year or eia_year()
+    path = os.path.join(RAW, f"eia861_{year}", f"Utility_Data_{year}.xlsx")
+    if not os.path.exists(path):
+        fetch_eia861(year)
+    u = pd.read_excel(path, header=1).rename(columns={"SPP.1": "SPP"})
+    out = {}
+    for _, r in u.iterrows():
+        flags = [RTO_BA[c] for c in RTO_BA if c in u.columns and str(r[c]).strip().upper() == "Y"]
+        if len(set(flags)) == 1 and r["Utility Number"] == r["Utility Number"]:
+            out[int(r["Utility Number"])] = flags[0]
     return out
 
 
