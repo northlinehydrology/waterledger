@@ -1,6 +1,6 @@
 [project]
 name = "waterledger-data"
-version = "3.1.0"
+version = "3.2.0"
 description = "Public U.S. water data for any place, fetched once and cached: Census places, EPA water systems and sewer plants, USGS watersheds, EPA ATTAINS, NOAA weather and design storms, EIA utilities"
 readme = "README.md"
 license = "BSD-3-Clause"

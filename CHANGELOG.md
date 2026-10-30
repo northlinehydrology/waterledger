@@ -2,10 +2,10 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## Unreleased
+## 3.2.0 (Oct 30, 2026)
 
 Model version 1.3: parameters checked against primary sources for publication (`docs/methods/methods-log.md`, Oct 30,
-2026). Michigan's numbers change when its site data is rebuilt.
+2026), and county water use. Snapshots move to format 2.
 
 - **Utilization** (average IT draw / IT capacity) 0.60-0.90 to 0.50-0.80, cited to EPRI 2026 and IEA 2025 (LBNL 2024
   and its 2025 update for the method). Cooling-tower and hybrid water, electricity and power-plant water fall about 13%
