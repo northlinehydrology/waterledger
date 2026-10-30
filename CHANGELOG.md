@@ -4,7 +4,23 @@ Package changes (code). Changes to the numbers are listed by model version on th
 
 ## Unreleased
 
-Model version 1.2; no estimate changes. Michigan's numbers are unchanged.
+Model version 1.3: parameters checked against primary sources for publication (`docs/methods/methods-log.md`, Oct 30,
+2026). Michigan's numbers change when its site data is rebuilt.
+
+- **Utilization** (average IT draw / IT capacity) 0.60-0.90 to 0.50-0.80, cited to EPRI 2026 and IEA 2025 (LBNL 2024
+  and its 2025 update for the method). Cooling-tower and hybrid water, electricity and power-plant water fall about 13%
+  at the median.
+- **Staff water**: gallons per person per calendar day 15-30 (no source) to 10-30 (EPA 2002 Table 3-4; Michigan septic
+  design criteria; Gilroy); people per MW now cited to announced campuses; consumed share cited to USGS SIR 2007-5197
+  Table 9. About 9% less staff water at 300 MW.
+- **Power plants (Michigan build)**: consumption range 0.68-1.31 to 0.6-1.2 L/kWh and withdrawal range 50-61 L/kWh,
+  both checked against EIA-923 2024 plant data and EGLE; the 57 L/kWh withdrawal re-cited to Michigan sources (it had
+  been MISO's value in the Siddik et al. dataset); `power_supply` options gain withdrawal factors (`wd_gal_mwh`,
+  `wd_lo`, `wd_hi`, Macknick et al. 2012 Table 3); nuclear weighted by 2024 generation (396 gal/MWh, was 403); wind and
+  solar weighted by Michigan's generation (0.2, was 1).
+- **Homes (Michigan build)**: 634.9 kWh/month (EIA-861 2025), was 618.2 (EIA Table 5A 2024).
+- Tests: golden file, lake reference and staff draws regenerated for 1.3; the West Michigan per-100 MW reference is
+  refreshed from the published estimates at release.
 
 - **`waterledger_data.wateruse`**: water use by county and category for any state, each layer with a basis block
   (source, year, reported or estimate, withdrawals or use, threshold, what each category holds, caveats):
