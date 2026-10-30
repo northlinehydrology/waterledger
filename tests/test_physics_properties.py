@@ -42,8 +42,8 @@ def test_dry_design_uses_loop_topups_only():
     _, t, rh = synthetic_weather(30)
     p = model.central_parameters()
     w, c, r = model.hourly_rates(t, model.wet_bulb(t, rh), "dry", p)
-    # 4,000 gal per MW, 3% a year, spread over the IT energy at 65% utilization
-    topup = 4000 * 0.03 / 365 / (24 * 1000 * 0.65)
+    # 7,000 gal per MW, 3% a year, spread over the IT energy at 65% utilization
+    topup = 7000 * 0.03 / 365 / (24 * 1000 * 0.65)
     np.testing.assert_allclose(w, topup)
     np.testing.assert_allclose(c, topup)        # leaks are all lost
     np.testing.assert_array_equal(r, 0.0)

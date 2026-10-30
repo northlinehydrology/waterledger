@@ -99,13 +99,13 @@ def test_closed_loop_includes_staff_water_at_capacity(tmp_path):
     m.set_value(TEMP, np.array([20.0]))
     m.set_value(RH, np.array([60.0]))
     w, c, r = (m.get_value(n, np.empty(1))[0] * 86400 * model.GAL_M3 for n in (WITHDRAWN, CONSUMED, RETURNED))  # gal/day
-    topup = 300 * 4000 * 0.03 / 365
+    topup = 300 * 7000 * 0.03 / 365
     staff, maint = (40 + 0.3 * 300) * 20, 1000 + 11 * 300          # people, and maintenance at the middle of its ranges
     assert w == pytest.approx(topup + staff + maint, rel=1e-9)
     assert c == pytest.approx(topup + 0.1 * staff + 0.09 * maint, rel=1e-9) and w == pytest.approx(c + r, rel=1e-12)
     m.initialize(write_config(tmp_path, design="dry", it_capacity_mw=300, parameters={"staff_gpcd": 30, "topup": 0.01}))
     w2 = m.get_value(WITHDRAWN, np.empty(1))[0] * 86400 * model.GAL_M3
-    assert w2 == pytest.approx(300 * 4000 * 0.01 / 365 + 130 * 30 + maint, rel=1e-9)
+    assert w2 == pytest.approx(300 * 7000 * 0.01 / 365 + 130 * 30 + maint, rel=1e-9)
 
 
 def test_bad_configuration(tmp_path):

@@ -24,22 +24,45 @@ RANGES = {
     # site and 57% at co-location sites; IEA 2025 puts hyperscale at 53-56%; LBNL's server parameters give about 40% (AI inference) to 60%
     # (AI training). Load over a site's own peak (EPRI: 88-94%) is a different ratio and does not bound this one.
     "utilization": (0.50, 0.80),
-    "hf_econ": (1.03, 1.08),           # heat factor with economizer cooling (pumps, fans, losses) [estimate]
-    "hf_chiller": (1.15, 1.25),        # heat factor with chillers running; compressor heat up to ~20% (DOE FEMP)
-    "wb_econ": (8.0, 12.0),            # wet-bulb (°C) below which the economizer carries the load [estimate]
-    "wb_chiller": (16.0, 20.0),        # wet-bulb (°C) above which chillers carry the load [estimate]
-    "er_adj": (-0.05, 0.05),           # uncertainty on the Rutberg evaporative ratio (USGS ±5–15% at baseload)
-    "coc": (3.0, 7.0),                 # cycles of concentration (DOE FEMP: 2–4 typical, 6+ possible)
-    "range_f": (8.0, 15.0),            # tower range, °F (USGS SIR 2013-5188 tower suite: 10–25)
-    "drift": (0.00005, 0.0005),        # drift fraction of circulating flow (EPA: <0.005% modern to 0.05%)
-    "fill_gal_per_mw": (2000.0, 6000.0),  # closed loop volume, gal per MW of IT capacity [estimate; Lowell reported a 1.2 million gallon fill]
-    "assist_on": (27.5, 31.0),         # dry-bulb °C where assist starts (Microsoft 85 °F = 29.4 °C)
-    "assist_share": (0.10, 0.30),      # assist water as a share of the full evaporative rate [estimate]
-    "hybrid_on": (21.0, 27.0),         # dry-bulb °C where hybrid starts evaporating [estimate; cold-climate variant]
-    "hybrid_full": (30.0, 33.0),       # dry-bulb °C where hybrid is fully evaporative [estimate]
+    # Heat rejected per unit of IT energy (model 1.3, derived; no published value). Economizer: IT plus fans, UPS and distribution
+    # losses, from Lei and Masanet 2022 Table 3 (large-scale: UPS 97-99%, distribution 0-2%, fans 1.4-9.2% of IT at their pressure and
+    # efficiency ranges). Chillers: plus compressor heat, "up to 20% of the total heat" (DOE FEMP, cooling water efficiency for data
+    # centers); COP 5-8 gives 1.13-1.20 over IT.
+    "hf_econ": (1.03, 1.10),
+    "hf_chiller": (1.15, 1.25),
+    # Wet-bulb (°C) limits of economizer and chiller operation (model 1.3, derived; no published value): chilled-water supply 12.8-18 °C
+    # (FEMP Data Center Design guide 2024, p. 17: 55 °F or higher) less the tower (2.8-6.7 °C) and heat exchanger (1.7-2.8 °C) approaches
+    # (Lei and Masanet 2022 Table 3) gives 3.3-13.5 °C for full economizer; the return (supply plus a 5-10 °C rise) less the approaches
+    # gives 8.3-23.5 °C for full chiller operation. FEMP (p. 19): economizers suit climates below 55 °F (12.8 °C) wet-bulb 3,000+ h a year.
+    # The two ranges are split at their midpoints so every draw ramps upward.
+    "wb_econ": (5.0, 12.0),
+    "wb_chiller": (14.0, 22.0),
+    # Evaporative ratio adjustment (model 1.3, was +/-0.05): asymmetric because Rutberg et al.'s fit (Poppe runs at 40 °C inlet water,
+    # RH 60%) is applied hourly to cooler data center tower water and cold hours, where it likely runs high; USGS SIR 2013-5188 (Diehl
+    # et al.) puts tower evaporation error at +/-5-15% (p. 24) and +/-18% overall (pp. 28-29).
+    "er_adj": (-0.10, 0.05),
+    "coc": (3.0, 7.0),                 # cycles of concentration: DOE FEMP BMP #10, two to four typical, six or more possible
+    "range_f": (7.0, 15.0),            # tower range, °F (model 1.3, was 8-15): Lei and Masanet 2022 Table 3, 4-6 °C (7.2-10.8 °F); 10 °F rating
+    # Drift as a share of circulating flow (model 1.3, was 0.005-0.05%): modern eliminators under 0.005% (EPA WaterSense at Work 2012,
+    # section 6.3, p. 6-9) to EPA AP-42 13.4's induced-draft 0.020% (Table 13.4-1).
+    "drift": (0.000005, 0.0002),
+    # Closed loop volume, gal per MW of IT capacity (model 1.3, was 2,000-6,000): Crusoe (2026) 1.7 million gal for a 200 MW building
+    # (8,500); Vantage Port Washington about 11.8 million gal for about 1 GW (about 12,000); chilled-water loops of 3-10 gal per ton
+    # (850-2,840 per MW of heat) at the low end.
+    "fill_gal_per_mw": (2000.0, 12000.0),
+    # Evaporative assist on the hottest days (closed loop + assist; not shown on the pages): starts near Microsoft's 85 °F (29.4 °C),
+    # within ASHRAE's allowable inlet range up to 32 °C (FEMP 2024 guide, Table 3-1); share of the full evaporative rate [estimate, no
+    # published value; to calibrate against operator WUE].
+    "assist_on": (27.0, 32.0),
+    "assist_share": (0.10, 0.30),
+    # Hybrid dry coolers: wet mode from a customer-set switch point, 70-95 °F (21-35 °C) in US 12,426,214 B1 (2025), 82 °F (27.8 °C)
+    # in its example (model 1.3, was 21-27); fully evaporative near the site's design dry-bulb [estimate, no published value].
+    "hybrid_on": (21.0, 28.0),
+    "hybrid_full": (30.0, 33.0),
 }
-# Share of the loop volume lost to small leaks and topped up each year (NIH 2023: closed loops typically lose under 5% a year), all of
-# it counted as lost. Sampled on its own random stream (where model 1.1 drew its base-use share), so the other draws are unchanged.
+# Share of the loop volume lost to small leaks and topped up each year (NIH 2023 Technical Bulletin: "typically less than 5% of the
+# system's total volume in a year"; the 1% floor is an assumption), all of it counted as lost. Poorly kept loops can lose far more (NIH:
+# 25% a month "is not uncommon"), which the range does not cover. Sampled on its own random stream (where model 1.1 drew its base-use share), so the other draws are unchanged.
 TOPUP = (0.01, 0.05)
 PARAMETERS = tuple(RANGES) + ("topup",)
 
