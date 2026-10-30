@@ -1,4 +1,4 @@
-"""Reproduces Water Ledger's published West Michigan estimates (model 1.2) from the same inputs: 30 years of hourly
+"""Reproduces Water Ledger's published West Michigan estimates (model 1.3) from the same inputs: 30 years of hourly
 ERA5 weather at 42.88 N, 85.52 W (Grand Rapids area), 200 runs, seed 7, and staff water from 200 draws, seed 13.
 
 The weather tests need the weather file (about 7 MB). Set WATERLEDGER_WEST_MICHIGAN_WEATHER to a saved Open-Meteo JSON,
@@ -61,7 +61,9 @@ def test_campus_at_300_mw_matches_water_ledger(weather):
     s = summarize(ensemble(weather, 300))
     runs = np.array(REF["staff_runs"])
     g = (runs[:, 0] + runs[:, 1] * 300) * runs[:, 2] / 1e6
-    staff = {"withdrawn": g, "consumed": g * runs[:, 3], "returned": g * (1 - runs[:, 3])}
+    m = (runs[:, 4] + runs[:, 5] * 300) / 1e6      # maintenance
+    used = g * runs[:, 3] + m * runs[:, 6]
+    staff = {"withdrawn": g + m, "consumed": used, "returned": g + m - used}
     for design, key in FLOW_KEYS:
         flow, stat = key.split("_", 1)
         k = 365.25 if key.endswith("_mg") else 1.0
@@ -69,7 +71,6 @@ def test_campus_at_300_mw_matches_water_ledger(weather):
             expected = REF["per_100mw"][design][key][q] * 3 + np.quantile(staff[flow], int(q[1:]) / 100) * k
             got = float(s[flow].sel(design=design, stat=stat, quantile=q))
             assert abs(got - expected) <= 3 * PUBLISHED, f"{design}/{key} {q}: {got} vs {expected}"
-    # the figures on the page: a 300 MW closed-loop campus takes about 2,700 gallons a day and loses about 340
+    # the figures on the page: a 300 MW closed-loop campus takes about 7,000 gallons a day
     dry = s.sel(design="dry", stat="avg", quantile="p50")
-    assert round(float(dry["withdrawn"]) * 1e6, -2) == 2700
-    assert round(float(dry["consumed"]) * 1e6, -1) == 340
+    assert round(float(dry["withdrawn"]) * 1e6, -2) == 7000
