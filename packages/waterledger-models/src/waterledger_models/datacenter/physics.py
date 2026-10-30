@@ -53,7 +53,7 @@ RANGES = {
     # (8,500); Vantage Port Washington about 11.8 million gal for about 1 GW (about 12,000); chilled-water loops of 3-10 gal per ton
     # (850-2,840 per MW of heat) at the low end.
     "fill_gal_per_mw": (2000.0, 12000.0),
-    # Dry coolers with adiabatic pre-cooling (model 1.3; not shown on the pages). Turns on at a switch point no maker publishes, since it is a
+    # Dry coolers with adiabatic pre-cooling (model 1.3; on Michigan's detailed calculator only). Turns on at a switch point no maker publishes, since it is a
     # selection and control output (EVAPCO 2018, p. 2): Uptime Institute (2025) reports 20 °C or higher; 30 °C is the top [A]. Microsoft's
     # 85 °F is for its direct-air evaporative design, a different system, and is no longer used here. Pad saturation effectiveness: EVAPCO
     # (2018, p. 2) measured 72-78% at 400-700 fpm across 10 pads; ASHRAE (2016, ch. 41) gives 70 to over 95% for rigid media.

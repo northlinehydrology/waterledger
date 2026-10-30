@@ -309,7 +309,7 @@ now dry coolers with adiabatic pre-cooling (the taxonomy of Masanet 2026, arXiv 
 - Result on the stored test weather: about 0.06 L/kWh used up (0.015-0.14), about the same as hybrid (0.05), so the two overlap rather than
   rank, which makes sense since they are close to the same technology; the test no longer requires assist below hybrid. Mokkapati and Das
   give about 0.05-0.25 L/kWh for arid western cities (my conversion), so a cool climate at the low end is plausible. No operator
-  has published water use for an adiabatic dry cooler site. The pages do not show this design.
+  has published water use for an adiabatic dry cooler site. The main calculator does not offer this design; the detailed calculator does.
 
 **Short form (methods pages, briefs).** Electricity: the computers are taken to draw 50 to 80% of their capacity on
 average (EPRI 2026 measurements; IEA 2025), plus cooling and power losses by design (LBNL 2024; checked against
