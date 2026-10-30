@@ -4,13 +4,14 @@
     places    Census cities and townships, EPA water system service areas, USGS watersheds
     waters    EPA ATTAINS impaired waters, ECHO and CWNS sewer plants, county rainfall, household wells
     power     electric utility territories and EIA-861 loads
+    wateruse  water use by county: USGS 2015 estimates for every state
 
 Submodules load on first use, so `import waterledger_data` stays light.
 """
 import importlib
 
 __version__ = "3.1.0"
-_SUB = ("climate", "config", "places", "power", "waters")
+_SUB = ("climate", "config", "places", "power", "waters", "wateruse")
 
 
 def __getattr__(name):
