@@ -12,7 +12,7 @@ Settings (arguments to state_data, or environment variables):
 
 Both kinds answer the same questions, so the provider doesn't care which it has.
 """
-import functools, hashlib, json, math, os, sys, urllib.request
+import functools, hashlib, json, math, os, re, sys, urllib.request
 
 from waterledger import states
 
@@ -248,7 +248,8 @@ def fetch_snapshot(state, date=None, url=None):
 def _newest_cached(state):
     from waterledger_data.config import CACHE
     root = os.path.join(CACHE, "snapshots", state)
-    dates = sorted(d for d in os.listdir(root) if os.path.exists(os.path.join(root, d, "manifest.json"))) if os.path.isdir(root) else []
+    dates = sorted(d for d in os.listdir(root) if re.fullmatch(r"\d{4}-\d{2}-\d{2}", d)
+                   and os.path.exists(os.path.join(root, d, "manifest.json"))) if os.path.isdir(root) else []
     for d in reversed(dates):
         m = json.load(open(os.path.join(root, d, "manifest.json")))
         if all(os.path.exists(os.path.join(root, d, n)) for n in m["files"]):

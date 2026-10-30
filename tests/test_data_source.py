@@ -109,3 +109,14 @@ def test_ask_accepted_builds(cache, monkeypatch):
 def test_live_skips_snapshots(cache, monkeypatch):
     asked = _serve(monkeypatch, {})
     assert isinstance(data.state_data("OH", source="live"), data.LiveData) and asked == []
+
+
+def test_newest_cached_ignores_latest_json(cache):
+    """A folder named like a file (latest.json) in the cache is not a snapshot date."""
+    from waterledger.national import data
+    root = os.path.join(cache, "snapshots", "OH")
+    os.makedirs(os.path.join(root, "latest.json"))
+    open(os.path.join(root, "latest.json", "manifest.json"), "w").close()       # empty, as a bad fetch once left it
+    os.makedirs(os.path.join(root, "2026-10-30"))
+    json.dump({"files": {}}, open(os.path.join(root, "2026-10-30", "manifest.json"), "w"))
+    assert data._newest_cached("OH").endswith("2026-10-30")

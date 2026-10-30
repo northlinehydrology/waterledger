@@ -107,10 +107,11 @@ def check_snapshot(state, root):
     """Run the statewide checks against a written snapshot (root/<ST>/<date>/) instead of the live services, and record the
     results in its manifest. Much faster than checking live: the downstream paths are already in the snapshot."""
     import os
+    import re
 
     from waterledger.national import data
     state = state.upper()
-    date = sorted(os.listdir(os.path.join(root, state)))[-1]
+    date = sorted(d for d in os.listdir(os.path.join(root, state)) if re.fullmatch(r"\d{4}-\d{2}-\d{2}", d))[-1]   # not latest.json
     folder = os.path.join(root, state, date)
     os.environ["WATERLEDGER_DATA_URL"] = "file://" + os.path.abspath(root)
     os.environ["WATERLEDGER_DATA_DATE"] = date
