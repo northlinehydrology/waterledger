@@ -2,6 +2,12 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.3.0 (Oct 30, 2026)
+
+- **`waterledger build-state MI`** runs Michigan's own build, not the national tier, so every state builds with the same command. `waterledger build mi` stays, and still builds one part at a time. No change to any number.
+- **README** states model version 1.3 and snapshot format 2, and describes the assist design as dry coolers with adiabatic pre-cooling. It is now updated before every release, and a test checks the versions it states.
+- **Releases:** every tag gets a GitHub release, its notes from this file.
+
 ## 3.2.1 (Oct 30, 2026)
 
 - **State builds on a machine with no cache**: `power.utility_rtos` downloads EIA-861 when none is cached, as `utility_loads` does; in 3.2.0 `waterledger build-state` stopped at the energy stage with `FileNotFoundError`. No change to any number.
