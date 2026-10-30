@@ -81,6 +81,11 @@ def flow(D, region, cool, key, mw):
     return {"lo": b["lo"] + s["p10"] * k, "mid": b["mid"] + s["p50"] * k, "hi": b["hi"] + s["p90"] * k}
 
 
+def _round_half_up(v):
+    """As JavaScript's Math.round."""
+    return math.floor(v + 0.5)
+
+
 def electricity(D, region, cool, mw):
     """Facility electricity at `mw` MW of IT capacity at a region's weather, lo/mid/hi: {"mw", "peak_mw", "pue", "peak_pue"}, or None for data from
     before model 1.4. Lake-source cooling is not in the hourly model; the region's cooling towers stand in [estimate]. Same as WQ.elec on the page."""
@@ -122,10 +127,14 @@ def cooling_estimate(D, region, cool, mw, dest):
     E = {"lake": False, "wAvg": F("withdrawn_avg"), "wPeak": F("withdrawn_peak_1in10"), "wAnn": F("withdrawn_annual_mg"),
          "cAvg": F("consumed_avg"), "cPeak": F("consumed_peak_1in10"), "rAvg": F("returned_avg"),
          "rPeak": F("returned_peak_1in10"), "reuse": False}
-    # what goes back out is what is taken less what is lost to evaporation, so the two add up (same as WQ.split on the page)
+    # one rounding rule, so what is shown adds up: withdrawn to two significant figures, evaporated to the same place, wastewater the difference
+    # (same as WQ.split on the page); the ranges stay the model's own
     for k_r, k_w, k_c in (("rAvg", "wAvg", "cAvg"), ("rPeak", "wPeak", "cPeak")):
-        shown = lambda v: round(v, 4) if v < 0.1 else round(v, 2)      # as the pages round flows, so shown numbers add up
-        m = max(0.0, shown(E[k_w]["mid"]) - shown(E[k_c]["mid"]))
+        v = E[k_w]["mid"]
+        place = 10.0 ** (math.floor(math.log10(v)) - 1) if v > 0 else 1.0
+        E[k_w]["mid"] = _round_half_up(v / place) * place
+        E[k_c]["mid"] = _round_half_up(E[k_c]["mid"] / place) * place
+        m = max(0.0, E[k_w]["mid"] - E[k_c]["mid"])
         E[k_r] = {"lo": min(E[k_r]["lo"], m), "mid": m, "hi": max(E[k_r]["hi"], m)}
     E["sewer"] = E["rAvg"]
     if dest == "reuse":
