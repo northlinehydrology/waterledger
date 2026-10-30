@@ -101,22 +101,10 @@ def utilities_by_place(state, places):
 def loads(state):
     """EIA-861 sales, customers and peaks by utility for a state ({eia_id: {...}}, power.utility_loads), downloading the newest
     year EIA has posted if none is cached."""
-    import datetime
-
     from waterledger_data import power
-    try:
-        year = power.eia_year()
-    except FileNotFoundError:
-        year = None
-        for y in range(datetime.date.today().year - 1, datetime.date.today().year - 4, -1):
-            try:
-                power.fetch_eia861(y)
-                year = y
-                break
-            except Exception:
-                continue
-        if year is None:
-            return {}
+    year = power.latest_eia861()
+    if year is None:
+        return {}
     return power.utility_loads(year, state)
 
 

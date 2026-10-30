@@ -119,14 +119,57 @@ def utility_loads(year=None, state="MI"):
     return out
 
 
+def latest_eia861(download=True):
+    """The newest EIA-861 year on disk; with none on disk, the newest year EIA has posted (downloaded), or None."""
+    import datetime
+    try:
+        return eia_year()
+    except FileNotFoundError:
+        if not download:
+            return None
+    for y in range(datetime.date.today().year - 1, datetime.date.today().year - 4, -1):
+        try:
+            fetch_eia861(y)
+            return y
+        except Exception:                           # noqa: BLE001  not posted yet: try the year before
+            continue
+    return None
+
+
+# EIA-861 Sales to Ultimate Customers: a state's totals sum Parts A (bundled), B (energy only) and D (bundled, Texas retail
+# providers) for sales and customers; Part C (delivery only) repeats Part B's customers on the wires (EIA's note in the file).
+STATE_PARTS = ("A", "B", "D")
+
+
+def _sales(year):
+    import pandas as pd
+    s = pd.read_excel(os.path.join(RAW, f"eia861_{year}", f"Sales_Ult_Cust_{year}.xlsx"), header=None, skiprows=3).iloc[:, [3, 6, 7, 10, 11, -2]]
+    s.columns = ["part", "state", "ownership", "res_mwh", "res_cust", "mwh"]
+    for c in ("res_mwh", "res_cust", "mwh"):
+        s[c] = pd.to_numeric(s[c], errors="coerce")
+    return s
+
+
+def state_retail_mwh(state, year=None):
+    """All retail electricity sold in a state in a year (bundled and energy-only sales; EIA-861 Parts A, B and D), MWh."""
+    year = year or eia_year()
+    s = _sales(year)
+    return float(s[(s.state == state) & s.part.isin(STATE_PARTS)].mwh.sum())
+
+
 def michigan_retail_mwh(year=None):
     """All retail electricity sold in Michigan in a year: bundled sales plus energy-only (retail choice) sales, MWh."""
-    import pandas as pd
+    return state_retail_mwh("MI", year)
+
+
+def residential(state, year=None):
+    """A state's residential customers and their average use: {"customers", "mwh", "kwh_month"} (EIA-861 Parts A, B and D;
+    customers of 'Behind the Meter' respondents, third-party rooftop solar owners, left out as EIA does)."""
     year = year or eia_year()
-    s = pd.read_excel(os.path.join(RAW, f"eia861_{year}", f"Sales_Ult_Cust_{year}.xlsx"), header=None, skiprows=3).iloc[:, [3, 6, -2]]
-    s.columns = ["part", "state", "mwh"]
-    s["mwh"] = pd.to_numeric(s.mwh, errors="coerce")
-    return float(s[(s.state == "MI") & s.part.isin(["A", "B"])].mwh.sum())
+    s = _sales(year)
+    s = s[(s.state == state) & s.part.isin(STATE_PARTS)]
+    mwh, cust = float(s.res_mwh.sum()), float(s[s.ownership != "Behind the Meter"].res_cust.sum())
+    return {"customers": int(cust), "mwh": round(mwh), "kwh_month": round(mwh * 1000 / cust / 12, 1) if cust else None}
 
 
 def place_utilities(rings, polys):
