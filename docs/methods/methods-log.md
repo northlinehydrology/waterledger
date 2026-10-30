@@ -375,5 +375,7 @@ Ohio, Virginia and Texas snapshots of this date were built from `main` at 888f4d
 - NOAA climate division names in the data.
 - Virginia's withdrawals by use type (published only in DEQ's dashboard; a bulk export to request).
 - The share of homes a utility serves, shown for Michigan, needs a national source.
-- Michigan's move to the shared format (design 0003, decision 8), with its home electricity figure.
+- Michigan's move to the shared format (design 0003, decision 8). Done for the package: Michigan's snapshot is in the shared
+  format and `waterledger build-state MI` runs Michigan's own build (`waterledger build mi` stays). Still open: the pages
+  reading the shared files, and with that Michigan's home electricity figure.
 - Byte-identical snapshot rebuilds.
