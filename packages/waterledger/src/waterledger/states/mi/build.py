@@ -37,6 +37,11 @@ REGIONS = {
 }
 
 SOURCES = {
+    "lbnl2025": ("Shehabi, A., et al. (2026). United States Data Center Energy Usage Report: 2025 Update. Lawrence Berkeley National Laboratory, LBNL-2001758 (pp. 9-10: utilization of interconnection capacity 'is not well documented but is estimated to be around 50%').", "https://doi.org/10.71468/P1RP4F"),
+    "epri2026": ("EPRI (2026). Powering Intelligence 2026: Updated Scenarios of U.S. Data Center Electricity Use and Power Strategies. White paper (p. 14: measured average annual load 75% of nameplate capacity for a large hyperscale facility, 57% across co-location facilities; 94% and 88% of each facility's own peak).", "https://powering-intelligence.epri.com/"),
+    "iea2025": ("International Energy Agency (2025). Energy and AI. IEA, Paris. Annex Table A.1 (world): hyperscale load factor 53-56% in 2020-2024, 50-52% projected for 2030; hyperscale PUE 1.14 in 2024.", "https://www.iea.org/reports/energy-and-ai"),
+    "google2025": ("Google. Data center efficiency: comprehensive fleet-wide trailing twelve-month PUE of 1.09 in 2025 (1.08 to 1.11 at Council Bluffs, Hamina and St. Ghislain).", "https://datacenters.google/efficiency/"),
+    "eia923_2024": ("U.S. Energy Information Administration. Thermoelectric cooling water data, 2024 (Form EIA-923 Schedule 8D water withdrawal and consumption by plant and cooling system, with EIA-860 cooling types). Michigan, 2024: 2,001,748 million gallons withdrawn, 61 L per kWh of the state's 124.2 TWh net generation, about 1% consumed.", "https://www.eia.gov/electricity/data/water/"),
     "lbnl2024": ("Shehabi, A., et al. (2024). 2024 United States Data Center Energy Usage Report. Lawrence Berkeley National Laboratory, LBNL-2001637.", "https://doi.org/10.71468/P1WC7Q"),
     "lei2022": ("Lei, N., & Masanet, E. (2022). Climate- and technology-specific PUE and WUE estimations for U.S. data centers using a hybrid statistical and thermodynamics-based approach. Resources, Conservation and Recycling 182: 106323.", "https://doi.org/10.1016/j.resconrec.2022.106323"),
     "lei2025": ("Lei, N., Lu, J., Shehabi, A., & Masanet, E. (2025). The water use of data center workloads: A review and assessment of key determinants. Resources, Conservation and Recycling 219: 108310.", "https://doi.org/10.1016/j.resconrec.2025.108310"),
@@ -51,12 +56,18 @@ SOURCES = {
     "siddik2024": ("Siddik, M. A. B., Shehabi, A., Rao, P., & Marston, L. T. (2024). Spatially and temporally detailed water and carbon footprints of U.S. electricity generation and use. Water Resources Research 60(12). Data: LBNL Water IMPACT (HydroShare), 2022 v1.1.", "https://doi.org/10.1029/2024WR038350"),
     "macknick2012": ("Macknick, J., et al. (2012). Operational water consumption and withdrawal factors for electricity generating technologies. Environmental Research Letters 7: 045802.", "https://doi.org/10.1088/1748-9326/7/4/045802"),
     "peer2019": ("Peer, R. A. M., Grubert, E., & Sanders, K. T. (2019). A regional assessment of the water embedded in the US electricity system. Environmental Research Letters 14: 084014.", "https://doi.org/10.1088/1748-9326/ab2daa"),
-    "eia_mi": ("U.S. Energy Information Administration. Michigan electricity profile and EIA-923 generation data (2025).", "https://www.eia.gov/electricity/state/michigan/"),
+    "eia_mi": ("U.S. Energy Information Administration (2025). Michigan Electricity Profile 2024, Table 5: net generation 124.2 TWh; natural gas 44.9%, nuclear 21.2% (Cook 68.6% of it), coal 20.7%, wind 7.9%, solar 1.5%.", "https://www.eia.gov/electricity/state/michigan/"),
     "gcsaa2013": ("GCSAA (2015). Golf Course Environmental Profile: water use and conservation practices on U.S. golf courses (2013 survey, by region).", "https://gcsaa.org/docs/default-source/Environment/phase-2-water-use-survey-full-report.pdf"),
-    "usgs_cu2007": ("Shaffer, K. H., & Runkle, D. L. (2007). Consumptive water-use coefficients for the Great Lakes Basin and climatically similar areas. USGS Scientific Investigations Report 2007-5197 (commercial use: about 10% consumed).", "https://pubs.usgs.gov/sir/2007/5197/"),
+    "usgs_cu2007": ("Shaffer, K. H., & Runkle, D. L. (2007). Consumptive water-use coefficients for the Great Lakes Basin and climatically similar areas. USGS Scientific Investigations Report 2007-5197, Table 9, p. 16 (commercial, Great Lakes Basin: median 10% consumed, quartiles 8-15%).", "https://doi.org/10.3133/sir20075197"),
     "energystar_humid": ("U.S. EPA ENERGY STAR. 16 more ways to cut energy waste in the data center: make humidification adjustments (data centers in cool climates, particularly with free cooling, should not need to humidify for much of the year; after ASHRAE TC 9.9's 2014 electrostatic discharge study).", "https://www.energystar.gov/products/data_center_equipment/16-more-ways-cut-energy-waste-data-center/make-humidification-adjustments"),
-    "jlarc2024": ("Joint Legislative Audit and Review Commission, Virginia (December 9, 2024). Data Centers in Virginia 2024. Report 598 (a typical building: about 50 full-time workers once open, about half of them contractors).", "https://jlarc.virginia.gov/pdfs/reports/Rpt598.pdf"),
-    "mcl_205_54ee": ("Michigan General Sales Tax Act, MCL 205.54ee: data center equipment exemption (an enterprise data center needs at least 30 new jobs, among other conditions).", "https://legislature.mi.gov/Laws/MCL?objectName=mcl-205-54ee"),
+    "jlarc2024": ("Joint Legislative Audit and Review Commission, Virginia (December 9, 2024). Data Centers in Virginia 2024. Report 598, p. 13 (a typical 250,000-square-foot data center \"may have approximately 50 full-time workers\", about half of them contractors).", "https://jlarc.virginia.gov/pdfs/reports/Rpt598.pdf"),
+    "epa_onsite2002": ("U.S. EPA (2002). Onsite Wastewater Treatment Systems Manual, EPA/625/R-00/008, Table 3-4, p. 3-7 (from Crites and Tchobanoglous 1998): office or industrial building, 7-16 gallons per employee per day, 13 typical.", "https://nepis.epa.gov/Exe/ZyPURL.cgi?Dockey=P100FG3K.TXT"),
+    "mi_septic": ("Michigan Department of Public Health (1994). Michigan Criteria for Subsurface Sewage Disposal, Appendix C, Table 1: factories, 35 gallons per person per shift, exclusive of industrial wastes (a design value).", "https://www.michigan.gov/egle/about/organization/drinking-water-and-environmental-health/onsite-wastewater"),
+    "gilroy2022": ("City of Gilroy (November 2022). Notice of Preparation, Gilroy Data Center EIR (SCH 2022110127): two 49 MW buildings, about 50 full-time employees and up to 74 contractors as needed; the project's fact sheet gives 1,800 gallons a day of domestic water.", "https://ceqanet.lci.ca.gov/2022110127"),
+    "meta_elpaso": ("Meta (October 15, 2025; updated March 26, 2026). Meta's new AI-optimized data center in El Paso: grows to 1 GW and \"will support more than 300 operational jobs\" once complete.", "https://about.fb.com/news/2025/10/metas-new-ai-optimized-data-center-el-paso/"),
+    "meta_richland": ("Meta (December 2025). One year in: Meta's Richland Parish data center: more than 500 operational jobs; Louisiana Economic Development (July 2026): expansion to 5 GW.", "https://about.fb.com/news/2025/12/metas-richland-parish-data-center-supports-louisiana-economy-875-million-in-contracts/"),
+    "oracle_saline2026": ("Oracle (June 1, 2026). Related Digital, Oracle, OpenAI, Walbridge and Governor Whitmer celebrate construction of Stargate campus in Saline Township: 450+ permanent jobs onsite (a campus of about 1.4 GW).", "https://www.oracle.com/news/announcement/related-digital-oracle-openai-walbridge-and-governor-whitmer-celebrate-construction-of-stargate-campus-in-saline-township-2026-06-01/"),
+    "mcl_205_54ee": ("Michigan General Sales Tax Act, MCL 205.54ee(10)(e)(v), as amended by 2024 PA 207: an enterprise data center must keep a minimum of 30 qualified new jobs (an incentive condition, not a staffing figure).", "https://legislature.mi.gov/Laws/MCL?objectName=mcl-205-54ee"),
     "lowell_firstlook": ("Lowell's First Look (May 2026), citing Microsoft: about 2.2 million gallons a year excluding cooling, plus a one-time 1.2 million gallon fill; Lowell Township business park page. Primary document not yet located.", "https://www.lowelltwp.org/business_park/index.php"),
     "gaines_sunnews": ("Sun and News / WOOD TV (2026): Microsoft at the April 15, 2026 Gaines Township hearing, about 2,000 gallons a day per building.", "https://www.yahoo.com/news/articles/gaines-township-research-noise-proposed-215143809.html"),
     "saline_post": ("The Saline Post (July 2026), as reported by Planet Detroit and Sun Times News: about 20,000 gallons a day at the start of operations, a developer estimate. Primary document not yet located.", "https://planetdetroit.org/2025/10/saline-data-center-settlement/"),
@@ -77,7 +88,7 @@ SOURCES = {
     "egle_impaired": ("Michigan EGLE. Water Quality and Pollution Control in Michigan: Sections 303(d), 305(b) and 314 Integrated Report (impaired waters and TMDLs).", "https://www.michigan.gov/egle/about/organization/water-resources/glwarm/integrated-report"),
     "mcl327": ("Michigan Natural Resources and Environmental Protection Act, Part 327 Great Lakes Preservation: MCL 324.32701 (large quantity withdrawal: over 100,000 gallons a day averaged over any 30 days; waters of the state include the Great Lakes) and MCL 324.32723 (withdrawal permits: new withdrawals over 2,000,000 gallons a day, or over 1,000,000 in Zone C).", "https://www.legislature.mi.gov/Laws/MCL?objectName=mcl-324-32723"),
     "wgvu2026": ("Limbaugh, D. (2026, May 26). Unregulated demands: how rising data center water use avoids Great Lakes Compact scrutiny. WGVU News. (Compact regional review at 5 million gallons a day of consumptive use, averaged over 90 days; most data centers connect to public water systems.)", "https://www.wgvunews.org/news/2026-05-26/unregulated-demands-how-rising-data-center-water-use-avoids-great-lakes-compact-scrutiny"),
-    "eia_res": ("U.S. Energy Information Administration (2025). Electric Sales, Revenue, and Average Price, 2024 data, Table 5A: residential average monthly bill by state. Michigan: 4,516,367 residential customers, 618 kWh per month on average.", "https://www.eia.gov/electricity/sales_revenue_price/"),
+    "eia_res": ("U.S. Energy Information Administration. Form EIA-861, 2025, Sales to Ultimate Customers (Parts A, B and D, as EIA totals a state): Michigan, 4,538,056 residential customers using 634.9 kWh per month on average.", "https://www.eia.gov/electricity/data/eia861/"),
     "msft2024": ("Solomon, S. (2024, December 9). Sustainable by design: Next-generation datacenters consume zero water for cooling. Microsoft Cloud blog. (Replacing evaporative cooling with chillers raises PUE: \"a nominal increase in our annual energy usage.\")", "https://www.microsoft.com/en-us/microsoft-cloud/blog/?p=251"),
     "glerl": ("NOAA Great Lakes Environmental Research Laboratory. Great Lakes Long Term Average Surface Water Temperature, Daily (GLSEA).", "https://apps.glerl.noaa.gov/erddap/info/glerlLTAvgTemp/index.html"),
     "lsc_cornell": ("7x24 Exchange (2014, Spring). Lake and river source cooling, magazine p. 26: Cornell Lake Source Cooling draws Cayuga Lake water at about 39 °F (3.9 °C) from 250 ft and returns it at about 56 °F (13.3 °C); Toronto's Enwave deep lake system draws 4 °C water from 83 m.", "https://7x24exchange.org/spring14_/7x24_Spring_Magazine/files/assets/basic-html/page26.html"),
@@ -122,12 +133,14 @@ SOURCES = {
     "wleb_dap": ("MDARD, EGLE and DNR. Michigan's Domestic Action Plan for the Western Lake Erie Basin (2025 update): a 40% cut in phosphorus loads from 2008 levels.", "https://www.michigan.gov/mdard/environment/conservation/wleb"),
 }
 
-SHORT = {"lbnl2024": "LBNL 2024", "lei2022": "Lei & Masanet 2022", "lei2025": "Lei et al. 2025", "usgs2013": "USGS 2013", "femp_bmp10": "DOE FEMP",
+SHORT = {"lbnl2024": "LBNL 2024", "lbnl2025": "LBNL 2025", "epri2026": "EPRI 2026", "iea2025": "IEA 2025", "google2025": "Google 2025",
+         "eia923_2024": "EIA-923 2024", "epa_onsite2002": "EPA 2002", "mi_septic": "Michigan septic criteria", "gilroy2022": "Gilroy 2022",
+         "meta_elpaso": "Meta 2026", "meta_richland": "Meta 2025", "oracle_saline2026": "Oracle 2026", "lei2022": "Lei & Masanet 2022", "lei2025": "Lei et al. 2025", "usgs2013": "USGS 2013", "femp_bmp10": "DOE FEMP",
          "femp_dc": "DOE FEMP", "epa_wsaw": "EPA 2012", "stull2011": "Stull 2011", "msft2026": "Microsoft 2026", "icprb2025": "ICPRB 2025",
          "icprb2026": "ICPRB 2026", "siddik2024": "Siddik et al. 2024", "macknick2012": "Macknick et al. 2012", "peer2019": "Peer et al. 2019",
          "eia_mi": "EIA", "egle2025": "EGLE 2025", "mpsc_territory": "MPSC", "usgs_cu2007": "Shaffer & Runkle 2007", "energystar_humid": "ENERGY STAR", "nih_closedloop": "NIH 2023", "jlarc2024": "JLARC 2024", "mcl_205_54ee": "MCL 205.54ee", "lowell_firstlook": "Lowell's First Look", "gaines_sunnews": "Sun and News 2026", "saline_post": "The Saline Post", "wgvu_switch": "WGVU 2025", "eia861": "EIA-861", "gcsaa2013": "GCSAA 2013", "epa_watersense": "EPA WaterSense", "era5": "ERA5", "google2026": "Google 2026",
          "han2026": "Han et al. 2026", "mytton2021": "Mytton 2021", "census_tiger": "Census", "epa_sa": "EPA service areas", "usgs_wbd": "USGS WBD",
-         "noaa_atlas14": "NOAA Atlas 14", "simple_method": "Simple Method", "egle_impaired": "EGLE", "mcl327": "MCL Part 327", "wgvu2026": "WGVU 2026", "naturalearth": "Natural Earth", "glerl": "NOAA GLERL", "eia_res": "EIA 2024", "msft2024": "Microsoft 2024", "lsc_cornell": "Cornell LSC", "cfr125_81": "40 CFR 125.81", "egle_npdes": "EGLE NPDES", "mi_part22": "Mich. Part 22 rules",
+         "noaa_atlas14": "NOAA Atlas 14", "simple_method": "Simple Method", "egle_impaired": "EGLE", "mcl327": "MCL Part 327", "wgvu2026": "WGVU 2026", "naturalearth": "Natural Earth", "glerl": "NOAA GLERL", "eia_res": "EIA-861 2025", "msft2024": "Microsoft 2024", "lsc_cornell": "Cornell LSC", "cfr125_81": "40 CFR 125.81", "egle_npdes": "EGLE NPDES", "mi_part22": "Mich. Part 22 rules",
          "attains2026": "EPA ATTAINS 2026", "mdnr_trout": "Michigan DNR trout streams", "noaa_cag": "NOAA 1991–2020", "echo": "EPA ECHO", "cwns2022": "EPA CWNS 2022",
          "usgs_marquette": "USGS Marquette 1997", "mpca_emc": "MPCA", "nsqd": "NSQD", "stepl": "EPA STEPL", "egle_ms4": "EGLE MS4 standard", "kcdc_rules": "Kent County rules",
          "bmpdb2020": "BMP Database 2020", "semcog_lid": "SEMCOG 2008", "epa_fact26": "EPA 2005", "epa_mm8": "EPA MM8", "part91": "Part 91", "mpca_salt": "MPCA salt guidance",
@@ -136,16 +149,24 @@ SHORT = {"lbnl2024": "LBNL 2024", "lei2022": "Lei & Masanet 2022", "lei2025": "L
          "egle_dc_faq": "EGLE data center FAQ", "wleb_dap": "Lake Erie action plan", "nri2017": "USDA NRI 2017", "wellogic": "EGLE Wellogic", "wwat": "EGLE WWAT"}
 
 PARAM_SOURCES = {
-    "utilization": ["lbnl2024"], "hf_econ": ["femp_dc"], "hf_chiller": ["femp_dc"], "wb_econ": ["femp_dc"], "wb_chiller": ["femp_dc"],
+    "utilization": ["epri2026", "iea2025", "lbnl2024", "lbnl2025"], "hf_econ": ["femp_dc"], "hf_chiller": ["femp_dc"], "wb_econ": ["femp_dc"], "wb_chiller": ["femp_dc"],
     "er_adj": ["usgs2013"], "coc": ["femp_bmp10"], "range_f": ["usgs2013"], "drift": ["epa_wsaw"], "fill_gal_per_mw": ["lowell_firstlook"], "topup": ["nih_closedloop"],
-    "staff_core": ["jlarc2024", "mcl_205_54ee"], "staff_per_mw": ["jlarc2024"], "staff_gpcd": [], "staff_used": ["usgs_cu2007"],
+    "staff_core": ["jlarc2024", "gilroy2022"], "staff_per_mw": ["meta_richland", "meta_elpaso", "oracle_saline2026", "gilroy2022"],
+    "staff_gpcd": ["epa_onsite2002", "mi_septic", "gilroy2022"], "staff_used": ["usgs_cu2007"],
     "assist_on": ["msft2026"], "assist_share": ["lei2025"], "hybrid_on": ["lei2025", "han2026"], "hybrid_full": ["lei2025"],
 }
 
+# Water at the power plants for Michigan's mix (model 1.3: the range and sources checked against plant data). Consumption: Macknick factors
+# applied to EIA's 2024 and 2025 Michigan mix give 0.90 L/kWh; EIA-923's 2024 plant reports give 0.60 (once-through plants report little or
+# no consumption; Midland Cogeneration Venture's entry, 2,370 gal/MWh, is set aside as inconsistent with EGLE) and 0.96 with Macknick's
+# once-through medians filled in; once-through plants at Monroe's own reported ratio give 1.19. Withdrawal: EIA-923 2024 gives 61.0 L/kWh,
+# EGLE's 2025 power withdrawals over EIA's 2025 generation 56.1, Macknick factors 55-58: 57 (50-61), about 1-2% consumed. MISO values are
+# from Siddik et al.'s 2022 dataset (load-weighted; withdrawal 57.1 L/kWh), a cross-check, not Michigan's figure.
 POWER = {
     "consumed_l_per_kwh": {"michigan_mix": 0.9, "miso_excl_hydro": 1.57, "miso_incl_hydro": 3.84,
-                           "range": [0.68, 1.31], "sources": ["eia_mi", "macknick2012", "egle2025", "peer2019", "siddik2024"]},
-    "withdrawn_l_per_kwh": {"value": 57.0, "returned_share_note": "about 99% returned to the Great Lakes and rivers, warmer", "sources": ["siddik2024", "egle2025"]},
+                           "range": [0.6, 1.2], "sources": ["eia_mi", "eia923_2024", "macknick2012", "egle2025", "siddik2024"]},
+    "withdrawn_l_per_kwh": {"value": 57.0, "range": [50.0, 61.0], "returned_share_note": "98 to 99% returned to the Great Lakes and rivers, warmer",
+                            "sources": ["eia923_2024", "egle2025", "eia_mi", "macknick2012"]},
 }
 
 # Electricity overhead by cooling design: LBNL 2024 Fig. 4.4, large-scale facilities, simulated annual PUE (figure-read medians and boxes,
@@ -159,21 +180,29 @@ PUE_DESIGN = {
     "lake": {"lo": 1.09, "mid": 1.12, "hi": 1.16, "basis": "Not simulated by LBNL; the cooling-tower range stands in [estimate]"},
 }
 
-# Water consumed at power plants per MWh, by what supplies the campus (gallons per MWh; Macknick et al. 2012 medians and ranges unless noted).
+# Water at power plants per MWh, by what supplies the campus: consumed (gal_mwh, lo, hi) and withdrawn (wd_gal_mwh, wd_lo, wd_hi), gallons per
+# MWh. Macknick et al. 2012 medians and ranges (Table 2 consumption, Table 3 withdrawal; wind and PV withdrawal equals consumption, p. 6)
+# unless noted; blends are weighted by Michigan's 2024 generation (EIA).
 POWER_SUPPLY = {
-    "mi_mix": {"label": "Michigan's current mix", "gal_mwh": 238, "lo": 180, "hi": 346, "sources": ["eia_mi", "macknick2012", "egle2025"],
-               "note": "0.9 L/kWh (0.68 to 1.31): EIA 2025 generation mix with Macknick factors, checked against EGLE's reported power-sector use"},
-    "new_gas": {"label": "Gas plants", "gal_mwh": 205, "lo": 130, "hi": 300, "sources": ["macknick2012"],
-                "note": "Natural gas combined cycle with cooling towers"},
-    # Michigan's own plants (model 1.2; before, cooling-tower plants): the large coal plants (Monroe, Belle River, Campbell) and Cook
-    # nuclear are cooled with lake or river water passing through once; Fermi 2 has cooling towers. Nuclear weights Cook's two-thirds of
-    # Michigan's nuclear generation once-through and Fermi's third with towers. Same factors as the Michigan mix above.
-    "coal": {"label": "Michigan's coal plants", "gal_mwh": 250, "lo": 100, "hi": 317, "sources": ["macknick2012", "eia_mi"],
+    "mi_mix": {"label": "Michigan's current mix", "gal_mwh": 238, "lo": 159, "hi": 317, "wd_gal_mwh": 15060, "wd_lo": 13210, "wd_hi": 16115,
+               "sources": ["eia_mi", "eia923_2024", "macknick2012", "egle2025"],
+               "note": "0.9 L/kWh consumed (0.6 to 1.2) and 57 L/kWh withdrawn (50 to 61): EIA's 2024 Michigan mix with Macknick factors, checked against EIA-923 plant reports and EGLE's reported power-sector withdrawals"},
+    "new_gas": {"label": "Gas plants", "gal_mwh": 205, "lo": 130, "hi": 300, "wd_gal_mwh": 255, "wd_lo": 150, "wd_hi": 283, "sources": ["macknick2012"],
+                "note": "Natural gas combined cycle with cooling towers (Michigan's tower-cooled combined-cycle plants reported about 189 consumed in 2024)"},
+    # Michigan's own plants (EIA-860 cooling types, 2024): the large coal plants (Monroe, Belle River, Campbell) and Cook nuclear are cooled
+    # with lake or river water passing through once; Fermi 2 has natural-draft towers. Nuclear is weighted by 2024 generation: Cook 68.6%
+    # once-through, Fermi 31.4% towers (model 1.3; was two-thirds and one-third). Coal uses Macknick's generic once-through coal.
+    "coal": {"label": "Michigan's coal plants", "gal_mwh": 250, "lo": 100, "hi": 317, "wd_gal_mwh": 36350, "wd_lo": 20000, "wd_hi": 50000,
+             "sources": ["macknick2012", "eia_mi", "eia923_2024"],
              "note": "Coal cooled with lake or river water passing through once, as Michigan's large coal plants are"},
-    "nuclear": {"label": "Michigan's nuclear plants", "gal_mwh": 403, "lo": 260, "hi": 548, "sources": ["macknick2012", "eia_mi"],
-                "note": "Cook (about two-thirds of Michigan's nuclear generation) cooled with Lake Michigan water passing through once; Fermi 2 with cooling towers"},
-    "renew": {"label": "Wind and solar", "gal_mwh": 1, "lo": 0, "hi": 5, "sources": ["macknick2012"], "note": "Wind 0; utility solar about 1 (0 to 5) for panel washing"},
-    "miso": {"label": "MISO grid average", "gal_mwh": 415, "lo": 415, "hi": 415, "sources": ["siddik2024"], "note": "1.57 L/kWh, MISO excluding hydropower"},
+    "nuclear": {"label": "Michigan's nuclear plants", "gal_mwh": 396, "lo": 251, "hi": 540, "wd_gal_mwh": 30770, "wd_lo": 17400, "wd_hi": 41980,
+                "sources": ["macknick2012", "eia_mi", "eia923_2024"],
+                "note": "Cook (68.6% of Michigan's nuclear generation in 2024) cooled with Lake Michigan water passing through once; Fermi 2 with cooling towers"},
+    # Wind and PV weighted by Michigan's 2024 generation (wind 7.9%, solar 1.5% of the state's total): wind 0, PV 1 (0 to 5).
+    "renew": {"label": "Wind and solar", "gal_mwh": 0.2, "lo": 0, "hi": 0.8, "wd_gal_mwh": 0.2, "wd_lo": 0, "wd_hi": 0.8, "sources": ["macknick2012", "eia_mi"],
+              "note": "Wind 0 and utility solar about 1 (0 to 5) for panel washing, weighted by Michigan's 2024 wind and solar generation"},
+    "miso": {"label": "MISO grid average", "gal_mwh": 415, "lo": 415, "hi": 415, "wd_gal_mwh": 15080, "wd_lo": 15080, "wd_hi": 15080, "sources": ["siddik2024"],
+             "note": "1.57 L/kWh consumed and 57.1 L/kWh withdrawn, MISO excluding hydropower consumption, 2022 (Siddik et al. dataset, load-weighted)"},
 }
 
 CONTEXT = {"household_gpd": {"value": 300, "note": "more than 300 gallons per day per family at home", "sources": ["epa_watersense"]}}
@@ -516,7 +545,7 @@ def main(n=200):
         "power": POWER,
         "pue_design": PUE_DESIGN,
         "power_supply": POWER_SUPPLY,
-        "home_kwh_month": 618.2,
+        "home_kwh_month": 634.9,   # EIA-861 2025, Michigan (model 1.3; was 618.2 from EIA's 2024 Table 5A)
         "context": CONTEXT,
         "county_uses_mgd": uses,
         "lake_source": lake_src,
