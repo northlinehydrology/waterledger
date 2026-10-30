@@ -127,7 +127,7 @@ def utility_rtos(year=None):
     """{EIA utility id: balancing authority code} for utilities EIA-861 lists in exactly one RTO (Utility Data, "Operating in these
     RTOs"). Used where the service-territory layer gives no control area (e.g. Texas delivery companies listed as NOT AVAILABLE)."""
     import pandas as pd
-    year = year or eia_year()
+    year = year or latest_eia861() or eia_year()
     path = os.path.join(RAW, f"eia861_{year}", f"Utility_Data_{year}.xlsx")
     if not os.path.exists(path):
         fetch_eia861(year)
