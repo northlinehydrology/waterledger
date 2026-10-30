@@ -199,22 +199,112 @@ expectation that evaporative cooling saves much electricity holds for mid-size c
 **Homes.** Michigan's average residential use moves from 618.2 kWh/month (EIA Table 5A, 2024) to 634.9 (EIA-861 2025,
 Parts A, B and D; 4,538,056 customers), the function the other states use; about 3% fewer homes per MW.
 
+**Every state: power-plant water from plant data (supersedes the Michigan values above).** Andrew's rule (Oct 30): an
+error found in one state is checked and fixed in every state, to the same standard; values may differ by state.
+- The national tier used Siddik et al.'s 2022 balancing-authority values (`grid_water_2022.csv`; every row reproduces
+  the dataset, load-weighted, to four decimals: consumed_excl_hydro = WCI_NH, withdrawn_excl_hydro = WWI_NH, Siddik
+  Table 3, p. 8). Against 2024 plant data aggregated by balancing authority, they run high in most large eastern
+  regions (consumed, L/kWh: PJM 1.30 vs 0.95, MISO 1.57 vs 1.04, SOCO 1.52 vs 1.20, NYIS 0.63 vs 0.39, ISNE 0.63 vs
+  0.43) and agree for ERCOT (0.73 vs 0.77); 2022's larger coal share, imports and fuel-type defaults for non-reporting
+  plants are candidate causes, not resolved.
+- **Decision.** Every state uses one method (`docs/methods/power_water/`, table `state_power_water_2024.csv`): EIA's 2024
+  cooling water data by plant over the state's 2024 net generation; flagged reports (consumption above withdrawal or
+  1,500 gal/MWh; zero consumption at once-through or pond plants; cooling-reservoir circulation reported as withdrawal,
+  over 25,000 gal/MWh at tower or pond plants) replaced by Macknick et al. medians, 181 plants nationally, each listed;
+  blended with the main balancing authority's plant-based value by the state's net interstate import share (EIA State
+  Electricity Profiles 2024, Table 10; 0 for net exporters); range = min and max over reported (where no plant is
+  flagged), adjusted, Macknick bottom-up, blended and Siddik's 2022 value. Results (consumed; withdrawn, L/kWh):
+  Michigan 0.94 (0.76-1.57); 58.7 (54.8-58.8). Ohio 1.03 (0.96-1.30); 24.6 (21.2-52.3), 13% imported. Virginia 0.59
+  (0.42-1.30); 51.2 (48.4-56.3), 31% imported, with North Anna, Surry and Chesterfield reporting zero consumption.
+  Texas 0.78 (0.73-0.78); 19.1 (13.2-55.0). Michigan's earlier 0.9 and 57 are replaced by its table values so every
+  state follows the same rules.
+- **Texas withdrawal.** EIA's reported 49 L/kWh counts circulation through cooling reservoirs (Comanche Peak's Squaw
+  Creek, South Texas Project's main cooling reservoir, Martin Lake and others) as withdrawal; the adjusted 19 replaces
+  those plants with Macknick's pond medians (makeup water). The range keeps Siddik's 55. The same rule applies to pond
+  plants in every state.
+- **Not included.** International imports (Vermont from Quebec, about 108% of its use; Michigan 1.0 TWh net from
+  Ontario); Alaska and Puerto Rico (no main balancing authority; no figure).
+- **Wind and solar** is weighted by each state's own 2024 wind and solar generation (`wind_solar(pv_share)`; Ohio 59%
+  PV, Virginia 99%, Texas 25%, Michigan 16%), no longer Michigan's for every state.
+- **Texas places with no grid region (bug).** The service-territory layer lists Oncor, CenterPoint, AEP Texas Central,
+  TNMP and Sam Rayburn Municipal Power Agency under control area NOT AVAILABLE, so 475 of 1,481 Texas places had no
+  power-plant water; East Kentucky Power Cooperative had the same gap in Ohio and Virginia. Fixed with each utility's
+  one RTO in EIA-861 Utility Data 2025 ("Operating in these RTOs"): the four Texas delivery companies to ERCOT, Sam
+  Rayburn to MISO, East Kentucky to PJM. Every territory in Texas, Ohio and Virginia now has a region.
+
+**Maintenance and other non-cooling water (new term).**
+- Applicant non-cooling figures run well above sanitary use per person. A campus base of 0-2,000 gal/day plus 2-20
+  gal/day per MW, 3-15% used up, kept apart from staff water and cooling. No metered figure is published; the range is
+  bracketed by applicant projections: Hermantown, MN (Google; city slides Oct 20, 2025 and Aug 17, 2026): loop
+  maintenance about 2,000 gal per building a month (low end); Crusoe's 200 MW building, about 2 million gal/yr for
+  "employee restrooms, kitchens, routine maintenance, and equipment washdowns", less its staff water, about 23 gal/day
+  per MW (high end). Checked, staff plus maintenance at middle values: Crusoe 5,500 gpd vs about 5,200; Saline Township
+  (about 1.4 GW; 20,000 gpd projected; 450 jobs in three shifts of 150) vs about 22,000; Microsoft at Tyrone, GA
+  (letter to the mayor, Mar 17, 2026: 2,000 gpd per building, "domestic uses only") within range; Gilroy (ESA water
+  supply assessment, Aug 2023, Table 3-3: 1,800 gpd domestic and 2,700 gpd irrigation) fits without irrigation.
+  Hermantown's 30,000-50,000 gpd campus figure (cafeterias, laundry, showers, irrigation) is above the model and is
+  treated as an amenity-heavy upper bound, not a calibration point.
+- Corrections: the "2,000 gallons a day per building" figure attributed to Microsoft at Gaines is from its Tyrone
+  letter; Lowell's 2.2 million gal/yr has no primary source yet.
+- Landscape irrigation is left out: it is site- and climate-specific (Gilroy's is California's estimated-water-use
+  method). Used up share for irrigation would be about 90% (Shaffer and Runkle, Table 9).
+- At 300 MW the median non-cooling water (staff plus maintenance) is about 7,000-7,500 gal/day, about 9% used up.
+
+**Cooling physics.** The parameters marked estimates were traced (`physics.py` comments give each source):
+- Derived from sourced inputs (no published value exists): heat factor with economizer 1.03-1.10 (was 1.08 top), from
+  Lei and Masanet (2022) Table 3 component losses (UPS 97-99%, distribution 0-2%, fans 1.4-9.2% of IT); economizer and
+  chiller wet-bulb limits 5-12 and 14-22 °C (were 8-12 and 16-20), from chilled-water supply 12.8-18 °C (FEMP Data
+  Center Design guide, 2024, p. 17) less tower and heat-exchanger approaches (Lei Table 3), split at their midpoints
+  so each draw ramps upward; FEMP (p. 19): economizers suit climates below 55 °F wet-bulb for 3,000+ hours a year.
+- Re-sourced and changed: evaporative ratio adjustment -0.10 to +0.05 (was +/-0.05), asymmetric because Rutberg et
+  al.'s (2011) cubic was fitted to Poppe-model runs at 40 °C inlet water and 60% RH (footnote 7, p. 7) and is applied
+  here hourly to cooler tower water and cold hours, where it likely runs high (USGS SIR 2013-5188: +/-5-15%, p. 24;
+  +/-18% overall, pp. 28-29); tower range 7-15 °F (Lei Table 3: 4-6 °C); drift 0.0005-0.02% of circulating flow (EPA
+  WaterSense at Work 2012, section 6.3: modern eliminators under 0.005%; AP-42 13.4, Table 13.4-1: induced draft
+  0.020%); closed-loop volume 2,000-12,000 gal per MW (Crusoe 2026: 1.7 million gal for a 200 MW building; Vantage
+  Port Washington: about 11.8 million gal for about 1 GW); assist start 27-32 °C (Microsoft's 85 °F; ASHRAE allowable
+  inlet to 32 °C, FEMP 2024 Table 3-1); hybrid wet-mode start 21-28 °C (US Patent 12,426,214 B1, 2025: 70-95 °F,
+  example 82 °F).
+- Kept and re-cited: chiller heat factor 1.15-1.25 (FEMP: compressor heat "up to 20%" of heat rejected; COP 5-8 gives
+  1.13-1.20); cycles of concentration 3-7 (FEMP BMP #10); loop top-ups 1-5% a year (NIH 2023; the 1% floor is an
+  assumption, and poorly kept loops can lose 25% a month).
+- Still assumptions [A], to calibrate and test for sensitivity: assist share 0.10-0.30 and hybrid fully evaporative
+  at 30-33 °C.
+- Method notes for the paper: LBNL and Lei count all tower heat as evaporation (Lei Eq. 5); this model's evaporative
+  ratio below 1 gives towers about 10-25% less water than that method. The "closed loop with assist" design's 85 °F
+  start comes from Microsoft's direct-air evaporative design, not a closed loop with assist (the pages do not show this
+  design). Drift is applied in assist and hybrid hours, though adiabatic pads have no tower drift.
+- Effect on the stored test weather, model 1.2 to 1.3 at the median: cooling towers about 16% less water, hybrid about
+  28% less, closed-loop top-ups about 60 gal/day per 100 MW (was 30); the non-cooling term adds about 4,500 gal/day at
+  300 MW.
+
 **Short form (methods pages, briefs).** Electricity: the computers are taken to draw 50 to 80% of their capacity on
 average (EPRI 2026 measurements; IEA 2025), plus cooling and power losses by design (LBNL 2024; checked against
-Google's and IEA's reported PUE). Power plants: Michigan's mix uses up about 0.9 L of water per kWh (0.6 to 1.2) and
-draws about 57 L (50 to 61), 98 to 99% returned warmer (EIA plant reports for 2024, EGLE, Macknick et al. 2012).
-People on site: 20 to 60 plus 0.1 to 0.5 per MW (JLARC 2024; announced campuses), each using 10 to 30 gallons a day
-(EPA 2002; Michigan's septic design criteria), about 10% used up (USGS).
+Google's and IEA's reported PUE). Power plants: each state's figure comes from its plants' 2024 reports to EIA (with
+Macknick et al. 2012 factors where a report is implausible), weighted for power the state imports; Michigan's plants use
+up about 0.94 L of water per kWh and draw about 59 L, about 98% returned warmer. People: 20 to 60 plus 0.1 to 0.5 per MW
+(JLARC 2024; announced campuses), each using 10 to 30 gallons a day (EPA 2002; Michigan's septic design criteria),
+about 10% used up (USGS). Maintenance and cleaning: up to 2,000 gallons a day plus 2 to 20 per MW, bracketed by
+applicants' projections, mostly to the sewer. Cooling: heat factors and economizer limits derived from published
+component losses and setpoints (Lei and Masanet 2022; DOE FEMP); evaporation from Rutberg et al. (2011) with an
+uncertainty that leans low in cold weather (USGS 2013); drift, cycles, loop volume and top-ups from EPA, DOE FEMP,
+operators and NIH.
 
 ## Open
 
 - Model 1.3 is on the branch `defensible-parameters`, not released. Release steps: rebuild Michigan's site data and
-  snapshot, refresh `tests/data/water_ledger_west_michigan.json` (per_100mw) from the published estimates, add the
-  methods-page changelog entry for 1.3, and put the short form above on the methods pages and in the briefs.
-- The remaining parameters marked [estimate] in `physics.py` (economizer and chiller heat factors and wet-bulb
-  thresholds, assist and hybrid temperatures and shares, closed-loop volume per MW) need the same check.
-- National-tier states' power-plant water (`waterledger_data.energy`) needs the same plant-data check as Michigan's.
-- A maintenance and washdown term for applicant comparisons, separate from staff water.
+  every state's snapshot (the energy layer now carries `power_plant_water`), refresh
+  `tests/data/water_ledger_west_michigan.json` (per_100mw) from the published estimates, add the methods-page changelog
+  entry for 1.3, update Northline's state page data (`engine/products/state_data.py`: a state-mix power option from
+  `state_power_water`, `wind_solar` with the state's PV share, withdrawal factors on every option), and put the short
+  form above on the methods pages and in the briefs.
+- Sensitivity analysis (Sobol or one at a time) for the paper, above all for the derived and assumed parameters
+  (heat factors, wet-bulb limits, assist share, hybrid temperatures, utilization).
+- Check Lei and Masanet's published Table 3 (Resources, Conservation and Recycling 182: 106323) against the preprint
+  used here.
+- Assist design: re-source or relabel; drop drift in adiabatic hours.
+- Landscape irrigation as an optional, climate-specific term.
+- Why Siddik's 2022 regional values exceed 2024 plant data in the eastern regions.
 - Station distance: how far places are from their division's station, and how much a nearer station changes the
   estimates ([station-distance-check.md](station-distance-check.md), in progress).
 - NOAA climate division names in the data.

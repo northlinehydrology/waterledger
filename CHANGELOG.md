@@ -19,6 +19,20 @@ Model version 1.3: parameters checked against primary sources for publication (`
   `wd_lo`, `wd_hi`, Macknick et al. 2012 Table 3); nuclear weighted by 2024 generation (396 gal/MWh, was 403); wind and
   solar weighted by Michigan's generation (0.2, was 1).
 - **Homes (Michigan build)**: 634.9 kWh/month (EIA-861 2025), was 618.2 (EIA Table 5A 2024).
+- **Maintenance and other non-cooling water**: a campus base (0-2,000 gal/day) plus 2-20 gal/day per MW, 3-15% used
+  up, bracketed by applicant projections; staff runs carry three more columns (runs of four read as no maintenance);
+  `cooling.staff_q(runs, mw, part=None)` gives either part.
+- **Cooling physics** traced or derived: hf_econ 1.03-1.10, wb_econ 5-12 and wb_chiller 14-22 °C, er_adj -0.10 to
+  +0.05, range_f 7-15 °F, drift 0.0005-0.02%, fill 2,000-12,000 gal/MW, assist_on 27-32 °C, hybrid_on 21-28 °C. Towers
+  about 16% and hybrid about 28% less water than 1.2 at the median.
+- **Power-plant water for every state** (`waterledger_data`): `tables/state_power_water_2024.csv` and
+  `energy.state_power_water(state)`, from 2024 plant data blended for imports, with ranges
+  (`docs/methods/power_water/`); `Context.energy.power_plant_water` (`PowerPlantWater`) in every state; Michigan's mix
+  reads the same table (0.94 L/kWh consumed, 58.7 withdrawn). `wind_solar(pv_share)` builds the wind-and-solar option
+  from a state's own mix.
+- **Fix**: utilities the territory layer lists with no control area get their balancing authority from EIA-861 Utility
+  Data (`power.utility_rtos`); 475 Texas places had none (Oncor, CenterPoint, AEP Texas Central, TNMP).
+  `fetch_eia861` also unpacks Utility_Data.
 - Tests: golden file, lake reference and staff draws regenerated for 1.3; the West Michigan per-100 MW reference is
   refreshed from the published estimates at release.
 
