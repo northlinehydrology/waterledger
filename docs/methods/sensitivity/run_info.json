@@ -1,0 +1,117 @@
+{
+ "model_version": "1.3",
+ "code_commit": "5153bb54cf89ba7fa6a099a8b5a3be23a40f1365",
+ "numpy": "2.5.4",
+ "seed": 20261030,
+ "weather": "ERA5 hourly 2 m temperature and relative humidity via the Open-Meteo archive (CC BY 4.0), 42.88 N 85.52 W (West Michigan), 2023-2024",
+ "hours": 17544,
+ "n_base_cooling": 8192,
+ "n_base_noncooling": 32768,
+ "morris_trajectories": 100,
+ "morris_levels": 4,
+ "bootstrap": 1000,
+ "model_runs_per_design": 157448,
+ "cooling_parameters": {
+  "utilization": [
+   0.5,
+   0.8
+  ],
+  "hf_econ": [
+   1.03,
+   1.1
+  ],
+  "hf_chiller": [
+   1.15,
+   1.25
+  ],
+  "wb_econ": [
+   5.0,
+   12.0
+  ],
+  "wb_chiller": [
+   14.0,
+   22.0
+  ],
+  "er_adj": [
+   -0.1,
+   0.05
+  ],
+  "coc": [
+   3.0,
+   7.0
+  ],
+  "range_f": [
+   7.0,
+   15.0
+  ],
+  "drift": [
+   5e-06,
+   0.0002
+  ],
+  "fill_gal_per_mw": [
+   2000.0,
+   12000.0
+  ],
+  "assist_on": [
+   20.0,
+   30.0
+  ],
+  "assist_eff": [
+   0.7,
+   0.8
+  ],
+  "hybrid_on": [
+   21.0,
+   28.0
+  ],
+  "hybrid_full": [
+   30.0,
+   33.0
+  ],
+  "topup": [
+   0.01,
+   0.05
+  ],
+  "assist_dt_air": [
+   9.0,
+   13.0
+  ],
+  "assist_bleed": [
+   0.0,
+   0.5
+  ]
+ },
+ "noncooling_parameters": {
+  "staff_core": [
+   20.0,
+   60.0
+  ],
+  "staff_per_mw": [
+   0.1,
+   0.5
+  ],
+  "staff_gpcd": [
+   10.0,
+   30.0
+  ],
+  "staff_used": [
+   0.05,
+   0.15
+  ],
+  "staff_maint_base": [
+   0.0,
+   2000.0
+  ],
+  "staff_maint_per_mw": [
+   2.0,
+   20.0
+  ],
+  "staff_maint_used": [
+   0.03,
+   0.15
+  ]
+ },
+ "runtime_s": 198.4,
+ "quick": false,
+ "warnings": []
+}
