@@ -93,14 +93,14 @@ def test_forcing_file_and_update_until(tmp_path):
 
 
 def test_closed_loop_includes_staff_water_at_capacity(tmp_path):
-    """A 300 MW closed-loop campus: loop top-ups plus staff water for the people on site, as Water Ledger 1.2."""
+    """A 300 MW closed-loop campus: loop top-ups plus staff water for the people on site, as Water Ledger 1.3."""
     m = CoolingWaterBmi()
     m.initialize(write_config(tmp_path, design="dry", it_capacity_mw=300))
     m.set_value(TEMP, np.array([20.0]))
     m.set_value(RH, np.array([60.0]))
     w, c, r = (m.get_value(n, np.empty(1))[0] * 86400 * model.GAL_M3 for n in (WITHDRAWN, CONSUMED, RETURNED))  # gal/day
     topup = 300 * 4000 * 0.03 / 365
-    staff = (40 + 0.3 * 300) * 22.5
+    staff = (40 + 0.3 * 300) * 20
     assert w == pytest.approx(topup + staff, rel=1e-9)
     assert c == pytest.approx(topup + 0.1 * staff, rel=1e-9) and w == pytest.approx(c + r, rel=1e-12)
     m.initialize(write_config(tmp_path, design="dry", it_capacity_mw=300, parameters={"staff_gpcd": 30, "topup": 0.01}))

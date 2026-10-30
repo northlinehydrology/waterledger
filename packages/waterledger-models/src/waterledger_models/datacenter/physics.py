@@ -20,7 +20,10 @@ DESIGNS = ("dry", "assist", "hybrid", "towers")
 
 # (low, high) uniform ranges sampled in the Monte Carlo; central values are the midpoints.
 RANGES = {
-    "utilization": (0.60, 0.90),       # average IT load ÷ IT capacity [estimate]
+    # average IT draw ÷ IT capacity at full build-out (model 1.3; was 0.60-0.90). EPRI 2026 measured 75% of nameplate at a large hyperscale
+    # site and 57% at co-location sites; IEA 2025 puts hyperscale at 53-56%; LBNL's server parameters give about 40% (AI inference) to 60%
+    # (AI training). Load over a site's own peak (EPRI: 88-94%) is a different ratio and does not bound this one.
+    "utilization": (0.50, 0.80),
     "hf_econ": (1.03, 1.08),           # heat factor with economizer cooling (pumps, fans, losses) [estimate]
     "hf_chiller": (1.15, 1.25),        # heat factor with chillers running; compressor heat up to ~20% (DOE FEMP)
     "wb_econ": (8.0, 12.0),            # wet-bulb (°C) below which the economizer carries the load [estimate]
@@ -40,11 +43,13 @@ RANGES = {
 TOPUP = (0.01, 0.05)
 PARAMETERS = tuple(RANGES) + ("topup",)
 
-# Staff water [estimates]. People on site on a typical day (employees, security, contractors) = a fixed core plus a little per MW of
-# IT capacity: Michigan's sales tax exemption needs at least 30 new jobs, and hyperscale campuses employ tens to a few hundred people.
-# Gallons per person per day covers restrooms, kitchens and cleaning (office buildings use about 10 to 20; more with a cafeteria).
-# About 10% of it is used up and the rest goes down the drain (USGS Great Lakes consumptive-use coefficients for commercial use).
-STAFF = {"core": (20.0, 60.0), "per_mw": (0.1, 0.5), "gpcd": (15.0, 30.0), "used": (0.05, 0.15)}
+# Staff water. People = the campus's permanent headcount (employees and on-site contractors), a fixed core plus a share per MW of IT
+# capacity: JLARC 2024 puts a typical building at about 50 full-time workers; announced campuses run 0.1 to 0.5 jobs per MW (Meta Richland
+# Parish 0.1, Meta El Paso and Saline Township about 0.3, Gilroy 0.5). Gallons are per person per calendar day (model 1.3; was 15-30 with
+# no source): EPA 2002 Table 3-4 gives 7-16 (13 typical) per office or industrial employee per workday, about 9 per calendar day; Michigan's
+# septic design criteria give 35 per factory worker per shift, and Gilroy's applicant 1,800 gpd for about 50 employees (about 30). About
+# 10% is used up (Shaffer and Runkle 2007, Table 9: commercial, Great Lakes Basin, median 10%, quartiles 8-15%); the rest goes to the sewer.
+STAFF = {"core": (20.0, 60.0), "per_mw": (0.1, 0.5), "gpcd": (10.0, 30.0), "used": (0.05, 0.15)}
 STAFF_PARAMETERS = tuple(f"staff_{k}" for k in STAFF)
 
 
