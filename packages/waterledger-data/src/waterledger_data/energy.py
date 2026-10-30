@@ -14,6 +14,7 @@ RAW = os.path.join(CACHE, "energy")
 TERRITORIES = "https://eedgis.pnnl.gov/arcgis/rest/services/Hosted/Electric_Service_Territories/FeatureServer/0/query"
 ALBERS = 5070
 TABLE = os.path.join(os.path.dirname(__file__), "tables", "grid_water_2022.csv")
+STATE_TABLE = os.path.join(os.path.dirname(__file__), "tables", "state_power_water_2024.csv")
 
 # HIFLD control area names -> EIA-930 balancing authority codes (as in the grid water table). Areas without a code in
 # the table (New Brunswick, Hawaii, Alaska, OVEC, Electric Energy Inc., PowerSouth, New Smyrna Beach) map to None.
@@ -45,6 +46,21 @@ def grid_water():
     """{balancing authority: {"consumed_excl_hydro", "consumed_incl_hydro", "withdrawn_excl_hydro"} in L/kWh, 2022}."""
     return {r["ba"]: {"consumed_excl_hydro": float(r["consumed_l_per_kwh_excl_hydro"]), "consumed_incl_hydro": float(r["consumed_l_per_kwh_incl_hydro"]),
                       "withdrawn_excl_hydro": float(r["withdrawn_l_per_kwh_excl_hydro"])} for r in csv.DictReader(open(TABLE))}
+
+
+def state_power_water(state):
+    """Water at power plants per kWh of electricity used in a state, 2024, from plant-reported data (EIA-923 cooling water and
+    EIA-860, flagged reports replaced by Macknick et al. 2012 medians, blended with the main balancing authority by the state's
+    net import share; docs/methods/power_water): {"consumed", "consumed_lo", "consumed_hi", "withdrawn", "withdrawn_lo",
+    "withdrawn_hi" (L/kWh), "main_ba", "import_share", "wind_share", "solar_share", "pv_share_of_wind_solar", "year"}, or None."""
+    num = lambda v: float(v) if v not in ("", None) else None
+    for r in csv.DictReader(open(STATE_TABLE)):
+        if r["state"] == state and r["consumed_l_per_kwh"]:
+            return {"consumed": num(r["consumed_l_per_kwh"]), "consumed_lo": num(r["consumed_lo"]), "consumed_hi": num(r["consumed_hi"]),
+                    "withdrawn": num(r["withdrawn_l_per_kwh"]), "withdrawn_lo": num(r["withdrawn_lo"]), "withdrawn_hi": num(r["withdrawn_hi"]),
+                    "main_ba": r["main_ba"], "import_share": num(r["import_share"]), "wind_share": num(r["wind_share"]),
+                    "solar_share": num(r["solar_share"]), "pv_share_of_wind_solar": num(r["pv_share_of_wind_solar"]), "year": 2024}
+    return None
 
 
 def territories(state, bounds):

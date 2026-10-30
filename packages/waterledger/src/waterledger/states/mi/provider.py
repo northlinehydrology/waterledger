@@ -66,7 +66,8 @@ def context(place):
     climate = cx.Climate(provider="MI", sources=["era5", "noaa_cag", "noaa_atlas14"], region=r["r"], region_name=meta["name"], station=meta["station"],
                          rain_in=Wd["rain_in"].get(r["cf"]), design_storms_in=E["county_storms_in"].get(r["cf"], {}))
     U = P["utilities"]
-    energy = cx.Energy(provider="MI", sources=["mpsc_territory", "eia861"],
+    from waterledger.national.provider import _ppw
+    energy = cx.Energy(provider="MI", sources=["mpsc_territory", "eia861", "eia923_2024", "macknick2012"], power_plant_water=_ppw("MI"),
                        utilities=[cx.Utility(name=U[i]["n"], type=U[i]["type"], share_of_place=sh, customers=U[i].get("cust"),
                                              avg_mw=U[i].get("avg_mw"), summer_peak_mw=U[i].get("summer_mw")) for i, sh in P["places"].get(r["g"], [])])
     jur = cx.Jurisdiction(provider="MI", sources=["census_tiger"], name=place.name, kind=place.kind, county=place.county, state="MI")

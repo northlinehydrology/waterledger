@@ -41,3 +41,24 @@ def test_entry_points_load_on_first_use():
     dc = wl.models.datacenter
     assert dc.run_ensemble.__module__ == "waterledger_models.datacenter.ensemble"
     assert dc.CoolingWaterBmi.__name__ == "CoolingWaterBmi" and dc.stac.write_catalog
+
+
+def test_state_power_water_every_state():
+    """Every state with a main balancing authority has its own plant-based power-plant water, inside its range (model 1.3)."""
+    import csv
+    from waterledger_data import energy
+    rows = list(csv.DictReader(open(energy.STATE_TABLE)))
+    assert len(rows) == 52
+    for r in rows:
+        w = energy.state_power_water(r["state"])
+        if r["state"] in ("AK", "PR"):
+            assert w is None
+            continue
+        assert w["consumed_lo"] <= w["consumed"] <= w["consumed_hi"] and w["withdrawn_lo"] <= w["withdrawn"] <= w["withdrawn_hi"]
+        assert 0 <= w["import_share"] < 1
+
+
+def test_utilities_with_no_control_area_get_one_from_eia861():
+    from waterledger_data import power
+    rto = power.utility_rtos(2025)
+    assert {i: rto.get(i) for i in (44372, 8901, 3278, 40051, 16821, 5580)} == {44372: "ERCO", 8901: "ERCO", 3278: "ERCO", 40051: "ERCO", 16821: "MISO", 5580: "PJM"}

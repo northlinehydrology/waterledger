@@ -109,7 +109,17 @@ def _energy(state, place):
         out.append(cx.Utility(name=u["name"].title(), type=(u["type"] or "").title(), share_of_place=u["share"], customers=e.get("customers"),
                               avg_mw=round(e["mwh"] / 8760, 1) if e.get("mwh") else None, summer_peak_mw=e.get("summer_mw"),
                               balancing_authority=u["balancing_authority"], power_plant_water_l_per_kwh=w.get("consumed_excl_hydro")))
-    return cx.Energy(provider="national", sources=["hifld_territories", "eia861", "siddik2024"], utilities=out)
+    return cx.Energy(provider="national", sources=["hifld_territories", "eia861", "siddik2024", "eia923_2024", "macknick2012"], utilities=out,
+                     power_plant_water=_ppw(state))
+
+
+def _ppw(state):
+    from waterledger import context as cx
+    from waterledger_data import energy as en
+    w = en.state_power_water(state)
+    return cx.PowerPlantWater(consumed_l_per_kwh=w["consumed"], consumed_range=(w["consumed_lo"], w["consumed_hi"]),
+                              withdrawn_l_per_kwh=w["withdrawn"], withdrawn_range=(w["withdrawn_lo"], w["withdrawn_hi"]),
+                              main_balancing_authority=w["main_ba"], import_share=w["import_share"]) if w else None
 
 
 def _division(state, place):

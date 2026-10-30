@@ -117,12 +117,24 @@ class Utility(BaseModel):
     avg_mw: float | None = None
     summer_peak_mw: float | None = None
     balancing_authority: str | None = None          # EIA-930 code, e.g. "PJM"
-    power_plant_water_l_per_kwh: float | None = None    # water consumed at power plants there, 2022, excluding hydropower
+    power_plant_water_l_per_kwh: float | None = None    # grid region's water consumed at power plants, 2022, excluding hydropower (Siddik et al.)
+
+
+class PowerPlantWater(BaseModel):
+    """Water at power plants per kWh used in the state, 2024, from plant-reported data (model 1.3; docs/methods/power_water)."""
+    consumed_l_per_kwh: float
+    consumed_range: tuple[float, float]
+    withdrawn_l_per_kwh: float
+    withdrawn_range: tuple[float, float]
+    main_balancing_authority: str | None = None
+    import_share: float | None = None              # net interstate imports / in-state use; their water at the main BA's rate
+    year: int = 2024
 
 
 class Energy(_Category):
     """The power behind a facility."""
     utilities: list[Utility] = []
+    power_plant_water: PowerPlantWater | None = None    # the state's own figure; utilities carry their grid region's 2022 value
 
 
 class Context(BaseModel):
