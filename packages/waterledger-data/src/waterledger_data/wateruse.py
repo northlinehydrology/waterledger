@@ -539,3 +539,20 @@ def state_layer(state, **kw):
     """The state's own county layer (Ohio, Texas, Virginia), or None where Water Ledger uses only the USGS estimates."""
     fn = STATE_LAYERS.get(state.upper())
     return fn(**kw) if fn else None
+
+
+def inputs(state):
+    """The downloaded inputs behind a state's layers, as {file name: bytes}, for a snapshot to carry: the state's rows of the
+    USGS table (CSV), and the state source as downloaded (ODNR's rows, TWDB's CSV, DEQ's Table 21 as read from the PDF)."""
+    state = state.upper()
+    df = _usgs_table()
+    out = {f"usgs2015_county_{state}.csv": df[df["State"] == state].drop(columns=["fips"]).to_csv(index=False).encode()}
+    if state == "OH":
+        out["odnr_registration.json"] = json.dumps(ohio_raw(), separators=(",", ":")).encode()
+    elif state == "TX":
+        p = twdb_file()
+        out[os.path.basename(p)] = open(p, "rb").read()
+    elif state == "VA":
+        t = va_table21()
+        out[f"va_table21_{t['year']}.json"] = json.dumps(t, separators=(",", ":")).encode()
+    return out

@@ -2,6 +2,10 @@
 reads), through waterledger.scenario, so the package and the page agree."""
 from waterledger import scenario as sc
 
+# EGLE's groups on waterledger.org/mi -> the county water-use categories (waterledger_data.wateruse.CATEGORIES)
+EGLE_CATS = {"Public water systems": "public_supply", "Industry": "industrial", "Bottled water": "industrial", "Farm irrigation": "irrigation",
+             "Golf courses": "golf", "Livestock": "livestock", "Mining and dewatering": "mining", "Power plants": "thermoelectric", "Other": "other"}
+
 
 def find(name, county=None):
     return sc.find(name, county)
@@ -74,3 +78,31 @@ def place_at(lat, lon):
                                 "spatialRel": "esriSpatialRelIntersects", "outFields": "GEOID", "returnGeometry": "false", "f": "json"})
     f = d.get("features", [])
     return f[0]["attributes"]["GEOID"] if f else None
+
+
+def egle_layer():
+    """EGLE's reported withdrawals by county as a water-use layer (waterledger_data.wateruse's shape), from the numbers
+    waterledger.org/mi shows (estimates.json county_uses_mgd); EGLE's own groups are kept in source_values."""
+    from waterledger_data.wateruse import CATEGORIES
+    E = sc.data("estimates")
+    fips = {p["c"]: p["cf"] for p in sc.data("places")["places"]}
+    src = E["sources"]["egle2025"]
+    out = {}
+    for county, groups in E["county_uses_mgd"].items():
+        if county not in fips:
+            continue
+        mgd = {}
+        for g, v in groups.items():
+            c = EGLE_CATS.get(g, "other")
+            mgd[c] = mgd.get(c, 0.0) + v
+        mgd = {c: round(mgd[c], 3) for c in CATEGORIES if c in mgd}
+        mgd["total"] = round(sum(mgd.values()), 3)
+        out[fips[county]] = {"name": f"{county} County", "mgd": mgd, "source_values": groups}
+    basis = {"source": "egle2025", "kind": "reported", "measure": "withdrawals", "year": 2025, "units": "Mgal/d", "source_units": "gallons per year",
+             "citation": src["citation"], "url": src["url"],
+             "threshold": "facilities able to withdraw 100,000 gallons a day or more (Part 327, NREPA) report each year",
+             "categories": {v: k for k, v in EGLE_CATS.items() if k != "Bottled water"} | {"industrial": "Industry, and bottled water"},
+             "caveats": ["Golf courses are irrigation facilities whose names mark them as golf or country clubs",
+                         "Entries far outside the range of their kind are left out as likely reporting errors (see the methods page)",
+                         "Gallons a year averaged over 365 days"]}
+    return {"basis": basis, "counties": dict(sorted(out.items()))}

@@ -102,6 +102,10 @@ def write(out, date=None):
     gw = energy.grid_water()
     _write(os.path.join(folder, "energy.json"), {"by_place": by_u, "loads": loads, "grid_water": {b: gw[b] for b in ("MISO", "PJM")}})
 
+    from waterledger.national.snapshot import write_water_use
+    from waterledger.states.mi.provider import egle_layer
+    wu_source, inputs, wu_years = write_water_use("MI", folder, state_layer=egle_layer())
+
     files = {}
     for name in [*FILES, *(f"michigan/{n}.json" for n in SITE_FILES)]:
         data = open(os.path.join(folder, name), "rb").read()
@@ -113,6 +117,6 @@ def write(out, date=None):
         "sources": {"places": "Census TIGERweb county subdivisions (Michigan's 1,541 cities and townships)", "supply": "EPA CWS service areas, SDWIS",
                     "wastewater": "EPA CWNS 2022, ECHO (with state-permitted plants)", "receiving": "USGS WBD, EPA ATTAINS (Michigan 2026 Integrated Report)",
                     "climate": "ERA5 (Open-Meteo) at eight Michigan regions, Atlas 14, Climate at a Glance", "energy": "MPSC territories, EIA-861",
-                    "michigan": "Water Ledger Michigan's site files, carried as published"},
-        "files": files, "checks": None})
+                    "wateruse": wu_source, "michigan": "Water Ledger Michigan's site files, carried as published"},
+        "water_use_years": wu_years, "files": files, "inputs": inputs, "checks": None})
     return folder

@@ -19,7 +19,7 @@ from waterledger import states
 DATA_URL = "https://data.waterledger.org"
 BUILD_MINUTES = "15 to 30"
 SYS_POP = 3300            # a "sizable" public water system serves more than this many people (as waterledger.scenario)
-FILES = ("places.json", "places.parquet", "supply.json", "wastewater.json", "receiving.json", "climate.json", "energy.json")
+FILES = ("places.json", "places.parquet", "supply.json", "wastewater.json", "receiving.json", "climate.json", "energy.json", "wateruse.json")
 
 
 class DataUnavailable(RuntimeError):
@@ -99,6 +99,13 @@ class SnapshotData:
 
     def grid_water(self):
         return self._json("energy")["grid_water"]
+
+    def water_use(self):
+        """{"national": USGS layer, "state": the state's own layer or None}, each {"basis", "counties"}; None for a snapshot
+        written before water use was added (format 1)."""
+        if "wateruse.json" not in self.manifest.get("files", {}):
+            return None
+        return self._json("wateruse")
 
 
 class LiveData:
@@ -187,6 +194,22 @@ class LiveData:
     def grid_water(self):
         from waterledger_data import energy
         return energy.grid_water()
+
+    @functools.cached_property
+    def _water_use(self):
+        """Both water-use layers; a layer whose source can't be had is left out (None) with a note, as design 0003 asks."""
+        from waterledger_data import wateruse
+        out = {}
+        for k, fn in (("national", lambda: wateruse.usgs_2015(self.state)), ("state", lambda: wateruse.state_layer(self.state))):
+            try:
+                out[k] = fn()
+            except Exception as e:                       # noqa: BLE001  a source down: that layer is empty
+                print(f"Water Ledger: {self.state} county water use ({k}) unavailable: {type(e).__name__}: {e}"[:300], file=sys.stderr)
+                out[k] = None
+        return out
+
+    def water_use(self):
+        return self._water_use
 
 
 def _get(url, timeout=30):

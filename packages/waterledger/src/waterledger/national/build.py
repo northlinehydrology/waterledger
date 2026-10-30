@@ -7,11 +7,12 @@ import json, os, time
 
 from waterledger import states
 
-STAGES = ["places", "supply", "wastewater", "receiving", "climate", "energy", "checks"]
+STAGES = ["places", "supply", "wastewater", "receiving", "climate", "energy", "wateruse", "checks"]
 # The least share of a state's places each layer must cover; a build below these fails (a source may have broken).
 # climate_division: a county NOAA's table leaves out (Poquoson, Virginia) uses the nearest division's station, so a sliver short
 # of 100% is expected; a larger gap would mean the table or the county codes changed.
-COVERAGE_MIN = {"watersheds": 0.99, "utilities": 0.95, "climate_division": 0.99, "sewer_plant_within_40km": 0.5}
+# county_water_use: USGS's 2015 counties; a county created since 2015 would have none.
+COVERAGE_MIN = {"watersheds": 0.99, "utilities": 0.95, "climate_division": 0.99, "sewer_plant_within_40km": 0.5, "county_water_use": 0.99}
 SAMPLE = 50
 
 
@@ -21,9 +22,10 @@ def checks(state, pl, sample=SAMPLE, seed=1):
     import math
 
     import waterledger as wl
-    from waterledger_data import divisions, energy, receiving, supply, wastewater
+    from waterledger_data import divisions, energy, receiving, supply, wastewater, wateruse
     n = len(pl)
     plants = wastewater.plants(state)
+    usgs = wateruse.usgs_2015(state)["counties"]
 
     def near_plant(lat, lon):
         for q in plants:
@@ -37,7 +39,8 @@ def checks(state, pl, sample=SAMPLE, seed=1):
            "watersheds": sum(1 for v in receiving.watersheds_by_place(state, pl).values() if v["h12"]) / n,
            "utilities": len(energy.utilities_by_place(state, pl)) / n,
            "climate_division": sum(1 for f in pl.county_fips if f in cd) / n,
-           "sewer_plant_within_40km": sum(near_plant(r.lat, r.lon) for r in pl.itertuples()) / n}
+           "sewer_plant_within_40km": sum(near_plant(r.lat, r.lon) for r in pl.itertuples()) / n,
+           "county_water_use": sum(1 for f in pl.county_fips if f in usgs) / n}
     cov = {k: round(v, 3) for k, v in cov.items()}
     low = {k: v for k, v in cov.items() if k in COVERAGE_MIN and v < COVERAGE_MIN[k]}
     errors = []
@@ -59,7 +62,7 @@ def build(state, out=None, n=200, run_checks=True):
     """Run every stage for `state` and write a manifest of what was built (counts, timings, sources' dates) to `out`."""
     from waterledger.national import climate as nc
     from waterledger.national.data import LiveData
-    from waterledger_data import energy, receiving, supply, wastewater
+    from waterledger_data import energy, receiving, supply, wastewater, wateruse
     from waterledger_models import MODEL_VERSION
     state = state.upper()
     fips = next(f for f, s in states.FIPS.items() if s == state)
@@ -84,6 +87,13 @@ def build(state, out=None, n=200, run_checks=True):
     stage("receiving", lambda: {"huc12": len(receiving.by_huc12(state)), "places_with_watersheds": len(receiving.watersheds_by_place(state, pl))})
     stage("climate", lambda: {"divisions": len(nc.division_runs(state, n)), "counties_with_storms": len(nc.storms_and_rain(state)[0])})
     stage("energy", lambda: {"places_with_utilities": len(energy.utilities_by_place(state, pl)), "utilities_with_loads": len(energy.loads(state))})
+
+    def water_use():
+        national, own = wateruse.usgs_2015(state), wateruse.state_layer(state)
+        return {"usgs_counties": len(national["counties"]), "usgs_year": national["basis"]["year"],
+                "state_source": own["basis"]["source"] if own else None, "state_year": own["basis"]["year"] if own else None,
+                "state_counties": len(own["counties"]) if own else 0}
+    stage("wateruse", water_use)
     if run_checks:
         stage("checks", lambda: checks(state, pl))
     report["seconds"] = round(time.time() - t_all, 1)

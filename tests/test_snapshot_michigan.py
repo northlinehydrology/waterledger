@@ -39,3 +39,11 @@ def test_shared_files_agree_with_michigan(snap):
         assert snap.storms().get(r["cf"], {}) == c.climate.design_storms_in
         assert {u.name for u in c.energy.utilities} == {u["name"] for u in snap.utilities_for(r["g"])}
     assert snap.division_runs()["west"]["per_100mw"] == sc.data("estimates")["regions"]["west"]["per_100mw"]
+
+
+def test_water_use_is_egle_then_usgs(snap):
+    W = snap.water_use()
+    kent = sc.data("estimates")["county_uses_mgd"]["Kent"]
+    assert W["state"]["basis"]["source"] == "egle2025" and W["state"]["counties"]["26081"]["source_values"] == kent
+    assert W["state"]["counties"]["26081"]["mgd"]["public_supply"] == kent["Public water systems"]
+    assert W["national"]["counties"]["26081"]["mgd"]["total"] == 27.76 and len(W["national"]["counties"]) == 83

@@ -10,6 +10,11 @@
                       climate.json    climate divisions (station, cooling results per 100 MW), staff water draws, design
                                       storms and rainfall by county
                       energy.json     utilities by place, their loads, grid region and power-plant water per kWh
+                      wateruse.json   water use by county: USGS's 2015 estimates ("national") and the state's own reported
+                                      figures where Water Ledger has them ("state"), each with its basis (format 2)
+                      inputs/         the downloaded files behind wateruse.json (the state's USGS rows; ODNR's records, TWDB's
+                                      CSV or DEQ's table as read), listed in the manifest's "inputs" with checksums; the
+                                      package doesn't download them
 
 Run after `waterledger build-state` (which fills the cache): `waterledger snapshot OH --out DIR`.
 """
@@ -17,7 +22,8 @@ import datetime, hashlib, json, os
 
 from waterledger import states
 
-FORMAT = 1
+FORMAT = 2              # 2 (Oct 30, 2026): adds wateruse.json and inputs/; readers treat a format 1 snapshot as having no water use
+WATERUSE_FORMAT = 1
 DOWNSTREAM_HUCS = 25
 
 
@@ -53,6 +59,27 @@ def _downstream(state, starts):
         paths[s] = path
     used = {c for p in paths.values() for c in p}
     return paths, {c: reaches[c] for c in used if c in reaches}
+
+
+def write_water_use(state, folder, state_layer=None):
+    """Write wateruse.json (USGS's 2015 county estimates and the state's own layer, if any) and the downloaded inputs behind it
+    (inputs/wateruse/). `state_layer` replaces waterledger_data.wateruse.state_layer(state) (Michigan passes EGLE's). Returns
+    the manifest's entries: (source description, {input path: bytes and checksum}, {layer: data year})."""
+    from waterledger_data import wateruse
+    national = wateruse.usgs_2015(state)
+    st = wateruse.state_layer(state) if state_layer is None else state_layer
+    _write(os.path.join(folder, "wateruse.json"), {"format": WATERUSE_FORMAT, "national": national, "state": st})
+    inputs = {}
+    for name, data in sorted(wateruse.inputs(state).items()):
+        rel = f"inputs/wateruse/{name}"
+        os.makedirs(os.path.dirname(os.path.join(folder, rel)), exist_ok=True)
+        open(os.path.join(folder, rel), "wb").write(data)
+        inputs[rel] = {"bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
+    b = national["basis"]
+    src = f"USGS 2015 county estimates, revised (doi:{b['doi']})"
+    if st:
+        src += f"; {st['basis']['citation']}, {st['basis']['year']} ({st['basis']['kind']} {st['basis']['measure']})"
+    return src, inputs, {"national": b["year"], "state": st["basis"]["year"] if st else None}
 
 
 def write(state, out, date=None, checks=None):
@@ -106,9 +133,11 @@ def write(state, out, date=None, checks=None):
     _write(os.path.join(folder, "energy.json"), {"by_place": us, "loads": {str(k): v for k, v in loads.items()},
                                                   "grid_water": {b: w for b, w in energy.grid_water().items() if b in bas}})
 
+    wu_source, inputs, wu_years = write_water_use(state, folder)
+
     files = {}
     for name in sorted(os.listdir(folder)):
-        if name == "manifest.json":
+        if name == "manifest.json" or os.path.isdir(os.path.join(folder, name)):
             continue
         data = open(os.path.join(folder, name), "rb").read()
         files[name] = {"bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
@@ -117,7 +146,7 @@ def write(state, out, date=None, checks=None):
                                                               "waterledger-models": waterledger_models.__version__},
                 "sources": {"places": "Census TIGERweb", "supply": "EPA CWS service areas, SDWIS", "wastewater": "EPA CWNS 2022, ECHO",
                             "receiving": "USGS WBD, EPA ATTAINS (assessments by HUC12)", "climate": "NOAA ISD, NCEI climate divisions, Atlas 14, Climate at a Glance",
-                            "energy": "HIFLD retail service territories (PNNL), EIA-861, Siddik et al. 2024"},
-                "files": files, "checks": checks}
+                            "energy": "HIFLD retail service territories (PNNL), EIA-861, Siddik et al. 2024", "wateruse": wu_source},
+                "water_use_years": wu_years, "files": files, "inputs": inputs, "checks": checks}
     _write(os.path.join(folder, "manifest.json"), manifest)
     return folder
