@@ -8,7 +8,7 @@ Open Python tools for estimating the water that large new users take, use up and
 centers, and for assembling the public U.S. water data around any place: water systems, watersheds, impaired waters,
 sewer plants, weather and design storms.
 
-- **Weather-driven cooling water model** for cooling towers, hybrid, and closed loop with or without evaporative assist,
+- **Weather-driven cooling water model** for cooling towers, hybrid, closed loop, and dry coolers with adiabatic pre-cooling,
   hour by hour over decades of weather, with Monte Carlo uncertainty over published parameter ranges; plus lake-source
   (once-through) cooling and staff water.
 - **Vectorized ensembles** as xarray Datasets, with dask across many locations.
@@ -117,9 +117,9 @@ More in [examples/](examples/): a BMI coupling loop, eight Michigan locations in
 Three version numbers, each with one meaning:
 
 - **Package versions** (semver) change with the code: a major version for breaking changes.
-- **`waterledger_models.MODEL_VERSION`** (now 1.2) changes when the numbers change; the golden test fails until that is
+- **`waterledger_models.MODEL_VERSION`** (now 1.3) changes when the numbers change; the golden test fails until that is
   done deliberately. Every published estimate names the model version that produced it.
-- **The snapshot format version** (now 1, in each snapshot's manifest) changes when the structure of a state's data
+- **The snapshot format version** (now 2, in each snapshot's manifest) changes when the structure of a state's data
   files does.
 
 ## Development
