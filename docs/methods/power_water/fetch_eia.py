@@ -1,5 +1,5 @@
 """Fetch EIA API v2 data used by states.py into ../dl/api/ (DEMO_KEY; public data)."""
-import json, os, subprocess, sys, time
+import json, os, subprocess, time
 OUT=os.path.join(os.environ.get('WL_POWER_WORK', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'work')),'dl','api')
 os.makedirs(OUT,exist_ok=True)
 def pages(name,url):

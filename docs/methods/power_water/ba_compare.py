@@ -1,5 +1,5 @@
 """Generation-based 2024 BA water intensity from plant data (states.py output) vs Siddik 2022 table (consumption-based)."""
-import json, os, pandas as pd, numpy as np
+import json, os, pandas as pd
 D=os.environ.get('WL_POWER_WORK', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'work'))
 pl=pd.read_excel(os.path.join(D,'dl/eia860/x/2___Plant_Y2024.xlsx'),header=1)
 ba=pl.set_index('Plant Code')['Balancing Authority Code']

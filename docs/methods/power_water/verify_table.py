@@ -1,5 +1,5 @@
 """Recompute every row of grid_water_2022.csv from the Siddik et al. 2024 v1.1 CSV (2022), load-weighted (elec_cons)."""
-import pandas as pd, sys
+import pandas as pd
 src='/Users/andrew/northline/engine/data/raw/lit/water_impact_consumption_2022_v1.1.csv'
 tab='/Users/andrew/repos/waterledger/packages/waterledger-data/src/waterledger_data/tables/grid_water_2022.csv'
 df=pd.read_csv(src,index_col=0)
