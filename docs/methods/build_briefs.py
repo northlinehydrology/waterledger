@@ -125,22 +125,22 @@ def brief(state):
                     "where needed, with the EPA-listed impairments and TMDLs for each.", BODY)]
 
     if mi:
-        S += [Paragraph("What Michigan adds", H2),
-              Paragraph("Michigan adds its own climate regions, EGLE reported water use by county and sector, domestic wells (EGLE "
-                        "Wellogic), designated trout streams (Michigan DNR), Great Lakes lake-source cooling, and Michigan rules (Part 327 "
-                        "withdrawals, Part 22 septic limits, Part 91 soil erosion, Rule 57 and temperature standards). waterledger.org also "
-                        "tracks Michigan data center proposals and moratoria.", BODY)]
+        S += [Paragraph("State data and rules", H2),
+              Paragraph("Weather is ERA5 reanalysis at eight climate regions. The Michigan build also uses EGLE reported water use by "
+                        "county and sector, domestic wells (EGLE Wellogic), designated trout streams (Michigan DNR), Great Lakes lake-source "
+                        "cooling, and Michigan rules (Part 327 withdrawals, Part 22 septic limits, Part 91 soil erosion, Rule 57 and "
+                        "temperature standards). waterledger.org also tracks Michigan data center proposals and moratoria.", BODY)]
     else:
         n = collections.Counter(v["station"] for v in divs.values())
         st = "; ".join(f"{k.title()}" + (f" ({c} divisions)" if c > 1 else "") for k, c in n.items())
-        S += [Paragraph("How this differs from Michigan", H2),
-              Paragraph(f"<b>Weather.</b> {name} uses NOAA station records ({st}); Michigan uses ERA5 reanalysis. Run on station records in "
-                        "Michigan, cooling tower estimates agree with ERA5 within about 1%. Hybrid and assist estimates, which depend on the "
-                        "hottest hours, are 4-50% higher in southern Michigan and 2-5 times higher at Traverse City and Alpena, so hybrid and "
-                        "assist results are not directly comparable between Michigan and other states.", BODY),
-              Paragraph(f"<b>Not yet included for {name}:</b> state-reported water use by sector, domestic wells, coldwater streams, "
-                        "lake-source cooling and state rules. Utilities are ordered by number of customers, because the national territory "
-                        "layer draws many small utilities as whole counties.", BODY)]
+        S += [Paragraph("Weather and state data", H2),
+              Paragraph(f"<b>Weather.</b> NOAA station records, one station per climate division ({st}). The weather source matters "
+                        "most for hybrid and assist designs, which depend on the hottest hours. In tests against ERA5 reanalysis at eight "
+                        "sites, station records gave cooling tower estimates within about 1%, and hybrid and assist estimates 4-50% higher "
+                        "(2-5 times higher at the coolest sites).", BODY),
+              Paragraph(f"<b>Not yet included:</b> {name}'s reported water use by sector, domestic wells, coldwater streams, lake-source "
+                        "cooling and state rules. Utilities are ordered by number of customers, because the national territory layer draws "
+                        "many small utilities as whole counties.", BODY)]
 
     place, rows = example(state)
     S += [Paragraph(f"Example: {EXAMPLE_MW} MW of IT capacity in {place.name}", H2),
