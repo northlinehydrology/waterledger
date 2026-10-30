@@ -7,7 +7,7 @@ import datetime, json, math, os
 
 import pandas as pd
 
-from waterledger_data import places as pl
+from waterledger_data import energy, places as pl
 from waterledger_data.climate import hourly_weather
 from waterledger_models.datacenter import cooling as cw
 from waterledger_models.datacenter import lake as lc
@@ -41,6 +41,7 @@ SOURCES = {
     "epri2026": ("EPRI (2026). Powering Intelligence 2026: Updated Scenarios of U.S. Data Center Electricity Use and Power Strategies. White paper (p. 14: measured average annual load 75% of nameplate capacity for a large hyperscale facility, 57% across co-location facilities; 94% and 88% of each facility's own peak).", "https://powering-intelligence.epri.com/"),
     "iea2025": ("International Energy Agency (2025). Energy and AI. IEA, Paris. Annex Table A.1 (world): hyperscale load factor 53-56% in 2020-2024, 50-52% projected for 2030; hyperscale PUE 1.14 in 2024.", "https://www.iea.org/reports/energy-and-ai"),
     "google2025": ("Google. Data center efficiency: comprehensive fleet-wide trailing twelve-month PUE of 1.09 in 2025 (1.08 to 1.11 at Council Bluffs, Hamina and St. Ghislain).", "https://datacenters.google/efficiency/"),
+    "eia_sep2024": ("U.S. Energy Information Administration (2025). State Electricity Profiles 2024: Table 5, net generation by energy source, and Table 10, supply and disposition of electricity (net interstate trade).", "https://www.eia.gov/electricity/state/"),
     "eia923_2024": ("U.S. Energy Information Administration. Thermoelectric cooling water data, 2024 (Form EIA-923 Schedule 8D water withdrawal and consumption by plant and cooling system, with EIA-860 cooling types). Michigan, 2024: 2,001,748 million gallons withdrawn, 61 L per kWh of the state's 124.2 TWh net generation, about 1% consumed.", "https://www.eia.gov/electricity/data/water/"),
     "lbnl2024": ("Shehabi, A., et al. (2024). 2024 United States Data Center Energy Usage Report. Lawrence Berkeley National Laboratory, LBNL-2001637.", "https://doi.org/10.71468/P1WC7Q"),
     "lei2022": ("Lei, N., & Masanet, E. (2022). Climate- and technology-specific PUE and WUE estimations for U.S. data centers using a hybrid statistical and thermodynamics-based approach. Resources, Conservation and Recycling 182: 106323.", "https://doi.org/10.1016/j.resconrec.2022.106323"),
@@ -134,7 +135,7 @@ SOURCES = {
 }
 
 SHORT = {"lbnl2024": "LBNL 2024", "lbnl2025": "LBNL 2025", "epri2026": "EPRI 2026", "iea2025": "IEA 2025", "google2025": "Google 2025",
-         "eia923_2024": "EIA-923 2024", "epa_onsite2002": "EPA 2002", "mi_septic": "Michigan septic criteria", "gilroy2022": "Gilroy 2022",
+         "eia923_2024": "EIA-923 2024", "eia_sep2024": "EIA state profiles 2024", "epa_onsite2002": "EPA 2002", "mi_septic": "Michigan septic criteria", "gilroy2022": "Gilroy 2022",
          "meta_elpaso": "Meta 2026", "meta_richland": "Meta 2025", "oracle_saline2026": "Oracle 2026", "lei2022": "Lei & Masanet 2022", "lei2025": "Lei et al. 2025", "usgs2013": "USGS 2013", "femp_bmp10": "DOE FEMP",
          "femp_dc": "DOE FEMP", "epa_wsaw": "EPA 2012", "stull2011": "Stull 2011", "msft2026": "Microsoft 2026", "icprb2025": "ICPRB 2025",
          "icprb2026": "ICPRB 2026", "siddik2024": "Siddik et al. 2024", "macknick2012": "Macknick et al. 2012", "peer2019": "Peer et al. 2019",
@@ -156,18 +157,29 @@ PARAM_SOURCES = {
     "assist_on": ["msft2026"], "assist_share": ["lei2025"], "hybrid_on": ["lei2025", "han2026"], "hybrid_full": ["lei2025"],
 }
 
-# Water at the power plants for Michigan's mix (model 1.3: the range and sources checked against plant data). Consumption: Macknick factors
-# applied to EIA's 2024 and 2025 Michigan mix give 0.90 L/kWh; EIA-923's 2024 plant reports give 0.60 (once-through plants report little or
-# no consumption; Midland Cogeneration Venture's entry, 2,370 gal/MWh, is set aside as inconsistent with EGLE) and 0.96 with Macknick's
-# once-through medians filled in; once-through plants at Monroe's own reported ratio give 1.19. Withdrawal: EIA-923 2024 gives 61.0 L/kWh,
-# EGLE's 2025 power withdrawals over EIA's 2025 generation 56.1, Macknick factors 55-58: 57 (50-61), about 1-2% consumed. MISO values are
-# from Siddik et al.'s 2022 dataset (load-weighted; withdrawal 57.1 L/kWh), a cross-check, not Michigan's figure.
+# Water at the power plants for Michigan's mix: the same table and rules as every state (energy.state_power_water; model 1.3,
+# docs/methods/power_water): EIA's 2024 plant-reported cooling water over Michigan's 2024 net generation, flagged reports (Midland
+# Cogeneration's consumption above 2,000 gal/MWh; zero consumption at Cook, Campbell, Belle River and other once-through plants;
+# pond circulation) replaced by Macknick et al. medians; no import blend (Michigan is a net exporter). Range over reported, adjusted,
+# Macknick bottom-up and Siddik's MISO 2022 values. MISO figures are Siddik et al.'s 2022 dataset, load-weighted, as a cross-check.
+L_KWH_TO_GAL_MWH = 1000 / 3.78541
+_MI = energy.state_power_water("MI")
 POWER = {
-    "consumed_l_per_kwh": {"michigan_mix": 0.9, "miso_excl_hydro": 1.57, "miso_incl_hydro": 3.84,
-                           "range": [0.6, 1.2], "sources": ["eia_mi", "eia923_2024", "macknick2012", "egle2025", "siddik2024"]},
-    "withdrawn_l_per_kwh": {"value": 57.0, "range": [50.0, 61.0], "returned_share_note": "98 to 99% returned to the Great Lakes and rivers, warmer",
-                            "sources": ["eia923_2024", "egle2025", "eia_mi", "macknick2012"]},
+    "consumed_l_per_kwh": {"michigan_mix": round(_MI["consumed"], 2), "miso_excl_hydro": 1.57, "miso_incl_hydro": 3.84,
+                           "range": [round(_MI["consumed_lo"], 2), round(_MI["consumed_hi"], 2)],
+                           "sources": ["eia923_2024", "eia_mi", "macknick2012", "siddik2024"]},
+    "withdrawn_l_per_kwh": {"value": round(_MI["withdrawn"], 1), "range": [round(_MI["withdrawn_lo"], 1), round(_MI["withdrawn_hi"], 1)],
+                            "returned_share_note": "about 98% returned to the Great Lakes and rivers, warmer", "sources": ["eia923_2024", "eia_mi", "macknick2012"]},
 }
+
+
+def wind_solar(pv_share):
+    """The 'wind and solar' option weighted by a state's own 2024 wind and solar generation (pv_share = PV's share of the two):
+    Macknick et al. 2012, wind 0 and PV 1 (0 to 5) gal/MWh, withdrawal equal to consumption."""
+    g = lambda v: round(pv_share * v, 2)
+    return {"label": "Wind and solar", "gal_mwh": g(1), "lo": 0, "hi": g(5), "wd_gal_mwh": g(1), "wd_lo": 0, "wd_hi": g(5),
+            "sources": ["macknick2012", "eia_sep2024"], "note": f"Wind 0 and utility solar about 1 (0 to 5) for panel washing, weighted by the state's 2024 wind and solar generation (PV {round(100 * pv_share)}%)"}
+
 
 # Electricity overhead by cooling design: LBNL 2024 Fig. 4.4, large-scale facilities, simulated annual PUE (figure-read medians and boxes,
 # U.S. climates). Closed loop spans LBNL's two waterless large-scale systems: liquid-cooled IT with dry coolers (about 1.10) and dry coolers
@@ -184,9 +196,11 @@ PUE_DESIGN = {
 # MWh. Macknick et al. 2012 medians and ranges (Table 2 consumption, Table 3 withdrawal; wind and PV withdrawal equals consumption, p. 6)
 # unless noted; blends are weighted by Michigan's 2024 generation (EIA).
 POWER_SUPPLY = {
-    "mi_mix": {"label": "Michigan's current mix", "gal_mwh": 238, "lo": 159, "hi": 317, "wd_gal_mwh": 15060, "wd_lo": 13210, "wd_hi": 16115,
-               "sources": ["eia_mi", "eia923_2024", "macknick2012", "egle2025"],
-               "note": "0.9 L/kWh consumed (0.6 to 1.2) and 57 L/kWh withdrawn (50 to 61): EIA's 2024 Michigan mix with Macknick factors, checked against EIA-923 plant reports and EGLE's reported power-sector withdrawals"},
+    "mi_mix": {"label": "Michigan's current mix", "gal_mwh": round(_MI["consumed"] * L_KWH_TO_GAL_MWH), "lo": round(_MI["consumed_lo"] * L_KWH_TO_GAL_MWH),
+               "hi": round(_MI["consumed_hi"] * L_KWH_TO_GAL_MWH), "wd_gal_mwh": round(_MI["withdrawn"] * L_KWH_TO_GAL_MWH),
+               "wd_lo": round(_MI["withdrawn_lo"] * L_KWH_TO_GAL_MWH), "wd_hi": round(_MI["withdrawn_hi"] * L_KWH_TO_GAL_MWH),
+               "sources": ["eia923_2024", "eia_mi", "macknick2012"],
+               "note": f"{_MI['consumed']:.2f} L/kWh consumed ({_MI['consumed_lo']:.2f} to {_MI['consumed_hi']:.2f}) and {_MI['withdrawn']:.0f} L/kWh withdrawn ({_MI['withdrawn_lo']:.0f} to {_MI['withdrawn_hi']:.0f}): EIA's 2024 plant-reported cooling water over Michigan's 2024 generation, flagged reports replaced by Macknick factors"},
     "new_gas": {"label": "Gas plants", "gal_mwh": 205, "lo": 130, "hi": 300, "wd_gal_mwh": 255, "wd_lo": 150, "wd_hi": 283, "sources": ["macknick2012"],
                 "note": "Natural gas combined cycle with cooling towers (Michigan's tower-cooled combined-cycle plants reported about 189 consumed in 2024)"},
     # Michigan's own plants (EIA-860 cooling types, 2024): the large coal plants (Monroe, Belle River, Campbell) and Cook nuclear are cooled
@@ -198,9 +212,7 @@ POWER_SUPPLY = {
     "nuclear": {"label": "Michigan's nuclear plants", "gal_mwh": 396, "lo": 251, "hi": 540, "wd_gal_mwh": 30770, "wd_lo": 17400, "wd_hi": 41980,
                 "sources": ["macknick2012", "eia_mi", "eia923_2024"],
                 "note": "Cook (68.6% of Michigan's nuclear generation in 2024) cooled with Lake Michigan water passing through once; Fermi 2 with cooling towers"},
-    # Wind and PV weighted by Michigan's 2024 generation (wind 7.9%, solar 1.5% of the state's total): wind 0, PV 1 (0 to 5).
-    "renew": {"label": "Wind and solar", "gal_mwh": 0.2, "lo": 0, "hi": 0.8, "wd_gal_mwh": 0.2, "wd_lo": 0, "wd_hi": 0.8, "sources": ["macknick2012", "eia_mi"],
-              "note": "Wind 0 and utility solar about 1 (0 to 5) for panel washing, weighted by Michigan's 2024 wind and solar generation"},
+    "renew": wind_solar(_MI["pv_share_of_wind_solar"]),     # Michigan's own wind and solar mix (other states pass theirs)
     "miso": {"label": "MISO grid average", "gal_mwh": 415, "lo": 415, "hi": 415, "wd_gal_mwh": 15080, "wd_lo": 15080, "wd_hi": 15080, "sources": ["siddik2024"],
              "note": "1.57 L/kWh consumed and 57.1 L/kWh withdrawn, MISO excluding hydropower consumption, 2022 (Siddik et al. dataset, load-weighted)"},
 }
