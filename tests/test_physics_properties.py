@@ -69,7 +69,7 @@ def test_designs_order_by_water_use():
     p = model.central_parameters()
     tw = model.wet_bulb(t, rh)
     use = {d: model.hourly_rates(t, tw, d, p)[0].mean() for d in model.DESIGNS}
-    assert use["dry"] < use["assist"] < use["hybrid"] < use["towers"]
+    assert use["dry"] < min(use["assist"], use["hybrid"]) and max(use["assist"], use["hybrid"]) < use["towers"]    # assist and hybrid overlap
 
 
 def test_sampling_matches_per_run_loop():

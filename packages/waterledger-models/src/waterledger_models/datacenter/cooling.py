@@ -11,8 +11,8 @@ Hour by hour over 30 years of weather:
   blowdown = evaporation ÷ (cycles of concentration − 1)  (DOE FEMP BMP #10 water balance).
 Designs differ in when they evaporate:
   dry       air-cooled / dry closed loop, designed to use no water for cooling: loop top-ups only, plus the staff water every design has
-  assist    closed loop with evaporative assist only on the hottest hours (dry-bulb setpoint; Microsoft
-            publishes 85 °F / 29.4 °C for its direct-air designs)
+  assist    dry coolers with adiabatic pre-cooling above a dry-bulb switch point: water evaporates into the air ahead of the
+            coil, in proportion to the wet-bulb depression; no tower drift
   hybrid    dry coolers most of the year, evaporative in warm weather (ramp between two dry-bulb setpoints)
   towers    open cooling towers, evaporative all year (upper bound for typical practice)
 Outputs per run: withdrawn (makeup), consumed (evaporation + drift + loop top-up), returned to sewer (blowdown).
@@ -28,13 +28,13 @@ Parameter ranges and their sources are in RANGES and documented on the Water Led
 """
 import numpy as np
 
-from waterledger_models.datacenter.physics import (DESIGNS as _DESIGNS, HFG, KWH_BTU, LB_GAL, RANGES, STAFF, TOPUP, _ramp,  # noqa: F401
+from waterledger_models.datacenter.physics import (ADIABATIC, DESIGNS as _DESIGNS, HFG, KWH_BTU, LB_GAL, RANGES, STAFF, TOPUP, _ramp,  # noqa: F401
                                                    evaporative_ratio, hourly_rates, wet_bulb)
 
 DESIGNS = list(_DESIGNS)
 LABELS = {
     "dry": "Closed loop (designed to use no water for cooling)",
-    "assist": "Closed loop with evaporative assist on the hottest days",
+    "assist": "Dry coolers with adiabatic pre-cooling in warm weather",
     "hybrid": "Hybrid: dry most of the year, evaporative in warm weather",
     "towers": "Cooling towers (evaporative all year)",
 }
@@ -50,11 +50,14 @@ def sample(rng, n):
     extra = np.random.default_rng(11)
     for r in runs:
         r["topup"] = extra.uniform(*TOPUP)
+    extra = np.random.default_rng(17)
+    for r in runs:
+        r.update({k: extra.uniform(*v) for k, v in ADIABATIC.items()})
     return runs
 
 
 def central():
-    return {**{k: (a + b) / 2 for k, (a, b) in RANGES.items()}, "topup": sum(TOPUP) / 2}
+    return {**{k: (a + b) / 2 for k, (a, b) in {**RANGES, **ADIABATIC}.items()}, "topup": sum(TOPUP) / 2}
 
 
 STAFF_KEYS = ("core", "per_mw", "gpcd", "used", "maint_base", "maint_per_mw", "maint_used")

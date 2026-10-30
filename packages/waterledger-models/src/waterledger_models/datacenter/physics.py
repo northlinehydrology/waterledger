@@ -3,7 +3,7 @@
 Hour by hour: heat rejected = IT energy x a heat factor that ramps with wet-bulb temperature from economizer to chiller
 operation; evaporation = heat x the Rutberg et al. (2011) evaporative ratio / latent heat; drift = a share of circulating
 flow; blowdown = evaporation / (cycles of concentration - 1); closed loops add small top-ups; staff water follows the
-people on site. Designs differ only in when they evaporate (dry, assist, hybrid, towers). The method and sources are
+people on site. Designs differ in when they evaporate (dry, assist, hybrid, towers); assist evaporates into the air ahead of a dry cooler. The method and sources are
 described in cooling.py and on the Water Ledger methods page.
 
 Every function takes parameters as scalars or as arrays shaped (runs, 1) against hourly weather shaped (hours,), giving
@@ -25,14 +25,17 @@ RANGES = {
     # (AI training). Load over a site's own peak (EPRI: 88-94%) is a different ratio and does not bound this one.
     "utilization": (0.50, 0.80),
     # Heat rejected per unit of IT energy (model 1.3, derived; no published value). Economizer: IT plus fans, UPS and distribution
-    # losses, from Lei and Masanet 2022 Table 3 (large-scale: UPS 97-99%, distribution 0-2%, fans 1.4-9.2% of IT at their pressure and
-    # efficiency ranges). Chillers: plus compressor heat, "up to 20% of the total heat" (DOE FEMP, cooling water efficiency for data
-    # centers); COP 5-8 gives 1.13-1.20 over IT.
+    # losses. Lei and Masanet's Table 3 (Research Square preprint rs-769999/v1, 2021; large-scale cases: UPS 90-99%, also LBNL 2024
+    # Table 4.3; distribution 0-2%; CRAH fans 1.4-9.2% of IT at its pressure, efficiency and air temperature ranges) gives 1.02-1.22 with
+    # every term at one end. All of them at the bad end is not a large new campus: heat through the water loop cannot exceed the
+    # facility's overhead, and large campuses measure 1.09 (Google 2025) to 1.14 (IEA 2025) with cooling included (LBNL 2024: about 1.12 with
+    # towers), so the top is 1.10. Chillers: plus compressor heat, "up to 20% of the total heat" (DOE FEMP, cooling water efficiency for
+    # data centers); COP 5-8 gives 1.13-1.20 over IT.
     "hf_econ": (1.03, 1.10),
     "hf_chiller": (1.15, 1.25),
     # Wet-bulb (°C) limits of economizer and chiller operation (model 1.3, derived; no published value): chilled-water supply 12.8-18 °C
     # (FEMP Data Center Design guide 2024, p. 17: 55 °F or higher) less the tower (2.8-6.7 °C) and heat exchanger (1.7-2.8 °C) approaches
-    # (Lei and Masanet 2022 Table 3) gives 3.3-13.5 °C for full economizer; the return (supply plus a 5-10 °C rise) less the approaches
+    # (Lei and Masanet preprint, Table 3) gives 3.3-13.5 °C for full economizer; the return (supply plus a 5-10 °C rise) less the approaches
     # gives 8.3-23.5 °C for full chiller operation. FEMP (p. 19): economizers suit climates below 55 °F (12.8 °C) wet-bulb 3,000+ h a year.
     # The two ranges are split at their midpoints so every draw ramps upward.
     "wb_econ": (5.0, 12.0),
@@ -42,7 +45,7 @@ RANGES = {
     # et al.) puts tower evaporation error at +/-5-15% (p. 24) and +/-18% overall (pp. 28-29).
     "er_adj": (-0.10, 0.05),
     "coc": (3.0, 7.0),                 # cycles of concentration: DOE FEMP BMP #10, two to four typical, six or more possible
-    "range_f": (7.0, 15.0),            # tower range, °F (model 1.3, was 8-15): Lei and Masanet 2022 Table 3, 4-6 °C (7.2-10.8 °F); 10 °F rating
+    "range_f": (7.0, 15.0),            # tower range, °F (model 1.3, was 8-15): Lei and Masanet preprint, Table 3, 4-6 °C (7.2-10.8 °F); 10 °F rating
     # Drift as a share of circulating flow (model 1.3, was 0.005-0.05%): modern eliminators under 0.005% (EPA WaterSense at Work 2012,
     # section 6.3, p. 6-9) to EPA AP-42 13.4's induced-draft 0.020% (Table 13.4-1).
     "drift": (0.000005, 0.0002),
@@ -50,11 +53,12 @@ RANGES = {
     # (8,500); Vantage Port Washington about 11.8 million gal for about 1 GW (about 12,000); chilled-water loops of 3-10 gal per ton
     # (850-2,840 per MW of heat) at the low end.
     "fill_gal_per_mw": (2000.0, 12000.0),
-    # Evaporative assist on the hottest days (closed loop + assist; not shown on the pages): starts near Microsoft's 85 °F (29.4 °C),
-    # within ASHRAE's allowable inlet range up to 32 °C (FEMP 2024 guide, Table 3-1); share of the full evaporative rate [estimate, no
-    # published value; to calibrate against operator WUE].
-    "assist_on": (27.0, 32.0),
-    "assist_share": (0.10, 0.30),
+    # Dry coolers with adiabatic pre-cooling (model 1.3; not shown on the pages). Turns on at a switch point no maker publishes, since it is a
+    # selection and control output (EVAPCO 2018, p. 2): Uptime Institute (2025) reports 20 °C or higher; 30 °C is the top [A]. Microsoft's
+    # 85 °F is for its direct-air evaporative design, a different system, and is no longer used here. Pad saturation effectiveness: EVAPCO
+    # (2018, p. 2) measured 72-78% at 400-700 fpm across 10 pads; ASHRAE (2016, ch. 41) gives 70 to over 95% for rigid media.
+    "assist_on": (20.0, 30.0),
+    "assist_eff": (0.70, 0.80),
     # Hybrid dry coolers: wet mode from a customer-set switch point, 70-95 °F (21-35 °C) in US 12,426,214 B1 (2025), 82 °F (27.8 °C)
     # in its example (model 1.3, was 21-27); fully evaporative near the site's design dry-bulb [estimate, no published value].
     "hybrid_on": (21.0, 28.0),
@@ -64,7 +68,11 @@ RANGES = {
 # system's total volume in a year"; the 1% floor is an assumption), all of it counted as lost. Poorly kept loops can lose far more (NIH:
 # 25% a month "is not uncommon"), which the range does not cover. Sampled on its own random stream (where model 1.1 drew its base-use share), so the other draws are unchanged.
 TOPUP = (0.01, 0.05)
-PARAMETERS = tuple(RANGES) + ("topup",)
+# Adiabatic pre-cooling, on their own random stream so the other draws are unchanged. Air temperature rise across the dry cooler coil at
+# design, K: 9-13 from makers' selection sheets (Thermokey 11.2, Kelvion 12.8) [estimate]. Bleed as a share of evaporation: none for once-through
+# pads (Guentner; Spinazzola 2021), up to 0.5 for recirculating pads (SCE ET13SCE1020, 2015, p. 29: 10-50%; ASHRAE 2016 ch. 41 allows 5-100%).
+ADIABATIC = {"assist_dt_air": (9.0, 13.0), "assist_bleed": (0.0, 0.5)}
+PARAMETERS = tuple(RANGES) + ("topup",) + tuple(ADIABATIC)
 
 # Staff water. People = the campus's permanent headcount (employees and on-site contractors), a fixed core plus a share per MW of IT
 # capacity: JLARC 2024 puts a typical building at about 50 full-time workers; announced campuses run 0.1 to 0.5 jobs per MW (Meta Richland
@@ -117,13 +125,20 @@ def hourly_rates(tdb, twb, design, p):
         w = np.ones_like(evap_full)
     elif design == "hybrid":
         w = _ramp(tdb, p["hybrid_on"], p["hybrid_full"]) * np.ones_like(evap_full)
-    elif design == "assist":
-        w = _ramp(tdb, p["assist_on"], p["assist_on"] + 4.0) * p["assist_share"] * np.ones_like(evap_full)
     else:
         w = np.zeros_like(evap_full)
     evap = evap_full * w
     drift = circ * p["drift"] * (w > 0)
     blow = evap / (p["coc"] - 1.0)
+    if design == "assist":
+        # Water evaporated into the air ahead of the coil. The air cools by depr = effectiveness x wet-bulb depression; the fans slow until
+        # it leaves the coil where it would at the switch point (on + rise), so air flow = heat / (cp x (on + rise - tdb + depr)), and
+        # evaporation as a share of all the heat is depr over that same difference, at most 1. Pads have no tower drift.
+        depr = p["assist_eff"] * np.maximum(tdb - twb, 0.0)
+        share = np.clip(depr / np.maximum(p["assist_on"] + p["assist_dt_air"] - tdb + depr, 1e-6), 0.0, 1.0)
+        evap = btu * share / HFG / LB_GAL * (tdb >= p["assist_on"])
+        drift = np.zeros_like(evap)
+        blow = evap * p["assist_bleed"]
     # loop top-up, gal/day per MW of capacity, as gal per IT kWh
     topup = p["fill_gal_per_mw"] * p["topup"] / 365.0 / (24 * 1000 * p["utilization"]) * np.ones_like(evap_full)
     withdrawn = evap + drift + blow + topup
@@ -141,12 +156,15 @@ def sample_parameters(n=200, seed=7):
     draws = lo + (hi - lo) * u
     out = {k: draws[:, i] for i, k in enumerate(RANGES)}
     out["topup"] = TOPUP[0] + (TOPUP[1] - TOPUP[0]) * np.random.default_rng(11).random(n)
+    u = np.random.default_rng(17).random((n, len(ADIABATIC)))
+    for i, (k, (a, b)) in enumerate(ADIABATIC.items()):
+        out[k] = a + (b - a) * u[:, i]
     return out
 
 
 def central_parameters():
     """Every parameter at the middle of its range."""
-    return {**{k: (a + b) / 2 for k, (a, b) in RANGES.items()}, "topup": sum(TOPUP) / 2}
+    return {**{k: (a + b) / 2 for k, (a, b) in {**RANGES, **ADIABATIC}.items()}, "topup": sum(TOPUP) / 2}
 
 
 def sample_staff(n=200, seed=13):

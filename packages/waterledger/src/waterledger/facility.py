@@ -16,7 +16,7 @@ class Facility(BaseModel):
 class DataCenter(Facility):
     """A data center campus: computing capacity and cooling design.
 
-    cooling: dry (closed loop, no water for cooling), assist (closed loop with evaporative assist on the hottest hours),
+    cooling: dry (closed loop, no water for cooling), assist (dry coolers with adiabatic pre-cooling in warm weather),
     hybrid (dry most of the year, evaporative in warm weather), towers (cooling towers all year) or lake (lake-source,
     once through; only within about 5 km of a Great Lake)."""
     kind: Literal["data_center"] = "data_center"
