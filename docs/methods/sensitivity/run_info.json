@@ -1,6 +1,6 @@
 {
  "model_version": "1.3",
- "code_commit": "ded9f97f9d5d37070fcad2af8444f75a9ff05287",
+ "code_commit": "5153bb54cf89ba7fa6a099a8b5a3be23a40f1365",
  "numpy": "2.5.4",
  "seed": 20261030,
  "weather": "ERA5 hourly 2 m temperature and relative humidity via the Open-Meteo archive (CC BY 4.0), 42.88 N 85.52 W (West Michigan), 2023-2024",
@@ -10,7 +10,7 @@
  "morris_trajectories": 100,
  "morris_levels": 4,
  "bootstrap": 1000,
- "model_runs_per_design": 140864,
+ "model_runs_per_design": 157448,
  "cooling_parameters": {
   "utilization": [
    0.5,
@@ -53,12 +53,12 @@
    12000.0
   ],
   "assist_on": [
-   27.0,
-   32.0
+   20.0,
+   30.0
   ],
-  "assist_share": [
-   0.1,
-   0.3
+  "assist_eff": [
+   0.7,
+   0.8
   ],
   "hybrid_on": [
    21.0,
@@ -71,6 +71,14 @@
   "topup": [
    0.01,
    0.05
+  ],
+  "assist_dt_air": [
+   9.0,
+   13.0
+  ],
+  "assist_bleed": [
+   0.0,
+   0.5
   ]
  },
  "noncooling_parameters": {
@@ -103,7 +111,7 @@
    0.15
   ]
  },
- "runtime_s": 177.2,
+ "runtime_s": 198.4,
  "quick": false,
  "warnings": []
 }

@@ -3,11 +3,11 @@
     python docs/methods/sensitivity/sensitivity.py            # full run, fixed seeds, writes CSVs next to this file
     python docs/methods/sensitivity/sensitivity.py --quick    # small N, prints only, for checking the script
 
-Variance-based (Sobol') indices with the Saltelli (2010) radial design: first-order S1 by Saltelli et al. (2010, Table 2 (b)),
-total ST by Jansen (1999) (Saltelli et al. 2010, Table 2 (f)), percentile bootstrap 95% intervals. Elementary effects by Morris
+Variance-based (Sobol') indices with the Saltelli (2010) radial design: first-order S1 by Saltelli et al. (2010),
+total ST by Jansen (1999), percentile bootstrap 95% intervals. Elementary effects by Morris
 (1991) on a four-level grid, with mu* (mean absolute effect) from Campolongo et al. (2007). Only numpy is used.
 
-The parameter space is read at run time from waterledger_models.datacenter.physics (RANGES, TOPUP, STAFF), and the model is the
+The parameter space is read at run time from waterledger_models.datacenter.physics (PARAMETERS, RANGES, TOPUP, ADIABATIC, STAFF), and the model is the
 package's own physics.hourly_rates and physics.staff_water, so a change to a range, a new parameter or a change to the physics is
 picked up by rerunning this script unchanged. The package is imported from this checkout (packages/*/src), not from whatever is
 installed. Inputs are independent uniforms over each range, as in the package's Monte Carlo.
@@ -53,11 +53,10 @@ NC_OUTPUTS = ("nc_withdrawn", "nc_consumed")
 # ---------------------------------------------------------------- parameter spaces (read from the package at run time)
 
 def cooling_space():
-    """[(name, low, high)] for the cooling model: every entry of physics.RANGES, plus topup if it is kept apart."""
-    space = [(k, float(a), float(b)) for k, (a, b) in ph.RANGES.items()]
-    if "topup" not in ph.RANGES:
-        space.append(("topup", float(ph.TOPUP[0]), float(ph.TOPUP[1])))
-    return space
+    """[(name, low, high)] for the cooling model: physics.RANGES, topup and physics.ADIABATIC, in the order of physics.PARAMETERS. The
+    package samples topup and ADIABATIC on their own streams; here all are independent uniforms on one design."""
+    bounds = {**ph.RANGES, "topup": ph.TOPUP, **ph.ADIABATIC}
+    return [(k, float(bounds[k][0]), float(bounds[k][1])) for k in ph.PARAMETERS]
 
 
 def staff_space():
@@ -86,7 +85,7 @@ def load_weather():
 
 
 def cooling_outputs(wx, design, X, space):
-    """X: (n, k) parameter values in physical units. Returns {output: (n,)} in gal/day per MW megawatts of IT capacity (MW = 100 here)."""
+    """X: (n, k) parameter values in physical units. Returns {output: (n,)} in gal/day per 100 MW of IT capacity (the constant MW)."""
     names = [s[0] for s in space]
     nd = len(wx["days"])
     out = {k: np.empty(len(X)) for k in COOL_OUTPUTS}
