@@ -296,11 +296,14 @@ now dry coolers with adiabatic pre-cooling (the taxonomy of Masanet 2026, arXiv 
 - Effectiveness 0.70-0.80: EVAPCO (2018, p. 2) measured 72-78% at 400-700 fpm over 10 pads, and none reached 90% in the normal range, against
   supplier claims of 65-97% and ASHRAE's (2016, ch. 41) 70 to over 95% for rigid media. Spray pre-coolers (SCE ET13SCE1020, 20-80%) are
   not modeled.
-- Switch point 20-30 °C [A]: no maker publishes one; it is a selection and control output (EVAPCO, p. 2; BAC; Guentner). Uptime Institute
-  (2025) reports 20 °C or higher; Vertiv's energy-first example, 8 °C, is left out; the top is an assumption. No authoritative source for a
-  typical 25-30 °C was found.
-- Coil air rise 9-13 K [estimate]: makers' selection sheets on resale listings (Thermokey 11.2 K, Kelvion 12.8 K; both energy balances
-  close). Not a citation for a journal without a better source.
+- Switch point 20-30 °C [A]: no maker publishes one, because it is set when a unit is selected and tuned by its controls (EVAPCO, p. 2; BAC;
+  Guentner): roughly the air temperature at which the dry coil alone can no longer hold the leaving fluid temperature. The bottom is Uptime
+  Institute's reported 20 °C. The top is our assumption, chosen because a higher switch point means a warmer fluid loop than most
+  large sites run; Vertiv's energy-first example, 8 °C, is left out as outside what a water-conscious site would choose. The sensitivity
+  analysis shows how much this choice matters.
+- Coil air rise 9-13 K [estimate]: read from makers' selection sheets (Thermokey 11.2 K, Kelvion 12.8 K), whose energy balances close, and
+  an unverified Guentner sheet at 9 K. Manufacturer selection data is the right kind of source for a design value like this; the copies
+  used are on used-equipment listings, so the citation says so.
 - Bleed 0-0.5 of evaporation: none for once-through pads (Guentner; Spinazzola 2021), 10-50% for recirculating (SCE, p. 29); ASHRAE's
   5-100% is wider, for water hardness. No drift: pads have no tower drift. A new random stream keeps every other design's draws unchanged.
 - Result on the stored test weather: about 0.06 L/kWh used up (0.015-0.14), about the same as hybrid (0.05), so the two overlap rather than
@@ -332,7 +335,7 @@ operators and NIH.
 - Sensitivity analysis (Sobol or one at a time) for the paper, above all for the derived and assumed parameters
   (heat factors, wet-bulb limits, assist share, hybrid temperatures, utilization).
 - Check Lei and Masanet's published Table 3 (Resources, Conservation and Recycling 182: 106323) against the preprint
-  used here, with library access; a better source for the dry cooler air rise; metered water at an adiabatic site.
+  used here, with library access; metered water at an adiabatic site.
 - Landscape irrigation as an optional, climate-specific term.
 - Why Siddik's 2022 regional values exceed 2024 plant data in the eastern regions.
 - Station distance: how far places are from their division's station, and how much a nearer station changes the
