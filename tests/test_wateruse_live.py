@@ -1,4 +1,5 @@
-"""County water use from the public sources, against the values in docs/methods/water-use-sources.md (nightly; pytest -m live)."""
+"""County water use from the public sources, against the values in docs/methods/water-use-sources.md (nightly; pytest -m live).
+Texas downloads TWDB's report through its SSRS viewer."""
 import pytest
 
 from waterledger_data import wateruse as wu
@@ -32,3 +33,11 @@ def test_ohio_franklin_2024():
     assert round(sv["Mineral Extraction"]["total"]) == 28094
     assert o["counties"]["39049"]["mgd"]["public_supply"] == pytest.approx(172.18, abs=0.01)
     assert len(o["counties"]) == 88 and wu.ohio()["basis"]["year"] >= 2024
+
+
+def test_texas_travis_2024():
+    t = wu.texas(2024)
+    sv = t["counties"]["48453"]["source_values"]
+    assert sv["Municipal"]["total"] == 209045 and sv["Total"]["total"] == 228721
+    assert sv["Municipal"]["ground"] + sv["Municipal"]["surface"] + sv["Municipal"]["reuse"] == 209045
+    assert len(t["counties"]) == 254

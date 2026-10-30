@@ -15,14 +15,17 @@ written as zero. "total" is the sum of the categories present.
 
     usgs_2015(state=None)   USGS revised 2015 county estimates (Sleckman, Ross and Cook 2026), any state
     ohio(year=None)         ODNR Water Withdrawal Facility Registration, totaled by county
+    texas(year=None)        TWDB Water Use Survey, historical estimates by county (report 7)
+    state_layer(state)      the state's own layer, or None where Water Ledger has none
 """
-import calendar, datetime, json, os, urllib.request, zipfile
+import calendar, csv, datetime, glob, html, io, json, os, re, urllib.parse, urllib.request, zipfile
 
 from waterledger_data.config import CACHE
 
 RAW = os.path.join(CACHE, "wateruse")
 CATEGORIES = ("public_supply", "domestic", "commercial", "industrial", "irrigation", "golf", "livestock", "aquaculture", "mining",
               "thermoelectric", "other", "total")
+GAL_PER_ACRE_FOOT = 325851.429
 UA = "Mozilla/5.0 (waterledger python package; https://waterledger.org)"
 
 
@@ -288,11 +291,135 @@ def ohio(year=None, raw=None, fips=None):
 
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Texas: TWDB Water Use Survey, historical water use estimates by county (SARA report 7)
 
-STATE_LAYERS = {"OH": ohio}
+TWDB_SARA = "https://www3.twdb.texas.gov/apps/SARA/"
+TWDB_REPORT = (TWDB_SARA + "ReportViewer/ViewReport.aspx?reportPath=DneA%2Bi0230hTeXN0ZW0uQnl0ZVtdYmR3dFdVX1JFUC9TdW1GaW5hbF9Db3VudHlSZXBvcnRXaXRoUmV1c2U%3D"
+               "&lc=RXgzMjAxNzI4NjZ0ZXIxNTY5NzE5M25hbA%3D%3D")
+TWDB_YEAR_FIELD = "rptViewer$ctl08$ctl03$ddValue"
+TWDB_CATS = {"Municipal": ("public_supply", "Muni"), "Manufacturing": ("industrial", "MFG"), "Mining": ("mining", "Mining"),
+             "Power": ("thermoelectric", "Power"), "Irrigation": ("irrigation", "Irrig"), "LiveStock": ("livestock", "Livestock")}
+TWDB_BASIS = {
+    "source": "twdb_wus", "kind": "estimate", "measure": "use", "units": "Mgal/d", "source_units": "acre-feet per year",
+    "citation": "Texas Water Development Board. Historical Water Use Estimates, summary by county with reuse "
+                "(Water Use Survey; SARA report 7)",
+    "url": "https://www.twdb.texas.gov/waterplanning/waterusesurvey/estimates/", "threshold": None,
+    "definitions": "https://www.twdb.texas.gov/waterplanning/waterusesurvey/estimates/doc/WaterUseCategoryDefinition.pdf",
+    "categories": {"public_supply": "Municipal: public water systems' intake less sales to other systems and industry, plus "
+                                    "TWDB's estimate of self-supplied rural domestic use (data centers are municipal)",
+                   "industrial": "Manufacturing (large self-supplied facilities)",
+                   "mining": "Mining, including oil and gas (hydraulic fracturing); dewatering only where the water is used",
+                   "thermoelectric": "Power (steam-electric): consumptive use only, not withdrawals",
+                   "irrigation": "Irrigation, including self-supplied golf courses (estimated by TWDB, not surveyed)",
+                   "livestock": "Livestock, including aquaculture (estimated by TWDB, not surveyed)",
+                   "total": "the six categories, ground plus surface plus reuse"},
+    "caveats": ["TWDB's 'use' is water used in the county, not withdrawals: public systems' intake less their sales to others, "
+                "and steam-electric consumption only. Not directly comparable with USGS withdrawals",
+                "TWDB's 'historical water use estimates': municipal, manufacturing and power build on TWDB's annual survey of water "
+                "systems and plants; rural domestic, irrigation, livestock and oil and gas mining are TWDB estimates. Labeled an "
+                "estimate here for that reason",
+                "Seawater is not counted; reuse is (reuse_mgd)",
+                "Past years are revised as better data arrive (the file records when it was downloaded)",
+                "Acre-feet a year converted to Mgal/d over the days in the year"],
+}
+
+
+class SourceUnavailable(RuntimeError):
+    """A source's download stopped working (its page or report changed). The message says what to do."""
+
+
+def fetch_twdb(year=None):
+    """Download TWDB's county summary (report 7) for `year` (default: the newest TWDB offers) as CSV, saved as
+    wateruse/twdb/county_<year>_<retrieved>.csv. The report sits behind an SSRS viewer (a session, a form post with the
+    viewer's tokens, then the CSV export), so this breaks if TWDB changes the page: keep the dated copies."""
+    import http.cookiejar
+    op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+    op.addheaders = [("User-Agent", "Mozilla/5.0"), ("Referer", TWDB_SARA + "reports/list")]
+    step = "the report list"
+    try:
+        op.open(TWDB_SARA + "reports/list", timeout=120).read()
+        step = "the report viewer"
+        h = op.open(TWDB_REPORT, timeout=120).read().decode("utf-8", "replace")
+        sel = re.search(r'<select name="' + re.escape(TWDB_YEAR_FIELD) + r'".*?</select>', h, re.S)
+        opts = {int(lbl): v for v, lbl in re.findall(r'<option[^>]*value="([^"]+)"[^>]*>(\d{4})</option>', sel.group(0))}
+        year = year or max(opts)
+        if year not in opts:
+            raise SourceUnavailable(f"TWDB offers {min(opts)}-{max(opts)}, not {year}")
+        form = {k: html.unescape(v) for k, v in re.findall(r'<input type="hidden" name="([^"]+)" id="[^"]*" value="([^"]*)"', h)}
+        form[TWDB_YEAR_FIELD] = opts[year]
+        form["rptViewer$ctl08$ctl00"] = "View Report"
+        act = urllib.parse.urljoin(TWDB_REPORT, html.unescape(re.search(r'<form[^>]*action="([^"]+)"', h).group(1)))
+        step = "the year's report"
+        h2 = op.open(act, urllib.parse.urlencode(form).encode(), timeout=300).read().decode("utf-8", "replace")
+        base = re.search(r'"ExportUrlBase":"([^"]+)"', h2).group(1).encode().decode("unicode_escape")
+        step = "the CSV export"
+        data = op.open(urllib.parse.urljoin(TWDB_SARA, base) + "CSV", timeout=300).read()
+    except SourceUnavailable:
+        raise
+    except Exception as e:                                   # noqa: BLE001  any change in the viewer lands here
+        raise SourceUnavailable(f"TWDB's county water use report could not be downloaded ({step}: {type(e).__name__}: {e}). "
+                                f"The SSRS viewer may have changed; download report 7 by hand from {TWDB_SARA}reports/list "
+                                f"(Export > CSV) and pass it as texas(path=...), or use a snapshot's carried copy.") from e
+    text = data.decode("utf-8-sig", "replace")
+    if "CountyName" not in text.split("\n", 1)[0] or f",{year}," not in text:
+        raise SourceUnavailable(f"TWDB returned something other than the {year} county CSV; see {TWDB_SARA}reports/list")
+    path = os.path.join(RAW, "twdb", f"county_{year}_{datetime.date.today().isoformat()}.csv")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    open(path, "wb").write(data)
+    return path
+
+
+def twdb_file(year=None, download=True):
+    """The newest cached TWDB county CSV for `year` (or for the newest year cached); downloads if there is none."""
+    have = sorted(glob.glob(os.path.join(RAW, "twdb", f"county_{year or '[0-9][0-9][0-9][0-9]'}_*.csv")))
+    if have:
+        return max(have, key=lambda p: os.path.basename(p))
+    if not download:
+        return None
+    return fetch_twdb(year)
+
+
+def _num(v):
+    v = (v or "").strip().replace(",", "")
+    return float(v) if v not in ("", "-") else 0.0
+
+
+def texas(year=None, path=None, fips=None):
+    """TWDB water use by county (Mgal/d) from a report 7 CSV (`path`, else the cached or downloaded copy for `year`)."""
+    path = path or twdb_file(year)
+    rows = list(csv.DictReader(io.StringIO(open(path, encoding="utf-8-sig").read())))
+    fips = fips or county_fips("TX")
+    yr = int(rows[0]["Year"])
+    if year and yr != year:
+        raise ValueError(f"{path} holds {yr}, not {year}")
+    days, out, names = _days(yr), {}, _names(fips)
+    conv = lambda af: _r(af * GAL_PER_ACRE_FOOT / 1e6 / days)
+    for r in rows:
+        name = r["CountyName"].strip().upper()
+        cf = fips.get(name)
+        if cf is None:
+            raise ValueError(f"TWDB county {name!r} not matched to Census")
+        rec = {"name": names.get(cf, name.title() + " County"), "mgd": {}, "ground_mgd": {}, "surface_mgd": {}, "reuse_mgd": {}, "source_values": {}}
+        for col, (cat, pre) in TWDB_CATS.items():
+            af = {"total": _num(r[col]), "ground": _num(r.get(pre + "_GW") or r.get(pre + "_Gw")), "surface": _num(r[pre + "_SW"]),
+                  "reuse": _num(r[pre + "_RU"])}
+            rec["source_values"][col] = af
+            rec["mgd"][cat] = conv(af["total"])
+            rec["ground_mgd"][cat], rec["surface_mgd"][cat], rec["reuse_mgd"][cat] = conv(af["ground"]), conv(af["surface"]), conv(af["reuse"])
+        rec["source_values"]["Total"] = {k: sum(v[k] for v in rec["source_values"].values()) for k in ("total", "ground", "surface", "reuse")}
+        rec["population"] = int(_num(r["Population"]))
+        out[cf] = _total(rec)
+    stamp = re.search(r"county_\d{4}_(\d{4}-\d\d-\d\d)\.csv$", os.path.basename(path))
+    basis = {**TWDB_BASIS, "year": yr, "retrieved": stamp.group(1) if stamp else None}
+    return {"basis": basis, "counties": dict(sorted(out.items()))}
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+STATE_LAYERS = {"OH": ohio, "TX": texas}
 
 
 def state_layer(state, **kw):
-    """The state's own county layer (Ohio), or None where Water Ledger uses only the USGS estimates."""
+    """The state's own county layer (Ohio, Texas), or None where Water Ledger uses only the USGS estimates."""
     fn = STATE_LAYERS.get(state.upper())
     return fn(**kw) if fn else None

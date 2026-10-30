@@ -1,4 +1,5 @@
 """County water use (waterledger_data.wateruse): each layer's arithmetic, category mapping and basis, on small fixtures."""
+import math
 
 import pytest
 
@@ -8,10 +9,14 @@ from waterledger_data import wateruse as wu
 FIPS_OH = {"Franklin County": "39049", "FRANKLIN": "39049", "Van Wert County": "39161", "VAN WERT": "39161"}
 
 
+FIPS_TX = {"Travis County": "48453", "TRAVIS": "48453"}
+
+
 def test_categories_are_fixed():
     assert wu.CATEGORIES[-1] == "total" and len(set(wu.CATEGORIES)) == len(wu.CATEGORIES)
     assert set(wu.USGS_CATS) | {"other", "total"} == set(wu.CATEGORIES)
     assert set(wu.OHIO_CATS.values()) <= set(wu.CATEGORIES)
+    assert {c for c, _ in wu.TWDB_CATS.values()} <= set(wu.CATEGORIES)
 
 
 def test_usgs_sums_fresh_saline_ground_surface():
@@ -74,9 +79,37 @@ def test_latest_complete_year_skips_a_partial_year():
     assert wu._latest_complete({2022: 2000, 2023: 2050, 2024: 2040, 2025: 300}) == 2024
 
 
+TWDB_CSV = (
+    '﻿RWP27DraftDataTimestamp,Year,CountyName,Population,Municipal,Manufacturing,Mining,Power,Irrigation,LiveStock,'
+    'Muni_GW,Muni_SW,Muni_RU,MFG_Gw,MFG_SW,MFG_RU,Mining_GW,Mining_SW,Mining_RU,Power_GW,Power_SW,Power_RU,Irrig_GW,Irrig_SW,Irrig_RU,'
+    'Livestock_GW,Livestock_SW,Livestock_RU,Year1,Population1\n'
+    '"10/29/2026 9:32:46 PM \nRevised as Additional or More Accurate Data Becomes Available\nReport FileName: SumFinal_CountyrReportWithReuse",'
+    '2024,TRAVIS,"1,363,767","209,045","15,409",133,"1,909","1,758",467,"19,511","184,052","5,482",586,"12,243","2,580",0,133,0,'
+    '114,417,"1,378","1,672",86,0,93,374,0,2024,"31,290,831"\n')
+
+
+def test_texas_converts_acre_feet(tmp_path):
+    p = tmp_path / "county_2024_2026-10-29.csv"
+    p.write_text(TWDB_CSV, encoding="utf-8")
+    t = wu.texas(path=str(p), fips=FIPS_TX)
+    b = t["basis"]
+    assert (b["year"], b["kind"], b["measure"], b["retrieved"]) == (2024, "estimate", "use", "2026-10-29")
+    r = t["counties"]["48453"]
+    assert r["source_values"]["Municipal"] == {"total": 209045, "ground": 19511, "surface": 184052, "reuse": 5482}
+    assert r["source_values"]["Total"]["total"] == 228721
+    mgd = lambda af: af * 325851.429 / 1e6 / 366
+    assert r["mgd"]["public_supply"] == pytest.approx(mgd(209045), abs=1e-3)
+    assert r["mgd"]["total"] == pytest.approx(mgd(228721), abs=5e-3)
+    assert r["ground_mgd"]["industrial"] == pytest.approx(mgd(586), abs=1e-3)       # TWDB's MFG_Gw header
+    assert r["reuse_mgd"]["thermoelectric"] == pytest.approx(mgd(1378), abs=1e-3)
+    assert r["population"] == 1363767
+    with pytest.raises(ValueError, match="not 2023"):
+        wu.texas(year=2023, path=str(p), fips=FIPS_TX)
+
+
 def test_state_layers():
-    assert set(wu.STATE_LAYERS) == {"OH"} and wu.state_layer("WY") is None
+    assert set(wu.STATE_LAYERS) == {"OH", "TX"} and wu.state_layer("WY") is None
 
 
 def test_days():
-    assert wu._days(2024) == 366 and wu._days(2023) == 365
+    assert wu._days(2024) == 366 and wu._days(2023) == 365 and math.isclose(wu.GAL_PER_ACRE_FOOT, 325851.429)
