@@ -27,7 +27,7 @@ def test_information_and_variables(tmp_path):
     m.initialize(write_config(tmp_path, design="towers", it_capacity_mw=100))
     assert m.get_component_name()
     assert m.get_input_item_count() == len(m.get_input_var_names()) == 2
-    assert m.get_output_item_count() == len(m.get_output_var_names()) == 4
+    assert m.get_output_item_count() == len(m.get_output_var_names()) == 5
     for name in list(INPUTS) + list(OUTPUTS):
         assert m.get_var_grid(name) == 0
         assert m.get_var_type(name) == "float64"

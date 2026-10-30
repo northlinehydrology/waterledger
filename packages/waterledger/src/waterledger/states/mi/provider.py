@@ -21,7 +21,7 @@ def place(geoid):
 
 def estimate(site):
     """Water use for a site at a Michigan place, through waterledger.scenario (the page's est())."""
-    from waterledger.estimate import Estimate, Flow, Range, WaterUse
+    from waterledger.estimate import Electricity, Estimate, Flow, Range, WaterUse
     f = site.facility
     S = sc.scenario(site.place.geoid, mw=f.it_mw, cool=f.cooling, src=site.source, dest=site.wastewater, acres=site.acres,
                     before=site.land_before, imp=site.impervious)
@@ -31,7 +31,9 @@ def estimate(site):
                      to_sewer=R(E["sewer"]), lake_source=E["lake"], reuse=E["reuse"])
     resolved = site.model_copy(update={"source": S["src"], "wastewater": S["dest"], "acres": S["acres"], "land_before": S["before"]})
     D = sc.data("estimates")
-    return Estimate(site=resolved, water=water, model_version=D["model_version"], data_date=D["generated"])
+    e = sc.electricity(D, S["place"]["r"], f.cooling, f.it_mw)
+    power = Electricity(avg_mw=R(e["mw"]), peak_mw=R(e["peak_mw"]), pue=R(e["pue"]), peak_pue=R(e["peak_pue"])) if e else None
+    return Estimate(site=resolved, water=water, electricity=power, model_version=D["model_version"], data_date=D["generated"])
 
 
 def context(place):

@@ -25,7 +25,7 @@ GLERL_CODES = {"Lake Superior": "s", "Lake Michigan": "m", "Lake Huron": "h", "L
 # Ranges: utilization and heat factor reuse the cooling-water model; rise and wind are estimates (see methods page).
 RANGES = {
     "utilization": cw.RANGES["utilization"],
-    "heat_factor": (cw.RANGES["hf_econ"][0], cw.RANGES["hf_chiller"][1]),
+    "heat_factor": (1.03, 1.25),      # heat over IT energy, the range the cooling water model used through model 1.3 [estimate]
     "rise_c": (6.0, 10.0),
     "wind_mph": (5.0, 15.0),
 }

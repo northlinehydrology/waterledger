@@ -40,11 +40,22 @@ class WaterUse(BaseModel):
     reuse: bool = False
 
 
+class Electricity(BaseModel):
+    """A site's electricity, from the hourly heat balance at its weather (model 1.4). avg_mw: computers at their average utilization, plus cooling
+    and losses. peak_mw: the 1-in-10-year hottest hour with every computer at capacity. pue and peak_pue: facility power over IT power."""
+    model_config = ConfigDict(frozen=True)
+    avg_mw: Range
+    peak_mw: Range
+    pue: Range
+    peak_pue: Range
+
+
 class Estimate(BaseModel):
-    """What the model says about a site: its water use, with every choice resolved (defaults filled in), the model version
-    that produced it and the date of the data behind it."""
+    """What the model says about a site: its water use and electricity (none where the data predate model 1.4), with every choice resolved
+    (defaults filled in), the model version that produced it and the date of the data behind it."""
     model_config = ConfigDict(frozen=True)
     site: "Site"
     water: WaterUse
+    electricity: Electricity | None = None
     model_version: str
     data_date: str

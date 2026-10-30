@@ -145,7 +145,7 @@ def estimate(state, site):
     import datetime
 
     from waterledger import scenario as sc
-    from waterledger.estimate import Estimate, Flow, Range, WaterUse
+    from waterledger.estimate import Electricity, Estimate, Flow, Range, WaterUse
     from waterledger_models import MODEL_VERSION
     f, place = site.facility, site.place
     if f.cooling == "lake":
@@ -172,4 +172,6 @@ def estimate(state, site):
                      consumed=Flow(avg=R(E["cAvg"]), peak_day=R(E["cPeak"])), returned=Flow(avg=R(E["rAvg"]), peak_day=R(E["rPeak"])),
                      to_sewer=R(E["sewer"]), lake_source=False, reuse=E["reuse"])
     resolved = site.model_copy(update={"source": src, "wastewater": dest})
-    return Estimate(site=resolved, water=water, model_version=MODEL_VERSION, data_date=sd.date or datetime.date.today().isoformat())
+    e = sc.electricity(D, d, f.cooling, f.it_mw)
+    power = Electricity(avg_mw=R(e["mw"]), peak_mw=R(e["peak_mw"]), pue=R(e["pue"]), peak_pue=R(e["peak_pue"])) if e else None
+    return Estimate(site=resolved, water=water, electricity=power, model_version=MODEL_VERSION, data_date=sd.date or datetime.date.today().isoformat())

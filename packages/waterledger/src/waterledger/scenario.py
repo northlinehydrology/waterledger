@@ -81,6 +81,26 @@ def flow(D, region, cool, key, mw):
     return {"lo": b["lo"] + s["p10"] * k, "mid": b["mid"] + s["p50"] * k, "hi": b["hi"] + s["p90"] * k}
 
 
+def electricity(D, region, cool, mw):
+    """Facility electricity at `mw` MW of IT capacity at a region's weather, lo/mid/hi: {"mw", "peak_mw", "pue", "peak_pue"}, or None for data from
+    before model 1.4. Lake-source cooling is not in the hourly model; the region's cooling towers stand in [estimate]. Same as WQ.elec on the page."""
+    r = D["regions"][region]["per_100mw"]["towers" if cool == "lake" else cool]
+    if "power_mw_avg" not in r:
+        return None
+    return {"mw": band(r["power_mw_avg"], mw / 100), "peak_mw": band(r["power_mw_peak_1in10"], mw / 100), "pue": band(r["pue_avg"], 1.0), "peak_pue": band(r["pue_peak_1in10"], 1.0)}
+
+
+def pue_by_design(regions):
+    """One PUE per design across a state's regions, for what cannot wait for a place (turning a utility contract's MW into computing capacity, at
+    the hottest-hour value): {design: {"lo", "mid", "hi", "basis"}}. Lake-source: the cooling towers stand in [estimate]."""
+    mean = lambda d, k, q: sum(x["per_100mw"][d][k][q] for x in regions.values()) / len(regions)
+    out = {d: {"lo": round(mean(d, "pue_avg", "p10"), 3), "mid": round(mean(d, "pue_avg", "p50"), 3), "hi": round(mean(d, "pue_peak_1in10", "p50"), 3),
+               "basis": "Hourly heat balance at this state's weather (model 1.4): annual PUE, 10th and 50th percentiles, and the 1-in-10-year hottest hour; averaged over its regions"}
+           for d in next(iter(regions.values()))["per_100mw"]}
+    out["lake"] = {**out["towers"], "basis": "Not modeled; the cooling towers stand in [estimate]"}
+    return out
+
+
 def estimate(p, mw, cool, dest, region=None):
     """Water taken, used up and sent out (MGD, lo/mid/hi), as on the page."""
     D = data("estimates")

@@ -1,9 +1,10 @@
 """The data center cooling model's physics and parameter ranges, in one place, vectorized.
 
-Hour by hour: heat rejected = IT energy x a heat factor that ramps with wet-bulb temperature from economizer to chiller
-operation; evaporation = heat x the Rutberg et al. (2011) evaporative ratio / latent heat; drift = a share of circulating
-flow; blowdown = evaporation / (cycles of concentration - 1); closed loops add small top-ups; staff water follows the
-people on site. Designs differ in when they evaporate (dry, assist, hybrid, towers); assist evaporates into the air ahead of a dry cooler. The method and sources are
+Hour by hour, electricity and water from one heat balance (model 1.4), after Lei and Masanet (2022; preprint rs-769999/v1, Eqs. 2-4):
+facility power = IT + UPS and distribution losses + lighting + air handler fans + chillers + pumps + heat rejection fans, with the
+economizer carrying as much of the load as the weather allows; heat rejected = the load + chiller power; evaporation = heat x the
+Rutberg et al. (2011) evaporative ratio / latent heat; drift = a share of circulating flow; blowdown = evaporation / (cycles of
+concentration - 1); closed loops add small top-ups; staff water follows the people on site. Designs differ in when they evaporate (dry, assist, hybrid, towers); assist evaporates into the air ahead of a dry cooler. The method and sources are
 described in cooling.py and on the Water Ledger methods page.
 
 Every function takes parameters as scalars or as arrays shaped (runs, 1) against hourly weather shaped (hours,), giving
@@ -24,22 +25,6 @@ RANGES = {
     # site and 57% at co-location sites; IEA 2025 puts hyperscale at 53-56%; LBNL's server parameters give about 40% (AI inference) to 60%
     # (AI training). Load over a site's own peak (EPRI: 88-94%) is a different ratio and does not bound this one.
     "utilization": (0.50, 0.80),
-    # Heat rejected per unit of IT energy (model 1.3, derived; no published value). Economizer: IT plus fans, UPS and distribution
-    # losses. Lei and Masanet's Table 3 (Research Square preprint rs-769999/v1, 2021; large-scale cases: UPS 90-99%, also LBNL 2024
-    # Table 4.3; distribution 0-2%; CRAH fans 1.4-9.2% of IT at its pressure, efficiency and air temperature ranges) gives 1.02-1.22 with
-    # every term at one end. All of them at the bad end is not a large new campus: heat through the water loop cannot exceed the
-    # facility's overhead, and large campuses measure 1.09 (Google 2025) to 1.14 (IEA 2025) with cooling included (LBNL 2024: about 1.12 with
-    # towers), so the top is 1.10. Chillers: plus compressor heat, "up to 20% of the total heat" (DOE FEMP, cooling water efficiency for
-    # data centers); COP 5-8 gives 1.13-1.20 over IT.
-    "hf_econ": (1.03, 1.10),
-    "hf_chiller": (1.15, 1.25),
-    # Wet-bulb (°C) limits of economizer and chiller operation (model 1.3, derived; no published value): chilled-water supply 12.8-18 °C
-    # (FEMP Data Center Design guide 2024, p. 17: 55 °F or higher) less the tower (2.8-6.7 °C) and heat exchanger (1.7-2.8 °C) approaches
-    # (Lei and Masanet preprint, Table 3) gives 3.3-13.5 °C for full economizer; the return (supply plus a 5-10 °C rise) less the approaches
-    # gives 8.3-23.5 °C for full chiller operation. FEMP (p. 19): economizers suit climates below 55 °F (12.8 °C) wet-bulb 3,000+ h a year.
-    # The two ranges are split at their midpoints so every draw ramps upward.
-    "wb_econ": (5.0, 12.0),
-    "wb_chiller": (14.0, 22.0),
     # Evaporative ratio adjustment (model 1.3, was +/-0.05): asymmetric because Rutberg et al.'s fit (Poppe runs at 40 °C inlet water,
     # RH 60%) is applied hourly to cooler data center tower water and cold hours, where it likely runs high; USGS SIR 2013-5188 (Diehl
     # et al.) puts tower evaporation error at +/-5-15% (p. 24) and +/-18% overall (pp. 28-29).
@@ -72,7 +57,28 @@ TOPUP = (0.01, 0.05)
 # design, K: 9-13 from makers' selection sheets (Thermokey 11.2, Kelvion 12.8) [estimate]. Bleed as a share of evaporation: none for once-through
 # pads (Guentner; Spinazzola 2021), up to 0.5 for recirculating pads (SCE ET13SCE1020, 2015, p. 29: 10-50%; ASHRAE 2016 ch. 41 allows 5-100%).
 ADIABATIC = {"assist_dt_air": (9.0, 13.0), "assist_bleed": (0.0, 0.5)}
-PARAMETERS = tuple(RANGES) + ("topup",) + tuple(ADIABATIC)
+# Electricity and heat (model 1.4), on their own random stream. Large-scale values are Lei and Masanet's Table 3, case 2 (preprint rs-769999/v1;
+# waterside economizer, 2.8-6.7 C tower approach, and so on), which LBNL 2024 also draws on, unless noted.
+POWER = {
+    "ups": (0.90, 0.99), "dist_loss": (0.0, 0.02), "light": (0.0, 0.002), "shr": (0.95, 0.99),
+    "supply_air": (27.0, 35.0), "air_rise": (13.9, 19.4), "coil_eff": (0.70, 0.90), "water_rise": (5.0, 10.0),
+    "crah_pa": (300.0, 700.0), "fan_eff": (0.65, 0.90),
+    "tower_fan_pa": (100.0, 400.0), "lg": (0.2, 4.0), "tower_approach": (2.8, 6.7), "hx_approach": (1.7, 2.8),
+    "pump_chw_kpa": (114.9, 172.4), "pump_tower_kpa": (166.9, 250.4), "pump_econ_kpa": (114.9, 172.4), "pump_eff": (0.60, 0.80),
+    # Chillers as a fraction of Carnot COP. Water-cooled: 0.70 from code minimums for large plant (0.560 kW/ton gives 0.72, 0.585 gives 0.69; WAC
+    # 51-11C-403323, a stated replica of ASHRAE 90.1 Table 6.8.1-3; its part-load adjustment gives 0.67-0.73), +/-11% (Lei and Masanet's COP error).
+    # Air-cooled: 0.45 from EER 10.1, 0.55 [A]. Both are fitted together with the temperature offsets below (2 K, 2 K, 12 K) [A].
+    "carnot_water": (0.62, 0.78), "carnot_air": (0.45, 0.55),
+    # Dry coolers. No standard or peer-reviewed design values exist, since selection data are proprietary, so these are assumptions tested in the
+    # sensitivity analysis [A]: approach, a catalogue point of 10 K (ThermoKey) to the 5 K makers quote for larger coils; air-side pressure and
+    # efficiency by analogy with Lei and Masanet's tower fans. The air rise is ADIABATIC's selection-sheet range.
+    "dc_approach": (5.0, 10.0), "dc_fan_pa": (100.0, 250.0),
+    # Liquid-cooled computers: facility water at ASHRAE TC 9.9 classes W32-W45 (LBNL 2024 Table 4.3: W45), the rest of the heat by air on a cooler
+    # loop: 12.9% (HPE GB200 NVL72), 20% (Schneider WP210), 25-39% (ASME InterPACK2022, not read directly); 10-30% [A]. The share of computers
+    # that are liquid-cooled at a campus is not published for any fleet, so all of 0-1 is sampled [A].
+    "liquid_water": (32.0, 45.0), "liquid_air_share": (0.10, 0.30), "liquid_share": (0.0, 1.0),
+}
+PARAMETERS = tuple(RANGES) + ("topup",) + tuple(ADIABATIC) + tuple(POWER)
 
 # Staff water. People = the campus's permanent headcount (employees and on-site contractors), a fixed core plus a share per MW of IT
 # capacity: JLARC 2024 puts a typical building at about 50 full-time workers; announced campuses run 0.1 to 0.5 jobs per MW (Meta Richland
@@ -109,6 +115,75 @@ def _ramp(x, lo, hi):
     return np.clip((x - lo) / (hi - lo), 0.0, 1.0)
 
 
+CHILLER_COP_CAP = {"water": 8.0, "air": 5.0}          # FEMP's 5-8 for water-cooled; air-cooled part-load code minimums reach about 4.1-4.7 [A]
+CP_AIR, CP_WATER, RHO_AIR, RHO_WATER = 1.01, 4.2, 1.15, 1000.0     # kJ/kg/K, kg/m3
+
+
+def _fan_kw(kg_s, pa, eff):
+    return kg_s / RHO_AIR * pa / eff / 1000.0
+
+
+def _pump_kw(kg_s, kpa, eff):
+    return kpa * kg_s / (RHO_WATER * eff)
+
+
+def _wet_share(tdb, design, p):
+    """Share of the heat going through evaporation: all of it for towers, none for dry and assist coils, a ramp for hybrid."""
+    if design == "towers":
+        return np.ones_like(tdb)
+    if design == "hybrid":
+        return _ramp(tdb, p["hybrid_on"], p["hybrid_full"]) * np.ones_like(tdb)
+    return np.zeros_like(tdb)
+
+
+def _loop(load, supply, tdb, twb, coil_air, wet, design, p):
+    """One facility water loop carrying `load` (kW per IT kW) at `supply` C: chiller, pump and heat rejection power, kW per IT kW."""
+    ret = supply + p["water_rise"]
+    outside = wet * (twb + p["tower_approach"] + p["hx_approach"]) + (1 - wet) * (coil_air + p["dc_approach"])
+    free = _ramp(ret - outside, 0.0, ret - supply)                # Lei and Masanet: the economizer's share falls from 1 to 0 as outside approaches the return
+    chilled = load * (1 - free)
+    evaporator = supply - 2.0
+    if design in ("towers", "hybrid"):
+        condenser = twb + p["tower_approach"] + p["range_f"] / 1.8 + 2.0
+        eta, cap = p["carnot_water"], CHILLER_COP_CAP["water"]
+    else:                                                          # an air-cooled trim chiller, whose rated COP includes its condenser fans
+        condenser = coil_air + 12.0
+        eta, cap = p["carnot_air"], CHILLER_COP_CAP["air"]
+    cop = np.minimum(eta * (evaporator + 273.15) / np.maximum(condenser - evaporator, 1.0), cap)
+    chiller = chilled / cop
+    pumps = (_pump_kw(load * free / (CP_WATER * p["water_rise"]), p["pump_econ_kpa"], p["pump_eff"])
+             + _pump_kw(chilled / (CP_WATER * p["water_rise"]), p["pump_chw_kpa"], p["pump_eff"]))
+    heat = load + chiller
+    tower_water = heat * wet / (CP_WATER * p["range_f"] / 1.8)
+    tower = _pump_kw(tower_water, p["pump_tower_kpa"], p["pump_eff"]) + _fan_kw(tower_water / p["lg"], p["tower_fan_pa"], p["fan_eff"])
+    # dry cooler fans: the air flow that carries the economizer's heat, up to design flow, by the fan affinity law (cubic; 10% floor, immaterial)
+    design_flow = load / (CP_AIR * p["assist_dt_air"])
+    rise = np.maximum(ret - p["dc_approach"] - coil_air, p["assist_dt_air"])
+    flow = load * free * (1 - wet) / (CP_AIR * rise)
+    dry = _fan_kw(design_flow, p["dc_fan_pa"], p["fan_eff"]) * np.clip(flow / np.maximum(design_flow, 1e-12), 0.1, 1.0) ** 3
+    return chiller, pumps + tower + (0.0 if design == "towers" else dry)
+
+
+def hourly_heat_power(tdb, twb, design, p):
+    """Each hour, per kW of IT: (facility power, kW; heat rejected, kW). Facility power over IT power is the hour's PUE.
+
+    After Lei and Masanet's Eqs. 2-4, with two departures: air handler fan heat is counted in the load, so the energy balance closes, and
+    dry cooler and liquid cooling designs are added, which their cases do not have. p as in hourly_rates."""
+    q = 1.0 + (1.0 / p["ups"] - 1.0) + (1.0 / (1.0 - p["dist_loss"]) - 1.0) + p["light"]
+    air = (1.0 - p["liquid_share"]) + p["liquid_share"] * p["liquid_air_share"]
+    crah = _fan_kw(q * air / (CP_AIR * p["air_rise"]), p["crah_pa"], p["fan_eff"])
+    load = (q + crah) / p["shr"]
+    # supply air and the coil set the air loop's water temperature (Lei and Masanet); liquid-cooled heat goes to a warmer loop of its own
+    air_water = p["supply_air"] + p["air_rise"] - p["air_rise"] / p["coil_eff"]
+    coil_air = tdb - (p["assist_eff"] * np.maximum(tdb - twb, 0.0) * (tdb >= p["assist_on"]) if design == "assist" else 0.0)
+    wet = _wet_share(tdb, design, p)
+    power, heat = q + crah + 0.0 * tdb, load + 0.0 * tdb
+    for share, supply in ((air, air_water), (1.0 - air, p["liquid_water"])):
+        chiller, other = _loop(load * share, supply, tdb, twb, coil_air, wet, design, p)
+        power, heat = power + chiller + other, heat + chiller
+    return power, heat
+
+
 def hourly_rates(tdb, twb, design, p):
     """Gallons per IT kWh for each hour: (withdrawn, consumed, returned).
 
@@ -117,16 +192,10 @@ def hourly_rates(tdb, twb, design, p):
     """
     if design not in DESIGNS:
         raise ValueError(f"design must be one of {DESIGNS}, not {design!r}")
-    hf = p["hf_econ"] + (p["hf_chiller"] - p["hf_econ"]) * _ramp(twb, p["wb_econ"], p["wb_chiller"])
-    btu = KWH_BTU * hf
+    btu = KWH_BTU * hourly_heat_power(tdb, twb, design, p)[1]
     evap_full = btu * evaporative_ratio(tdb, p["er_adj"]) / HFG / LB_GAL
     circ = btu / (LB_GAL * p["range_f"])                    # gal circulated per kWh
-    if design == "towers":
-        w = np.ones_like(evap_full)
-    elif design == "hybrid":
-        w = _ramp(tdb, p["hybrid_on"], p["hybrid_full"]) * np.ones_like(evap_full)
-    else:
-        w = np.zeros_like(evap_full)
+    w = _wet_share(tdb, design, p) * np.ones_like(evap_full)
     evap = evap_full * w
     drift = circ * p["drift"] * (w > 0)
     blow = evap / (p["coc"] - 1.0)
@@ -159,12 +228,15 @@ def sample_parameters(n=200, seed=7):
     u = np.random.default_rng(17).random((n, len(ADIABATIC)))
     for i, (k, (a, b)) in enumerate(ADIABATIC.items()):
         out[k] = a + (b - a) * u[:, i]
+    u = np.random.default_rng(23).random((n, len(POWER)))
+    for i, (k, (a, b)) in enumerate(POWER.items()):
+        out[k] = a + (b - a) * u[:, i]
     return out
 
 
 def central_parameters():
     """Every parameter at the middle of its range."""
-    return {**{k: (a + b) / 2 for k, (a, b) in {**RANGES, **ADIABATIC}.items()}, "topup": sum(TOPUP) / 2}
+    return {**{k: (a + b) / 2 for k, (a, b) in {**RANGES, **ADIABATIC, **POWER}.items()}, "topup": sum(TOPUP) / 2}
 
 
 def sample_staff(n=200, seed=13):

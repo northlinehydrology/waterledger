@@ -190,14 +190,6 @@ def wind_solar(pv_share):
 # Electricity overhead by cooling design: LBNL 2024 Fig. 4.4, large-scale facilities, simulated annual PUE (figure-read medians and boxes,
 # U.S. climates). Closed loop spans LBNL's two waterless large-scale systems: liquid-cooled IT with dry coolers (about 1.10) and dry coolers
 # with an air-cooled chiller (about 1.20). Lake-source is not in LBNL; the cooling-tower range stands in for it [estimate].
-PUE_DESIGN = {
-    "dry": {"lo": 1.07, "mid": 1.15, "hi": 1.24, "basis": "LBNL 2024: liquid-cooled IT with dry coolers (median about 1.10) to dry coolers with air-cooled chillers (about 1.20)"},
-    "assist": {"lo": 1.07, "mid": 1.15, "hi": 1.24, "basis": "LBNL 2024: dry coolers with adiabatic assist, liquid-cooled IT (about 1.10) or air-cooled chiller (about 1.20)"},
-    "hybrid": {"lo": 1.11, "mid": 1.14, "hi": 1.17, "basis": "LBNL 2024: airside economizer with adiabatic cooling and water-cooled chiller"},
-    "towers": {"lo": 1.09, "mid": 1.12, "hi": 1.16, "basis": "LBNL 2024: waterside economizer with water-cooled chiller, air- or liquid-cooled IT"},
-    "lake": {"lo": 1.09, "mid": 1.12, "hi": 1.16, "basis": "Not simulated by LBNL; the cooling-tower range stands in [estimate]"},
-}
-
 # Water at power plants per MWh, by what supplies the campus: consumed (gal_mwh, lo, hi) and withdrawn (wd_gal_mwh, wd_lo, wd_hi), gallons per
 # MWh. Macknick et al. 2012 medians and ranges (Table 2 consumption, Table 3 withdrawal; wind and PV withdrawal equals consumption, p. 6)
 # unless noted; blends are weighted by Michigan's 2024 generation (EIA).
@@ -472,7 +464,7 @@ def main(n=200):
 
     staff = cw.staff_runs(n)
     Dv = {"regions": regions, "staff": {"runs": staff}}
-    from waterledger.scenario import flow, band
+    from waterledger.scenario import band, flow, pue_by_design
     s2 = lambda v: f"{(round(v) if v < 100 else round(v / 10 ** (math.floor(math.log10(v)) - 1)) * 10 ** (math.floor(math.log10(v)) - 1)):,.0f}"
     gal = lambda b: f"about {s2(b['mid'] * 1e6)} gal/day (likely {s2(b['lo'] * 1e6)} to {s2(b['hi'] * 1e6)})"
     util = regions["west"]["per_100mw"]["dry"]["utilization"]["p50"]
@@ -480,11 +472,12 @@ def main(n=200):
     lkwh = w300["mid"] * 1e6 * 3.78541 / (300 * 1000 * util * 24)
     hyb = lambda key: flow(Dv, "west", "hybrid", key, 300)["mid"] * 1e6 / 300
     # Van Buren: 1 GW of DTE contract over three buildings, one open loop; computers = contract / top of each design's PUE range [A]
-    it_t, it_d = 1000 / 3 / PUE_DESIGN["towers"]["hi"], 2000 / 3 / PUE_DESIGN["dry"]["hi"]
+    pue_design = pue_by_design(regions)
+    it_t, it_d = 1000 / 3 / pue_design["towers"]["hi"], 2000 / 3 / pue_design["dry"]["hi"]
     st = cw.staff_q(staff, it_t + it_d)
     vb = {k: band(regions["southeast"]["per_100mw"]["towers"][f"withdrawn_{k}"], it_t / 100)["mid"] + band(regions["southeast"]["per_100mw"]["dry"][f"withdrawn_{k}"], it_d / 100)["mid"]
           + st["withdrawn"]["p50"] for k in ("avg", "peak_1in10")}
-    saline_it = 1400 / PUE_DESIGN["dry"]["hi"]
+    saline_it = 1400 / pue_design["dry"]["hi"]
     mx = lambda r: f"{r:.1f}".removesuffix(".0") if r < 10 else s2(r)          # a multiple, as on the page (WQ.mult)
     low, gb, sal, sw = (flow(Dv, "west", "dry", "withdrawn_avg", 300), flow(Dv, "west", "dry", "withdrawn_avg", 100),
                         flow(Dv, "southeast", "dry", "withdrawn_avg", saline_it), flow(Dv, "west", "dry", "withdrawn_avg", 320))
@@ -561,7 +554,7 @@ def main(n=200):
         "staff": {"runs": staff, "note": "Staff water per run: [core people, people per MW of IT capacity, gallons per person a day, share used up]; "
                                          "added to the per_100mw results at the campus's size (scenario.flow, WQ.flow)"},
         "power": POWER,
-        "pue_design": PUE_DESIGN,
+        "pue_design": pue_design,
         "power_supply": POWER_SUPPLY,
         "home_kwh_month": 634.9,   # EIA-861 2025, Michigan (model 1.3; was 618.2 from EIA's 2024 Table 5A)
         "context": CONTEXT,

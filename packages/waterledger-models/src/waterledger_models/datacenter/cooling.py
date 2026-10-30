@@ -1,9 +1,8 @@
 """Cooling water model v2 for Water Ledger: weather-driven, literature-aligned, with uncertainty.
 
 Hour by hour over 30 years of weather:
-  heat rejected (BTU) = IT energy × heat factor, where the heat factor is seasonal: lower when a
-      waterside economizer carries the load (cool wet-bulb), higher when chillers run (compressor heat
-      can add up to ~20% to tower load; DOE FEMP).
+  facility power and heat rejected, from one heat balance (physics.hourly_heat_power; model 1.4): the load plus chiller power, with the
+      economizer carrying what the weather allows. Facility power over IT power is the hour's PUE.
   evaporation = heat × evaporative ratio ÷ latent heat, with the evaporative ratio from Rutberg et al. 2011
       (the dry-bulb relation USGS SIR 2013-5188 uses for cooling towers).
   drift = a small fraction of circulating flow (EPA WaterSense at Work §6.3: 0.05–0.2%, <0.005% with
@@ -28,8 +27,8 @@ Parameter ranges and their sources are in RANGES and documented on the Water Led
 """
 import numpy as np
 
-from waterledger_models.datacenter.physics import (ADIABATIC, DESIGNS as _DESIGNS, HFG, KWH_BTU, LB_GAL, RANGES, STAFF, TOPUP, _ramp,  # noqa: F401
-                                                   evaporative_ratio, hourly_rates, wet_bulb)
+from waterledger_models.datacenter.physics import (ADIABATIC, DESIGNS as _DESIGNS, HFG, KWH_BTU, LB_GAL, POWER, RANGES, STAFF, TOPUP, _ramp,  # noqa: F401
+                                                   evaporative_ratio, hourly_heat_power, hourly_rates, wet_bulb)
 
 DESIGNS = list(_DESIGNS)
 LABELS = {
@@ -53,11 +52,14 @@ def sample(rng, n):
     extra = np.random.default_rng(17)
     for r in runs:
         r.update({k: extra.uniform(*v) for k, v in ADIABATIC.items()})
+    extra = np.random.default_rng(23)
+    for r in runs:
+        r.update({k: extra.uniform(*v) for k, v in POWER.items()})
     return runs
 
 
 def central():
-    return {**{k: (a + b) / 2 for k, (a, b) in {**RANGES, **ADIABATIC}.items()}, "topup": sum(TOPUP) / 2}
+    return {**{k: (a + b) / 2 for k, (a, b) in {**RANGES, **ADIABATIC, **POWER}.items()}, "topup": sum(TOPUP) / 2}
 
 
 STAFF_KEYS = ("core", "per_mw", "gpcd", "used", "maint_base", "maint_per_mw", "maint_used")
@@ -130,8 +132,10 @@ def daily(times, temps, rhs, design, mw, p=None):
 def run_location(times, temps, rhs, n=200, seed=7, mw=100.0):
     """Monte Carlo for every design at one location, per `mw` MW of IT capacity.
 
-    Returns {design: {stat: {"p10","p50","p90"}}} for withdrawn/consumed/returned average, peak and annual,
-    plus the central-parameter run. Peak = 1-in-10-year peak day (90th percentile of annual maxima).
+    Returns {design: {stat: {"p10","p50","p90"}}} for withdrawn/consumed/returned average, peak and annual, and electricity,
+    plus the central-parameter run. Peak = 1-in-10-year peak day (90th percentile of annual maxima). Electricity: pue_avg (energy over IT
+    energy), power_mw_avg (at the run's utilization), pue_peak_1in10 and power_mw_peak_1in10 (the 1-in-10-year hottest hour, every computer
+    running at capacity).
     """
     tdb = np.array(temps, dtype=float)
     rh = np.array(rhs, dtype=float)
@@ -140,6 +144,8 @@ def run_location(times, temps, rhs, n=200, seed=7, mw=100.0):
     uniq, day_index = np.unique(days, return_inverse=True)
     years = np.array([d[:4] for d in uniq])
     months = np.array([d[:7] for d in uniq])
+    hour_years = np.array([t[:4] for t in times])
+    year_ends = np.r_[np.flatnonzero(hour_years[1:] != hour_years[:-1]) + 1, len(hour_years)]
     rng = np.random.default_rng(seed)
     runs = sample(rng, n)
     out = {}
@@ -156,6 +162,12 @@ def run_location(times, temps, rhs, n=200, seed=7, mw=100.0):
             acc.setdefault("wue_l_per_kwh", []).append(float(np.average(c)) * 3.78541)          # consumed basis
             acc.setdefault("wue_makeup_l_per_kwh", []).append(float(np.average(w)) * 3.78541)   # LBNL/Lei basis (evaporation + drift + blowdown)
             acc.setdefault("utilization", []).append(p["utilization"])
+            pue = hourly_heat_power(tdb, twb, design, p)[0]
+            peak = float(np.quantile([part.max() for part in np.split(pue, year_ends[:-1])], 0.9))
+            acc.setdefault("pue_avg", []).append(float(pue.mean()))
+            acc.setdefault("power_mw_avg", []).append(float(pue.mean()) * mw * p["utilization"])
+            acc.setdefault("pue_peak_1in10", []).append(peak)
+            acc.setdefault("power_mw_peak_1in10", []).append(peak * mw)
         res = {}
         for k, vals in acc.items():
             v = np.array(vals[:-1])

@@ -19,6 +19,7 @@ STATS = ("avg", "peak_1in10", "record", "annual_mg", "max_month", "worst_year_mg
 ANNUAL = ("annual_mg", "worst_year_mg")       # million gallons a year; the rest are million gallons a day
 FLOWS = ("withdrawn", "consumed", "returned")
 L_PER_GAL = 3.78541
+POWER_VARS = ("pue_avg", "power_mw_avg", "pue_peak_1in10", "power_mw_peak_1in10")
 
 
 def _day_layout(time):
@@ -45,15 +46,21 @@ def _stats(daily, years, months):
     return np.stack([avg, np.quantile(ann_max, 0.9, axis=1), daily.max(axis=1), avg * 365.25, max_month, worst_year], axis=1)
 
 
-def _evaluate(tdb, twb, starts, years, months, design, params, mw):
-    """Stats (runs, flows, stats), water use effectiveness (runs, 2) and daily volumes (runs, flows, days)."""
+def _evaluate(tdb, twb, starts, years, months, hour_years, design, params, mw):
+    """Stats (runs, flows, stats), water use effectiveness (runs, 2), electricity (runs, 4: pue_avg, power_mw_avg, pue_peak_1in10,
+    power_mw_peak_1in10; as in cooling.run_location) and daily volumes (runs, flows, days)."""
     p = {k: np.asarray(v, dtype=float).reshape(-1, 1) for k, v in params.items()}
     kw = mw * 1000.0 * p["utilization"]
     rates = model.hourly_rates(tdb, twb, design, p)
     daily = [np.add.reduceat(r * kw, starts, axis=1) / 1e6 for r in rates]
     stats = np.stack([_stats(d, years, months) for d in daily], axis=1)
     wue = np.stack([rates[1].mean(axis=1), rates[0].mean(axis=1)], axis=1) * L_PER_GAL
-    return stats, wue, np.stack(daily, axis=1)
+    pue = model.hourly_heat_power(tdb, twb, design, p)[0]
+    ends = np.r_[np.flatnonzero(hour_years[1:] != hour_years[:-1]) + 1, hour_years.size]
+    peak = np.quantile(np.stack([part.max(axis=1) for part in np.split(pue, ends[:-1], axis=1)], axis=1), 0.9, axis=1)
+    avg = pue.mean(axis=1)
+    power = np.stack([avg, avg * mw * p["utilization"][:, 0], peak, peak * mw], axis=1)
+    return stats, wue, power, np.stack(daily, axis=1)
 
 
 def run_ensemble(time, air_temperature, relative_humidity, mw=100.0, n=200, seed=7, designs=model.DESIGNS,
@@ -69,21 +76,23 @@ def run_ensemble(time, air_temperature, relative_humidity, mw=100.0, n=200, seed
     rh = np.asarray(relative_humidity, dtype=float)
     twb = model.wet_bulb(tdb, rh)
     starts, labels, years, months = _day_layout(time)
+    hour_years = np.asarray(time).astype("datetime64[Y]").astype(int)
     params = model.sample_parameters(n, seed)
     central = {k: np.array([v]) for k, v in model.central_parameters().items()}
 
     st = np.empty((len(designs), n, len(FLOWS), len(STATS)))
     wue = np.empty((len(designs), n, 2))
+    power = np.empty((len(designs), n, len(POWER_VARS)))
     cst = np.empty((len(designs), len(FLOWS), len(STATS)))
     daily = np.empty((len(designs), n, len(FLOWS), len(labels)), dtype=np.float32) if keep_daily else None
     for d, design in enumerate(designs):
         for i in range(0, n, chunk):
             sl = slice(i, min(i + chunk, n))
-            s, w, dd = _evaluate(tdb, twb, starts, years, months, design, {k: v[sl] for k, v in params.items()}, mw)
-            st[d, sl], wue[d, sl] = s, w
+            s, w, e, dd = _evaluate(tdb, twb, starts, years, months, hour_years, design, {k: v[sl] for k, v in params.items()}, mw)
+            st[d, sl], wue[d, sl], power[d, sl] = s, w, e
             if keep_daily:
                 daily[d, sl] = dd
-        cst[d] = _evaluate(tdb, twb, starts, years, months, design, central, mw)[0][0]
+        cst[d] = _evaluate(tdb, twb, starts, years, months, hour_years, design, central, mw)[0][0]
 
     coords = {"design": list(designs), "run": np.arange(n), "stat": list(STATS)}
     ds = xr.Dataset(coords=coords, attrs={"it_capacity_mw": mw, "n_runs": n, "seed": seed,
@@ -94,6 +103,8 @@ def run_ensemble(time, air_temperature, relative_humidity, mw=100.0, n=200, seed
         ds[f"{flow}_central"] = (("design", "stat"), cst[:, f, :])
     ds["wue"] = (("design", "run"), wue[:, :, 0], {"units": "L per IT kWh", "basis": "consumed"})
     ds["wue_makeup"] = (("design", "run"), wue[:, :, 1], {"units": "L per IT kWh", "basis": "withdrawn (makeup)"})
+    for i, name in enumerate(POWER_VARS):
+        ds[name] = (("design", "run"), power[:, :, i], {"units": "MW" if name.startswith("power") else "kWh per IT kWh"})
     for k, v in params.items():
         ds[f"param_{k}"] = (("run",), v)
     if keep_daily:

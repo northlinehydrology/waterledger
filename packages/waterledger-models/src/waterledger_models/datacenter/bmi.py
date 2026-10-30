@@ -23,6 +23,8 @@ Variables (all on the one scalar grid point, float64):
                                                                                 the used-up share of staff water
     output  data_center_cooling_water__return_volume_flux              m3 s-1   water sent out: blowdown and the rest of staff water
     output  atmosphere_bottom_air__wet_bulb_temperature                degC     wet-bulb temperature (Stull 2011)
+    output  data_center__electric_power                                MW       facility electricity: computers at the run's utilization, cooling
+                                                                                and losses (hour's PUE x IT power)
 Staff water is a constant flow at the configured capacity (it follows the people on site, not the weather or the
 IT load); withdrawal always equals consumption plus return.
 """
@@ -44,6 +46,7 @@ OUTPUTS = {
     "data_center_cooling_water__consumption_volume_flux": "m3 s-1",
     "data_center_cooling_water__return_volume_flux": "m3 s-1",
     "atmosphere_bottom_air__wet_bulb_temperature": "degC",
+    "data_center__electric_power": "MW",
 }
 
 
@@ -268,6 +271,7 @@ class CoolingWaterBmi(_ScalarPointBmi):
         self._values["data_center_cooling_water__consumption_volume_flux"][0] = c[0] * to_m3s + sc * mgd_to_m3s
         self._values["data_center_cooling_water__return_volume_flux"][0] = r[0] * to_m3s + sr * mgd_to_m3s
         self._values["atmosphere_bottom_air__wet_bulb_temperature"][0] = twb[0]
+        self._values["data_center__electric_power"][0] = model.hourly_heat_power(tdb, twb, self._design, self._params)[0][0] * self._mw * self._params["utilization"]
 
     def _advance(self):
         if self._forcing is not None:
