@@ -295,9 +295,10 @@ operators and NIH.
 - Model 1.3 is on the branch `defensible-parameters`, not released. Release steps: rebuild Michigan's site data and
   every state's snapshot (the energy layer now carries `power_plant_water`), refresh
   `tests/data/water_ledger_west_michigan.json` (per_100mw) from the published estimates, add the methods-page changelog
-  entry for 1.3, update Northline's state page data (`engine/products/state_data.py`: a state-mix power option from
-  `state_power_water`, `wind_solar` with the state's PV share, withdrawal factors on every option), and put the short
-  form above on the methods pages and in the briefs.
+  entry for 1.3, regenerate Northline's state pages and page data (the code is on Northline's `totals-explain` branch:
+  a state-mix power option from `state_power_water` as the starting point, `wind_solar` with the state's PV share,
+  withdrawal factors on every option, maintenance in the page's staff water), and put the short form above on the
+  methods pages and in the briefs.
 - Sensitivity analysis (Sobol or one at a time) for the paper, above all for the derived and assumed parameters
   (heat factors, wet-bulb limits, assist share, hybrid temperatures, utilization).
 - Check Lei and Masanet's published Table 3 (Resources, Conservation and Recycling 182: 106323) against the preprint
