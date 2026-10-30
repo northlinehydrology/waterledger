@@ -311,6 +311,25 @@ now dry coolers with adiabatic pre-cooling (the taxonomy of Masanet 2026, arXiv 
   give about 0.05-0.25 L/kWh for arid western cities (my conversion), so a cool climate at the low end is plausible. No operator
   has published water use for an adiabatic dry cooler site. The main calculator does not offer this design; the detailed calculator does.
 
+**Power-plant water: plant data and Siddik et al. combined (Oct 30; `docs/methods/power_water/reconciliation.md`; supersedes the central values and ranges above).**
+The two are not independent: both rest on EIA-923 Schedule 8D plant reports, so their gap is mostly data treatment, and averaging the published
+values would mix definitions and count those reports twice. Rebuilding Siddik's values from public EIA data reproduces them (consumption r = 0.98,
+4.4% weighted error; withdrawal r = 0.93, 8.1%), which assumes rules their paper does not state: non-reporting plants, and plants reporting zero
+consumption, take a national fuel-wide average. How much of the load-weighted gap (0.24 L/kWh consumed; 14.5 withdrawn) each cause explains:
+screening and zero reports 84% and 56%, Siddik's fill of non-reporters 28% and 24%, year -1% and 20%, imports 4% and -3%, generation data -1% and 4%, residual -14% and -1%. So
+the year is not the reason for consumption. Withdrawal's gap in ERCOT is reservoir circulation.
+Decision, at Andrew's direction that similar estimates may be combined once they are on the same basis: a lognormal Bayesian update. E1 is the 2024
+value plus a new fill of non-reporting steam and combined-cycle generation with Macknick tower medians (about 148 TWh, 3.4% of U.S.; combustion
+turbines stay at zero). E2, the prior, is each plant's screened 2022 intensity at 2024 generation, times the ratio of Siddik's published value to our
+rebuild of it for the region. Variances come from plant-by-plant differences between years, with 2023 data separating noise from real
+change (45% of the two-year difference for consumption, 60% for withdrawal). Weight on 2022 is at most 0.275 for consumption and 0.20 for
+withdrawal, and falls to almost nothing where the rebuild does not reproduce Siddik. Range: the 95% interval with shared reporting error (Diehl and Harris's 8% and
+24% as a scale [A]), E1, E2 and a Macknick bottom-up; raw Siddik values leave the range, since they measure something else. Results (consumed; withdrawn, L/kWh): Michigan 1.01
+(0.74-1.38); 58.5 (38.2-89.6). Ohio 1.06 (0.89-1.25); 24.3 (15.9-37.2). Virginia 0.67 (0.48-0.95); 51.9 (33.9-79.4). Texas 0.77 (0.62-0.94); 19.2 (11.8-31.2). Median change across states
++6.1% and +0.6%, mostly the fill. Assumed constants [A]: error scales 0.35 and 0.5, floor 0.02.
+Open: Siddik's HydroShare notebook would confirm the inferred rules; residuals in ISNE, NEVP, DUK and PNM are unexplained; screening
+gaps left in place (low tower reports, 15 plants; Sequoyah 2024; Big Stone, South Dakota); Hawaii is weak; Peer and Sanders and Diehl and Harris figures to check against the papers' full text.
+
 **Sensitivity analysis (Oct 30; `docs/methods/sensitivity/`).** Sobol indices (N = 8,192 per design; Saltelli and Jansen estimators, bootstrap
 intervals) and Morris screening of every parameter over the stored West Michigan weather, per 100 MW; the non-cooling term at 300 MW.
 Repeatable: fixed seed, and a second full run gave byte-identical results files (only the commit and runtime in `run_info.json` differ). Results,
@@ -323,8 +342,8 @@ the most useful single figure. Limits: one climate, two years of weather (so the
 **Short form (methods pages, briefs).** Electricity: the computers are taken to draw 50 to 80% of their capacity on
 average (EPRI 2026 measurements; IEA 2025), plus cooling and power losses by design (LBNL 2024; checked against
 Google's and IEA's reported PUE). Power plants: each state's figure comes from its plants' 2024 reports to EIA (with
-Macknick et al. 2012 factors where a report is implausible), weighted for power the state imports; Michigan's plants use
-up about 0.94 L of water per kWh and draw about 59 L, about 98% returned warmer. People: 20 to 60 plus 0.1 to 0.5 per MW
+Macknick et al. 2012 factors where a report is implausible or missing), weighted for power the state imports and updated with 2022 reports and Siddik et al. (2024) on the same basis; Michigan's plants use
+up about 1.0 L of water per kWh and draw about 59 L, about 98% returned warmer. People: 20 to 60 plus 0.1 to 0.5 per MW
 (JLARC 2024; announced campuses), each using 10 to 30 gallons a day (EPA 2002; Michigan's septic design criteria),
 about 10% used up (USGS). Maintenance and cleaning: up to 2,000 gallons a day plus 2 to 20 per MW, bracketed by
 applicants' projections, mostly to the sewer. Cooling: heat factors and economizer limits derived from published
@@ -345,7 +364,6 @@ operators and NIH.
 - Check Lei and Masanet's published Table 3 (Resources, Conservation and Recycling 182: 106323) against the preprint
   used here, with library access; metered water at an adiabatic site.
 - Landscape irrigation as an optional, climate-specific term.
-- Why Siddik's 2022 regional values exceed 2024 plant data in the eastern regions.
 - Station distance: how far places are from their division's station, and how much a nearer station changes the
   estimates ([station-distance-check.md](station-distance-check.md), in progress).
 - NOAA climate division names in the data.

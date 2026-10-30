@@ -63,6 +63,7 @@ Model version 1.3: parameters checked against primary sources for publication (`
   `assist_dt_air` and `assist_bleed` are new (`physics.ADIABATIC`, their own random stream). No drift. It now overlaps hybrid. Other designs'
   draws are unchanged.
 - Citations: Lei and Masanet's values cite the preprint they were read from; UPS range corrected to 90-99%; no numbers change.
+- `tables/state_power_water_2024.csv`: central values and ranges now combine 2024 plant data (with a fill for non-reporting steam and combined-cycle plants) and 2022 reports and Siddik et al. on the same basis, by a lognormal update (`docs/methods/power_water/reconciliation.md`). Median change +6% consumed, +1% withdrawn; raw Siddik values leave the range.
 
 ## 3.1.0 (Oct 30, 2026)
 

@@ -51,7 +51,7 @@ def grid_water():
 def state_power_water(state):
     """Water at power plants per kWh of electricity used in a state, 2024, from plant-reported data (EIA-923 cooling water and
     EIA-860, flagged reports replaced by Macknick et al. 2012 medians, blended with the main balancing authority by the state's
-    net import share; docs/methods/power_water): {"consumed", "consumed_lo", "consumed_hi", "withdrawn", "withdrawn_lo",
+    net import share, then updated with the 2022 plant reports and Siddik et al. 2024 on the same basis; docs/methods/power_water): {"consumed", "consumed_lo", "consumed_hi", "withdrawn", "withdrawn_lo",
     "withdrawn_hi" (L/kWh), "main_ba", "import_share", "wind_share", "solar_share", "pv_share_of_wind_solar", "year"}, or None."""
     num = lambda v: float(v) if v not in ("", None) else None
     for r in csv.DictReader(open(STATE_TABLE)):
