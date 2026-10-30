@@ -130,6 +130,8 @@ def brief(state):
                     "capacity for the blowdown. Otherwise closed loops use an on-site septic system and evaporative designs discharge directly.", BODY),
           Paragraph("<b>Downstream.</b> The place's main HUC-12 watershed is traced downstream for up to 25 watersheds, across state lines "
                     "where needed, with the EPA-listed impairments and TMDLs for each.", BODY),
+          Paragraph("<b>Electricity use.</b> Worked out hour by hour from the same weather and heat balance as the cooling water (after Lei and Masanet 2022): computers, power losses, "
+                    "fans, pumps, and chillers when outside air is too warm. Some inputs are assumptions, marked [A], including how much of a campus is liquid-cooled.", BODY),
           Paragraph("<b>Electricity.</b> Utilities come from the national retail territory layer, ordered by number of customers because "
                     "it draws many small utilities as whole counties. Power-plant water is each state's own: 2024 plant reports to EIA, with "
                     "Macknick et al. (2012) factors where a report is implausible or missing, weighted for imports, updated with 2022 reports "

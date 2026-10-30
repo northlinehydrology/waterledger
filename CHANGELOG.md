@@ -2,6 +2,15 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.4.0 (not yet released)
+
+Model version 1.4.
+
+- **Electricity from hourly weather:** `physics.hourly_heat_power`, after Lei and Masanet (2022): the facility's power each hour, by design and weather, including how much of the campus is liquid-cooled. New outputs: `pue_avg`, `power_mw_avg`, `pue_peak_1in10` and `power_mw_peak_1in10` in `cooling.run_location` and `ensemble.run_ensemble`, `data_center__electric_power` in the BMI component, and `Estimate.electricity`.
+- **Water from the same heat:** evaporation follows the heat rejected, which replaces the heat factor. `hf_econ`, `hf_chiller`, `wb_econ` and `wb_chiller` are gone from `physics.RANGES`, and new ones are in `physics.POWER`.
+- **Rounding:** `scenario` middle values use one rule: withdrawn to two significant figures, consumed to the same place, returned the difference.
+- `scenario.electricity` and `scenario.pue_by_design`; `states.mi.build.PUE_DESIGN` is gone.
+
 ## 3.3.0 (Oct 30, 2026)
 
 - **`waterledger build-state MI`** runs Michigan's own build, not the national tier, so every state builds with the same command. `waterledger build mi` stays, and still builds one part at a time. No change to any number.

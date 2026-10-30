@@ -357,15 +357,80 @@ operators and NIH.
 Ohio, Virginia and Texas snapshots of this date were built from `main` at 888f4d5, which has the fix but is still numbered
 3.2.0, so their manifests record 3.2.0. Model version 1.3 in both.
 
+## Oct 30, 2026: electricity from an hourly heat balance (model 1.4)
+
+**Problem.** Through model 1.3, electricity was computing load x utilization x one PUE per cooling design, read from LBNL 2024 Fig. 4.4. Each
+value traced to its source, and the source check confirmed them, but the structure was wrong: PUE had no climate term, so Texas had
+Michigan's PUE while water came from hourly local weather. Closed loop's 1.15 was the midpoint of two different computer cooling
+arrangements, which produced a 3% gap to cooling towers everywhere. The page's explanation compared liquid-cooled closed loop (about 1.10)
+with air-cooled towers (about 1.12), not like with like; LBNL's own rows, as read from the figure (about +/-0.02), are towers 1.12 against dry
+coolers with assist 1.20 with air-cooled computers, and towers 1.14 against dry coolers 1.10 with liquid-cooled computers. The peak was the top of a
+range of annual averages, not a hot-hour estimate. Andrew caught this from the results; checking parameters against sources could not.
+
+**Decision.** Electricity is an hourly output of the cooling model, for every design and state (`physics.hourly_heat_power`, the BMI output
+`data_center__electric_power`, `cooling.run_location`, `ensemble.run_ensemble`, `Estimate.electricity`). Scope: the campus's power and the water behind
+it; power plant water stays grid-level, a factor per power source. Hourly grid mix and specific plants are out of scope.
+
+**Method.** After Lei and Masanet (2022, Resources, Conservation and Recycling 182:106323; preprint doi:10.21203/rs.3.rs-769999/v1, Eqs. 2-4, Table 3 case 2; the published
+paper is closed and the values cite the preprint). The equations are implemented from the paper; their repository
+(github.com/nuoaleon/Data-Center-Water-footprint) has no license, so none of its code or fitted chiller curves are used. Per kW of IT:
+
+    q = 1 + (1/UPS - 1) + (1/(1 - dist) - 1) + light
+    air = (1 - liquid_share) + liquid_share x liquid_air_share
+    crah = fan(q x air / (cp_air x air_rise), crah_pa, fan_eff)                     fan(m, P, e) = m / rho_air x P / e / 1000
+    load = (q + crah) / SHR
+    air loop supply water = supply_air + air_rise - air_rise / coil_eff             (Lei and Masanet's coil relation)
+    liquid loop supply water = liquid_water
+    for each loop, carrying its share of the load, with return = supply + water_rise:
+        outside = wet x (T_wb + tower_approach + hx_approach) + (1 - wet) x (T_coil + dc_approach)
+        free = clip((return - outside) / (return - supply), 0, 1)                   (their waterside economizer)
+        chiller = load x (1 - free) / COP
+        COP = min(carnot x (T_evap + 273.15) / (T_cond - T_evap), cap)              T_evap = supply - 2
+            towers, hybrid: T_cond = T_wb + tower_approach + range + 2, cap 8
+            dry, assist:    T_cond = T_coil + 12, cap 5 (an air-cooled chiller's rated COP includes its condenser fans)
+        pumps = pump(load x free / (cp_w x water_rise), econ) + pump(load x (1 - free) / (cp_w x water_rise), chilled)
+        tower = pump(m, tower) + fan(m / L/G, tower_fan_pa, fan_eff)                m = (load + chiller) x wet / (cp_w x range)
+        dry fans = fan(load / (cp_air x air_rise_dc), dc_fan_pa, fan_eff) x clip(flow / design flow, 0.1, 1)^3
+    facility power = q + crah + sum of chiller, pumps, tower and dry fans           hourly PUE
+    heat rejected = load + sum of chiller                                           drives evaporation, drift and blowdown
+
+wet is 1 for towers, 0 for dry and assist, and the existing dry-bulb ramp for hybrid. T_coil is the dry-bulb, lowered by pad effectiveness x wet-bulb depression
+above the switch point for assist. Reported: annual PUE; average MW (at the run's utilization); PUE and MW in the 1-in-10-year hottest hour (90th percentile of each
+year's hottest hour), with every computer at capacity.
+
+**Departures from Lei and Masanet, stated.** Air handler fan heat is counted in the load, so the energy balance closes (their Eq. 2 leaves it out). Dry coolers and
+liquid cooling are added; their cases do not have them. The chiller is a Carnot fraction, not their Gaussian process regression. Humidification is not modeled, as before.
+
+**Water changes too.** Lei and Masanet's point is that PUE and WUE must come from the same heat balance, so evaporation now follows the heat rejected above, which
+replaces the heat factor `hf_econ`, `hf_chiller` and the wet-bulb limits `wb_econ`, `wb_chiller` (removed; the lake-source range keeps 1.03-1.25 as a stated estimate).
+
+**Inputs and where they stand.**
+- Lei and Masanet Table 3, case 2 (large-scale): UPS 90-99%, distribution 0-2%, lighting 0-0.2%, SHR 95-99%, supply air 27-35 C, air rise 13.9-19.4 C, coil effectiveness 0.7-0.9, water rise 5-10 C,
+  CRAH 300-700 Pa, fan efficiency 65-90%, tower fan 100-400 Pa, L/G 0.2-4, tower approach 2.8-6.7 C, heat exchanger approach 1.7-2.8 C, pumps 114.9-172.4 and 166.9-250.4 kPa at 60-80%.
+  Their CRAH pressure was also read as 300-1000 for case 1; case 2 is used because cooling towers are its design.
+- Chillers: water-cooled 0.62-0.78 of Carnot. Code minimums for large plant (WAC 51-11C-403323, a stated replica of ASHRAE 90.1 Table 6.8.1-3, edition not stated): 0.560 kW/ton is COP 6.28; with
+  rating conditions 44 F, 85 F (reported in summaries, AHRI 550/590 not read) and a 9.3 F rise, eta is 0.72; 0.585 kW/ton gives 0.69. C403.3.2.4's part-load adjustment gives 0.67-0.73. EnergyPlus Chillers.idf, 39 chillers of 2,100 kW or more:
+  median 0.66, 5-95% 0.53-0.75. Range: 0.70 +/-11% (Lei and Masanet's COP error). Air-cooled 0.45-0.55: EER 10.1 is COP 2.96, eta 0.45 at condensing 47 C; the top is an assumption. The offsets (2 K, 2 K, 12 K) and the caps are assumptions [A], and eta is fitted with them: at 16.7 K, 90.1's air-cooled condenser rating, the floor is 0.50.
+- Dry coolers [A]: no standard or peer-reviewed design values were found; selection data are proprietary. Approach 5-10 K (ThermoKey catalogue point 10 K; a vendor preprint, Mokkapati and Das 2026, 2.8-5.3 K at El Paso, not adopted), pressure 100-250 Pa, fan efficiency by analogy, cube law (the preprint: roughly cubic, flattening at deep part load). The prototype's specific fan power, 7.4-36.8 W per kW, compares with 90.1's air-cooled condenser minimum of about 14.5 W/kW at a wider difference, an analog. That preprint also implies a peak gap of about 3 MW per 10 MW between dry and adiabatic, far above this model; unverified and not adopted.
+- Liquid: facility water 32-45 C, ASHRAE TC 9.9 classes W32-W45 (LBNL 2024 Table 4.3: W45; classes are upper limits). Air share 10-30%: HPE GB200 NVL72 12.9% (summary only), Schneider WP210 20% (an illustration), ASME InterPACK2022 25.1-38.6% (through a Vertiv blog; the paper was not read). Liquid share 0-1 [A]: no fleet figure is published. Air-side heat goes to a separate, cooler loop, since 45 C water cannot supply 27-35 C air (found in review of the first prototype).
+
+**Checks.** Cooling towers, air-cooled computers, 300 draws, station weather 2005-2024, 5-95% against Lei and Masanet's case 2 for the climate zone: Houston 1.107-1.246 (1.099-1.250), McAllen 1.113-1.263 (same zone), Fort Worth 1.098-1.230 (1.087-1.215), Lubbock 1.088-1.202 (1.080-1.192), Richmond 1.096-1.213 (1.084-1.202), Dulles 1.093-1.208, Columbus 1.089-1.203 (1.083-1.196), Cleveland 1.089-1.201, Las Vegas 1.086-1.197, Phoenix 1.093-1.209 (2B, 1.084-1.201). About 0.01 high at the low end. Closed loop over towers, air-cooled computers, medians: Cleveland +1.2%, Columbus +1.7%, Dulles +1.9%, Richmond +2.4%, Lubbock +4.0%, Houston +4.3%, Fort Worth +5.1%, McAllen +5.9%, Las Vegas +7.2%, Phoenix +8.4%; Han et al. (arXiv 2603.02705, a preprint) report 6.4-10.2% in Nevada for one operator; Karimi et al. (2022, RCR 181:106194, abstract only) nearly 13% at two Phoenix colocation sites, different facilities. LBNL (read by eye): liquid dry about 1.09-1.10, this model 1.10-1.15; liquid towers about 1.13-1.14, this model about 1.11, low, unexplained. No peer-reviewed comparison of liquid-cooled dry against towers by climate was found, so closed loop below towers in cool climates is a modeled result.
+
+**Results, state averages.** Median annual PUE, closed loop / towers, liquid share sampled: Michigan 1.122 / 1.129, Ohio 1.131 / 1.130, Virginia 1.137 / 1.132, Texas 1.172 / 1.141. Hottest hour: 1.289 / 1.201, 1.299 / 1.211, 1.306 / 1.204, 1.331 / 1.209. West Michigan, 300 MW, model 1.3 to 1.4, medians: average MW closed loop 222 to 216, assist 222 to 214, hybrid 220 to 213, towers 216 to 217; peak MW 372 to 387, 372 to 373, 351 to 361, 348 to 360. Water used up: towers -0.4%, hybrid +8.3%, assist -0.7%.
+
+**Open.** The liquid share is the largest structural assumption, and a user-settable share is not on the pages. Part-load behavior is proportional to the IT load. Lake-source cooling is not in the hourly model; the towers stand in. The Michigan ERA5 and station weather difference still applies. Sensitivity: `sensitivity/`, rerun with the electricity outputs.
+
+## Oct 30, 2026: one rounding rule on the pages
+
+Withdrawn to two significant figures, evaporated to the same place, wastewater the difference, in `scenario.cooling_estimate` and `WQ.split`, so what is shown adds up (before, the middle values were rounded separately and a tile could read 74,000 beside a table's 73,600). The ranges stay the model's own. `Estimate` middle values carry this rounding.
+
+## Oct 30, 2026: starting assumptions by state
+
+Pages no longer use another state's evidence. Each state's data carries its starting cooling design and a note (`state.defaults.cool`, `cool_note`). Only Michigan's proposals have been reviewed for cooling design; the others say closed loop is assumed. The runoff standard is described as a typical post-construction standard on other states' pages; the source list still cites the Michigan permit it comes from.
+
 ## Open
 
-- Model 1.3 is on the branch `defensible-parameters`, not released. Release steps: rebuild Michigan's site data and
-  every state's snapshot (the energy layer now carries `power_plant_water`), refresh
-  `tests/data/water_ledger_west_michigan.json` (per_100mw) from the published estimates, add the methods-page changelog
-  entry for 1.3, regenerate Northline's state pages and page data (the code is on Northline's `totals-explain` branch:
-  a state-mix power option from `state_power_water` as the starting point, `wind_solar` with the state's PV share,
-  withdrawal factors on every option, maintenance in the page's staff water), and put the short form above on the
-  methods pages and in the briefs.
+- Model 1.4 is on the branch `hourly-electricity`, not released. Release: merge, tag, publish the four snapshots (`build-state`), rebuild page data from them, regenerate the methods pages and briefs.
 - Sensitivity analysis: repeat with a hotter climate's weather (West Michigan only so far); the repo has no other hourly weather.
 - Check Lei and Masanet's published Table 3 (Resources, Conservation and Recycling 182: 106323) against the preprint
   used here, with library access; metered water at an adiabatic site.
