@@ -2,7 +2,7 @@
 
 [![tests](https://github.com/northlinehydrology/waterledger/actions/workflows/tests.yml/badge.svg)](https://github.com/northlinehydrology/waterledger/actions/workflows/tests.yml)
 [![nightly](https://github.com/northlinehydrology/waterledger/actions/workflows/nightly.yml/badge.svg)](https://github.com/northlinehydrology/waterledger/actions/workflows/nightly.yml)
-[![PyPI](https://img.shields.io/pypi/v/waterledger?cacheSeconds=3600)](https://pypi.org/project/waterledger/)
+[![PyPI](https://img.shields.io/pypi/v/waterledger.svg)](https://pypi.org/project/waterledger/)
 
 Open Python tools for estimating the water that large new users take, use up and send back, starting with data
 centers, and for assembling the public U.S. water data around any place: water systems, watersheds, impaired waters,
