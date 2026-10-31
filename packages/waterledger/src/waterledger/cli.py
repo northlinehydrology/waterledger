@@ -40,6 +40,8 @@ def main(argv=None):
         return
     if a.cmd == "build-state":
         if a.state.lower() in STATES:                     # a state with its own data (Michigan) builds from that, not the national tier
+            from waterledger.states.mi.fetch import fetch_all
+            fetch_all()
             _build_site(a.state.lower())
             return
         from waterledger.national.build import build

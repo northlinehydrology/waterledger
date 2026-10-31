@@ -465,6 +465,7 @@ def round_tree(x, nd=5):
 
 
 def main(n=200):
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
     regions = {}
     for rid, r in REGIONS.items():
         cache = f"{r.get('cache', rid)}_1995_2024"
@@ -579,7 +580,6 @@ def main(n=200):
         "validation": validation,
         "sources": {k: {"citation": c, "url": u, "short": SHORT.get(k, k)} for k, (c, u) in SOURCES.items()},
     }
-    os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w") as f:
         json.dump(round_tree(data), f, separators=(",", ":"))
     print("wrote", OUT, os.path.getsize(OUT), "bytes")

@@ -47,8 +47,9 @@ week apart can get different answers).
    - Nothing partial is ever published as a snapshot.
 6. **Versions stay separate.** Code (package semver), numbers (`MODEL_VERSION`) and data (the snapshot date) each move
    on their own. Pinning `data="2026-11-01"` reproduces an old result.
-7. **Some inputs stay manual.** Inputs a person maintains live in an inputs area of R2 that the build jobs read:
-   Michigan's EGLE water-use file (the site refuses scripted downloads). The proposal and moratorium trackers are not
+7. **Some inputs stay manual.** Inputs a person maintains are committed in `data/inputs/<state>/`, which the build jobs
+   read: Michigan's EGLE water-use file (the site refuses scripted downloads), with facility names removed (changed from
+   an inputs area of R2, Oct 30, 2026). The proposal and moratorium trackers are not
    part of the snapshots: they are a Northline service behind waterledger.org.
 
 8. **Michigan moves to the same snapshot format (agreed Oct 29, 2026).** Every state then looks alike to the package and
@@ -57,6 +58,9 @@ week apart can get different answers).
      it. Every Michigan number must come out identical (the parity tests, the site tests, the six data files).
    - **The site:** waterledger.org/mi switches to the new files when the state pages are rebuilt on the shared format,
      with the page-vs-Python parity check passing. The old files are retired only after that.
+   - **The build (Oct 30, 2026):** `waterledger build-state MI` downloads Michigan's sources (`states/mi/fetch.py`) and
+     builds on GitHub like any other state, so its snapshot no longer depends on a site deploy. `waterledger build mi`
+     stays for building from a cache, one part at a time.
 
 ## Build order
 
