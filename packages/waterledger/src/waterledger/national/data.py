@@ -95,6 +95,10 @@ class SnapshotData:
         """{independent city FIPS: the surrounding county's name}, where NOAA has no record for the city; empty in a snapshot from before 3.7.0."""
         return self._json("climate").get("rain_from", {})
 
+    def residential(self):
+        """The state's residential electricity {"customers", "mwh", "kwh_month"} (EIA-861); None in a snapshot from before 3.7.0."""
+        return self._json("energy").get("residential")
+
     def utilities_for(self, geoid):
         return self._json("energy")["by_place"].get(geoid, [])
 

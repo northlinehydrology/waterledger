@@ -53,6 +53,8 @@ est.electricity.peak_mw          # the 1-in-10-year hottest hour, every computer
 est.site.source, est.site.wastewater     # the choices, with defaults filled in
 site.estimate(weather="local")   # the model run at the place's own ERA5 grid cell instead of its region's results (about 30 seconds)
 est.comparisons                  # against what is already there: the water system's connections, as homes
+est.equivalents.homes            # the water as homes at 300 gallons a day; also .golf_courses, .evaporated_share, .electricity_homes, .share_of_home_customers
+est.power_plants["mi_mix"].consumed   # water at power plants for one power option, MGD; also .withdrawn, .returned; est.site.power names the one in use
 est.model_dump_json()            # the whole estimate as JSON
 
 ctx = place.context()            # the public water facts around the place, by category

@@ -85,7 +85,7 @@ def write_water_use(state, folder, state_layer=None):
 def write(state, out, date=None, checks=None):
     """Write the snapshot for `state` under out/<ST>/<date>/ from the cached layers; returns the snapshot folder."""
     from waterledger.national import climate as nc
-    from waterledger_data import divisions, energy, receiving, supply, wastewater
+    from waterledger_data import divisions, energy, power as pw, receiving, supply, wastewater
     from waterledger_models import MODEL_VERSION
     from waterledger_models.datacenter import cooling as cw
     import waterledger
@@ -131,7 +131,8 @@ def write(state, out, date=None, checks=None):
     loads = energy.loads(state)
     bas = {u["balancing_authority"] for v in us.values() for u in v if u["balancing_authority"]}
     _write(os.path.join(folder, "energy.json"), {"by_place": us, "loads": {str(k): v for k, v in loads.items()},
-                                                  "grid_water": {b: w for b, w in energy.grid_water().items() if b in bas}})
+                                                  "grid_water": {b: w for b, w in energy.grid_water().items() if b in bas},
+                                                  "residential": pw.residential(state, pw.latest_eia861())})
 
     wu_source, inputs, wu_years = write_water_use(state, folder)
 

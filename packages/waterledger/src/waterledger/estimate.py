@@ -84,6 +84,33 @@ class Comparison(BaseModel):
     basis: str
 
 
+class Equivalents(BaseModel):
+    """An estimate in things people know. Homes at 300 gallons a day; golf courses at the state's typical course; electricity homes at the state's
+    average residential use. `homes` and `golf_courses` count water taken on an average day, or for lake-source cooling what the lake loses.
+    `evaporated_share` is the percent of the water taken that evaporates, from the middle estimates. None where a state's data doesn't have the value."""
+    model_config = ConfigDict(frozen=True)
+    homes: Range
+    homes_peak_day: Range
+    golf_courses: Range | None = None
+    golf_course_gpd: float | None = None
+    evaporated_share: float
+    electricity_homes: Range | None = None
+    electricity_homes_peak: Range | None = None
+    share_of_home_customers: Range | None = None
+
+
+class PlantWater(BaseModel):
+    """Water at power plants for a site's average electricity under one power option, MGD: what they evaporate, what they withdraw, and what they
+    return on the middle estimates. Withdrawn water is mostly returned, warmer, to lakes and rivers, so it is never added to a site's own water."""
+    model_config = ConfigDict(frozen=True)
+    option: str
+    label: str
+    consumed: Range
+    withdrawn: Range
+    returned: float
+    sources: list[str] = []
+
+
 class Estimate(BaseModel):
     """What the model says about a site: its water use and electricity (none where the data predate model 1.4), with every choice resolved
     (defaults filled in), the model version that produced it and the date of the data behind it."""
@@ -92,6 +119,8 @@ class Estimate(BaseModel):
     water: WaterUse
     electricity: Electricity | None = None
     comparisons: list[Comparison] = []
+    equivalents: Equivalents | None = None
+    power_plants: dict[str, PlantWater] = {}    # every power option for the state; site.power says which one the site uses
     weather: str = "region"     # "region": the stored results for the place's weather region or division; "local": the model run at the place (ERA5)
     model_version: str
     data_date: str

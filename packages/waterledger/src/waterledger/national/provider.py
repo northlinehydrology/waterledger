@@ -122,6 +122,19 @@ def _ppw(state):
                               main_balancing_authority=w["main_ba"], import_share=w["import_share"]) if w else None
 
 
+def reference(state, place):
+    """A state's values to compare an estimate with: its power options, the starting one, a typical golf course at the place, and its homes' electricity
+    (None from a snapshot written before 3.7.0)."""
+    from waterledger.national import power
+    from waterledger_data import wateruse
+    sd = state_data(state)
+    options = power.options(state, sd.grid_water())
+    G, res = wateruse.golf(state), sd.residential() or {}
+    return {"power_options": options, "power": "state_mix" if "state_mix" in options else next(iter(options)),
+            "golf_gpd": G.get("by_region", {}).get(_division(state, place)[0], G["gpd"]) if G else None,
+            "home_kwh_month": res.get("kwh_month"), "home_customers": res.get("customers")}
+
+
 def _division(state, place):
     sd = state_data(state)
     runs = sd.division_runs()

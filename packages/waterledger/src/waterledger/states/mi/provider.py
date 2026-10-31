@@ -32,6 +32,13 @@ def estimate(site):
     return Estimate(site=resolved, water=water, electricity=power, model_version=D["model_version"], data_date=D["generated"])
 
 
+def reference(place):
+    """Michigan's values to compare an estimate with: its power options, the starting one, a typical golf course, and its homes' electricity."""
+    D = sc.data("estimates")
+    return {"power_options": D["power_supply"], "power": "mi_mix", "golf_gpd": D["golf"]["golf_median_gpd"], "home_kwh_month": D["home_kwh_month"],
+            "home_customers": D["home_customers"]}
+
+
 def context(place):
     """Michigan's context for a place: every category from Water Ledger Michigan's data (EGLE, EPA, USGS, NOAA, MPSC, EIA)."""
     from waterledger import context as cx

@@ -33,6 +33,7 @@ class Site(BaseModel):
     acres: float | None = Field(None, gt=0, description="land developed, acres")
     land_before: Literal["farm", "woods", "built"] | None = None
     impervious: float = Field(0.5, ge=0, le=1, description="share of the developed land under roofs and paving")
+    power: str | None = Field(None, description="what supplies the electricity, one of the state's options in est.power_plants; None: the state's own mix")
 
     def estimate(self, weather="region") -> Estimate:
         """Water taken, used up and returned, as the state's provider computes it (same numbers as waterledger.org). weather="local" runs the
@@ -44,7 +45,12 @@ class Site(BaseModel):
         est = states.provider(self.place.state).estimate(self)
         if weather == "local":
             est = local_weather(est)
-        return est.model_copy(update={"comparisons": comparisons.comparisons(est)})
+        ref = states.provider(self.place.state).reference(self.place)
+        power = self.power or ref["power"]
+        if power not in ref["power_options"]:
+            raise ValueError(f"power must be one of {sorted(ref['power_options'])}, not {power!r}")
+        return est.model_copy(update={"site": est.site.model_copy(update={"power": power}), "comparisons": comparisons.comparisons(est), "equivalents": comparisons.equivalents(est, ref),
+                                      "power_plants": comparisons.plant_waters(est.electricity, ref["power_options"]) if est.electricity else {}})
 
     def to_bmi_config(self, path=None, forcing=None, end_time=None):
         """The BMI component that runs this site step by step, and its configuration: (entry point, config dict). With `path`,
