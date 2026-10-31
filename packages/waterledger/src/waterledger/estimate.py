@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 
 class Range(BaseModel):
-    """A likely range: p10 and p90 bracket 80% of the Monte Carlo runs; p50 is the middle estimate."""
+    """A likely range: p10 and p90 bracket 80% of the Monte Carlo runs; p50 is the middle estimate. Full values, not rounded for display."""
     model_config = ConfigDict(frozen=True)
     p10: float
     p50: float

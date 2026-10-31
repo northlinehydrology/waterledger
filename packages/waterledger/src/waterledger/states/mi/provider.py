@@ -46,11 +46,11 @@ def context(place):
     L = egle_layer()
     egle = L["counties"].get(r["cf"])
     supply = cx.Supply(provider="MI", sources=["epa_sa", "egle2025", "wellogic"], systems=[sys_(w) for w in r["w"]],
-                       nearest_system=sys_(near["w"]) if near else None, nearest_system_km=round(near["km"], 1) if near else None,
+                       nearest_system=sys_(near["w"]) if near else None, nearest_system_km=near["km"] if near else None,
                        county_use_mgd=E["county_uses_mgd"].get(r["c"], {}),
                        county_water_use=water_use_record(egle, L["basis"], r["cf"]) if egle else None,
                        household_wells=dict(zip(("drift_n", "drift_depth_ft", "drift_level_ft", "rock_n", "rock_depth_ft", "rock_level_ft"), wells)) if wells else None)
-    plants = [cx.SewerPlant(npdes=q["id"], name=q["n"], design_mgd=q.get("design"), flow_mgd=q.get("flow"), km=round(q["km"], 1),
+    plants = [cx.SewerPlant(npdes=q["id"], name=q["n"], design_mgd=q.get("design"), flow_mgd=q.get("flow"), km=q["km"],
                             receiving_water=q.get("recv") or None, combined_sewer=bool(q.get("cso")), lagoon=bool(q.get("lagoon")))
               for q in sc._plants_near(r)]
     G = Wd["groups"]
@@ -102,8 +102,8 @@ def egle_layer():
         for g, v in groups.items():
             c = EGLE_CATS.get(g, "other")
             mgd[c] = mgd.get(c, 0.0) + v
-        mgd = {c: round(mgd[c], 3) for c in CATEGORIES if c in mgd}
-        mgd["total"] = round(sum(mgd.values()), 3)
+        mgd = {c: mgd[c] for c in CATEGORIES if c in mgd}
+        mgd["total"] = sum(mgd.values())
         out[fips[county]] = {"name": f"{county} County", "mgd": mgd, "source_values": groups}
     basis = {"source": "egle2025", "kind": "reported", "measure": "withdrawals", "year": 2025, "units": "Mgal/d", "source_units": "gallons per year",
              "citation": src["citation"], "url": src["url"],

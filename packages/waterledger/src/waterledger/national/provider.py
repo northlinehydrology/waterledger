@@ -58,7 +58,7 @@ def context(state, place):
     supply = cx.Supply(provider="national", sources=["epa_sa", *dict.fromkeys(u.source for u in (use, usgs) if u)], systems=[sys_(w) for w in mine],
                        nearest_system=sys_(near) if near else None, nearest_system_km=near_km,
                        county_use_mgd=use.mgd if use else {}, county_water_use=use, county_water_use_usgs=usgs)
-    plants = [cx.SewerPlant(npdes=q["id"], name=q["name"], design_mgd=q["design_mgd"], flow_mgd=q["flow_mgd"], km=round(q["km"], 1),
+    plants = [cx.SewerPlant(npdes=q["id"], name=q["name"], design_mgd=q["design_mgd"], flow_mgd=q["flow_mgd"], km=q["km"],
                             receiving_water=q["receiving"] or None, combined_sewer=q["cso"], lagoon=q["lagoon"])
               for q in ww.nearest(sd.plants(), place.lat, place.lon, base, km=PLANTS_KM)[:PLANTS_MAX]]
     sheds = sd.sheds_for(place.geoid)
@@ -107,7 +107,7 @@ def _energy(state, place):
         e = L.get(u["eia_id"]) or {}
         w = W.get(u["balancing_authority"]) or {}
         out.append(cx.Utility(name=u["name"].title(), type=(u["type"] or "").title(), share_of_place=u["share"], customers=e.get("customers"),
-                              avg_mw=round(e["mwh"] / 8760, 1) if e.get("mwh") else None, summer_peak_mw=e.get("summer_mw"),
+                              avg_mw=e["mwh"] / 8760 if e.get("mwh") else None, summer_peak_mw=e.get("summer_mw"),
                               balancing_authority=u["balancing_authority"], power_plant_water_l_per_kwh=w.get("consumed_excl_hydro")))
     return cx.Energy(provider="national", sources=["hifld_territories", "eia861", "siddik2024", "eia923_2024", "macknick2012"], utilities=out,
                      power_plant_water=_ppw(state))

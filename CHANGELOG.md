@@ -2,6 +2,10 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## Unreleased
+
+- **The packages no longer round results.** `est.water` middle values were rounded to two significant figures for display (a Gaines hybrid peak day read 1.6 MGD; the model's value is 1.576). They are now full values, and returned is still withdrawn less consumed on the middle estimate. Distances to sewer plants and water systems, county water use and utility average load in `place.context()` are also full values. Displays round what they show. Place coordinates stay at 4 decimals.
+
 ## 3.5.0 (Oct 31, 2026)
 
 Model version 1.4 stays; no estimate changes.
