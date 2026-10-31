@@ -102,6 +102,9 @@ w = fetch_open_meteo(42.88, -85.52, cache=".cache/grand_rapids.json")     # 30 y
 ds = run_ensemble(w.time.values, w.air_temperature.values, w.relative_humidity.values, mw=300, n=200)
 s = summarize(ds)                                    # (design, stat, quantile), staff water included
 s["withdrawn"].sel(design="towers", stat="peak_1in10")      # million gallons on a 1-in-10-year peak day
+
+from waterledger_models.datacenter import physics
+physics.RANGES["hybrid_on"], physics.SOURCES["hybrid_on"]    # a parameter's range and where it comes from
 ```
 
 ### Step by step through BMI

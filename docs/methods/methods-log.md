@@ -462,10 +462,27 @@ One basis: the median facility, gallons a day averaged over the year, reported d
 
 Pages no longer use another state's evidence. Each state's data carries its starting cooling design and a note (`state.defaults.cool`, `cool_note`). Only Michigan's proposals have been reviewed for cooling design; the others state what was found and that closed loop is assumed. The runoff standard is described as a typical post-construction standard on other states' pages; the source list still cites the Michigan permit it comes from.
 
+## Oct 31, 2026: the packages as the standard; storms by curve number
+
+Decision (Andrew): the packages are the standard, and waterledger.org is built on them. Where the two disagree, the package wins.
+
+- **Rounding.** Estimates and context carry full values. A middle value rounded to two significant figures sat beside unrounded p10 and p90, so a Gaines
+  hybrid peak day read 1.6 MGD against the model's 1.576. On the middle estimate, returned is withdrawn less consumed.
+- **Comparisons.** `est.comparisons` holds the water system comparison the site made: water as homes at 300 gallons a day (EPA WaterSense) as a percent of
+  the connections of the largest system mapped in the place, average and peak day. It is not a percent of the system's water use: connections include
+  businesses, and the system's own gallons are not in the public data.
+- **Single storms.** One storm's runoff uses curve numbers (NRCS TR-55; `runoff.storm_mg`; hydrologic soil group B [estimate]), with pavement and lawn computed
+  separately. The Simple Method (Schueler 1987) stays for the year. The page had scaled a Simple Method inch in proportion to the storm. On 200 acres half
+  impervious: 1 inch 2.1 MG (was 2.7); 2.57 inches 7.2 MG (was 7.0). Runoff rises faster than rain, which proportional scaling cannot show.
+- **Sewer plants outside Michigan.** The package keeps a place's own plant as a flag, not a sort key, because the survey's city is a mailing city (Austin's South
+  Austin plant is listed in Del Valle). Michigan's rule still sorts own plant first. The two differ on purpose for now; whether Michigan should change is open.
+- **Local weather.** `site.estimate(weather="local")` runs the model at the place's ERA5 cell. For Gaines, 14 km from the West Michigan point, hybrid's peak-day median is
+  1.50 MGD against 1.58, small against the parameter range of 1.16 to 2.09. It is reanalysis, not on-site weather.
+- **Residential customers.** Michigan 4,538,056 (EIA-861 2025), replacing 4,516,367 (2024) that the pages carried alongside a 2025 kWh figure.
+
 ## Open
 
 - UPS efficiency is the first input to tighten: it leads annual PUE (ST 0.65-0.73). Kept at 90-99% (Lei and Masanet Table 3, LBNL 2024 Table 4.3) on Oct 30, 2026, since nothing independent and measured for large campuses was found. ENERGY STAR's guidance page says new efficient units are generally 92-95% and older ones can be under 90% (an older page); FEMP's purchasing example runs 97.3-99.3% (only part of the table was read, and the size may be smaller than a campus); vendors and trade press give about 97% for the best double conversion and 98-99% in eco mode. A low end of 92% would lower average electricity about 0.5%, and 95-99% about 2.5%, without changing how the designs compare. A question for an electrical or data center expert.
-- Model 1.4 is on the branch `hourly-electricity`, not released. Release: merge, tag, publish the four snapshots (`build-state`), rebuild page data from them, regenerate the methods pages and briefs.
 - Sensitivity analysis: repeat with a hotter climate's weather (West Michigan only so far); the repo has no other hourly weather.
 - Check Lei and Masanet's published Table 3 (Resources, Conservation and Recycling 182: 106323) against the preprint
   used here, with library access; metered water at an adiabatic site.
@@ -479,3 +496,4 @@ Pages no longer use another state's evidence. Each state's data carries its star
   format and `waterledger build-state MI` runs Michigan's own build (`waterledger build mi` stays). Still open: the pages
   reading the shared files, and with that Michigan's home electricity figure.
 - Byte-identical snapshot rebuilds.
+- Michigan sorts a place's own sewer plant first and the national tier does not, because the survey's city is a mailing city. Whether Michigan should follow.

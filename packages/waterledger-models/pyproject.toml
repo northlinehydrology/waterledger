@@ -1,6 +1,6 @@
 [project]
 name = "waterledger-models"
-version = "3.5.0"
+version = "3.6.0"
 description = "Water Ledger's models: weather-driven data center cooling water (towers, hybrid, closed loop, lake-source) with Monte Carlo uncertainty, staff water, and site runoff quality"
 readme = "README.md"
 license = "BSD-3-Clause"

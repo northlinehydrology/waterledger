@@ -2,7 +2,9 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## Unreleased
+## 3.6.0 (Oct 31, 2026)
+
+Model version 1.4 stays. Estimates carry full values: a middle value that read 1.6 now reads 1.576.
 
 - **Constants the site carried now come from the package**, through its data files: unit factors (`runoff.PARAMS["units"]`), curve numbers, `rain_median_in`, `home_customers` (Michigan's 2025 count), golf season days, withdrawal levels, and proposal sizes (`size_examples`). `national.climate.salt_events` moved here from the site's builder; `runoff.salt` takes `events`.
 - **`runoff.storm_mg`**: one storm's runoff by curve number, the method waterledger.org now uses for storms.
