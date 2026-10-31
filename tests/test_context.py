@@ -1,4 +1,6 @@
 """place.context() gives every category for a Michigan place, from the same data as waterledger.org/mi."""
+import pytest
+
 import waterledger as wl
 from waterledger import scenario as sc
 
@@ -15,7 +17,7 @@ def test_gaines():
     w = c.supply.county_water_use                       # EGLE's figures, the same numbers the page shows, in the shared categories
     assert (w.source, w.kind, w.year, w.county_fips) == ("egle2025", "reported", 2025, "26081")
     assert w.mgd["public_supply"] == c.supply.county_use_mgd["Public water systems"]
-    assert w.mgd["total"] == round(sum(c.supply.county_use_mgd.values()), 3)
+    assert w.mgd["total"] == pytest.approx(sum(c.supply.county_use_mgd.values()))
 
 
 def test_plants_and_systems_match_the_page():
