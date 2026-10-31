@@ -144,7 +144,7 @@ SOURCES = {
     "wleb_dap": ("MDARD, EGLE and DNR. Michigan's Domestic Action Plan for the Western Lake Erie Basin (2025 update): a 40% cut in phosphorus loads from 2008 levels.", "https://www.michigan.gov/mdard/environment/conservation/wleb"),
 }
 
-SHORT = {"lbnl2024": "LBNL 2024", "wa_energy_code": "WAC 51-11C (ASHRAE 90.1)", "ashrae_tc99": "ASHRAE TC 9.9", "hpe_nvl72": "HPE NVL72", "schneider_wp210": "Schneider WP210", "lbnl2025": "LBNL 2025", "epri2026": "EPRI 2026", "iea2025": "IEA 2025", "google2025": "Google 2025",
+SHORT = {"lbnl2024": "LBNL 2024", "lei2021": "Lei & Masanet 2021", "wa_energy_code": "WAC 51-11C (ASHRAE 90.1)", "ashrae_tc99": "ASHRAE TC 9.9", "hpe_nvl72": "HPE NVL72", "schneider_wp210": "Schneider WP210", "lbnl2025": "LBNL 2025", "epri2026": "EPRI 2026", "iea2025": "IEA 2025", "google2025": "Google 2025",
          "eia923_2024": "EIA-923 2024", "eia_sep2024": "EIA state profiles 2024", "epa_onsite2002": "EPA 2002", "mi_septic": "Michigan septic criteria", "gilroy2022": "Gilroy 2022",
          "meta_elpaso": "Meta 2026", "meta_richland": "Meta 2025", "oracle_saline2026": "Oracle 2026", "lei2022": "Lei & Masanet 2022", "lei2025": "Lei et al. 2025", "usgs2013": "USGS 2013", "femp_bmp10": "DOE FEMP",
          "femp_dc": "DOE FEMP", "epa_wsaw": "EPA 2012", "stull2011": "Stull 2011", "msft2026": "Microsoft 2026", "icprb2025": "ICPRB 2025",
