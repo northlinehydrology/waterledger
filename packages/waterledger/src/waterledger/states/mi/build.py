@@ -9,6 +9,7 @@ import pandas as pd
 
 from waterledger_data import energy, places as pl
 from waterledger_data.climate import hourly_weather
+from waterledger_data.wastewater import OWN_KM
 from waterledger_models.datacenter import cooling as cw
 from waterledger_models.datacenter import lake as lc
 from waterledger_data.config import CACHE, SITE as SITE_ROOT, setting
@@ -429,7 +430,7 @@ def build_waters():
         if w:
             d, r = w.get("drift", {}), w.get("rock", {})
             wells[p["g"]] = [d.get("n", 0), d.get("depth"), d.get("swl"), r.get("n", 0), r.get("depth"), r.get("swl")]
-    data = {"generated": datetime.date.today().isoformat(), "cycle": 2026, "groups": wi.LABELS, "wells": wells, "h12": h12, "plants": plants, "rain_in": wi.county_precip(), "rain_median_in": rq.rain_median(wi.county_precip()), "runoff": rq.PARAMS,
+    data = {"generated": datetime.date.today().isoformat(), "cycle": 2026, "groups": wi.LABELS, "wells": wells, "h12": h12, "plants": plants, "rain_in": wi.county_precip(), "rain_median_in": rq.rain_median(wi.county_precip()), "plant_rule": {"own_km": OWN_KM}, "runoff": rq.PARAMS,
             "sources": {k: {"citation": c, "url": u, "short": SHORT.get(k, k)} for k, (c, u) in SOURCES.items() if k in WATER_SOURCES}}
     with open(OUT_WATERS, "w") as f:
         json.dump(round_tree(data, 3), f, separators=(",", ":"))

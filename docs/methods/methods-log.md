@@ -474,8 +474,11 @@ Decision (Andrew): the packages are the standard, and waterledger.org is built o
 - **Single storms.** One storm's runoff uses curve numbers (NRCS TR-55; `runoff.storm_mg`; hydrologic soil group B [estimate]), with pavement and lawn computed
   separately. The Simple Method (Schueler 1987) stays for the year. The page had scaled a Simple Method inch in proportion to the storm. On 200 acres half
   impervious: 1 inch 2.1 MG (was 2.7); 2.57 inches 7.2 MG (was 7.0). Runoff rises faster than rain, which proportional scaling cannot show.
-- **Sewer plants outside Michigan.** The package keeps a place's own plant as a flag, not a sort key, because the survey's city is a mailing city (Austin's South
-  Austin plant is listed in Del Valle). Michigan's rule still sorts own plant first. The two differ on purpose for now; whether Michigan should change is open.
+- **A place's own sewer plant: one rule.** Michigan sorted a name-matched plant first at any distance; the national tier used it only as a flag, because the survey's
+  city is a mailing city. Measured in the four states, name matches within 10 km are nearly always right (median 1.5-2.8 km). Beyond it many are coincidence (Sandusky County and
+  Sandusky city's plant, 37 km; Butler Township, Knox County, 32 km; Ohio has 39 Jackson Townships). So [A]: a plant with the place's name comes first if it is within 10 km, otherwise the
+  nearest plant, in every state. Andrew's judgment, Oct 31: pick reality and reason; that Michigan's rule came first gives it no standing. Known cost: a city whose own plant is truly
+  far (Mesquite, Texas, 27 km) or far only on the map (Brown City, Michigan, 30 km) gets its nearest plant instead.
 - **Local weather.** `site.estimate(weather="local")` runs the model at the place's ERA5 cell. For Gaines, 14 km from the West Michigan point, hybrid's peak-day median is
   1.50 MGD against 1.58, small against the parameter range of 1.16 to 2.09. It is reanalysis, not on-site weather.
 - **Residential customers.** Michigan 4,538,056 (EIA-861 2025), replacing 4,516,367 (2024) that the pages carried alongside a 2025 kWh figure.
@@ -496,4 +499,4 @@ Decision (Andrew): the packages are the standard, and waterledger.org is built o
   format and `waterledger build-state MI` runs Michigan's own build (`waterledger build mi` stays). Still open: the pages
   reading the shared files, and with that Michigan's home electricity figure.
 - Byte-identical snapshot rebuilds.
-- Michigan sorts a place's own sewer plant first and the national tier does not, because the survey's city is a mailing city. Whether Michigan should follow.
+- Sewer plant coordinates: some sit far from the place they are named for (Brown City, Vermontville and Cedar Springs, Michigan, 20-30 km). Check against the permits.

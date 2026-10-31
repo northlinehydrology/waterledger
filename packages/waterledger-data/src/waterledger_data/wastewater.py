@@ -69,17 +69,26 @@ def plants(state):
     return out
 
 
+# A place's own plant, in every state [A]: a plant carrying the place's name, if it is this close. Beyond this a shared name is mostly coincidence (Sandusky County
+# and Sandusky city's plant, 37 km; Ohio has 39 Jackson Townships), and the nearest plant is the more reasonable guess. It is also the distance a sewer is assumed to reach.
+OWN_KM = 10
+
+
+def is_own(same_name, km):
+    """Whether a plant with the place's name is the place's own."""
+    return bool(same_name) and km <= OWN_KM
+
+
 def nearest(plants_, lat, lon, city=None, km=40, min_design=0.5):
-    """Plants within `km` of a point, nearest first: the place's own (same city in the survey) and any other plant of at least
-    `min_design` MGD design flow. `own` is kept as a flag rather than a sort key, because the survey's city is the mailing
-    city (Austin's South Austin Regional plant is listed in Del Valle). Distances are great-circle km."""
+    """Plants within `km` of a point: the place's own first (is_own), then any other plant of at least `min_design` MGD design flow, nearest first. The survey's city is
+    a mailing city, so a name match is not perfect (Austin's South Austin Regional plant is listed in Del Valle). Distances are great-circle km."""
     import math
     rows = []
     for q in plants_:
         dlat, dlon = math.radians(q["lat"] - lat), math.radians(q["lon"] - lon)
         a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat)) * math.cos(math.radians(q["lat"])) * math.sin(dlon / 2) ** 2
         d = 6371.0 * 2 * math.asin(math.sqrt(a))
-        own = bool(city) and (q["city"] or "").lower() == city.lower()
+        own = is_own(bool(city) and (q["city"] or "").lower() == city.lower(), d)
         if d <= km and (own or (q["design_mgd"] or 0) >= min_design):
             rows.append({**q, "km": d, "own": own})
-    return sorted(rows, key=lambda q: q["km"])
+    return sorted(rows, key=lambda q: (not q["own"], q["km"]))

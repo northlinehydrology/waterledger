@@ -275,14 +275,14 @@ def place_stem(name):
 
 
 def nearest_plants(lat, lon, k=3, km=40, stem=None):
-    """Sewer plants for a place, as on Water Ledger: a plant in the place's own city or township first (any size), then the nearest
-    plants of 0.5 MGD design or more within km."""
+    """Sewer plants for a place, as on Water Ledger: the place's own first (any size; wastewater.is_own), then the nearest plants of 0.5 MGD design or more within km."""
+    from waterledger_data.wastewater import is_own
     import math
     rows = []
     for p in potws():
         d = 6371 * math.acos(min(1, math.sin(math.radians(lat)) * math.sin(math.radians(p["lat"])) +
                                  math.cos(math.radians(lat)) * math.cos(math.radians(p["lat"])) * math.cos(math.radians(p["lon"] - lon))))
-        own = bool(stem) and p["city"].lower() == stem
+        own = is_own(bool(stem) and p["city"].lower() == stem, d)
         if (own and d <= km) or (d <= km and p["design_mgd"] >= 0.5):
             rows.append({**p, "km": round(d, 1), "own": own})
     return sorted(rows, key=lambda r: (not r["own"], r["km"]))[:k]

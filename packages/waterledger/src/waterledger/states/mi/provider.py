@@ -47,7 +47,7 @@ def context(place):
                        county_water_use=water_use_record(egle, L["basis"], r["cf"]) if egle else None,
                        household_wells=dict(zip(("drift_n", "drift_depth_ft", "drift_level_ft", "rock_n", "rock_depth_ft", "rock_level_ft"), wells)) if wells else None)
     plants = [cx.SewerPlant(npdes=q["id"], name=q["n"], design_mgd=q.get("design"), flow_mgd=q.get("flow"), km=q["km"],
-                            receiving_water=q.get("recv") or None, combined_sewer=bool(q.get("cso")), lagoon=bool(q.get("lagoon")))
+                            own=bool(q.get("own")), receiving_water=q.get("recv") or None, combined_sewer=bool(q.get("cso")), lagoon=bool(q.get("lagoon")))
               for q in sc._plants_near(r)]
     G = Wd["groups"]
     path, h = [], (r["h12"][0]["code"] if r["h12"] else None)

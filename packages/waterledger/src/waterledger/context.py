@@ -69,13 +69,14 @@ class SewerPlant(BaseModel):
     flow_mgd: float | None = None
     km: float
     receiving_water: str | None = None
+    own: bool = False               # the place's own plant (wastewater.is_own)
     combined_sewer: bool = False
     lagoon: bool = False
 
 
 class Wastewater(_Category):
     """Where used water goes."""
-    plants: list[SewerPlant] = []                   # nearest first; the place's own plant first if it has one
+    plants: list[SewerPlant] = []                   # the place's own first if it has one (wastewater.is_own), then nearest first
 
 
 class Watershed(BaseModel):

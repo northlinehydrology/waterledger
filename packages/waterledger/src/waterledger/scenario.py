@@ -149,8 +149,10 @@ def _plants_near(p, km=40):
     """Sewer plants for a place exactly as the page finds them (WQ.plants: waters.json map coordinates, 1/60 degree = 1.852 km),
     so the page and the engine pick the same destination at the SEWER_KM edge."""
     from waterledger_data import waters as wi
+    from waterledger_data.wastewater import is_own
     st = wi.place_stem(p["n"])
-    rows = [{**q, "km": math.hypot(q["x"] - p["x"], q["y"] - p["y"]) * 1.852, "own": q["city"] == st} for q in data("waters")["plants"]]
+    rows = [{**q, "km": math.hypot(q["x"] - p["x"], q["y"] - p["y"]) * 1.852} for q in data("waters")["plants"]]
+    rows = [{**q, "own": is_own(q["city"] == st, q["km"])} for q in rows]
     return sorted([q for q in rows if q["km"] <= km and (q["own"] or q["design"] >= 0.5)], key=lambda q: (not q["own"], q["km"]))
 
 
@@ -182,14 +184,14 @@ def src_for(p, cool):
 
 
 def dest_for(p, cool, sew_mgd):
-    """Where a campus's wastewater most likely goes [A], as on the page (WQ.destFor). The sewer when the place has its own plant,
-    EPA maps a public water system in it (nearest large plant within 40 km), or none is mapped but a large plant is within SEWER_KM;
+    """Where a campus's wastewater most likely goes [A], as on the page (WQ.destFor). The sewer when EPA maps a public water system in the place (its plant within 40 km),
+    or a plant is within SEWER_KM;
     evaporative blowdown only if it fits in the plant's spare design flow. Otherwise closed loop's mostly sanitary flow goes to a
     septic system on site, and blowdown to the campus's own treatment plant and a stream. The plant is in the page's form (n, design, flow, km)."""
     pls = _plants_near(p)
     q = pls[0] if pls else None
     evap = cool in ("towers", "hybrid")
-    reach = bool(q) and (q["own"] or bool(p["w"]) or q["km"] <= SEWER_KM)
+    reach = bool(q) and (bool(p["w"]) or q["km"] <= SEWER_KM)
     room = q["design"] - q["flow"] if q and q.get("flow") else None
     why = "far" if not reach else "full" if evap and room is not None and sew_mgd > room else ""
     return {"dest": ("water" if evap else "septic") if why else "sewer", "q": q, "sys": bool(p["w"]), "room": room, "why": why}
