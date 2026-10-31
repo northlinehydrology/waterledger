@@ -131,7 +131,8 @@ def reference(state, place):
     sd = state_data(state)
     options = power.options(state, sd.grid_water())
     G, res = wateruse.golf(state), sd.residential() or {}
-    return {"power_options": options, "power": "state_mix" if "state_mix" in options else next(iter(options)),
+    from waterledger.comparisons import default_power
+    return {"power_options": options, "power": default_power(options, "state_mix" if "state_mix" in options else next(iter(options)), place.context().energy.utilities),
             "golf_gpd": G.get("by_region", {}).get(_division(state, place)[0], G["gpd"]) if G else None,
             "home_kwh_month": res.get("kwh_month"), "home_customers": res.get("customers"), "state_avg_mw": sd.state_avg_mw(),
             "rain_median_in": rq.rain_median(sd.rain()), "salt_events": sd.salt_events().get(_division(state, place)[0])}

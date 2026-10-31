@@ -54,6 +54,7 @@ est.site.source, est.site.wastewater     # the choices, with defaults filled in
 site.estimate(weather="local")   # the model run at the place's own ERA5 grid cell instead of its region's results (about 30 seconds)
 est.comparisons                  # against what is already there: the water system's connections, the county's water, the sewer plant and its spare room, the utilities and the state
 est.before_after                 # what changes at the place, today and after, as numbers
+est.household_wells              # the aquifer most household wells draw from, how deep, the water level, where a state has well records
 site.by_design().best            # the cooling design that evaporates least in total, campus and power plants; also .designs and the closed loop figures
 est.equivalents.homes            # the water as homes at 300 gallons a day; also .golf_courses, .evaporated_share, .electricity_homes, .share_of_home_customers
 est.power_plants["mi_mix"].consumed   # water at power plants for one power option, MGD; also .withdrawn, .returned; est.site.power names the one in use

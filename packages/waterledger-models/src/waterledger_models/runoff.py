@@ -22,6 +22,8 @@ PJ = 0.9            # share of rain events that produce runoff (Simple Method)
 
 # Event mean concentrations, mg/L: [lo, mid, hi]. Mid is the Michigan source where one exists.
 PARAMS = {
+    # the impairments a site's runoff can add to, of the groups ATTAINS listings fall in (waterledger_data.waters.ORDER): not bacteria or mercury in fish
+    "listed_groups": ["sed", "nut", "temp", "salt", "do", "bio", "flow", "oil", "metal"],
     "units": {"lb_per_ac_in_mg_l": LB, "gal_per_ac_in": GAL_PER_AC_IN, "runoff_event_share": PJ},
     # A single storm by curve number (hydrology.composite_runoff_in), hydrologic soil group B: lawn after, pavement [estimate]
     "curve_numbers": {"pervious_after": hydrology.CN_POST_PERV, "impervious": hydrology.CN_IMP, "sources": ["nrcs_tr55"]},
@@ -121,6 +123,11 @@ def rain_median(rain_in):
     v = sorted(rain_in.values())
     n = len(v)
     return v[n // 2] if n % 2 else (v[n // 2 - 1] + v[n // 2]) / 2
+
+
+def listed(listings):
+    """The listings a site's runoff can add to, from a watershed's [[group, tmdl, waters], ...]."""
+    return [x for x in listings or [] if x[0] in PARAMS["listed_groups"]]
 
 
 def storm_mg(acres, storm_in, imp=None):

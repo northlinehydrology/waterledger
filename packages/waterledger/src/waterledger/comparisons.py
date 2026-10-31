@@ -1,5 +1,5 @@
 """Comparisons: a site's estimate against what is already there. These are results, on est.comparisons; a display words and rounds them."""
-from waterledger.estimate import BeforeAfterRow, Comparison, DesignComparison, DesignTotal, Equivalents, Percent, PlantWater, Range
+from waterledger.estimate import BeforeAfterRow, Comparison, DesignComparison, DesignTotal, Equivalents, Percent, PlantWater, Range, WellsSummary
 from waterledger_models import runoff as rq
 
 # U.S. EPA WaterSense, How We Use Water: "The average American family uses more than 300 gallons of water per day at home."
@@ -88,6 +88,14 @@ def is_grid_average(option):
     return option["label"].endswith("grid average")
 
 
+def default_power(options, start, utilities=()):
+    """The option a site starts on. A state with its own mix keeps it; otherwise the grid region of the utility serving most of the place, when the options include it."""
+    if not is_grid_average(options[start]):
+        return start
+    ba = next((u.balancing_authority for u in sorted(utilities, key=lambda u: -u.share_of_place) if u.balancing_authority), None)
+    return ba.lower() if ba and ba.lower() in options else start
+
+
 def offered_power(options, start):
     """The power options to choose among. A state with its own mix keeps grid averages for comparison only."""
     own = not is_grid_average(options[start])
@@ -111,6 +119,18 @@ def compare_designs(results, options, power, start):
     extra = {"closed_loop_more_power_pct": 100 * (dry.avg_mw.p50 / tw.avg_mw.p50 - 1), "closed_loop_more_peak_mw": dry.peak_mw.p50 - tw.peak_mw.p50,
              "closed_loop_saves_on_site": max(tw.evaporated.p50 - dry.evaporated.p50, 0.0)} if dry and tw else {}
     return DesignComparison(power=power, designs=rows, best=best, thirstiest_power=thirstiest_power(options, start), **extra)
+
+
+WELLS_MIN = 10       # fewer household wells on record than this says little about a place's aquifer [A]
+
+
+def wells_summary(w):
+    """Household wells on record, from Supply.household_wells: which aquifer most draw from, how deep, the water level. None with too few to say."""
+    n = (w or {}).get("drift_n", 0) + (w or {}).get("rock_n", 0)
+    if n < WELLS_MIN:
+        return None
+    main, other = ("drift", "rock") if w["drift_n"] >= w["rock_n"] else ("rock", "drift")
+    return WellsSummary(wells=n, main=main, depth_ft=w[f"{main}_depth_ft"], water_level_ft=w.get(f"{main}_level_ft") or None, other_share=100 * w[f"{other}_n"] / n)
 
 
 def percent_of(value, existing):

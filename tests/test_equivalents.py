@@ -139,3 +139,24 @@ def test_compare_designs():
 
 def test_contract_to_computing():
     assert cm.it_mw_from_contract(1400, 1.289) == pytest.approx(1086.1, abs=0.1)
+
+
+def test_default_power_follows_the_largest_utility_only_without_a_state_mix():
+    U = lambda s, ba: SimpleNamespace(share_of_place=s, balancing_authority=ba)
+    O = {"mix": {"label": "Mix"}, "pjm": {"label": "PJM grid average"}, "miso": {"label": "MISO grid average"}}
+    assert cm.default_power(O, "mix", [U(1, "PJM")]) == "mix"
+    assert cm.default_power(O, "pjm", [U(0.2, "PJM"), U(0.8, "MISO")]) == "miso"
+    assert cm.default_power(O, "pjm", [U(0.9, None), U(0.1, "TVA")]) == "pjm" and cm.default_power(O, "pjm", []) == "pjm"     # TVA is not an option here
+
+
+def test_wells_summary():
+    assert cm.wells_summary(None) is None and cm.wells_summary({"drift_n": 5, "rock_n": 4}) is None
+    s = cm.wells_summary({"drift_n": 30, "drift_depth_ft": 88, "drift_level_ft": 21, "rock_n": 10, "rock_depth_ft": 200, "rock_level_ft": 40})
+    assert (s.wells, s.main, s.depth_ft, s.water_level_ft, s.other_share) == (40, "drift", 88, 21, 25)
+    assert cm.wells_summary({"drift_n": 3, "rock_n": 20, "rock_depth_ft": 200, "rock_level_ft": 0}).water_level_ft is None
+
+
+def test_listed_leaves_out_what_runoff_does_not_add_to():
+    from waterledger_models import runoff as rq
+    assert [x[0] for x in rq.listed([["sed", 1, []], ["ecoli", 0, []], ["fish", 0, []], ["nut", 0, []]])] == ["sed", "nut"]
+    assert rq.listed(None) == []

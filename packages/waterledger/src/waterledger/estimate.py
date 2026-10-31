@@ -154,6 +154,17 @@ class DesignComparison(BaseModel):
     closed_loop_saves_on_site: float | None = None
 
 
+class WellsSummary(BaseModel):
+    """Household wells on record for a place, by the aquifer most draw from: `main` is "drift" (glacial deposits) or "rock" (bedrock). Depth and water level (ft) are that aquifer's
+    averages. `other_share` is the percent drawing from the other."""
+    model_config = ConfigDict(frozen=True)
+    wells: int
+    main: str
+    depth_ft: float
+    water_level_ft: float | None = None
+    other_share: float
+
+
 class Estimate(BaseModel):
     """What the model says about a site: its water use and electricity (none where the data predate model 1.4), with every choice resolved
     (defaults filled in), the model version that produced it and the date of the data behind it."""
@@ -164,6 +175,7 @@ class Estimate(BaseModel):
     comparisons: list[Comparison] = []
     equivalents: Equivalents | None = None
     before_after: list[BeforeAfterRow] = []
+    household_wells: WellsSummary | None = None
     power_plants: dict[str, PlantWater] = {}    # every power option for the state; site.power says which one the site uses
     weather: str = "region"     # "region": the stored results for the place's weather region or division; "local": the model run at the place (ERA5)
     model_version: str
