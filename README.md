@@ -51,6 +51,7 @@ est.water.withdrawn.peak_day     # on a 1-in-10-year peak day
 est.electricity.avg_mw           # average power, MW, from the hourly heat balance at this place's weather
 est.electricity.peak_mw          # the 1-in-10-year hottest hour, every computer at capacity
 est.site.source, est.site.wastewater     # the choices, with defaults filled in
+site.estimate(weather="local")   # the model run at the place's own ERA5 grid cell instead of its region's results (about 30 seconds)
 est.comparisons                  # against what is already there: the water system's connections, as homes
 est.model_dump_json()            # the whole estimate as JSON
 

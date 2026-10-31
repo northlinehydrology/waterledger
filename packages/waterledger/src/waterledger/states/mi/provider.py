@@ -21,18 +21,14 @@ def place(geoid):
 
 def estimate(site):
     """Water use for a site at a Michigan place, through waterledger.scenario (the page's est())."""
-    from waterledger.estimate import Electricity, Estimate, Flow, Range, WaterUse
+    from waterledger.estimate import Estimate, electricity, water_use
     f = site.facility
     S = sc.scenario(site.place.geoid, mw=f.it_mw, cool=f.cooling, src=site.source, dest=site.wastewater, acres=site.acres,
                     before=site.land_before, imp=site.impervious)
-    E, R = S["E"], Range.from_band
-    water = WaterUse(withdrawn=Flow(avg=R(E["wAvg"]), peak_day=R(E["wPeak"])), withdrawn_annual_mg=R(E["wAnn"]),
-                     consumed=Flow(avg=R(E["cAvg"]), peak_day=R(E["cPeak"])), returned=Flow(avg=R(E["rAvg"]), peak_day=R(E["rPeak"])),
-                     to_sewer=R(E["sewer"]), lake_source=E["lake"], reuse=E["reuse"])
+    water = water_use(S["E"])
     resolved = site.model_copy(update={"source": S["src"], "wastewater": S["dest"], "acres": S["acres"], "land_before": S["before"]})
     D = sc.data("estimates")
-    e = sc.electricity(D, S["place"]["r"], f.cooling, f.it_mw)
-    power = Electricity(avg_mw=R(e["mw"]), peak_mw=R(e["peak_mw"]), pue=R(e["pue"]), peak_pue=R(e["peak_pue"])) if e else None
+    power = electricity(sc.electricity(D, S["place"]["r"], f.cooling, f.it_mw))
     return Estimate(site=resolved, water=water, electricity=power, model_version=D["model_version"], data_date=D["generated"])
 
 

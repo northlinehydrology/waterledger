@@ -4,10 +4,23 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from waterledger import comparisons, states
-from waterledger.estimate import Estimate
+from waterledger import comparisons, scenario, states
+from waterledger.estimate import Estimate, electricity, water_use
 from waterledger.facility import DataCenter
 from waterledger.place import Place
+
+
+def local_weather(est):
+    """The estimate with its water and electricity from the model run at the place's own ERA5 grid cell, the way a state's builder runs a region."""
+    from waterledger_data.climate import hourly_weather
+    from waterledger_models.datacenter import cooling
+    p, f = est.site.place, est.site.facility
+    if f.cooling == "lake":
+        raise ValueError("Lake-source cooling does not depend on air weather; weather='local' does not apply")
+    t, T, RH = hourly_weather(p.lat, p.lon, "1995-01-01", "2024-12-31", f"place_{p.geoid}")
+    D = {"regions": {"local": {"per_100mw": cooling.run_location(t, T, RH, mw=100.0)}}, "staff": {"runs": cooling.staff_runs()}}
+    return est.model_copy(update={"water": water_use(scenario.cooling_estimate(D, "local", f.cooling, f.it_mw, est.site.wastewater)),
+                                  "electricity": electricity(scenario.electricity(D, "local", f.cooling, f.it_mw)), "weather": "local"})
 
 
 class Site(BaseModel):
@@ -21,9 +34,16 @@ class Site(BaseModel):
     land_before: Literal["farm", "woods", "built"] | None = None
     impervious: float = Field(0.5, ge=0, le=1, description="share of the developed land under roofs and paving")
 
-    def estimate(self) -> Estimate:
-        """Water taken, used up and returned, as the state's provider computes it (same numbers as waterledger.org)."""
+    def estimate(self, weather="region") -> Estimate:
+        """Water taken, used up and returned, as the state's provider computes it (same numbers as waterledger.org). weather="local" runs the
+        model at the place instead of using its region's stored results: ERA5 reanalysis, the grid cell nearest the place, an 8 MB download once and about 30 seconds
+        each run. It is not measured on-site weather. Outside Michigan the stored results use NOAA stations, so
+        "local" also changes the kind of weather data, and the brief reports stations giving hybrid and assist estimates 4-50% higher. Not for lake-source cooling."""
+        if weather not in ("region", "local"):
+            raise ValueError(f"weather must be 'region' or 'local', not {weather!r}")
         est = states.provider(self.place.state).estimate(self)
+        if weather == "local":
+            est = local_weather(est)
         return est.model_copy(update={"comparisons": comparisons.comparisons(est)})
 
     def to_bmi_config(self, path=None, forcing=None, end_time=None):

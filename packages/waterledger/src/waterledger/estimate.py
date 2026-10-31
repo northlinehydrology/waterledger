@@ -40,6 +40,20 @@ class WaterUse(BaseModel):
     reuse: bool = False
 
 
+def water_use(E):
+    """WaterUse from the lo/mid/hi form waterledger.scenario gives."""
+    R = Range.from_band
+    return WaterUse(withdrawn=Flow(avg=R(E["wAvg"]), peak_day=R(E["wPeak"])), withdrawn_annual_mg=R(E["wAnn"]),
+                    consumed=Flow(avg=R(E["cAvg"]), peak_day=R(E["cPeak"])), returned=Flow(avg=R(E["rAvg"]), peak_day=R(E["rPeak"])),
+                    to_sewer=R(E["sewer"]), lake_source=E["lake"], reuse=E["reuse"])
+
+
+def electricity(e):
+    """Electricity from waterledger.scenario.electricity's form; None for data from before model 1.4."""
+    R = Range.from_band
+    return Electricity(avg_mw=R(e["mw"]), peak_mw=R(e["peak_mw"]), pue=R(e["pue"]), peak_pue=R(e["peak_pue"])) if e else None
+
+
 class Electricity(BaseModel):
     """A site's electricity, from the hourly heat balance at its weather (model 1.4). avg_mw: computers at their average utilization, plus cooling
     and losses. peak_mw: the 1-in-10-year hottest hour with every computer at capacity. pue and peak_pue: facility power over IT power."""
@@ -78,5 +92,6 @@ class Estimate(BaseModel):
     water: WaterUse
     electricity: Electricity | None = None
     comparisons: list[Comparison] = []
+    weather: str = "region"     # "region": the stored results for the place's weather region or division; "local": the model run at the place (ERA5)
     model_version: str
     data_date: str

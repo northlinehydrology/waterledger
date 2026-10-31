@@ -145,7 +145,7 @@ def estimate(state, site):
     import datetime
 
     from waterledger import scenario as sc
-    from waterledger.estimate import Electricity, Estimate, Flow, Range, WaterUse
+    from waterledger.estimate import Estimate, electricity, water_use
     from waterledger_models import MODEL_VERSION
     f, place = site.facility, site.place
     if f.cooling == "lake":
@@ -167,11 +167,7 @@ def estimate(state, site):
         evap = f.cooling in ("towers", "hybrid")
         why = "far" if not reach else "full" if evap and room is not None and sew > room else ""
         dest = ("water" if evap else "septic") if why else "sewer"
-    E, R = sc.cooling_estimate(D, d, f.cooling, f.it_mw, dest), Range.from_band
-    water = WaterUse(withdrawn=Flow(avg=R(E["wAvg"]), peak_day=R(E["wPeak"])), withdrawn_annual_mg=R(E["wAnn"]),
-                     consumed=Flow(avg=R(E["cAvg"]), peak_day=R(E["cPeak"])), returned=Flow(avg=R(E["rAvg"]), peak_day=R(E["rPeak"])),
-                     to_sewer=R(E["sewer"]), lake_source=False, reuse=E["reuse"])
+    water = water_use(sc.cooling_estimate(D, d, f.cooling, f.it_mw, dest))
     resolved = site.model_copy(update={"source": src, "wastewater": dest})
-    e = sc.electricity(D, d, f.cooling, f.it_mw)
-    power = Electricity(avg_mw=R(e["mw"]), peak_mw=R(e["peak_mw"]), pue=R(e["pue"]), peak_pue=R(e["peak_pue"])) if e else None
+    power = electricity(sc.electricity(D, d, f.cooling, f.it_mw))
     return Estimate(site=resolved, water=water, electricity=power, model_version=MODEL_VERSION, data_date=sd.date or datetime.date.today().isoformat())
