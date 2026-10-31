@@ -52,6 +52,16 @@ class Site(BaseModel):
         return est.model_copy(update={"site": est.site.model_copy(update={"power": power}), "comparisons": comparisons.comparisons(est, ref), "equivalents": comparisons.equivalents(est, ref), "before_after": comparisons.site_before_after(est, ref),
                                       "power_plants": comparisons.plant_waters(est.electricity, ref["power_options"]) if est.electricity else {}})
 
+    def by_design(self, designs=("dry", "hybrid", "towers")):
+        """The same campus with each cooling design, on this site's power option: water evaporated at the campus and at power plants, electricity, and which evaporates least."""
+        ref = states.provider(self.place.state).reference(self.place)
+        power = self.power or ref["power"]
+        results = {}
+        for k in designs:
+            e = self.model_copy(update={"facility": self.facility.model_copy(update={"cooling": k})}).estimate()
+            results[k] = (e.water, e.electricity)
+        return comparisons.compare_designs(results, ref["power_options"], power, ref["power"])
+
     def to_bmi_config(self, path=None, forcing=None, end_time=None):
         """The BMI component that runs this site step by step, and its configuration: (entry point, config dict). With `path`,
         the config is also written there as YAML. `forcing` is an optional weather file (Open-Meteo JSON for the hourly

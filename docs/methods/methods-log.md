@@ -565,3 +565,7 @@ pages did. The before-and-after table's water row still uses only the public fig
 Land defaults for `est.before_after` follow the page: cities 50 acres already built, others 200 acres of farmland [A]. Snapshots now carry road salt events by
 division, so the national tier does not need NOAA's station files at estimate time.
 
+## Oct 31, 2026: design totals, closed loop's trade and contract size in the package
+
+`site.by_design()` compares a campus across cooling designs, on one power option, as `comparisons.compare_designs`: water at the campus and at power plants, which evaporates least, the thirstiest power option other than wind and solar and the state's starting mix, and what closed loop trades against cooling towers. The pages asked which design evaporated least using on-site water rounded for display; from full values the answer is the same in all 1,610 region, size and power cases checked. The simple page compares closed loop, hybrid and towers, and the detailed page adds air-assisted in its table; that choice of rows is the page's, and is left alone. `it_mw_from_contract` is contract power over the design's hottest-hour PUE, and the page rounds it to 10 MW.
+

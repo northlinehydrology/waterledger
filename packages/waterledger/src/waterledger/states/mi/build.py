@@ -14,7 +14,7 @@ from waterledger_models.datacenter import cooling as cw
 from waterledger_models.datacenter import lake as lc
 from waterledger_data.config import CACHE, SITE as SITE_ROOT, setting
 
-from waterledger.comparisons import HOUSEHOLD_GPD
+from waterledger.comparisons import HOUSEHOLD_GPD, it_mw_from_contract
 from waterledger_models import MODEL_VERSION
 STATE = "mi"      # Water Ledger is organized by state: site/waterledger/<state>/
 SITE = os.path.join(SITE_ROOT, STATE)
@@ -484,11 +484,11 @@ def main(n=200):
     hyb = lambda key: flow(Dv, "west", "hybrid", key, 300)["mid"] * 1e6 / 300
     # Van Buren: 1 GW of DTE contract over three buildings, one open loop; computers = contract / top of each design's PUE range [A]
     pue_design = pue_by_design(regions)
-    it_t, it_d = 1000 / 3 / pue_design["towers"]["hi"], 2000 / 3 / pue_design["dry"]["hi"]
+    it_t, it_d = it_mw_from_contract(1000 / 3, pue_design["towers"]["hi"]), it_mw_from_contract(2000 / 3, pue_design["dry"]["hi"])
     st = cw.staff_q(staff, it_t + it_d)
     vb = {k: band(regions["southeast"]["per_100mw"]["towers"][f"withdrawn_{k}"], it_t / 100)["mid"] + band(regions["southeast"]["per_100mw"]["dry"][f"withdrawn_{k}"], it_d / 100)["mid"]
           + st["withdrawn"]["p50"] for k in ("avg", "peak_1in10")}
-    saline_it = 1400 / pue_design["dry"]["hi"]
+    saline_it = it_mw_from_contract(1400, pue_design["dry"]["hi"])
     mx = lambda r: f"{r:.1f}".removesuffix(".0") if r < 10 else s2(r)          # a multiple, as on the page (WQ.mult)
     low, gb, sal, sw = (flow(Dv, "west", "dry", "withdrawn_avg", 300), flow(Dv, "west", "dry", "withdrawn_avg", 100),
                         flow(Dv, "southeast", "dry", "withdrawn_avg", saline_it), flow(Dv, "west", "dry", "withdrawn_avg", 320))

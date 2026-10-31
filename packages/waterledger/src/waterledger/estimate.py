@@ -126,6 +126,34 @@ class PlantWater(BaseModel):
     sources: list[str] = []
 
 
+class DesignTotal(BaseModel):
+    """One cooling design at a site: water evaporated at the campus and at power plants, MGD, and its electricity, MW."""
+    model_config = ConfigDict(frozen=True)
+    design: str
+    evaporated: Range
+    at_power_plants: Range
+    avg_mw: Range
+    peak_mw: Range
+
+    @property
+    def total(self):
+        """Evaporated at the campus and at power plants, middle estimates."""
+        return self.evaporated.p50 + self.at_power_plants.p50
+
+
+class DesignComparison(BaseModel):
+    """The same campus with each cooling design, on one power option. `best` evaporates least in total. `thirstiest_power` is the option other than wind and solar and the state's
+    starting mix that uses the most water. The closed_loop figures compare closed loop with cooling towers; None unless both designs are among them."""
+    model_config = ConfigDict(frozen=True)
+    power: str
+    designs: dict[str, DesignTotal]
+    best: str
+    thirstiest_power: str | None = None
+    closed_loop_more_power_pct: float | None = None
+    closed_loop_more_peak_mw: float | None = None
+    closed_loop_saves_on_site: float | None = None
+
+
 class Estimate(BaseModel):
     """What the model says about a site: its water use and electricity (none where the data predate model 1.4), with every choice resolved
     (defaults filled in), the model version that produced it and the date of the data behind it."""

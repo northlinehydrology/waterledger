@@ -1,5 +1,5 @@
 """Comparisons: a site's estimate against what is already there. These are results, on est.comparisons; a display words and rounds them."""
-from waterledger.estimate import BeforeAfterRow, Comparison, Equivalents, Percent, PlantWater, Range
+from waterledger.estimate import BeforeAfterRow, Comparison, DesignComparison, DesignTotal, Equivalents, Percent, PlantWater, Range
 from waterledger_models import runoff as rq
 
 # U.S. EPA WaterSense, How We Use Water: "The average American family uses more than 300 gallons of water per day at home."
@@ -77,6 +77,40 @@ def water_system_share(withdrawn, systems):
     return Comparison(against="water_system", name=s.name, measure="homes_vs_connections", existing=s.connections, unit="connections",
                       percent=Percent(avg=pct(withdrawn.avg), peak_day=pct(withdrawn.peak_day)),
                       basis=f"Campus water as homes at {HOUSEHOLD_GPD} gallons a day (EPA WaterSense), against the system's connections (EPA)")
+
+
+def it_mw_from_contract(contract_mw, pue):
+    """Computing capacity (MW) from a utility contract's total power, at the design's PUE; contracts cap the hottest hour, so use the top of its range."""
+    return contract_mw / pue
+
+
+def is_grid_average(option):
+    return option["label"].endswith("grid average")
+
+
+def offered_power(options, start):
+    """The power options to choose among. A state with its own mix keeps grid averages for comparison only."""
+    own = not is_grid_average(options[start])
+    return [k for k, o in options.items() if not (own and is_grid_average(o))]
+
+
+def thirstiest_power(options, start):
+    """The offered option using the most water at power plants, other than wind and solar and the state's starting point. The first of a tie."""
+    return max((k for k in offered_power(options, start) if k not in ("renew", start)), key=lambda k: options[k]["gal_mwh"], default=None)
+
+
+def compare_designs(results, options, power, start):
+    """The same campus across cooling designs: `results` is {design: (WaterUse, Electricity)}. The design order breaks a tie for `best`."""
+    rows = {}
+    for k, (water, e) in results.items():
+        o = options[power]
+        rows[k] = DesignTotal(design=k, evaporated=water.consumed.avg, at_power_plants=Range(p10=plant_water(e.avg_mw.p10, o["lo"]), p50=plant_water(e.avg_mw.p50, o["gal_mwh"]), p90=plant_water(e.avg_mw.p90, o["hi"])),
+                              avg_mw=e.avg_mw, peak_mw=e.peak_mw)
+    best = min(rows, key=lambda k: rows[k].total)
+    dry, tw = rows.get("dry"), rows.get("towers")
+    extra = {"closed_loop_more_power_pct": 100 * (dry.avg_mw.p50 / tw.avg_mw.p50 - 1), "closed_loop_more_peak_mw": dry.peak_mw.p50 - tw.peak_mw.p50,
+             "closed_loop_saves_on_site": max(tw.evaporated.p50 - dry.evaporated.p50, 0.0)} if dry and tw else {}
+    return DesignComparison(power=power, designs=rows, best=best, thirstiest_power=thirstiest_power(options, start), **extra)
 
 
 def percent_of(value, existing):

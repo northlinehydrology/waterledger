@@ -111,3 +111,31 @@ def test_before_after_rows_follow_the_water():
     assert keys(cm.before_after("wells", "septic", *args))[:3] == ["water", "used", "wastewater"]
     assert "sewer" not in keys(cm.before_after("muni", "sewer", *args, reuse=True))
     assert cm.before_after("wells", "water", *args, county_public=100)[0].today is None      # the county's public water is not what wells draw on
+
+
+OPTS = {"mix": {"label": "Mix", "gal_mwh": 200, "lo": 200, "hi": 200}, "grid": {"label": "PJM grid average", "gal_mwh": 900, "lo": 900, "hi": 900}, "coal": {"label": "Coal", "gal_mwh": 500, "lo": 500, "hi": 500},
+        "gas": {"label": "Gas", "gal_mwh": 500, "lo": 500, "hi": 500}, "renew": {"label": "Wind and solar", "gal_mwh": 1, "lo": 1, "hi": 1}}
+
+
+def test_offered_and_thirstiest_power():
+    assert cm.offered_power(OPTS, "mix") == ["mix", "coal", "gas", "renew"]               # a state with its own mix keeps grid averages for comparison
+    assert cm.offered_power(OPTS, "grid") == list(OPTS)
+    assert cm.thirstiest_power(OPTS, "mix") == "coal"                                     # the first of a tie
+    assert cm.thirstiest_power({"mix": OPTS["mix"], "renew": OPTS["renew"]}, "mix") is None
+
+
+def _design(c, mw, peak):
+    return (SimpleNamespace(consumed=SimpleNamespace(avg=R(c, c, c))), Electricity(avg_mw=R(mw, mw, mw), peak_mw=R(peak, peak, peak), pue=R(1, 1, 1), peak_pue=R(1, 1, 1)))
+
+
+def test_compare_designs():
+    d = cm.compare_designs({"dry": _design(0.01, 110, 150), "towers": _design(1.0, 100, 120)}, OPTS, "mix", "mix")
+    assert d.best == "dry" and d.designs["dry"].total == pytest.approx(0.01 + 110 * 24 * 200 / 1e6)
+    assert d.closed_loop_more_power_pct == pytest.approx(10) and d.closed_loop_more_peak_mw == 30 and d.closed_loop_saves_on_site == pytest.approx(0.99)
+    d = cm.compare_designs({"dry": _design(0.01, 300, 400), "towers": _design(0.02, 100, 120)}, OPTS, "gas", "mix")
+    assert d.best == "towers"     # on a thirsty supply, closed loop's extra power can cost more water than the towers evaporate
+    assert cm.compare_designs({"towers": _design(1, 100, 120)}, OPTS, "mix", "mix").closed_loop_more_peak_mw is None
+
+
+def test_contract_to_computing():
+    assert cm.it_mw_from_contract(1400, 1.289) == pytest.approx(1086.1, abs=0.1)
