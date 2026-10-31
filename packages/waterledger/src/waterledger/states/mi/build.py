@@ -11,7 +11,7 @@ from waterledger_data import energy, places as pl
 from waterledger_data.climate import hourly_weather
 from waterledger_models.datacenter import cooling as cw
 from waterledger_models.datacenter import lake as lc
-from waterledger_data.config import CACHE, SITE as SITE_ROOT
+from waterledger_data.config import CACHE, SITE as SITE_ROOT, setting
 
 from waterledger_models import MODEL_VERSION
 STATE = "mi"      # Water Ledger is organized by state: site/waterledger/<state>/
@@ -337,35 +337,39 @@ def build_places(counties, munis, enrich, cmap, shore=None):
     return out
 
 
-GOLF = r"golf|country club|\bC\.?C\.?\b|links"
 USE_GROUPS = {"Irrigation": "Farm irrigation", "Community Water Supply": "Public water systems", "Public Water Supply": "Public water systems",
               "Public water supply": "Public water systems", "Industrial": "Industry", "Industrial/Manufacturing": "Industry",
               "Mining": "Mining and dewatering", "Dewatering": "Mining and dewatering", "Livestock": "Livestock", "Bottled Water": "Bottled water",
               "Power Generation": "Power plants"}
 
 
+# EGLE's yearly facility file, with facility names removed (some are individual farms), committed under data/inputs/mi/. EGLE's site refuses scripted
+# downloads, so each year's file is downloaded by hand and reduced with `python -m waterledger.states.mi.egle FILE.xlsx`.
+INPUTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "..", "..", "data", "inputs", "mi")
+
+
 def egle_use_file():
-    """The newest EGLE facility water-use file on disk (engine/data/raw/lit/egle_water_use_facility_YYYY.xlsx). EGLE's site refuses
-    scripted downloads, so each year's file is downloaded by hand; `python -m engine.update --list` says when a newer year is due."""
+    """The newest names-removed EGLE file: `WATERLEDGER_INPUTS` if set, else the repository's data/inputs/mi, else the cache."""
     import glob
-    files = sorted(glob.glob(os.path.join(RAW, "egle_water_use_facility_[0-9][0-9][0-9][0-9].xlsx")))
-    if not files:
-        raise FileNotFoundError("No EGLE water-use file in " + RAW + "; see docs/data-updates.md")
-    return files[-1]
+    for d in (setting("inputs", ""), os.path.normpath(INPUTS), RAW):
+        files = sorted(glob.glob(os.path.join(d, "egle_water_use_[0-9][0-9][0-9][0-9].csv"))) if d else []
+        if files:
+            return files[-1]
+    raise FileNotFoundError("No EGLE water-use file; see data/inputs/mi/README.md")
 
 
 def county_uses():
     """EGLE 2025 reported withdrawals by facility, grouped by county into plain categories (million gallons a day, averaged over the year).
     Golf courses are irrigation facilities whose names mark them as golf or country clubs; anything not grouped is 'Other'."""
-    df = pd.read_excel(egle_use_file(), sheet_name="Sheet1")
+    df = pd.read_csv(egle_use_file())
     df["County"] = df["County"].astype(str).str.strip().replace({"Saint Clair": "St. Clair", "St Clair": "St. Clair", "Saint Joseph": "St. Joseph", "St Joseph": "St. Joseph"})
     # Entries far outside the range of their kind are left out and reported (see methods). Irrigation: the largest entry
     # is ~9x the next-largest farm statewide, which reads as a reporting error rather than a real withdrawal.
     odd = (df["Purpose"] == "Irrigation") & (df["Total Gallons"] > 2e10)
-    flags = {r["County"]: f"One {r['Purpose'].lower()} entry ({r['Facility']}) reports {r['Total Gallons'] / 1e9:,.1f} billion gallons for 2025, about {r['Total Gallons'] / 365 / 1e6:,.0f} million gallons a day. That is many times the largest similar entry elsewhere in Michigan, so it is left out here as a likely reporting error."
+    flags = {r["County"]: f"One {r['Purpose'].lower()} entry (farm) reports {r['Total Gallons'] / 1e9:,.1f} billion gallons for 2025, about {r['Total Gallons'] / 365 / 1e6:,.0f} million gallons a day. That is many times the largest similar entry elsewhere in Michigan, so it is left out here as a likely reporting error."
              for _, r in df[odd].iterrows()}
     df = df[~odd].copy()
-    golf = (df["Purpose"] == "Irrigation") & df["Facility"].astype(str).str.contains(GOLF, case=False, regex=True)
+    golf = df["Golf"] == 1
     df["group"] = df["Purpose"].map(USE_GROUPS).fillna("Other")
     df.loc[golf, "group"] = "Golf courses"
     out, n_golf = {}, {}
