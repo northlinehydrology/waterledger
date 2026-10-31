@@ -2,6 +2,15 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.6.2 (Oct 31, 2026)
+
+Model version 1.4 stays. No estimate of water use changes.
+
+- **Independent cities get rainfall and design storms.** The national tier asked NOAA only for rows at county level, so Virginia's 38 independent cities (Richmond, Virginia Beach, Norfolk and the rest) had none. `national.climate.climate_areas` adds them, for any state that has them. Cooling stations stay on counties.
+- **The statewide check now covers rainfall and design storms**, so a gap like that fails the build.
+- **NOAA's rate limit no longer loses a county.** `divisions.cag_json` waits and asks again on a 429; a county still refused fails the build instead of being skipped.
+- **TWDB's report address is read from its report list** (`wateruse.twdb_report_url`). TWDB now issues new tokens, so the stored address stopped working.
+
 ## 3.6.1 (Oct 31, 2026)
 
 - **One rule in every state for a place's own sewer plant** (`wastewater.is_own`): a plant carrying the place's name, within 10 km, comes first; otherwise the nearest plant. Michigan had put a name match first at any distance, and the national tier never did. `SewerPlant.own` says which.
