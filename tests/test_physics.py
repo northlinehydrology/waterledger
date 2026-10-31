@@ -32,3 +32,9 @@ def test_hourly_rates_vectorized_equal_per_run():
             np.testing.assert_allclose(W[i], w, rtol=1e-12, atol=1e-18)
             np.testing.assert_allclose(C[i], c, rtol=1e-12, atol=1e-18)
             np.testing.assert_allclose(R[i], r, rtol=1e-12, atol=1e-18)
+
+
+def test_every_parameter_has_a_source():
+    from waterledger_models.datacenter import physics
+    names = {*physics.RANGES, "topup", *physics.ADIABATIC, *physics.POWER, *physics.STAFF}
+    assert set(physics.SOURCES) == names and all(physics.SOURCES.values())

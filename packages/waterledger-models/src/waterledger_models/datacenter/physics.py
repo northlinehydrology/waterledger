@@ -96,6 +96,41 @@ STAFF = {"core": (20.0, 60.0), "per_mw": (0.1, 0.5), "gpcd": (10.0, 30.0), "used
          "maint_base": (0.0, 2000.0), "maint_per_mw": (2.0, 20.0), "maint_used": (0.03, 0.15)}
 STAFF_PARAMETERS = tuple(f"staff_{k}" for k in STAFF)
 
+# Where each parameter's range comes from, in a line; the reasoning is in the comments above. [A] marks an assumption or estimate.
+_LM = "Lei and Masanet (preprint rs-769999/v1), Table 3, case 2"
+_STAFF_WATER = "Applicant projections, none measured: Hermantown, MN and Crusoe's 200 MW building, checked against Tyrone, GA, Saline Township and Mount Pleasant, WI [A]"
+SOURCES = {
+    "utilization": "EPRI 2026; IEA 2025; LBNL 2024 server parameters",
+    "er_adj": "USGS SIR 2013-5188 (Diehl et al.), pp. 24, 28-29; asymmetric for Rutberg et al.'s fit at cooler water [A]",
+    "coc": "DOE FEMP BMP #10",
+    "range_f": "Lei and Masanet (preprint rs-769999/v1), Table 3; 10 F rating",
+    "drift": "EPA WaterSense at Work 2012, section 6.3, p. 6-9; EPA AP-42 13.4, Table 13.4-1",
+    "fill_gal_per_mw": "Crusoe 2026; Vantage Port Washington; chilled-water loops of 3-10 gal per ton",
+    "assist_on": "Uptime Institute 2025 (20 C or higher); 30 C top [A]",
+    "assist_eff": "EVAPCO 2018, p. 2; ASHRAE 2016, ch. 41",
+    "hybrid_on": "US 12,426,214 B1 (2025)",
+    "hybrid_full": "Near the site's design dry-bulb [A], no published value",
+    "topup": "NIH 2023 Technical Bulletin (under 5% a year); 1% floor [A]",
+    "assist_dt_air": "Makers' selection sheets: Thermokey, Kelvion [A]",
+    "assist_bleed": "Guentner; Spinazzola 2021; SCE ET13SCE1020, 2015, p. 29; ASHRAE 2016, ch. 41",
+    **dict.fromkeys(("ups", "dist_loss", "light", "shr", "supply_air", "air_rise", "coil_eff", "water_rise", "crah_pa", "fan_eff", "tower_fan_pa", "lg",
+                     "tower_approach", "hx_approach", "pump_chw_kpa", "pump_tower_kpa", "pump_econ_kpa", "pump_eff"), _LM),
+    "carnot_water": "WAC 51-11C-403323 (replica of ASHRAE 90.1 Table 6.8.1-3); +/-11% from Lei and Masanet; fitted with the temperature offsets [A]",
+    "carnot_air": "EER 10.1; 0.55 [A]; fitted with the temperature offsets [A]",
+    "dc_approach": "ThermoKey catalogue point (10 K); makers' quotes for larger coils (5 K) [A]",
+    "dc_fan_pa": "By analogy with Lei and Masanet's tower fans [A]",
+    "liquid_water": "ASHRAE TC 9.9 classes W32-W45; LBNL 2024 Table 4.3",
+    "liquid_air_share": "HPE GB200 NVL72; Schneider WP210; ASME InterPACK2022, not read directly [A]",
+    "liquid_share": "Not published for any fleet; all of 0-1 sampled [A]",
+    "core": "JLARC 2024 (about 50 full-time workers a building) [A]",
+    "per_mw": "Announced campuses: Meta Richland Parish, Meta El Paso, Saline Township, Gilroy",
+    "gpcd": "EPA 2002 Table 3-4; Michigan septic design criteria; Gilroy applicant",
+    "used": "Shaffer and Runkle 2007, Table 9",
+    "maint_base": _STAFF_WATER,
+    "maint_per_mw": _STAFF_WATER,
+    "maint_used": "USGS commercial coefficients (Shaffer and Runkle 2007)",
+}
+
 
 def wet_bulb(t_c, rh):
     """Stull (2011) wet-bulb approximation, C. Stated for RH 5-99% and -20 to 50 C; least accurate in cold, very dry

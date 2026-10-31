@@ -4,6 +4,7 @@ Package changes (code). Changes to the numbers are listed by model version on th
 
 ## Unreleased
 
+- **`physics.SOURCES`**: where each parameter's range comes from, by name (`physics.SOURCES["hybrid_on"]`), beside the tables; a test fails if a parameter has none.
 - **`est.comparisons`**: the campus against what is already there, with what each comparison measures. First, the water system: water on an average day and on a peak day as homes (300 gallons a day, EPA WaterSense), as a percent of the connections of the largest system mapped in the place, the calculation waterledger.org makes on its water cards. `comparisons.HOUSEHOLD_GPD` is the one place for the 300.
 - **The packages no longer round results.** `est.water` middle values were rounded to two significant figures for display (a Gaines hybrid peak day read 1.6 MGD; the model's value is 1.576). They are now full values, and returned is still withdrawn less consumed on the middle estimate. Distances to sewer plants and water systems, county water use and utility average load in `place.context()` are also full values. Displays round what they show. Place coordinates stay at 4 decimals.
 
