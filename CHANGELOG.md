@@ -2,6 +2,10 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.6.1 (Oct 31, 2026)
+
+- **One rule in every state for a place's own sewer plant** (`wastewater.is_own`): a plant carrying the place's name, within 10 km, comes first; otherwise the nearest plant. Michigan had put a name match first at any distance, and the national tier never did. `SewerPlant.own` says which.
+
 ## 3.6.0 (Oct 31, 2026)
 
 Model version 1.4 stays. Estimates carry full values: a middle value that read 1.6 now reads 1.576.
