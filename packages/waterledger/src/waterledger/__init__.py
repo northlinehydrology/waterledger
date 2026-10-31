@@ -9,7 +9,7 @@
 import waterledger_data as data
 import waterledger_models as models
 from waterledger import scenario, states
-from waterledger.estimate import Estimate, Flow, Range, WaterUse
+from waterledger.estimate import Comparison, Estimate, Flow, Percent, Range, WaterUse
 from waterledger.facility import DataCenter, Facility
 from waterledger.place import Place, place
 from waterledger.site import Site
@@ -17,5 +17,5 @@ from waterledger.context import Context
 
 Estimate.model_rebuild()
 
-__all__ = ["data", "models", "scenario", "states", "place", "Place", "Facility", "DataCenter", "Range", "Flow", "WaterUse", "Site", "Estimate", "Context"]
+__all__ = ["data", "models", "scenario", "states", "place", "Place", "Facility", "DataCenter", "Range", "Flow", "WaterUse", "Site", "Estimate", "Comparison", "Percent", "Context"]
 __version__ = "3.5.0"

@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from waterledger import states
+from waterledger import comparisons, states
 from waterledger.estimate import Estimate
 from waterledger.facility import DataCenter
 from waterledger.place import Place
@@ -23,7 +23,8 @@ class Site(BaseModel):
 
     def estimate(self) -> Estimate:
         """Water taken, used up and returned, as the state's provider computes it (same numbers as waterledger.org)."""
-        return states.provider(self.place.state).estimate(self)
+        est = states.provider(self.place.state).estimate(self)
+        return est.model_copy(update={"comparisons": comparisons.comparisons(est)})
 
     def to_bmi_config(self, path=None, forcing=None, end_time=None):
         """The BMI component that runs this site step by step, and its configuration: (entry point, config dict). With `path`,

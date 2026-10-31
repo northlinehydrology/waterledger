@@ -50,6 +50,26 @@ class Electricity(BaseModel):
     peak_pue: Range
 
 
+class Percent(BaseModel):
+    """A percent on an average day and on a 1-in-10-year peak day, each a range like the water it comes from."""
+    model_config = ConfigDict(frozen=True)
+    avg: Range
+    peak_day: Range
+
+
+class Comparison(BaseModel):
+    """An estimate against something already there. `measure` and `basis` say what it compares, because a percent of connections is not a
+    percent of water use."""
+    model_config = ConfigDict(frozen=True)
+    against: str
+    name: str
+    measure: str
+    existing: float
+    unit: str
+    percent: Percent
+    basis: str
+
+
 class Estimate(BaseModel):
     """What the model says about a site: its water use and electricity (none where the data predate model 1.4), with every choice resolved
     (defaults filled in), the model version that produced it and the date of the data behind it."""
@@ -57,5 +77,6 @@ class Estimate(BaseModel):
     site: "Site"
     water: WaterUse
     electricity: Electricity | None = None
+    comparisons: list[Comparison] = []
     model_version: str
     data_date: str

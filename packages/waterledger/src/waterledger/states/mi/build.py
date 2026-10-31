@@ -13,6 +13,7 @@ from waterledger_models.datacenter import cooling as cw
 from waterledger_models.datacenter import lake as lc
 from waterledger_data.config import CACHE, SITE as SITE_ROOT, setting
 
+from waterledger.comparisons import HOUSEHOLD_GPD
 from waterledger_models import MODEL_VERSION
 STATE = "mi"      # Water Ledger is organized by state: site/waterledger/<state>/
 SITE = os.path.join(SITE_ROOT, STATE)
@@ -222,7 +223,7 @@ POWER_SUPPLY = {
              "note": "1.57 L/kWh consumed and 57.1 L/kWh withdrawn, MISO excluding hydropower consumption, 2022 (Siddik et al. dataset, load-weighted)"},
 }
 
-CONTEXT = {"household_gpd": {"value": 300, "note": "more than 300 gallons per day per family at home", "sources": ["epa_watersense"]}}
+CONTEXT = {"household_gpd": {"value": HOUSEHOLD_GPD, "note": "more than 300 gallons per day per family at home", "sources": ["epa_watersense"]}}
 
 TRACKER_MUNI = {"gaines": ("Gaines charter township", "Kent"), "lowell": ("Lowell charter township", "Kent"), "dorr": ("Dorr township", "Allegan"),
                 "ypsi": ("Ypsilanti charter township", "Washtenaw"), "augusta": ("Augusta charter township", "Washtenaw"), "saline": ("Saline township", "Washtenaw"),
