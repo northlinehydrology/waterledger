@@ -23,7 +23,7 @@ def test_matches_the_page(name, cooling):
 def test_lake_source_and_json():
     p = wl.place("Acme township, MI")       # on Grand Traverse Bay
     est = wl.Site(place=p, facility=wl.DataCenter(it_mw=100, cooling="lake"), source="lake").estimate()
-    assert est.water.lake_source and est.model_version == "1.3"
+    assert est.water.lake_source and est.model_version == wl.models.MODEL_VERSION
     assert wl.Estimate.model_validate_json(est.model_dump_json()) == est
 
 
