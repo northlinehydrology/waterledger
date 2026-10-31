@@ -2,7 +2,7 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## 3.4.0 (not yet released)
+## 3.4.0 (Oct 30, 2026)
 
 Model version 1.4.
 

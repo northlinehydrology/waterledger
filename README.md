@@ -4,13 +4,15 @@
 [![nightly](https://github.com/northlinehydrology/waterledger/actions/workflows/nightly.yml/badge.svg)](https://github.com/northlinehydrology/waterledger/actions/workflows/nightly.yml)
 [![PyPI](https://img.shields.io/pypi/v/waterledger.svg)](https://pypi.org/project/waterledger/)
 
-Open Python tools for estimating the water that large new users take, use up and send back, starting with data
+Open Python tools for estimating the water and electricity that large new users add, starting with data
 centers, and for assembling the public U.S. water data around any place: water systems, watersheds, impaired waters,
 sewer plants, weather and design storms.
 
 - **Weather-driven cooling water model** for cooling towers, hybrid, closed loop, and dry coolers with adiabatic pre-cooling,
   hour by hour over decades of weather, with Monte Carlo uncertainty over published parameter ranges; plus lake-source
   (once-through) cooling and staff water.
+- **Hourly electricity from the same heat balance**, by design and weather, after Lei and Masanet (2022): average power, PUE,
+  and the hottest hour with every computer at capacity.
 - **Vectorized ensembles** as xarray Datasets, with dask across many locations.
 - **CSDMS Basic Model Interface (BMI 2.0) components**, so coupling frameworks such as NOAA's NextGen can drive the
   models step by step.
@@ -31,7 +33,7 @@ only), adding `[ensemble]`, `[bmi]`, `[stac]` or `[all]` for the optional parts.
 
 | Package | Import | What it holds |
 |---|---|---|
-| `waterledger-models` | `waterledger_models` | the models: data center cooling water, lake-source cooling, staff water, site runoff quality; ensembles, BMI, STAC |
+| `waterledger-models` | `waterledger_models` | the models: data center cooling water and electricity, lake-source cooling, staff water, site runoff quality; ensembles, BMI, STAC |
 | `waterledger-data` | `waterledger_data` | public U.S. water data for any place, fetched once and cached |
 | `waterledger` | `waterledger` | the objects (Place, Context, Facility, Site, Estimate), state providers and builders (`waterledger build mi`); `import waterledger as wl` brings everything |
 
@@ -46,6 +48,8 @@ est = site.estimate()
 
 est.water.withdrawn.avg          # Range(p10=..., p50=..., p90=...), million gallons a day
 est.water.withdrawn.peak_day     # on a 1-in-10-year peak day
+est.electricity.avg_mw           # average power, MW, from the hourly heat balance at this place's weather
+est.electricity.peak_mw          # the 1-in-10-year hottest hour, every computer at capacity
 est.site.source, est.site.wastewater     # the choices, with defaults filled in
 est.model_dump_json()            # the whole estimate as JSON
 
