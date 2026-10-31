@@ -2,6 +2,14 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.5.0 (Oct 31, 2026)
+
+Model version 1.4 stays; no estimate changes.
+
+- **`waterledger build-state MI`** downloads Michigan's sources (`states/mi/fetch.py`) before it builds, skipping what is cached, so Michigan builds from an empty cache on GitHub like any other state, and its snapshot no longer waits for a site deploy. `waterledger build mi` stays, and builds from a cache.
+- **EGLE's water-use file** ships in the package (`states/mi/inputs/`) with facility names removed; `python -m waterledger.states.mi.egle` reduces each year's download. `egle_use_file()` now returns this CSV, not the xlsx.
+- **A place's main watershed** no longer depends on the order the service returns (`places._watersheds`).
+
 ## 3.4.0 (Oct 30, 2026)
 
 Model version 1.4.

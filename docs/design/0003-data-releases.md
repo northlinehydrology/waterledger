@@ -47,7 +47,7 @@ week apart can get different answers).
    - Nothing partial is ever published as a snapshot.
 6. **Versions stay separate.** Code (package semver), numbers (`MODEL_VERSION`) and data (the snapshot date) each move
    on their own. Pinning `data="2026-11-01"` reproduces an old result.
-7. **Some inputs stay manual.** Inputs a person maintains are committed in `data/inputs/<state>/`, which the build jobs
+7. **Some inputs stay manual.** Inputs a person maintains are shipped with the state's package code (`states/<state>/inputs/`), which the build jobs
    read: Michigan's EGLE water-use file (the site refuses scripted downloads), with facility names removed (changed from
    an inputs area of R2, Oct 30, 2026). The proposal and moratorium trackers are not
    part of the snapshots: they are a Northline service behind waterledger.org.

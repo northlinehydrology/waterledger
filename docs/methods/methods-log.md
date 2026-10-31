@@ -11,7 +11,7 @@ This log covers decisions that cut across layers, and points there for detail.
 ## Oct 30, 2026: Michigan builds on GitHub like the other states
 
 `waterledger build-state MI` now downloads Michigan's sources and builds from an empty cache, so its snapshot no longer waits for
-a site deploy. EGLE's water-use file, which EGLE will not serve to scripts, is committed in `data/inputs/mi/` with facility names
+a site deploy. EGLE's water-use file, which EGLE will not serve to scripts, ships in the package (`states/mi/inputs/`) with facility names
 removed. `waterledger build mi` stays for building from a cache.
 
 Checked against the published files, from an empty cache on GitHub (run 41169694682): `waters` and `power` match apart from the build

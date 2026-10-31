@@ -4,7 +4,7 @@ import pathlib
 
 from waterledger.states.mi.egle import COLUMNS
 
-HERE = pathlib.Path(__file__).parent.parent / "data" / "inputs" / "mi"
+HERE = pathlib.Path(__file__).parent.parent / "packages" / "waterledger" / "src" / "waterledger" / "states" / "mi" / "inputs"
 
 
 def test_no_names_in_the_committed_file():

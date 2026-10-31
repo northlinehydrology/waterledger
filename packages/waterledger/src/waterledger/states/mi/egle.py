@@ -1,6 +1,6 @@
 """Reduce EGLE's yearly facility water-use file to what the Michigan build needs, with facility names removed.
 
-    python -m waterledger.states.mi.egle egle_water_use_facility_2025.xlsx data/inputs/mi/egle_water_use_2025.csv
+    python -m waterledger.states.mi.egle egle_water_use_facility_2025.xlsx packages/waterledger/src/waterledger/states/mi/inputs/egle_water_use_2025.csv
 
 Golf courses are irrigation facilities whose names mark them as golf or country clubs, so that flag is worked out here, while the names are at hand.
 """

@@ -343,19 +343,19 @@ USE_GROUPS = {"Irrigation": "Farm irrigation", "Community Water Supply": "Public
               "Power Generation": "Power plants"}
 
 
-# EGLE's yearly facility file, with facility names removed (some are individual farms), committed under data/inputs/mi/. EGLE's site refuses scripted
+# EGLE's yearly facility file, with facility names removed (some are individual farms), shipped with the package in states/mi/inputs/. EGLE's site refuses scripted
 # downloads, so each year's file is downloaded by hand and reduced with `python -m waterledger.states.mi.egle FILE.xlsx`.
-INPUTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "..", "..", "data", "inputs", "mi")
+INPUTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "inputs")
 
 
 def egle_use_file():
-    """The newest names-removed EGLE file: `WATERLEDGER_INPUTS` if set, else the repository's data/inputs/mi, else the cache."""
+    """The newest names-removed EGLE file: `WATERLEDGER_INPUTS` if set, else the one shipped with the package, else the cache."""
     import glob
-    for d in (setting("inputs", ""), os.path.normpath(INPUTS), RAW):
+    for d in (setting("inputs", ""), INPUTS, RAW):
         files = sorted(glob.glob(os.path.join(d, "egle_water_use_[0-9][0-9][0-9][0-9].csv"))) if d else []
         if files:
             return files[-1]
-    raise FileNotFoundError("No EGLE water-use file; see data/inputs/mi/README.md")
+    raise FileNotFoundError("No EGLE water-use file; see states/mi/inputs/README.md")
 
 
 def county_uses():

@@ -1,6 +1,6 @@
 """Michigan's public sources: what `waterledger build-state MI` downloads before it builds. A step whose files are already in the
 cache is skipped, so an interrupted build picks up where it stopped. EGLE's water-use file is not here: EGLE refuses scripted
-downloads, so a names-removed copy is committed in data/inputs/mi/ (see states/mi/egle.py)."""
+downloads, so a names-removed copy ships in states/mi/inputs/ (see states/mi/egle.py)."""
 import datetime, glob, json, os, time, urllib.request
 
 from waterledger_data.config import CACHE

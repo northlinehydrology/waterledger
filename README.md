@@ -133,7 +133,7 @@ uv sync                  # one environment with all three packages, editable
 uv run pytest            # unit tests, the golden model test and the ensemble-to-loop checks
 uv run pytest -m live    # every public data source still answers
 WATERLEDGER_FETCH=1 uv run pytest tests/test_reproduction.py    # reproduce the published estimates (downloads weather)
-uv run waterledger build-state OH       # build a state from the public sources (cached by stage, resumable)
+uv run waterledger build-state OH       # build any state, Michigan included, from the public sources (resumes from its cache)
 uv run waterledger snapshot OH --out snapshots && uv run waterledger check-snapshot OH --dir snapshots
 ```
 
