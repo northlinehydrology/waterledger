@@ -67,3 +67,47 @@ def test_a_michigan_site_reports_them():
     assert est.power_plants["mi_mix"].consumed.p50 == pytest.approx(est.electricity.avg_mw.p50 * 24 * 268 / 1e6)
     with pytest.raises(ValueError, match="power must be one of"):
         wl.Site(place=wl.place("Gaines charter township, MI"), facility=wl.DataCenter(it_mw=300, cooling="hybrid"), power="nope").estimate()
+
+
+def test_utility_shares_leave_out_a_utility_with_no_sales():
+    from waterledger.context import Utility
+    U = lambda n, a, s=None: Utility(name=n, type="", share_of_place=0.5, avg_mw=a, summer_peak_mw=s)
+    c = cm.utility_shares(POWER, [U("wires", None), U("nothing sold", 0), U("A", 1000, 2000), U("B", 800)], 10000)
+    assert [x.name for x in c] == ["A", "B", "State"]
+    assert c[0].percent.avg.p50 == pytest.approx(40) and c[0].percent.peak_day.p50 == pytest.approx(30)
+    assert c[1].percent.peak_day is None and c[2].percent.avg.p50 == pytest.approx(4)
+
+
+def test_county_share_falls_back_on_all_withdrawals():
+    w = wl.Flow(avg=R(1, 2, 3), peak_day=R(1, 2, 3))
+    assert cm.county_share(w, {"Public water systems": 100, "All reported withdrawals": 400}).measure == "public_water"
+    assert cm.county_share(w, {"public_supply": 100}).percent.avg.p50 == pytest.approx(2)
+    c = cm.county_share(w, {"All reported withdrawals": 400})
+    assert c.measure == "all_withdrawals" and c.percent.avg.p50 == pytest.approx(0.5)
+    assert cm.county_share(w, {"Livestock": 3}) is None
+
+
+def _plant(design, flow):
+    from waterledger.context import SewerPlant
+    return SewerPlant(npdes="x", name="P", design_mgd=design, flow_mgd=flow, km=1)
+
+
+def test_sewer_shares():
+    w = SimpleNamespace(to_sewer=R(0.5, 1, 2), returned=wl.Flow(avg=R(0.5, 1, 2), peak_day=R(1, 2, 4)), lake_source=False)
+    a, b = cm.sewer_shares(w, _plant(14, 10))
+    assert a.against == "sewer_plant" and a.percent.avg.p50 == pytest.approx(10)
+    assert b.against == "sewer_spare_room" and b.existing == 4 and b.percent.avg.p50 == pytest.approx(25) and b.percent.peak_day.p50 == pytest.approx(50)
+    assert [c.against for c in cm.sewer_shares(w, _plant(10, 10))] == ["sewer_plant"]      # no spare room to compare with
+    assert cm.sewer_shares(w, _plant(10, None)) == [] and cm.sewer_room(_plant(10, None)) is None
+
+
+def test_before_after_rows_follow_the_water():
+    W = R(0.4, 0.5, 0.6)
+    args = (W, R(1, 1.5, 2), R(0.2, 0.3, 0.4), R(0.1, 0.2, 0.3), 200, 34, "farm", 0.5, 300)
+    keys = lambda rows: [r.key for r in rows]
+    a = cm.before_after("muni", "sewer", *args, R(200, 210, 220), 100, _plant(14, 10))
+    assert keys(a) == ["water", "used", "sewer", "runoff", "mud", "build", "p", "salt", "fuel", "power"]
+    assert a[0].today == 100 and a[0].percent == pytest.approx(0.5) and a[2].percent == pytest.approx(2)
+    assert keys(cm.before_after("wells", "septic", *args))[:3] == ["water", "used", "wastewater"]
+    assert "sewer" not in keys(cm.before_after("muni", "sewer", *args, reuse=True))
+    assert cm.before_after("wells", "water", *args, county_public=100)[0].today is None      # the county's public water is not what wells draw on

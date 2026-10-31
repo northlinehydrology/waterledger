@@ -68,7 +68,7 @@ class Percent(BaseModel):
     """A percent on an average day and on a 1-in-10-year peak day, each a range like the water it comes from."""
     model_config = ConfigDict(frozen=True)
     avg: Range
-    peak_day: Range
+    peak_day: Range | None = None
 
 
 class Comparison(BaseModel):
@@ -99,6 +99,21 @@ class Equivalents(BaseModel):
     share_of_home_customers: Range | None = None
 
 
+class BeforeAfterRow(BaseModel):
+    """One row of what changes at a place with the campus: today, after (with its likely range where there is one) and the percent added to today's
+    figure where that means something. `unit` says what the numbers are; a row with no `today` is new to the place."""
+    model_config = ConfigDict(frozen=True)
+    key: str
+    today: float | None = None
+    after: float
+    after_low: float | None = None
+    after_high: float | None = None
+    today_low: float | None = None
+    today_high: float | None = None
+    percent: float | None = None
+    unit: str
+
+
 class PlantWater(BaseModel):
     """Water at power plants for a site's average electricity under one power option, MGD: what they evaporate, what they withdraw, and what they
     return on the middle estimates. Withdrawn water is mostly returned, warmer, to lakes and rivers, so it is never added to a site's own water."""
@@ -120,6 +135,7 @@ class Estimate(BaseModel):
     electricity: Electricity | None = None
     comparisons: list[Comparison] = []
     equivalents: Equivalents | None = None
+    before_after: list[BeforeAfterRow] = []
     power_plants: dict[str, PlantWater] = {}    # every power option for the state; site.power says which one the site uses
     weather: str = "region"     # "region": the stored results for the place's weather region or division; "local": the model run at the place (ERA5)
     model_version: str

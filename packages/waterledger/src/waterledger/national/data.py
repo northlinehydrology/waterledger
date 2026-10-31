@@ -95,9 +95,18 @@ class SnapshotData:
         """{independent city FIPS: the surrounding county's name}, where NOAA has no record for the city; empty in a snapshot from before 3.7.0."""
         return self._json("climate").get("rain_from", {})
 
+    def salt_events(self):
+        """{division: [lo, mid, hi] road salt events a winter}; empty in a snapshot from before 3.7.0, when Michigan's assumption stands in."""
+        return self._json("climate").get("salt_events", {})
+
     def residential(self):
         """The state's residential electricity {"customers", "mwh", "kwh_month"} (EIA-861); None in a snapshot from before 3.7.0."""
         return self._json("energy").get("residential")
+
+    def state_avg_mw(self):
+        """The state's retail electricity sales over 8,760 hours, MW (EIA-861); None in a snapshot from before 3.7.0."""
+        mwh = self._json("energy").get("state_retail_mwh")
+        return mwh / 8760 if mwh else None
 
     def utilities_for(self, geoid):
         return self._json("energy")["by_place"].get(geoid, [])

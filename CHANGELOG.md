@@ -7,11 +7,12 @@ Package changes (code). Changes to the numbers are listed by model version on th
 Model version 1.4 stays. No water or power estimate changes.
 
 - **`est.equivalents`**: the estimate in homes, golf courses and homes' electricity, the share of the state's home customers, and the share of water that evaporates. Full values; a display rounds them. `waterledger.comparisons` has the functions (`water_homes`, `golf_courses`, `electricity_homes`, `share_of_customers`, `plant_water`, `evaporated_share`).
+- **`est.comparisons` covers the county's water, the sewer plant and its spare room, the utilities and the state**, and **`est.before_after`** gives the place's before-and-after as numbers. A utility reporting no sales is left out of the comparison.
 - **`est.power_plants`**: water at power plants for each of the state's power options, consumed, withdrawn and returned. `Site(power=...)` chooses one and `est.site.power` names it.
 - **`waterledger.national.power.options`**: a state's power options, moved here from Northline's site builder, with the same values. `energy.NEW_GAS`, `energy.wind_solar` and one conversion, `energy.L_KWH_TO_GAL_MWH`, are shared with Michigan.
 - **An independent city NOAA has no record for takes its surrounding county's rainfall** (`Climate.rain_from` says which). Lexington, Virginia is the only one in the four published states: Rockbridge County, 44.79 inches. It had the state's median.
 - **A county with no rainfall record is now an error.** Only NOAA's "no such record" leaves an area out for that step; any other failure stops the build.
-- **Snapshots carry the state's residential electricity** (`energy.json`, additive). Electricity homes are `None` on a snapshot from before 3.7.0.
+- **Snapshots carry the state's residential electricity** and retail sales, and road salt events (additive). On a snapshot from before 3.7.0, electricity homes and the state comparison are left out and Michigan's salt assumption stands in.
 
 ## 3.6.2 (Oct 31, 2026)
 

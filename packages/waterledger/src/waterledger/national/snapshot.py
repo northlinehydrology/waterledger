@@ -125,14 +125,14 @@ def write(state, out, date=None, checks=None):
 
     storms, rain = nc.storms_and_rain(state)
     _write(os.path.join(folder, "climate.json"), {"divisions": nc.division_runs(state), "staff_runs": cw.staff_runs(200),
-                                                   "design_storms_in": storms, "rain_in": rain, "rain_from": nc.rain_from(state)})
+                                                   "design_storms_in": storms, "rain_in": rain, "rain_from": nc.rain_from(state), "salt_events": nc.salt_events(nc.division_runs(state))})
 
     us = energy.utilities_by_place(state, pl)
     loads = energy.loads(state)
     bas = {u["balancing_authority"] for v in us.values() for u in v if u["balancing_authority"]}
     _write(os.path.join(folder, "energy.json"), {"by_place": us, "loads": {str(k): v for k, v in loads.items()},
                                                   "grid_water": {b: w for b, w in energy.grid_water().items() if b in bas},
-                                                  "residential": pw.residential(state, pw.latest_eia861())})
+                                                  "residential": pw.residential(state, pw.latest_eia861()), "state_retail_mwh": pw.state_retail_mwh(state, pw.latest_eia861())})
 
     wu_source, inputs, wu_years = write_water_use(state, folder)
 

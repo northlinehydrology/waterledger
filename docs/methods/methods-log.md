@@ -551,3 +551,17 @@ independent cities in the published states and Baltimore, St. Louis and Carson C
 
 A county with no record now stops the build; the earlier code skipped it, and any other failure, without saying.
 
+## Oct 31, 2026: the other comparisons and the before-and-after table in the package
+
+`waterledger.comparisons` now holds the campus against the county's water, the sewer plant and its spare room, the utilities and the state,
+and the place's before-and-after as numbers. Words stay with each display; the private engine and the page word the same numbers,
+and a check compares both in all four states.
+
+As with homes, shares now come from full values, not values rounded for display. Each compares what the campus adds at full value with the
+reported figure as published. A utility reporting zero sales (Southwestern Electric Coop in Texas, Bayfield Electric in Michigan) was treated as a load of zero, so the page divided by it; it now counts
+like one reporting nothing. The county figure falls back on all reported withdrawals where a county's table has no public water figure, as the
+pages did. The before-and-after table's water row still uses only the public figure, because a label saying public water would misdescribe the total.
+
+Land defaults for `est.before_after` follow the page: cities 50 acres already built, others 200 acres of farmland [A]. Snapshots now carry road salt events by
+division, so the national tier does not need NOAA's station files at estimate time.
+

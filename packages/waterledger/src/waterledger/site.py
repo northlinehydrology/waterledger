@@ -49,7 +49,7 @@ class Site(BaseModel):
         power = self.power or ref["power"]
         if power not in ref["power_options"]:
             raise ValueError(f"power must be one of {sorted(ref['power_options'])}, not {power!r}")
-        return est.model_copy(update={"site": est.site.model_copy(update={"power": power}), "comparisons": comparisons.comparisons(est), "equivalents": comparisons.equivalents(est, ref),
+        return est.model_copy(update={"site": est.site.model_copy(update={"power": power}), "comparisons": comparisons.comparisons(est, ref), "equivalents": comparisons.equivalents(est, ref), "before_after": comparisons.site_before_after(est, ref),
                                       "power_plants": comparisons.plant_waters(est.electricity, ref["power_options"]) if est.electricity else {}})
 
     def to_bmi_config(self, path=None, forcing=None, end_time=None):

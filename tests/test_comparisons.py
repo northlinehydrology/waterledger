@@ -39,4 +39,4 @@ def test_on_an_estimate_and_through_json():
 
 def test_none_when_the_campus_takes_nothing_from_the_system():
     p = wl.place("Gaines charter township, MI")
-    assert wl.Site(place=p, facility=wl.DataCenter(it_mw=300, cooling="hybrid"), source="wells").estimate().comparisons == []
+    assert wl.Site(place=p, facility=wl.DataCenter(it_mw=300, cooling="hybrid"), source="wells").estimate().comparisons[0].against != "water_system"
