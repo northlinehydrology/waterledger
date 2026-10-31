@@ -524,15 +524,13 @@ the build if still refused. A county NOAA does not publish is still left out, an
 These were computed on the website, with no equivalent in the packages. They move to `waterledger.comparisons`, return on
 `est.equivalents` and `est.power_plants` at full value, and the pages mirror them with a parity check in all four states.
 
-Comparisons from full values. The pages rounded water to two significant figures first and then worked out homes, golf
-courses and shares from the rounded numbers, which rounds twice. In Southeast Michigan weather at 1,000 MW of hybrid cooling,
-0.2818 and 0.2096 MGD rounded to 0.28 and 0.21, which read as 8 of every 10 gallons evaporating; the full values give 74%,
-or 7 of 10. Comparisons now come from full values, and only the final figure is rounded, for display. The alternative was
-to keep ratios a reader can reproduce from the rounded numbers shown. We chose accuracy: the rounded inputs carry no
-information the full values lack. Over every weather region and 7 sizes in the four states, with each cooling design (952
-cases): the homes figure moves in 30% of average-day and 27% of peak-day cases, by at most a few units in the second
-significant figure, and golf courses in 9%. For the evaporated share, as shown: closed loop's percent moves in 136 of 238 cases, by
-up to 2 points, and "of every 10 gallons" for the other designs in 51 of 714, by one. No model estimate changes.
+Package and page differ on what comparisons start from. The package works from full values, as its rule says. The pages show water rounded to two significant figures
+and work out homes, golf courses, shares and levels from those shown figures, so a reader can reproduce each result from the numbers on the page. This was Andrew's decision (Oct 31,
+2026), after full values were tried on the pages and compared. The cost is rounding twice. In Southeast Michigan weather at 1,000 MW of hybrid cooling, 0.2818 and 0.2096 MGD round to 0.28 and
+0.21, which read as 8 of every 10 gallons evaporating, where the full values give 74%, or 7 of 10. Over every weather region and 7 sizes in the four states, with each cooling design (952
+cases), the page's homes figure differs from one made from full values in 30% of average-day and 27% of peak-day cases, by at most a few units in the second significant figure, and golf
+courses in 9%. For the evaporated share, closed loop's percent differs in 136 of 238 cases, by up to 2 points, and "of every 10 gallons" for the other designs in 51 of 714, by one. So `est.equivalents`
+and the page can read differently by that much. The parity check applies the page's rounding rule to the package's values, then the package's functions, and compares with the page.
 
 Power plant factors stay in whole gallons per MWh. The rule that the package does not round concerns results. These are
 factors quoted as written (Michigan's mix: 268, range 197 to 364), and at most 0.5 gallon in about 178 (0.3%), far inside
@@ -557,8 +555,7 @@ A county with no record now stops the build; the earlier code skipped it, and an
 and the place's before-and-after as numbers. Words stay with each display; the private engine and the page word the same numbers,
 and a check compares both in all four states.
 
-As with homes, shares now come from full values, not values rounded for display. Each compares what the campus adds at full value with the
-reported figure as published. A utility reporting zero sales (Southwestern Electric Coop in Texas, Bayfield Electric in Michigan) was treated as a load of zero, so the page divided by it; it now counts
+As with homes, the package's shares use full values and the pages' use the rounded water they show (the decision above): a county percent to one decimal differs between them in 5,005 of 8,344 cases checked, and a sewer percent of flow in 6,730 of 9,520. A utility reporting zero sales (Southwestern Electric Coop in Texas, Bayfield Electric in Michigan) was treated as a load of zero, so the page divided by it; it now counts
 like one reporting nothing. The county figure falls back on all reported withdrawals where a county's table has no public water figure, as the
 pages did. The before-and-after table's water row still uses only the public figure, because a label saying public water would misdescribe the total.
 
@@ -567,7 +564,7 @@ division, so the national tier does not need NOAA's station files at estimate ti
 
 ## Oct 31, 2026: design totals, closed loop's trade and contract size in the package
 
-`site.by_design()` compares a campus across cooling designs, on one power option, as `comparisons.compare_designs`: water at the campus and at power plants, which evaporates least, the thirstiest power option other than wind and solar and the state's starting mix, and what closed loop trades against cooling towers. The pages asked which design evaporated least using on-site water rounded for display; from full values the answer is the same in all 1,610 region, size and power cases checked. The simple page compares closed loop, hybrid and towers, and the detailed page adds air-assisted in its table; that choice of rows is the page's, and is left alone. `it_mw_from_contract` is contract power over the design's hottest-hour PUE, and the page rounds it to 10 MW.
+`site.by_design()` compares a campus across cooling designs, on one power option, as `comparisons.compare_designs`: water at the campus and at power plants, which evaporates least, the thirstiest power option other than wind and solar and the state's starting mix, and what closed loop trades against cooling towers. The pages' on-site water is rounded for display, and the package's is not; which design evaporates least comes out the same either way in all 1,610 region, size and power cases checked, so the pages use the shared comparison for that answer. The simple page compares closed loop, hybrid and towers, and the detailed page adds air-assisted in its table; that choice of rows is the page's, and is left alone. `it_mw_from_contract` is contract power over the design's hottest-hour PUE, and the page rounds it to 10 MW.
 
 ## Oct 31, 2026: starting power, the impairment filter and well summaries in the package
 
@@ -577,5 +574,5 @@ division, so the national tier does not need NOAA's station files at estimate ti
 
 `waterledger.levels` holds the bands behind what waterledger.org shows a reader (a water system's 2% and 10%, a plant's spare room at 10% and 50%, a small system, a plant near its design size, when a peak is worth saying, when sediment is "about as much") and the verdict comparing a reported figure with an estimate. These are this project's readings, marked [A]; only the withdrawal and Compact lines come from rules. They are published in `context.levels` so the pages read them. Northline's paid review keeps its own ratings and text.
 
-Levels now use full values. A withdrawal near a line could be rated on a figure rounded across it, as could the Compact share and the verdict on a proposal. Wording stays with each page: the simple and detailed pages say "with the state" and "with EGLE" for the same line, which is left alone as a choice of words. The single-storm method was settled earlier (curve numbers, `runoff.storm_mg`); the private review's yearly and first-inch figures remain its own.
+`est.levels` uses full values and the pages rate the figures they show, so a figure rounded across a line can read differently: 9 of 952 well withdrawal levels and 94 of 9,520 spare-room levels checked, and none of the Compact levels or the verdicts on the 6 proposals with a reported figure. Wording stays with each page: the simple and detailed pages say "with the state" and "with EGLE" for the same line, which is left alone as a choice of words. The single-storm method was settled earlier (curve numbers, `runoff.storm_mg`); the private review's yearly and first-inch figures remain its own.
 

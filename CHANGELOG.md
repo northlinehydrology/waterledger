@@ -4,7 +4,7 @@ Package changes (code). Changes to the numbers are listed by model version on th
 
 ## 3.7.0 (Oct 31, 2026)
 
-Model version 1.4 stays. No water or power estimate changes.
+Model version 1.4 stays. No water or power estimate changes. Everything here is at full value; waterledger.org works its comparisons from the rounded water it shows, so its figures can differ by that rounding.
 
 - **`est.equivalents`**: the estimate in homes, golf courses and homes' electricity, the share of the state's home customers, and the share of water that evaporates. Full values; a display rounds them. `waterledger.comparisons` has the functions (`water_homes`, `golf_courses`, `electricity_homes`, `share_of_customers`, `plant_water`, `evaporated_share`).
 - **`est.comparisons` covers the county's water, the sewer plant and its spare room, the utilities and the state**, and **`est.before_after`** gives the place's before-and-after as numbers. A utility reporting no sales is left out of the comparison.
