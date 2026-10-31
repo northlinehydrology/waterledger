@@ -573,3 +573,9 @@ division, so the national tier does not need NOAA's station files at estimate ti
 
 `comparisons.default_power` and `offered_power` are the page's rules for a site's power option: a state with its own mix starts on it and keeps grid averages for comparison only; otherwise a site starts on the grid region of the utility serving most of the place. All four published states have their own mix, so this changes nothing there today. `runoff.listed` is the filter for impairments a site's runoff can add to; it leaves out bacteria and mercury in fish, as the pages and the engine did with separate lists. `comparisons.wells_summary` says which aquifer most household wells draw from, with too few under 10 wells [A]. Michigan is the only state with well records. No number moves.
 
+## Oct 31, 2026: public levels and verdicts in the package
+
+`waterledger.levels` holds the bands behind what waterledger.org shows a reader (a water system's 2% and 10%, a plant's spare room at 10% and 50%, a small system, a plant near its design size, when a peak is worth saying, when sediment is "about as much") and the verdict comparing a reported figure with an estimate. These are this project's readings, marked [A]; only the withdrawal and Compact lines come from rules. They are published in `context.levels` so the pages read them. Northline's paid review keeps its own ratings and text.
+
+Levels now use full values. A withdrawal near a line could be rated on a figure rounded across it, as could the Compact share and the verdict on a proposal. Wording stays with each page: the simple and detailed pages say "with the state" and "with EGLE" for the same line, which is left alone as a choice of words. The single-storm method was settled earlier (curve numbers, `runoff.storm_mg`); the private review's yearly and first-inch figures remain its own.
+

@@ -122,6 +122,10 @@ def _ppw(state):
                               main_balancing_authority=w["main_ba"], import_share=w["import_share"]) if w else None
 
 
+# Where a state's rules aren't reviewed, Michigan's lines serve only as low and high bands [A]
+WITHDRAWAL_BANDS = {"register_mgd": 0.1, "zone_c_permit_mgd": 1.0, "permit_mgd": 2.0, "compact_use_mgd": 5.0}
+
+
 def reference(state, place):
     """A state's values to compare an estimate with: its power options, the starting one, a typical golf course at the place, and its homes' electricity
     (None from a snapshot written before 3.7.0)."""
@@ -135,7 +139,7 @@ def reference(state, place):
     return {"power_options": options, "power": default_power(options, "state_mix" if "state_mix" in options else next(iter(options)), place.context().energy.utilities),
             "golf_gpd": G.get("by_region", {}).get(_division(state, place)[0], G["gpd"]) if G else None,
             "home_kwh_month": res.get("kwh_month"), "home_customers": res.get("customers"), "state_avg_mw": sd.state_avg_mw(),
-            "rain_median_in": rq.rain_median(sd.rain()), "salt_events": sd.salt_events().get(_division(state, place)[0])}
+            "rain_median_in": rq.rain_median(sd.rain()), "salt_events": sd.salt_events().get(_division(state, place)[0]), "withdrawals": WITHDRAWAL_BANDS, "state_rules": False}
 
 
 def _division(state, place):

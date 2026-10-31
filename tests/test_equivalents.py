@@ -160,3 +160,30 @@ def test_listed_leaves_out_what_runoff_does_not_add_to():
     from waterledger_models import runoff as rq
     assert [x[0] for x in rq.listed([["sed", 1, []], ["ecoli", 0, []], ["fish", 0, []], ["nut", 0, []]])] == ["sed", "nut"]
     assert rq.listed(None) == []
+
+
+def test_levels_bands():
+    from waterledger import levels as lv
+    assert [lv.water_system(v) for v in (1.9, 2, 9.9, 10)] == ["small", "mid", "mid", "large"]
+    assert [lv.sewer(False, v) for v in (9, 10, 49, 50)] == ["small", "mid", "mid", "large"]
+    assert lv.sewer(True, None) == "large" and lv.sewer(False, None) == "info"
+    W = {"register_mgd": 0.1, "zone_c_permit_mgd": 1, "permit_mgd": 2, "compact_use_mgd": 5}
+    assert [lv.withdrawal(v, W)[1] for v in (0.09, 0.1, 1, 1.5, 2, 2.1)] == ["below", "register", "register", "zone_c", "zone_c", "permit"]
+    assert [lv.withdrawal(v, W, False)[1] for v in (0.09, 2, 2.1)] == ["low", "moderate", "high"]
+    assert lv.compact_share(5, W) == 100 and lv.compact(99.9) == "small" and lv.compact(100) == "large"
+    assert lv.small_system(4999, 0) and lv.small_system(10000, 2501) and not lv.small_system(10000, 2500) and not lv.small_system(None, 9e9)
+    assert lv.near_design(85, 100) and not lv.near_design(84, 100) and not lv.near_design(None, 100)
+    assert (lv.sediment_change(100, 79), lv.sediment_change(100, 100), lv.sediment_change(100, 126)) == ("less", "same", "more")
+
+
+def test_compare_verdicts():
+    from waterledger import levels as lv
+    O = R(0.5, 1, 2)
+    assert lv.compare([1, 1], O) == "Our middle estimate is about the same as the reported figure."
+    assert lv.compare([0.8, 1.2], O) == "Our middle estimate is inside the reported range."
+    assert lv.compare([1.1, 1.1], O) == "Our middle estimate is about the same as the reported figure."
+    assert lv.compare([3, 3], O) == "The reported figure is about 3 times our middle estimate, outside our likely range."
+    assert lv.compare([0.4, 0.4], O) == "Our middle estimate is about 2.5 times the reported figure, outside our likely range."
+    assert lv.compare([0.5, 0.5], O) == "Our middle estimate is about 2 times the reported figure, which is inside our likely range."
+    assert lv.compare([0.5, 2], O, True) == "Our middle estimate is above the reported minimum."
+    assert lv.compare([1.5, 2], O, True) == "The reported minimum is about 1.5 times our middle estimate, inside our likely range."

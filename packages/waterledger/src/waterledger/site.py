@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from waterledger import comparisons, scenario, states
+from waterledger import comparisons, levels, scenario, states
 from waterledger.estimate import Estimate, electricity, water_use
 from waterledger.facility import DataCenter
 from waterledger.place import Place
@@ -49,8 +49,9 @@ class Site(BaseModel):
         power = self.power or ref["power"]
         if power not in ref["power_options"]:
             raise ValueError(f"power must be one of {sorted(ref['power_options'])}, not {power!r}")
-        return est.model_copy(update={"site": est.site.model_copy(update={"power": power}), "comparisons": comparisons.comparisons(est, ref), "equivalents": comparisons.equivalents(est, ref), "before_after": comparisons.site_before_after(est, ref), "household_wells": comparisons.wells_summary(self.place.context().supply.household_wells),
+        est = est.model_copy(update={"site": est.site.model_copy(update={"power": power}), "comparisons": comparisons.comparisons(est, ref), "equivalents": comparisons.equivalents(est, ref), "before_after": comparisons.site_before_after(est, ref), "household_wells": comparisons.wells_summary(self.place.context().supply.household_wells),
                                       "power_plants": comparisons.plant_waters(est.electricity, ref["power_options"]) if est.electricity else {}})
+        return est.model_copy(update={"levels": levels.site_levels(est, ref)})
 
     def by_design(self, designs=("dry", "hybrid", "towers")):
         """The same campus with each cooling design, on this site's power option: water evaporated at the campus and at power plants, electricity, and which evaporates least."""

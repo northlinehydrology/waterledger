@@ -15,6 +15,7 @@ from waterledger_models.datacenter import lake as lc
 from waterledger_data.config import CACHE, SITE as SITE_ROOT, setting
 
 from waterledger.comparisons import HOUSEHOLD_GPD, it_mw_from_contract
+from waterledger.levels import LEVELS
 from waterledger_models import MODEL_VERSION
 STATE = "mi"      # Water Ledger is organized by state: site/waterledger/<state>/
 SITE = os.path.join(SITE_ROOT, STATE)
@@ -221,7 +222,8 @@ CONTEXT = {"household_gpd": {"value": HOUSEHOLD_GPD, "note": "more than 300 gall
            "golf_season_days": {"value": 153, "note": "May through September, the watering season [estimate]"},
            # Michigan's Part 327: registration above 100,000 gallons a day, a permit for new withdrawals above 2 MGD, 1 MGD in Zone C. The other Great Lakes
            # states review projects using up more than 5 MGD. Where a state's rules are not yet reviewed, the 0.1 and 2 are only low and high bands [A].
-           "withdrawals": {"register_mgd": 0.1, "zone_c_permit_mgd": 1.0, "permit_mgd": 2.0, "compact_use_mgd": 5.0, "sources": ["mcl327", "wgvu2026"]}}
+           "withdrawals": {"register_mgd": 0.1, "zone_c_permit_mgd": 1.0, "permit_mgd": 2.0, "compact_use_mgd": 5.0, "sources": ["mcl327", "wgvu2026"]},
+           "levels": LEVELS}
 
 TRACKER_MUNI = {"gaines": ("Gaines charter township", "Kent"), "lowell": ("Lowell charter township", "Kent"), "dorr": ("Dorr township", "Allegan"),
                 "ypsi": ("Ypsilanti charter township", "Washtenaw"), "augusta": ("Augusta charter township", "Washtenaw"), "saline": ("Saline township", "Washtenaw"),

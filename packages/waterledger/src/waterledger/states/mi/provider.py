@@ -37,7 +37,7 @@ def reference(place):
     D, P, W = sc.data("estimates"), sc.data("power"), sc.data("waters")
     T = P.get("total") or P["michigan"]
     return {"power_options": D["power_supply"], "power": "mi_mix", "golf_gpd": D["golf"]["golf_median_gpd"], "home_kwh_month": D["home_kwh_month"],
-            "home_customers": D["home_customers"], "state_avg_mw": T["avg_mw"], "rain_median_in": W.get("rain_median_in")}
+            "home_customers": D["home_customers"], "state_avg_mw": T["avg_mw"], "rain_median_in": W.get("rain_median_in"), "withdrawals": D["context"].get("withdrawals"), "state_rules": True}
 
 
 def context(place):
