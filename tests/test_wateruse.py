@@ -178,3 +178,11 @@ def test_snapshot_water_use_reads_and_prefers_the_state(tmp_path, monkeypatch):
 
 def test_days():
     assert wu._days(2024) == 366 and wu._days(2023) == 365 and math.isclose(wu.GAL_PER_ACRE_FOOT, 325851.429)
+
+
+def test_twdb_report_address_comes_from_the_list():
+    listing = ('<button type="button" id="5" class="btn2lnk" onclick="callViewReportPopup(\'old=\', \'x=\')">by County, 1974-1999</button>'
+               '<button type="button" id="7" class="btn2lnk" style="a" onclick="callViewReportPopup(\'path=\', \'token==\')">by County</button>')
+    assert wu.twdb_report_url(listing).endswith("ViewReport.aspx?reportPath=path%3D&lc=token%3D%3D")
+    with pytest.raises(wu.SourceUnavailable):
+        wu.twdb_report_url(listing, report=99)

@@ -295,8 +295,7 @@ def ohio(year=None, raw=None, fips=None):
 # Texas: TWDB Water Use Survey, historical water use estimates by county (SARA report 7)
 
 TWDB_SARA = "https://www3.twdb.texas.gov/apps/SARA/"
-TWDB_REPORT = (TWDB_SARA + "ReportViewer/ViewReport.aspx?reportPath=DneA%2Bi0230hTeXN0ZW0uQnl0ZVtdYmR3dFdVX1JFUC9TdW1GaW5hbF9Db3VudHlSZXBvcnRXaXRoUmV1c2U%3D"
-               "&lc=RXgzMjAxNzI4NjZ0ZXIxNTY5NzE5M25hbA%3D%3D")
+TWDB_REPORT_ID = 7                                          # "Historical Water Use Estimates by County, 2000 and Later (Includes Reuse)"
 TWDB_YEAR_FIELD = "rptViewer$ctl08$ctl03$ddValue"
 TWDB_CATS = {"Municipal": ("public_supply", "Muni"), "Manufacturing": ("industrial", "MFG"), "Mining": ("mining", "Mining"),
              "Power": ("thermoelectric", "Power"), "Irrigation": ("irrigation", "Irrig"), "LiveStock": ("livestock", "Livestock")}
@@ -329,6 +328,14 @@ class SourceUnavailable(RuntimeError):
     """A source's download stopped working (its page or report changed). The message says what to do."""
 
 
+def twdb_report_url(listing, report=TWDB_REPORT_ID):
+    """The viewer address for a report, from the report list's page. The list issues new tokens, so an address can't be kept."""
+    m = re.search(r'<button[^>]*\bid="' + str(report) + r'"[^>]*callViewReportPopup\(\'([^\']+)\',\s*\'([^\']+)\'\)', listing)
+    if not m:
+        raise SourceUnavailable(f"TWDB's report list has no report {report}; see {TWDB_SARA}reports/list")
+    return TWDB_SARA + "ReportViewer/ViewReport.aspx?" + urllib.parse.urlencode({"reportPath": m.group(1), "lc": m.group(2)})
+
+
 def fetch_twdb(year=None):
     """Download TWDB's county summary (report 7) for `year` (default: the newest TWDB offers) as CSV, saved as
     wateruse/twdb/county_<year>_<retrieved>.csv. The report sits behind an SSRS viewer (a session, a form post with the
@@ -338,9 +345,9 @@ def fetch_twdb(year=None):
     op.addheaders = [("User-Agent", "Mozilla/5.0"), ("Referer", TWDB_SARA + "reports/list")]
     step = "the report list"
     try:
-        op.open(TWDB_SARA + "reports/list", timeout=120).read()
+        report = twdb_report_url(op.open(TWDB_SARA + "reports/list", timeout=120).read().decode("utf-8", "replace"))
         step = "the report viewer"
-        h = op.open(TWDB_REPORT, timeout=120).read().decode("utf-8", "replace")
+        h = op.open(report, timeout=120).read().decode("utf-8", "replace")
         sel = re.search(r'<select name="' + re.escape(TWDB_YEAR_FIELD) + r'".*?</select>', h, re.S)
         opts = {int(lbl): v for v, lbl in re.findall(r'<option[^>]*value="([^"]+)"[^>]*>(\d{4})</option>', sel.group(0))}
         year = year or max(opts)
@@ -349,7 +356,7 @@ def fetch_twdb(year=None):
         form = {k: html.unescape(v) for k, v in re.findall(r'<input type="hidden" name="([^"]+)" id="[^"]*" value="([^"]*)"', h)}
         form[TWDB_YEAR_FIELD] = opts[year]
         form["rptViewer$ctl08$ctl00"] = "View Report"
-        act = urllib.parse.urljoin(TWDB_REPORT, html.unescape(re.search(r'<form[^>]*action="([^"]+)"', h).group(1)))
+        act = urllib.parse.urljoin(report, html.unescape(re.search(r'<form[^>]*action="([^"]+)"', h).group(1)))
         step = "the year's report"
         h2 = op.open(act, urllib.parse.urlencode(form).encode(), timeout=300).read().decode("utf-8", "replace")
         base = re.search(r'"ExportUrlBase":"([^"]+)"', h2).group(1).encode().decode("unicode_escape")
