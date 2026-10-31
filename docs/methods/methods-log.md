@@ -445,6 +445,7 @@ Pages no longer use another state's evidence. Each state's data carries its star
 
 ## Open
 
+- UPS efficiency is the first input to tighten: it leads annual PUE (ST 0.65-0.73). Kept at 90-99% (Lei and Masanet Table 3, LBNL 2024 Table 4.3) on Oct 30, 2026, since nothing independent and measured for large campuses was found. ENERGY STAR's guidance page says new efficient units are generally 92-95% and older ones can be under 90% (an older page); FEMP's purchasing example runs 97.3-99.3% (only part of the table was read, and the size may be smaller than a campus); vendors and trade press give about 97% for the best double conversion and 98-99% in eco mode. A low end of 92% would lower average electricity about 0.5%, and 95-99% about 2.5%, without changing how the designs compare. A question for an electrical or data center expert.
 - Model 1.4 is on the branch `hourly-electricity`, not released. Release: merge, tag, publish the four snapshots (`build-state`), rebuild page data from them, regenerate the methods pages and briefs.
 - Sensitivity analysis: repeat with a hotter climate's weather (West Michigan only so far); the repo has no other hourly weather.
 - Check Lei and Masanet's published Table 3 (Resources, Conservation and Recycling 182: 106323) against the preprint
