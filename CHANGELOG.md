@@ -4,6 +4,8 @@ Package changes (code). Changes to the numbers are listed by model version on th
 
 ## Unreleased
 
+- **Constants the site carried now come from the package**, through its data files: unit factors (`runoff.PARAMS["units"]`), curve numbers, `rain_median_in`, `home_customers` (Michigan's 2025 count), golf season days, withdrawal levels, and proposal sizes (`size_examples`). `national.climate.salt_events` moved here from the site's builder; `runoff.salt` takes `events`.
+- **`runoff.storm_mg`**: one storm's runoff by curve number, the method waterledger.org now uses for storms.
 - **`site.estimate(weather="local")`**: the model run at the place's nearest ERA5 grid cell instead of its region's stored results; `est.weather` says which. The default is unchanged and matches waterledger.org.
 - **`physics.SOURCES`**: where each parameter's range comes from, by name (`physics.SOURCES["hybrid_on"]`), beside the tables; a test fails if a parameter has none.
 - **`est.comparisons`**: the campus against what is already there, with what each comparison measures. First, the water system: water on an average day and on a peak day as homes (300 gallons a day, EPA WaterSense), as a percent of the connections of the largest system mapped in the place, the calculation waterledger.org makes on its water cards. `comparisons.HOUSEHOLD_GPD` is the one place for the 300.

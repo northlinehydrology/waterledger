@@ -14,12 +14,17 @@ Screening level, for a review or a public estimate, not a calibrated model:
 PARAMS is the single source of every value; Water Ledger reads it from waters.json and the Water Review reads it here.
 """
 
+from waterledger_models import hydrology
+
 LB = 0.226          # lb per (ac x in x mg/L)
 GAL_PER_AC_IN = 27154.0
 PJ = 0.9            # share of rain events that produce runoff (Simple Method)
 
 # Event mean concentrations, mg/L: [lo, mid, hi]. Mid is the Michigan source where one exists.
 PARAMS = {
+    "units": {"lb_per_ac_in_mg_l": LB, "gal_per_ac_in": GAL_PER_AC_IN, "runoff_event_share": PJ},
+    # A single storm by curve number (hydrology.composite_runoff_in), hydrologic soil group B: lawn after, pavement [estimate]
+    "curve_numbers": {"pervious_after": hydrology.CN_POST_PERV, "impervious": hydrology.CN_IMP, "sources": ["nrcs_tr55"]},
     "rv": {"imp": 0.95, "perv": 0.05, "sources": ["simple_method"]},
     "emc": {
         # Marquette, Michigan source areas (USGS WRIR 97-4242, Table 4, geometric means); TN = TKN + NO2+NO3
@@ -111,12 +116,28 @@ def construction(acres_disturbed, before="farm"):
     return [acres_disturbed * x for x in c]
 
 
-def salt(acres, imp=None):
-    """Road salt a winter on parking and drives (tons of salt) and the chloride in it."""
+def rain_median(rain_in):
+    """The median county's yearly rain (inches), for a state when no place is chosen."""
+    v = sorted(rain_in.values())
+    n = len(v)
+    return v[n // 2] if n % 2 else (v[n // 2 - 1] + v[n // 2]) / 2
+
+
+def storm_mg(acres, storm_in, imp=None):
+    """Runoff from one storm of `storm_in` inches on the finished site, million gallons (curve numbers, not the Simple Method, which is for the year).
+    Not routed: a volume, not a peak."""
+    imp = PARAMS["after"]["imp"] if imp is None else imp
+    return hydrology.composite_runoff_in(storm_in, imp, hydrology.CN_POST_PERV) * acres * GAL_PER_AC_IN / 1e6
+
+
+def salt(acres, imp=None, events=None):
+    """Road salt a winter on parking and drives (tons of salt) and the chloride in it. `events`: [lo, mid, hi] events a winter where a state has
+    its own by region (national.climate.salt_events), else Michigan's assumption."""
     S, A = PARAMS["salt"], PARAMS["after"]
     imp = A["imp"] if imp is None else imp
     paved_ksf = acres * imp * (1 - A["roof_share"]) * 43.56
-    t = [paved_ksf * S["lb_per_ksf"][i] * S["events"][i] / 2000 for i in range(3)]
+    ev = S["events"] if events is None else events
+    t = [paved_ksf * S["lb_per_ksf"][i] * ev[i] / 2000 for i in range(3)]
     return {"salt_t": t, "chloride_t": [x * S["chloride_share"] for x in t], "paved_ac": acres * imp * (1 - A["roof_share"])}
 
 

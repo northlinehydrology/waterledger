@@ -96,6 +96,7 @@ SOURCES = {
     "epa_sa": ("U.S. EPA. Community Water System Service Area Boundaries (reported or modeled), with population served and connections from SDWIS.", "https://www.epa.gov/ground-water-and-drinking-water/community-water-system-service-area-boundaries"),
     "usgs_wbd": ("U.S. Geological Survey. Watershed Boundary Dataset (HUC8 and HUC12).", "https://www.usgs.gov/national-hydrography/watershed-boundary-dataset"),
     "noaa_atlas14": ("NOAA National Weather Service. Atlas 14, Volume 8 (Midwestern States), precipitation frequency estimates.", "https://hdsc.nws.noaa.gov/pfds/"),
+    "nrcs_tr55": ("USDA NRCS (1986). Urban Hydrology for Small Watersheds, Technical Release 55: runoff by curve number, Table 2-2.", "https://www.govinfo.gov/content/pkg/CZIC-gb980-u73-1986/html/CZIC-gb980-u73-1986.htm"),
     "simple_method": ("Schueler, T. (1987). The Simple Method: runoff coefficient Rv = 0.05 + 0.009 × percent impervious (as used in EPA and state stormwater guidance).", "https://www.epa.gov/npdes/national-menu-best-management-practices-bmps-stormwater"),
     "egle_impaired": ("Michigan EGLE. Water Quality and Pollution Control in Michigan: Sections 303(d), 305(b) and 314 Integrated Report (impaired waters and TMDLs).", "https://www.michigan.gov/egle/about/organization/water-resources/glwarm/integrated-report"),
     "mcl327": ("Michigan Natural Resources and Environmental Protection Act, Part 327 Great Lakes Preservation: MCL 324.32701 (large quantity withdrawal: over 100,000 gallons a day averaged over any 30 days; waters of the state include the Great Lakes) and MCL 324.32723 (withdrawal permits: new withdrawals over 2,000,000 gallons a day, or over 1,000,000 in Zone C).", "https://www.legislature.mi.gov/Laws/MCL?objectName=mcl-324-32723"),
@@ -152,7 +153,7 @@ SHORT = {"lbnl2024": "LBNL 2024", "lei2021": "Lei & Masanet 2021", "wa_energy_co
          "icprb2026": "ICPRB 2026", "siddik2024": "Siddik et al. 2024", "macknick2012": "Macknick et al. 2012", "peer2019": "Peer et al. 2019",
          "eia_mi": "EIA", "egle2025": "EGLE 2025", "mpsc_territory": "MPSC", "usgs_cu2007": "Shaffer & Runkle 2007", "energystar_humid": "ENERGY STAR", "nih_closedloop": "NIH 2023", "jlarc2024": "JLARC 2024", "mcl_205_54ee": "MCL 205.54ee", "lowell_firstlook": "Lowell's First Look", "gaines_sunnews": "Sun and News 2026", "saline_post": "The Saline Post", "wgvu_switch": "WGVU 2025", "eia861": "EIA-861", "gcsaa2013": "GCSAA 2013", "epa_watersense": "EPA WaterSense", "era5": "ERA5", "google2026": "Google 2026",
          "han2026": "Han et al. 2026", "mytton2021": "Mytton 2021", "census_tiger": "Census", "epa_sa": "EPA service areas", "usgs_wbd": "USGS WBD",
-         "noaa_atlas14": "NOAA Atlas 14", "simple_method": "Simple Method", "egle_impaired": "EGLE", "mcl327": "MCL Part 327", "wgvu2026": "WGVU 2026", "naturalearth": "Natural Earth", "glerl": "NOAA GLERL", "eia_res": "EIA-861 2025", "msft2024": "Microsoft 2024", "lsc_cornell": "Cornell LSC", "cfr125_81": "40 CFR 125.81", "egle_npdes": "EGLE NPDES", "mi_part22": "Mich. Part 22 rules",
+         "noaa_atlas14": "NOAA Atlas 14", "simple_method": "Simple Method", "nrcs_tr55": "NRCS TR-55", "egle_impaired": "EGLE", "mcl327": "MCL Part 327", "wgvu2026": "WGVU 2026", "naturalearth": "Natural Earth", "glerl": "NOAA GLERL", "eia_res": "EIA-861 2025", "msft2024": "Microsoft 2024", "lsc_cornell": "Cornell LSC", "cfr125_81": "40 CFR 125.81", "egle_npdes": "EGLE NPDES", "mi_part22": "Mich. Part 22 rules",
          "attains2026": "EPA ATTAINS 2026", "mdnr_trout": "Michigan DNR trout streams", "noaa_cag": "NOAA 1991–2020", "echo": "EPA ECHO", "cwns2022": "EPA CWNS 2022",
          "usgs_marquette": "USGS Marquette 1997", "mpca_emc": "MPCA", "nsqd": "NSQD", "stepl": "EPA STEPL", "egle_ms4": "EGLE MS4 standard", "kcdc_rules": "Kent County rules",
          "bmpdb2020": "BMP Database 2020", "semcog_lid": "SEMCOG 2008", "epa_fact26": "EPA 2005", "epa_mm8": "EPA MM8", "part91": "Part 91", "mpca_salt": "MPCA salt guidance",
@@ -223,7 +224,12 @@ POWER_SUPPLY = {
              "note": "1.57 L/kWh consumed and 57.1 L/kWh withdrawn, MISO excluding hydropower consumption, 2022 (Siddik et al. dataset, load-weighted)"},
 }
 
-CONTEXT = {"household_gpd": {"value": HOUSEHOLD_GPD, "note": "more than 300 gallons per day per family at home", "sources": ["epa_watersense"]}}
+CONTEXT = {"household_gpd": {"value": HOUSEHOLD_GPD, "note": "more than 300 gallons per day per family at home", "sources": ["epa_watersense"]},
+           "liters_per_gallon": {"value": 3.78541},
+           "golf_season_days": {"value": 153, "note": "May through September, the watering season [estimate]"},
+           # Michigan's Part 327: registration above 100,000 gallons a day, a permit for new withdrawals above 2 MGD, 1 MGD in Zone C. The other Great Lakes
+           # states review projects using up more than 5 MGD. Where a state's rules are not yet reviewed, the 0.1 and 2 are only low and high bands [A].
+           "withdrawals": {"register_mgd": 0.1, "zone_c_permit_mgd": 1.0, "permit_mgd": 2.0, "compact_use_mgd": 5.0, "sources": ["mcl327", "wgvu2026"]}}
 
 TRACKER_MUNI = {"gaines": ("Gaines charter township", "Kent"), "lowell": ("Lowell charter township", "Kent"), "dorr": ("Dorr township", "Allegan"),
                 "ypsi": ("Ypsilanti charter township", "Washtenaw"), "augusta": ("Augusta charter township", "Washtenaw"), "saline": ("Saline township", "Washtenaw"),
@@ -393,7 +399,7 @@ GREAT_LAKE_BY_HUC4 = {"0401": "Lake Superior", "0402": "Lake Superior", "0418": 
 
 WATER_SOURCES = {"attains2026", "mi_part22", "mdnr_trout", "noaa_cag", "echo", "cwns2022", "usgs_marquette", "mpca_emc", "nsqd", "stepl", "egle_ms4", "kcdc_rules",
                  "bmpdb2020", "semcog_lid", "epa_fact26", "epa_mm8", "part91", "mpca_salt", "egle_rule57", "cat3516c", "uptime2014", "amazon_mo2026",
-                 "wyofile2025", "cfr112", "herb2007", "stefan2010", "rule75", "jea2024", "rule60", "egle_dc_faq", "wleb_dap", "nri2017", "simple_method",
+                 "wyofile2025", "cfr112", "herb2007", "stefan2010", "rule75", "jea2024", "rule60", "egle_dc_faq", "wleb_dap", "nri2017", "simple_method", "nrcs_tr55",
                  "usgs_wbd", "epa_wsaw", "noaa_atlas14", "wellogic", "wwat", "mcl327"}
 
 
@@ -423,7 +429,7 @@ def build_waters():
         if w:
             d, r = w.get("drift", {}), w.get("rock", {})
             wells[p["g"]] = [d.get("n", 0), d.get("depth"), d.get("swl"), r.get("n", 0), r.get("depth"), r.get("swl")]
-    data = {"generated": datetime.date.today().isoformat(), "cycle": 2026, "groups": wi.LABELS, "wells": wells, "h12": h12, "plants": plants, "rain_in": wi.county_precip(), "runoff": rq.PARAMS,
+    data = {"generated": datetime.date.today().isoformat(), "cycle": 2026, "groups": wi.LABELS, "wells": wells, "h12": h12, "plants": plants, "rain_in": wi.county_precip(), "rain_median_in": rq.rain_median(wi.county_precip()), "runoff": rq.PARAMS,
             "sources": {k: {"citation": c, "url": u, "short": SHORT.get(k, k)} for k, (c, u) in SOURCES.items() if k in WATER_SOURCES}}
     with open(OUT_WATERS, "w") as f:
         json.dump(round_tree(data, 3), f, separators=(",", ":"))
@@ -569,6 +575,8 @@ def main(n=200):
         "power": POWER,
         "pue_design": pue_design,
         "power_supply": POWER_SUPPLY,
+        "home_customers": 4538056,   # EIA-861 2025, Michigan residential customers
+        "size_examples": {"van_buren": it_t + it_d, "saline": saline_it},   # computing capacity of two proposals, from their contracts (MW)
         "home_kwh_month": 634.9,   # EIA-861 2025, Michigan (model 1.3; was 618.2 from EIA's 2024 Table 5A)
         "context": CONTEXT,
         "county_uses_mgd": uses,
