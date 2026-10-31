@@ -12,7 +12,9 @@ STAGES = ["places", "supply", "wastewater", "receiving", "climate", "energy", "w
 # climate_division: a county NOAA's table leaves out (Poquoson, Virginia) uses the nearest division's station, so a sliver short
 # of 100% is expected; a larger gap would mean the table or the county codes changed.
 # county_water_use: USGS's 2015 counties; a county created since 2015 would have none.
-COVERAGE_MIN = {"watersheds": 0.99, "utilities": 0.95, "climate_division": 0.99, "sewer_plant_within_40km": 0.5, "county_water_use": 0.99}
+# rain, design_storms: NOAA by county and independent city. A state outside Atlas 14 will need its own storm source first.
+COVERAGE_MIN = {"watersheds": 0.99, "utilities": 0.95, "climate_division": 0.99, "sewer_plant_within_40km": 0.5, "county_water_use": 0.99,
+                "rain": 0.99, "design_storms": 0.99}
 SAMPLE = 50
 
 
@@ -22,6 +24,7 @@ def checks(state, pl, sample=SAMPLE, seed=1):
     import math
 
     import waterledger as wl
+    from waterledger.national import climate as nc
     from waterledger_data import divisions, energy, receiving, supply, wastewater, wateruse
     n = len(pl)
     plants = wastewater.plants(state)
@@ -35,12 +38,15 @@ def checks(state, pl, sample=SAMPLE, seed=1):
                 return True
         return False
     cd = divisions.county_divisions()
+    storms, rain = nc.storms_and_rain(state)
     cov = {"water_system": len(supply.systems_by_place(state, pl)) / n,
            "watersheds": sum(1 for v in receiving.watersheds_by_place(state, pl).values() if v["h12"]) / n,
            "utilities": len(energy.utilities_by_place(state, pl)) / n,
            "climate_division": sum(1 for f in pl.county_fips if f in cd) / n,
            "sewer_plant_within_40km": sum(near_plant(r.lat, r.lon) for r in pl.itertuples()) / n,
-           "county_water_use": sum(1 for f in pl.county_fips if f in usgs) / n}
+           "county_water_use": sum(1 for f in pl.county_fips if f in usgs) / n,
+           "rain": sum(1 for f in pl.county_fips if f in rain) / n,
+           "design_storms": sum(1 for f in pl.county_fips if f in storms) / n}
     cov = {k: round(v, 3) for k, v in cov.items()}
     low = {k: v for k, v in cov.items() if k in COVERAGE_MIN and v < COVERAGE_MIN[k]}
     errors = []

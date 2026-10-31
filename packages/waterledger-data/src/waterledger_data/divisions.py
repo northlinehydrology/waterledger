@@ -7,7 +7,7 @@ represent each, county rainfall normals and NOAA Atlas 14 design storms. Cached 
   rain_in        county mean annual precipitation, 1991-2020 (NOAA Climate at a Glance, nClimGrid)
   design_storms  NOAA Atlas 14 24-hour depths (2-, 10-, 100-year) at each county's internal point
 """
-import json, math, os, urllib.request
+import json, math, os, time, urllib.error, urllib.request
 
 from tqdm.auto import tqdm
 
@@ -77,6 +77,17 @@ def division_stations(state_fips, counties):
     return _cached(f"{state_fips}_division_stations.json", fetch)
 
 
+def cag_json(url, tries=6, wait=30):
+    """A Climate at a Glance file. NOAA answers 429 when asked too quickly, so wait and ask again."""
+    for i in range(tries):
+        try:
+            return json.load(urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "waterledger"}), timeout=120))
+        except urllib.error.HTTPError as e:
+            if e.code != 429 or i == tries - 1:
+                raise
+            time.sleep(wait * (i + 1))
+
+
 def rain_in(state, counties):
     """{county FIPS: mean annual precipitation 1991-2020, inches}."""
     def fetch():
@@ -84,9 +95,12 @@ def rain_in(state, counties):
         for c in tqdm(counties, desc=f"{state} rainfall", unit="county", disable=None):
             url = CAG.format(st=state, county=c["geoid"][2:])
             try:
-                d = json.load(urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "waterledger"}), timeout=120))
+                d = cag_json(url)
                 v = [x["value"] for x in d["data"].values()]
                 out[c["geoid"]] = round(sum(v) / len(v), 2)
+            except urllib.error.HTTPError as e:
+                if e.code == 429:                  # still refused: a county must not go missing because NOAA was busy
+                    raise
             except Exception:
                 continue
         return out

@@ -500,3 +500,22 @@ Decision (Andrew): the packages are the standard, and waterledger.org is built o
   reading the shared files, and with that Michigan's home electricity figure.
 - Byte-identical snapshot rebuilds.
 - Sewer plant coordinates: some sit far from the place they are named for (Brown City, Vermontville and Cedar Springs, Michigan, 20-30 km). Check against the permits.
+
+## Oct 31, 2026: independent cities in the national tier's rainfall and storms
+
+Found while checking whether rate limiting had lost counties in the Oct 31 builds. It had not, but Virginia's published
+snapshot had rainfall for 95 of 133 county equivalents. The 38 missing are its independent cities, so 38 of its 322
+places had no rainfall or design storms, Richmond and Virginia Beach among them. `national.climate.counties` kept only
+rows at county level, and `census.places` lists independent cities as places, so they were never asked for. The statewide
+check passed because it did not look at rainfall or storms. NOAA does publish them: Climate at a Glance has Richmond as
+VA-760, and Atlas 14 answers at the city's point (24-hour 2-year 3.35 in, 100-year 8.43 in).
+
+Decision: `climate_areas` asks for counties plus any place whose county code has no county row, at the place's own point.
+Cooling stations stay on `counties`, because a division's station is chosen from the center of its counties and moving
+it would change cooling results for a reason unrelated to this error. No water use estimate changes; rainfall and storm
+figures appear where they were blank. The statewide check now requires 99% of places to have each, the standard of its
+other layers. A state outside Atlas 14 will fail that check until it has a storm source, which is the intended result.
+
+A rate-limited county used to be skipped silently (`except Exception: continue`). It now waits, up to 6 tries, and fails
+the build if still refused. A county NOAA does not publish is still left out, and the check reports the shortfall.
+

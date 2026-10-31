@@ -86,10 +86,12 @@ def huc12_links():
 
 @functools.lru_cache(None)
 def county_precip():
+    from waterledger_data.divisions import cag_json
+
     def fetch():
         out = {}
         for i in range(1, 166, 2):
-            d = _get(f"https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/county/time-series/MI-{i:03d}/pcp/12/12/1991-2020/data.json", {})
+            d = cag_json(f"https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/county/time-series/MI-{i:03d}/pcp/12/12/1991-2020/data.json")
             v = [x["value"] for x in d["data"].values()]
             out[f"26{i:03d}"] = {"name": d["description"]["title"].split(",")[0], "annual_in": round(sum(v) / len(v), 2), "n": len(v)}
         return {"source": "NOAA NCEI Climate at a Glance, county time series (nClimGrid), January-December precipitation, mean 1991-2020", "counties": out}

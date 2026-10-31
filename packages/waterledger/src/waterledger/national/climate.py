@@ -12,6 +12,17 @@ def counties(state):
     return [{"geoid": r.geoid, "lat": float(r.lat), "lon": float(r.lon)} for r in pl[pl.level == "county"].itertuples()]
 
 
+def climate_areas(state):
+    """The areas NOAA reports rainfall and storms for: every county, and the independent cities (Virginia's, Baltimore,
+    St. Louis, Carson City), which are county equivalents listed as places. A city stands at its own point."""
+    from waterledger_data import census
+    pl = census.places(next(f for f, s in states.FIPS.items() if s == state))
+    rows = pl[pl.level == "county"]
+    cities = pl[~pl.county_fips.isin(rows.geoid) & pl.county_fips.notna()].drop_duplicates("county_fips")
+    return ([{"geoid": r.geoid, "lat": float(r.lat), "lon": float(r.lon)} for r in rows.itertuples()]
+            + [{"geoid": r.county_fips, "lat": float(r.lat), "lon": float(r.lon)} for r in cities.itertuples()])
+
+
 def division_runs(state, n=200):
     """{division id: {"name", "station", "lat", "lon", "per_100mw"}}, per_100mw as cooling.run_location returns it."""
     from waterledger_data import climate, divisions
@@ -36,7 +47,7 @@ def division_runs(state, n=200):
 @functools.lru_cache(maxsize=8)
 def storms_and_rain(state):
     from waterledger_data import divisions
-    cs = counties(state)
+    cs = climate_areas(state)
     return divisions.design_storms(cs), divisions.rain_in(state, cs)
 
 
