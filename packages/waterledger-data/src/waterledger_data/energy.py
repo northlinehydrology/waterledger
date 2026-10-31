@@ -48,6 +48,20 @@ def grid_water():
                       "withdrawn_excl_hydro": float(r["withdrawn_l_per_kwh_excl_hydro"])} for r in csv.DictReader(open(TABLE))}
 
 
+L_KWH_TO_GAL_MWH = 1000 / 3.785411784
+# Natural gas combined cycle with cooling towers: Macknick et al. 2012, Table 2 consumption, Table 3 withdrawal; a technology, not a state's mix
+NEW_GAS = {"label": "Gas plants", "gal_mwh": 205, "lo": 130, "hi": 300, "wd_gal_mwh": 255, "wd_lo": 150, "wd_hi": 283, "sources": ["macknick2012"],
+           "note": "Natural gas combined cycle with cooling towers (Michigan's tower-cooled combined-cycle plants reported about 189 consumed in 2024)"}
+
+
+def wind_solar(pv_share):
+    """The 'wind and solar' option weighted by a state's own 2024 wind and solar generation (pv_share = PV's share of the two):
+    Macknick et al. 2012, wind 0 and PV 1 (0 to 5) gal/MWh, withdrawal equal to consumption."""
+    g = lambda v: round(pv_share * v, 2)
+    return {"label": "Wind and solar", "gal_mwh": g(1), "lo": 0, "hi": g(5), "wd_gal_mwh": g(1), "wd_lo": 0, "wd_hi": g(5),
+            "sources": ["macknick2012", "eia_sep2024"], "note": f"Wind 0 and utility solar about 1 (0 to 5) for panel washing, weighted by the state's 2024 wind and solar generation (PV {round(100 * pv_share)}%)"}
+
+
 def state_power_water(state):
     """Water at power plants per kWh of electricity used in a state, 2024, from plant-reported data (EIA-923 cooling water and
     EIA-860, flagged reports replaced by Macknick et al. 2012 medians, blended with the main balancing authority by the state's
