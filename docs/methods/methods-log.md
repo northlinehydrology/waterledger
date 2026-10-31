@@ -8,6 +8,19 @@ Layer-by-layer notes for the national tier (places, water supply, wastewater, re
 [national-tier-notes.md](national-tier-notes.md); county water use sources are in [water-use-sources.md](water-use-sources.md).
 This log covers decisions that cut across layers, and points there for detail.
 
+## Oct 30, 2026: Michigan builds on GitHub like the other states
+
+`waterledger build-state MI` now downloads Michigan's sources and builds from an empty cache, so its snapshot no longer waits for
+a site deploy. EGLE's water-use file, which EGLE will not serve to scripts, is committed in `data/inputs/mi/` with facility names
+removed. `waterledger build mi` stays for building from a cache.
+
+Checked against the published files, from an empty cache on GitHub (run 41169694682): `waters` and `power` match apart from the build
+date. `estimates` differs in 175 values, all by less than one part in a billion (floating point between macOS and Linux). `places` differs
+in three: two water system shares by 0.01 (Bangor, Cedar Springs), and Rogers City's main watershed, Lone Lake-Ocqueoc instead of Lake
+Huron. Its center lies in Lone Lake-Ocqueoc in the current boundaries, so the published value was out of date. No water or power estimate
+changed. Where a place's center falls in two HUC8s (only Cheboygan), the lowest code is now taken, so the result does not depend on
+the order the service returns.
+
 ## Oct 29, 2026: one method, many states (3.0.0)
 
 - **Decision.** The method that produced Water Ledger Michigan (model 1.2) is applied to any U.S. state from national

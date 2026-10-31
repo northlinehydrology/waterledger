@@ -197,7 +197,7 @@ def _local_shares(rings, polys, pts=None):
 def _watersheds(rings, lat, lon, h12, h8):
     """HUC12 subwatersheds covering the municipality with their shares, and the HUC8 at its internal point (USGS WBD)."""
     rows = _local_shares(rings, h12)
-    at = [q for q in h8 if q["bbox"][0] <= lon <= q["bbox"][2] and q["bbox"][1] <= lat <= q["bbox"][3] and _inside(lon, lat, q["rings"])]
+    at = sorted((q for q in h8 if q["bbox"][0] <= lon <= q["bbox"][2] and q["bbox"][1] <= lat <= q["bbox"][3] and _inside(lon, lat, q["rings"])), key=lambda q: q["huc8"])   # the lowest code where two overlap, whatever order the service returned
     return {"huc12": [{"code": q["huc12"], "name": q["name"], "share": round(sh, 2)} for sh, q in rows[:5]],
             "huc8": {"code": at[0]["huc8"], "name": at[0]["name"]} if at else None}
 
