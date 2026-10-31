@@ -136,7 +136,7 @@ def _climate(state, place):
     sd = state_data(state)
     d, runs = _division(state, place)
     return cx.Climate(provider="national", sources=["noaa_isd", "noaa_cag", "noaa_atlas14"], region=d, region_name=runs[d]["name"],
-                      station=runs[d]["station"], rain_in=sd.rain().get(place.county_fips), design_storms_in=sd.storms().get(place.county_fips, {}))
+                      station=runs[d]["station"], rain_in=sd.rain().get(place.county_fips), rain_from=sd.rain_from().get(place.county_fips), design_storms_in=sd.storms().get(place.county_fips, {}))
 
 
 def estimate(state, site):

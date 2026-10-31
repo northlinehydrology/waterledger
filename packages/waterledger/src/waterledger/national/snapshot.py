@@ -125,7 +125,7 @@ def write(state, out, date=None, checks=None):
 
     storms, rain = nc.storms_and_rain(state)
     _write(os.path.join(folder, "climate.json"), {"divisions": nc.division_runs(state), "staff_runs": cw.staff_runs(200),
-                                                   "design_storms_in": storms, "rain_in": rain})
+                                                   "design_storms_in": storms, "rain_in": rain, "rain_from": nc.rain_from(state)})
 
     us = energy.utilities_by_place(state, pl)
     loads = energy.loads(state)

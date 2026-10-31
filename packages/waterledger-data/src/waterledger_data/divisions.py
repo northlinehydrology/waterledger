@@ -99,10 +99,10 @@ def rain_in(state, counties):
                 v = [x["value"] for x in d["data"].values()]
                 out[c["geoid"]] = round(sum(v) / len(v), 2)
             except urllib.error.HTTPError as e:
-                if e.code == 429:                  # still refused: a county must not go missing because NOAA was busy
+                if e.code != 404:                  # only "no such record" leaves a county out; it must not go missing because NOAA was busy
                     raise
-            except Exception:
-                continue
+            except (KeyError, ValueError, ZeroDivisionError):
+                continue                           # NOAA answered without a usable record
         return out
     return _cached(f"{state}_county_rain.json", fetch)
 

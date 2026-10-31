@@ -106,7 +106,7 @@ Counts: Ohio 669 plants, Virginia 217, Texas 1,059.
 - The cooling Monte Carlo (200 runs, the same parameters and seeds as Michigan) runs on each division's station record.
 - Design storms, both tiers: NOAA Atlas 14 24-hour depths at each county's internal point. Older NOAA studies will fill
   states outside Atlas 14 when needed; Ohio, Virginia and Texas are all covered (Texas: Volume 11, 2018).
-- Rainfall: NOAA Climate at a Glance county means, 1991-2020.
+- Rainfall: NOAA Climate at a Glance means, 1991-2020, by county and independent city. A city NOAA has no record for takes its surrounding county's (Lexington, Virginia: Rockbridge County, 44.79 inches); a county with none stops the build.
 
 300 MW, cooling towers, average withdrawal (million gallons a day): Gaines (Michigan, ERA5) 2.34; Columbus 2.40;
 Loudoun County 2.43; Austin 2.66.

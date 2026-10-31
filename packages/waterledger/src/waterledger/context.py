@@ -107,6 +107,7 @@ class Climate(_Category):
     region_name: str
     station: str
     rain_in: float | None = None                    # county mean annual precipitation, 1991-2020
+    rain_from: str | None = None                    # the surrounding county whose record stands in, where NOAA has none for an independent city
     design_storms_in: dict[str, float] = {}         # 24-hour depths by return period in years (NOAA Atlas 14)
 
 

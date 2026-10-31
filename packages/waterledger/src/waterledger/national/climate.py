@@ -44,11 +44,46 @@ def division_runs(state, n=200):
     return out
 
 
+def surrounding_county(pl, fips):
+    """The county that surrounds an independent city: the one covering most of a narrow ring around it."""
+    m = pl.to_crs(5070)                 # CONUS Albers, so areas and the 1 km ring are in meters
+    city = m[m.county_fips == fips].geometry.union_all().buffer(1000)
+    rows = m[m.level == "county"]
+    return pl.loc[rows.geometry.intersection(city).area.idxmax()]
+
+
+def fill_rain(rain, pl, areas):
+    """Rainfall for every area, and {city: county name} where a county's record stands in for an independent city NOAA has none for (Lexington,
+    Virginia, inside Rockbridge County). A county with no record, or a city whose county has none, is an error, not a gap."""
+    rows = set(pl[pl.level == "county"].geoid)
+    out, used = dict(rain), {}
+    for a in areas:
+        if a["geoid"] in out:
+            continue
+        if a["geoid"] in rows:
+            raise RuntimeError(f"NOAA has no rainfall record for county {a['geoid']}")
+        c = surrounding_county(pl, a["geoid"])
+        if c.geoid not in rain:
+            raise RuntimeError(f"NOAA has no rainfall record for {a['geoid']} or its surrounding county {c.geoid}")
+        out[a["geoid"]], used[a["geoid"]] = rain[c.geoid], c.base
+    return out, used
+
+
+@functools.lru_cache(maxsize=8)
+def _rain(state):
+    from waterledger_data import census, divisions
+    return fill_rain(divisions.rain_in(state, climate_areas(state)), census.places(next(f for f, s in states.FIPS.items() if s == state)), climate_areas(state))
+
+
+def rain_from(state):
+    """{independent city FIPS: the surrounding county's name}, where the county's record stands in for the city's."""
+    return _rain(state)[1]
+
+
 @functools.lru_cache(maxsize=8)
 def storms_and_rain(state):
     from waterledger_data import divisions
-    cs = climate_areas(state)
-    return divisions.design_storms(cs), divisions.rain_in(state, cs)
+    return divisions.design_storms(climate_areas(state)), _rain(state)[0]
 
 
 def salt_events(regions, first=2005, last=2024):
