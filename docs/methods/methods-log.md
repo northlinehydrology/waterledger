@@ -519,3 +519,35 @@ other layers. A state outside Atlas 14 will fail that check until it has a storm
 A rate-limited county used to be skipped silently (`except Exception: continue`). It now waits, up to 6 tries, and fails
 the build if still refused. A county NOAA does not publish is still left out, and the check reports the shortfall.
 
+## Oct 31, 2026: homes, golf courses, plant water and evaporated share in the package; Lexington's rainfall
+
+These were computed on the website, with no equivalent in the packages. They move to `waterledger.comparisons`, return on
+`est.equivalents` and `est.power_plants` at full value, and the pages mirror them with a parity check in all four states.
+
+Comparisons from full values. The pages rounded water to two significant figures first and then worked out homes, golf
+courses and shares from the rounded numbers, which rounds twice. In Southeast Michigan weather at 1,000 MW of hybrid cooling,
+0.2818 and 0.2096 MGD rounded to 0.28 and 0.21, which read as 8 of every 10 gallons evaporating; the full values give 74%,
+or 7 of 10. Comparisons now come from full values, and only the final figure is rounded, for display. The alternative was
+to keep ratios a reader can reproduce from the rounded numbers shown. We chose accuracy: the rounded inputs carry no
+information the full values lack. Over every weather region and 7 sizes in the four states, with each cooling design (952
+cases): the homes figure moves in 30% of average-day and 27% of peak-day cases, by at most a few units in the second
+significant figure, and golf courses in 9%. For the evaporated share, as shown: closed loop's percent moves in 136 of 238 cases, by
+up to 2 points, and "of every 10 gallons" for the other designs in 51 of 714, by one. No model estimate changes.
+
+Power plant factors stay in whole gallons per MWh. The rule that the package does not round concerns results. These are
+factors quoted as written (Michigan's mix: 268, range 197 to 364), and at most 0.5 gallon in about 178 (0.3%), far inside
+their ranges. The two conversions in use (3.78541 for Michigan, 3.785411784 elsewhere) are now one, the exact value; no
+rounded factor changes.
+
+Lake-source comparisons count what the lake loses, not what runs through, since nearly all of it returns. The pages did
+this; the private screening text counted the water run through, and now follows the package.
+
+Lexington. NOAA Climate at a Glance answers 404 for VA-678. Lexington lies inside Rockbridge County, whose 1991-2020 mean is
+44.79 inches; neighboring Buena Vista city reads 44.89. It took Virginia's median before. The alternatives were the nearest
+city with a record, or the median. A surrounding county is measured at the same scale and covers the land around the city, while
+a median stands for the whole state and another city's record for somewhere else. The surrounding county is the one covering most of a 1 km ring
+around the city, in CONUS Albers. `Climate.rain_from` and the snapshot's `rain_from` name the county, so the substitution is visible. Of the
+independent cities in the published states and Baltimore, St. Louis and Carson City, only Lexington lacks a record.
+
+A county with no record now stops the build; the earlier code skipped it, and any other failure, without saying.
+
