@@ -74,7 +74,7 @@ STAFF_KEYS = ("core", "per_mw", "gpcd", "used", "maint_base", "maint_per_mw", "m
 
 def staff_runs(n=200, seed=13):
     """Non-cooling water parameters per run, on their own stream: [core people, people per MW, gal per person a day, share used up,
-    maintenance gal a day for the campus, maintenance gal a day per MW, maintenance share used up]."""
+    maintenance gal a day for the campus, maintenance gal a day per MW, maintenance share lost]."""
     rng = np.random.default_rng(seed)
     return [[float(rng.uniform(*STAFF[k])) for k in STAFF_KEYS] for _ in range(n)]
 

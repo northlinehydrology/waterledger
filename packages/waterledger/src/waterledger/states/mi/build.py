@@ -566,7 +566,7 @@ def main(n=200):
         "parameters": {k: {"range": list(v), "sources": PARAM_SOURCES.get(k, [])}
                        for k, v in list(cw.RANGES.items()) + [("topup", cw.TOPUP)] + [("staff_" + k, v) for k, v in cw.STAFF.items()]},
         "regions": regions,
-        "staff": {"runs": staff, "note": "Staff water per run: [core people, people per MW of IT capacity, gallons per person a day, share used up]; "
+        "staff": {"runs": staff, "note": "Staff water per run: [core people, people per MW of IT capacity, gallons per person a day, share lost]; "
                                          "added to the per_100mw results at the campus's size (scenario.flow, WQ.flow)"},
         "power": POWER,
         "pue_design": pue_design,

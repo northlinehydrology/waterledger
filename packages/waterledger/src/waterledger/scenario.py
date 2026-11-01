@@ -105,7 +105,7 @@ def pue_by_design(regions, lake=None):
 
 
 def estimate(p, mw, cool, dest, region=None):
-    """Water taken, used up and sent out (MGD, lo/mid/hi), as on the page."""
+    """Water taken, evaporated or lost, and sent out (MGD, lo/mid/hi), as on the page."""
     D = data("estimates")
     x = mw / 100
     region = region or p["r"]
@@ -118,7 +118,7 @@ def estimate(p, mw, cool, dest, region=None):
 
 
 def cooling_estimate(D, region, cool, mw, dest):
-    """Water taken, used up and sent out for an air- or water-cooled campus (MGD, lo/mid/hi), from model results in D
+    """Water taken, evaporated or lost, and sent out for an air- or water-cooled campus (MGD, lo/mid/hi), from model results in D
     ({"regions": {region: {"per_100mw": ...}}, "staff": {"runs": ...}}): the page's est() for every design but lake-source.
     The national tier uses it with climate divisions as the regions."""
     F = lambda key: flow(D, region, cool, key, mw)

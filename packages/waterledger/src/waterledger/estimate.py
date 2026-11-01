@@ -28,7 +28,7 @@ class Flow(BaseModel):
 
 
 class WaterUse(BaseModel):
-    """Water a site takes (withdrawn), uses up (consumed: evaporation, drift, top-ups, staff use) and sends back (returned).
+    """Water a site takes (withdrawn), evaporates or loses (consumed: evaporation, drift, top-ups, humidifiers, staff use) and sends out as wastewater (returned).
     On the middle estimate withdrawn + condensate = consumed + returned; condensate comes out of the outside air, not a water system. Flows in million gallons a day; annual in million gallons."""
     model_config = ConfigDict(frozen=True)
     withdrawn: Flow

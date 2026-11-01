@@ -36,7 +36,7 @@ class Site(BaseModel):
     power: str | None = Field(None, description="what supplies the electricity, one of the state's options in est.power_plants; None: the state's own mix")
 
     def estimate(self, weather="region") -> Estimate:
-        """Water taken, used up and returned, as the state's provider computes it (same numbers as waterledger.org). weather="local" runs the
+        """Water taken, evaporated or lost, and returned, as the state's provider computes it (same numbers as waterledger.org). weather="local" runs the
         model at the place instead of using its region's stored results: ERA5 reanalysis, the grid cell nearest the place, an 8 MB download once and about 30 seconds
         each run. It is not measured on-site weather. Outside Michigan the stored results use NOAA stations, so
         "local" also changes the kind of weather data, and the brief reports stations giving hybrid and assist estimates 4-50% higher. Not for lake-source cooling."""
