@@ -205,6 +205,7 @@ def test_estimate_books_close_on_the_middle_estimate():
     D = {"regions": {"r": {"per_100mw": {"towers": per}}}, "staff": {"runs": cooling.staff_runs(5)}}
     E = cooling_estimate(D, "r", "towers", 100, "sewer")
     assert E["wAvg"]["mid"] + E["condAvg"]["mid"] == pytest.approx(E["cAvg"]["mid"] + E["rAvg"]["mid"])
+    assert E["rAvg"]["mid"] == pytest.approx(0.2 + cooling.staff_q(D["staff"]["runs"], 100)["returned"]["p50"])     # wastewater stays the model's own median
     R = cooling_estimate(D, "r", "towers", 100, "reuse")
     assert R["wAvg"]["mid"] + R["condAvg"]["mid"] == pytest.approx(R["cAvg"]["mid"] + R["rAvg"]["mid"])
 

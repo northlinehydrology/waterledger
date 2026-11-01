@@ -127,11 +127,11 @@ def cooling_estimate(D, region, cool, mw, dest):
     E = {"lake": False, "wAvg": F("withdrawn_avg"), "wPeak": F("withdrawn_peak_1in10"), "wAnn": F("withdrawn_annual_mg"),
          "cAvg": F("consumed_avg"), "cPeak": F("consumed_peak_1in10"), "rAvg": F("returned_avg"),
          "rPeak": F("returned_peak_1in10"), "condAvg": C("condensate_avg"), "condPeak": C("condensate_peak_1in10"), "reuse": False}
-    # no rounding here (the site rounds what it shows): on the middle estimate, returned is withdrawn plus condensate less consumed, so the books close;
-    # the ranges stay the model's own, widened only if that difference falls outside them
-    for k_r, k_w, k_c, k_n in (("rAvg", "wAvg", "cAvg", "condAvg"), ("rPeak", "wPeak", "cPeak", "condPeak")):
-        m = max(0.0, E[k_w]["mid"] + E[k_n]["mid"] - E[k_c]["mid"])
-        E[k_r] = {"lo": min(E[k_r]["lo"], m), "mid": m, "hi": max(E[k_r]["hi"], m)}
+    # no rounding here (the site rounds what it shows). Separate medians do not add up, so on the middle estimate withdrawn and returned stay the model's own medians
+    # and evaporated or lost is what is left, so the books close: withdrawn + condensate = consumed + returned. Its range stays the model's own, widened only if that falls outside
+    for k_c, k_w, k_r, k_n in (("cAvg", "wAvg", "rAvg", "condAvg"), ("cPeak", "wPeak", "rPeak", "condPeak")):
+        m = max(0.0, E[k_w]["mid"] + E[k_n]["mid"] - E[k_r]["mid"])
+        E[k_c] = {"lo": min(E[k_c]["lo"], m), "mid": m, "hi": max(E[k_c]["hi"], m)}
     E["sewer"] = E["rAvg"]
     if dest == "reuse":
         E["full"] = {"wAvg": E["wAvg"], "rAvg": E["rAvg"]}
