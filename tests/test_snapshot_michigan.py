@@ -9,6 +9,7 @@ from waterledger import scenario as sc
 from waterledger.national.data import SnapshotData
 
 pytestmark = [pytest.mark.live, pytest.mark.state_mi]
+WELL_PLACES_MIN, WELL_RECORDS_MIN = 1300, 470000
 
 
 @pytest.fixture(scope="module")
@@ -47,3 +48,13 @@ def test_water_use_is_egle_then_usgs(snap):
     assert W["state"]["basis"]["source"] == "egle2025" and W["state"]["counties"]["26081"]["source_values"] == kent
     assert W["state"]["counties"]["26081"]["mgd"]["public_supply"] == kent["Public water systems"]
     assert W["national"]["counties"]["26081"]["mgd"]["total"] == 27.76 and len(W["national"]["counties"]) == 83
+
+
+def wells_look_whole(wells):
+    """Household wells by place are all there: a source that answers with too little for some counties raises no error. Floors a little under the Nov 1, 2026 counts [A]."""
+    return len(wells) >= WELL_PLACES_MIN and sum((v[0] or 0) + (v[3] or 0) for v in wells.values()) >= WELL_RECORDS_MIN
+
+
+def test_household_wells_are_all_there():
+    assert wells_look_whole(sc.data("waters")["wells"])
+    assert not wells_look_whole({"a": [10, 1, 1, 0, 0, 0]})
