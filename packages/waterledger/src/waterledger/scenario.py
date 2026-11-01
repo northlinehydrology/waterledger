@@ -170,14 +170,18 @@ def septic_rule(gpd):
 
 
 def _plants_near(p, km=40):
-    """Sewer plants for a place exactly as the page finds them (WQ.plants: waters.json map coordinates, 1/60 degree = 1.852 km),
-    so the page and the engine pick the same destination at the SEWER_KM edge."""
+    """Sewer plants for a place by the rule every state has (wastewater.nearest): the place's own first, then any of 0.5 MGD or more, nearest first, by true distance. The site's data gives places and plants in
+    map coordinates, to about 200 m. WQ.plants on the page has to work out the same distance."""
     from waterledger_data import waters as wi
-    from waterledger_data.wastewater import is_own
+    from waterledger_data.wastewater import distance_km, is_own
     st = wi.place_stem(p["n"])
-    rows = [{**q, "km": math.hypot(q["x"] - p["x"], q["y"] - p["y"]) * 1.852} for q in data("waters")["plants"]]
-    rows = [{**q, "own": is_own(q["city"] == st, q["km"])} for q in rows]
-    return sorted([q for q in rows if q["km"] <= km and (q["own"] or q["design"] >= 0.5)], key=lambda q: (not q["own"], q["km"]))
+    lon, lat = lonlat(p)
+    rows = []
+    for q in data("waters")["plants"]:
+        q_lon, q_lat = lonlat(q)
+        d = distance_km(lat, lon, q_lat, q_lon)
+        rows.append({**q, "km": d, "own": is_own(q["city"] == st, d)})
+    return sorted([q for q in rows if q["km"] <= km and (q["own"] or (q["design"] or 0) >= 0.5)], key=lambda q: (not q["own"], q["km"]))
 
 
 def near_system(p):

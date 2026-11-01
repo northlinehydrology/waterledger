@@ -134,46 +134,9 @@ ECHO_COLS = "1,2,4,13,15,26,27,28,29,30,31,53,56,62,150,158,159,161,168,172,173,
 
 @functools.lru_cache(None)
 def potws():
-    """Michigan wastewater plants from EPA's Clean Watersheds Needs Survey 2022 (design flow, location; includes lagoons and plants that
-    discharge to groundwater under state permits), with last year's average reported flow, receiving water and combined-sewer status
-    from EPA ECHO where an NPDES permit matches. ECHO flows that don't fit the plant's design flow are dropped (unit errors are common)."""
-    import csv
-
-    def fetch():
-        q = _get(f"{ECHO}.get_facilities", {"output": "JSON", "p_st": "MI", "p_pcomp": "POT", "responseset": 1000})["Results"]["QueryID"]
-        return _get(f"{ECHO}.get_qid", {"output": "JSON", "qid": q, "pageno": 1, "responseset": 1000, "qcolumns": ECHO_COLS})["Results"]["Facilities"]
-    rows = _cached("echo_potw_mi.json", lambda: {"Results": {"Facilities": fetch()}})
-    rows = rows["Results"]["Facilities"] if isinstance(rows, dict) else rows
-    echo = {r["SourceID"]: r for r in rows if r["CWPPermitStatusDesc"] not in ("Terminated", "Expired")}
-    cwns_design_flows()   # downloads the CWNS tables if needed
-    for f in ("FACILITIES", "PHYSICAL_LOCATION"):
-        path = os.path.join(RAW, f"cwns2022_{f}.csv")
-        if not os.path.exists(path):
-            urllib.request.urlretrieve(f"{CWNS}/{f}.csv", path)
-    rd = lambda f: csv.DictReader(open(os.path.join(RAW, f"cwns2022_{f}.csv")))
-    fac = {r["CWNS_ID"]: r for r in rd("FACILITIES") if r["STATE_CODE"] == "MI" and r["INFRASTRUCTURE_TYPE"] == "Wastewater"}
-    flow = {r["CWNS_ID"]: float(r["CURRENT_DESIGN_FLOW"]) for r in rd("FLOW") if r["STATE_CODE"] == "MI" and r["FLOW_TYPE"] == "Total Flow" and r["CURRENT_DESIGN_FLOW"]}
-    loc = {r["CWNS_ID"]: r for r in rd("PHYSICAL_LOCATION") if r["STATE_CODE"] == "MI" and r["LATITUDE"]}
-    permits = collections.defaultdict(list)
-    for r in rd("FACILITY_PERMIT"):
-        if r["STATE_CODE"] == "MI":
-            permits[r["CWNS_ID"]].append(r["PERMIT_NUMBER"])
-    out = []
-    for cid, fr in fac.items():
-        if cid not in flow or cid not in loc:
-            continue
-        e = next((echo[pm] for pm in permits[cid] if pm in echo), None)
-        design = flow[cid]
-        f_echo = float(e["PastCalYrAverageFlow"]) if e and e["PastCalYrAverageFlow"] else None
-        if f_echo and not 0.1 <= f_echo / design <= 1.3:
-            f_echo = None
-        name = fr["FACILITY_NAME"].upper()
-        out.append({"id": (e or {}).get("SourceID") or (permits[cid] or [cid])[0], "name": name, "city": loc[cid]["CITY"],
-                    "lat": float(loc[cid]["LATITUDE"]), "lon": float(loc[cid]["LONGITUDE"]),
-                    "major": bool(e and e["CWPMajorMinorStatusFlag"] == "M"), "cso": bool(e and e["CWPCsoFlag"] == "Y"), "flow_mgd": f_echo, "design_mgd": design,
-                    "receiving": (e or {}).get("CWPStateWaterBodyName"), "huc12": (e or {}).get("RadWBDHuc12"),
-                    "lagoon": bool(re.search(r"LAGOON|WWSL|STABILIZATION", name))})
-    return out
+    """Michigan's wastewater plants, by the rule every state has (waterledger_data.wastewater.plants)."""
+    from waterledger_data.wastewater import plants
+    return plants("MI")
 
 
 TROUT = "https://services3.arcgis.com/Jdnp1TjADvSDxMAX/ArcGIS/rest/services/DNRFisheriesTroutRegsOPENDATA/FeatureServer/0/query"

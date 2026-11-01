@@ -1,7 +1,7 @@
 """Michigan's provider: answers for Michigan places from Water Ledger Michigan's data files (the same ones waterledger.org/mi
 reads), through waterledger.scenario, so the package and the page agree."""
 from waterledger import scenario as sc
-from waterledger.national.provider import water_use_record
+from waterledger.national.provider import PLANTS_MAX, water_use_record
 
 # EGLE's groups on waterledger.org/mi -> the county water-use categories (waterledger_data.wateruse.CATEGORIES)
 EGLE_CATS = {"Public water systems": "public_supply", "Industry": "industrial", "Bottled water": "industrial", "Farm irrigation": "irrigation",
@@ -57,7 +57,7 @@ def context(place):
                        household_wells=dict(zip(("drift_n", "drift_depth_ft", "drift_level_ft", "rock_n", "rock_depth_ft", "rock_level_ft"), wells)) if wells else None)
     plants = [cx.SewerPlant(npdes=q["id"], name=q["n"], design_mgd=q.get("design"), flow_mgd=q.get("flow"), km=q["km"],
                             own=bool(q.get("own")), receiving_water=q.get("recv") or None, combined_sewer=bool(q.get("cso")), lagoon=bool(q.get("lagoon")))
-              for q in sc._plants_near(r)]
+              for q in sc._plants_near(r)[:PLANTS_MAX]]
     G = Wd["groups"]
     path, h = [], (r["h12"][0]["code"] if r["h12"] else None)
     while h and h in Wd["h12"] and len(path) < 25:
