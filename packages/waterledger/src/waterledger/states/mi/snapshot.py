@@ -14,8 +14,6 @@ from waterledger import scenario as sc
 from waterledger.national.snapshot import DOWNSTREAM_HUCS, FORMAT, _write
 
 SITE_FILES = ("places", "estimates", "waters", "power")
-# Michigan's utilities by balancing authority: MISO, except Indiana Michigan Power's territory, which is in PJM
-PJM = {"Indiana Michigan Power Company"}
 
 
 def write(out, date=None):
@@ -94,7 +92,7 @@ def write(out, date=None):
                                                    "rain_in": W["rain_in"]})
 
     U = PW["utilities"]
-    ba = lambda n: "PJM" if n in PJM else "MISO"
+    from waterledger.states.mi.provider import balancing_authority as ba
     by_u = {gid: [{"eia_id": power.EIA_ID.get(U[i]["n"]), "name": U[i]["n"], "type": U[i]["type"], "balancing_authority": ba(U[i]["n"]), "share": sh}
                   for i, sh in v] for gid, v in PW["places"].items()}
     loads = {str(power.EIA_ID[u["n"]]): {"mwh": round(u["avg_mw"] * 8760, 1) if u.get("avg_mw") is not None else None, "customers": u.get("cust"),
