@@ -281,13 +281,6 @@ def test_power_plants_generate_the_campus_and_the_line_losses():
     assert plant_water(100, 1000) == pytest.approx(100 * 24 * 1000 / 1e6 / (1 - LINE_LOSS))
 
 
-def test_farmland_sediment_keeps_the_paved_part():
-    L = runoff.loads(200, 37.0, before="farm")["tss_t"]["now"][1]
-    P = runoff.PARAMS
-    field = 200 * (1 - P["before_imp"]["farm"]) * P["farm_soil"]["t_per_ac_yr"][1]
-    assert L > field
-
-
 def test_power_losses_go_to_the_room_not_the_liquid_loop():
     """With all computers liquid-cooled but none of their heat to air, the air loop still carries the UPS, distribution and lighting losses."""
     p = {**CENTRAL, "liquid_share": 1.0, "liquid_air_share": 0.0, "oa_cfm_per_mw": 0.0, "crah_pa": 0.0}

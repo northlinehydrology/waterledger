@@ -9,9 +9,10 @@ Screening level, for a review or a public estimate, not a calibrated model:
   controls Michigan's post-construction standard (treat the first inch or 90% of storms, 80% TSS removal; EGLE MS4 permits,
            Kent County Drain Commissioner rules), applied to the captured share of runoff with wet-pond removal rates;
            infiltration as the stronger option
-  farmland sediment comes from field erosion, not runoff concentrations: delivered soil loss [A] 0.25-1.0 t/ac/yr (U.S. cropland
-           sheet-and-rill erosion averages 2.67 t/ac/yr, USDA NRI 2017, and only part of it leaves the field), carrying phosphorus
-           at the soil's content [A]; tile-drain nitrate is not counted, so farmland nitrogen here is low
+  sediment before and after is on one basis: what runoff carries, runoff x concentration. Farmland too, including its phosphorus; tile-drain nitrate is
+           not counted, so farmland nitrogen here is low. The construction years: bare ground at turf's coefficient [A], at the farmland concentration
+           times EPA's 10-20 (construction sites shed 10 to 20 times what farmland does). Gross erosion off bare ground (soil_moved) is a different
+           quantity, soil loosened rather than soil carried off, and is reported on its own
 PARAMS is the single source of every value; Water Ledger reads it from waters.json and the Water Review reads it here.
 """
 
@@ -41,8 +42,6 @@ PARAMS = {
         "built": {"tss": [75, 75, 201], "tp": [0.2, 0.2, 0.25], "tn": [2.0, 2.0, 2.5], "sources": ["mpca_emc", "stepl", "nsqd"]},
     },
     "before_imp": {"farm": 0.02, "woods": 0.01, "built": 0.60},     # [A] impervious share of the land as it is now
-    # Farmland field erosion reaching the field edge (t/ac/yr) and phosphorus on that soil (share by weight) [A]
-    "farm_soil": {"t_per_ac_yr": [0.25, 0.5, 1.0], "p_share": [0.0003, 0.0004, 0.0006], "sources": ["nri2017"]},
     "after": {"imp": 0.50, "imp_range": [0.40, 0.60], "roof_share": 0.40},   # [A] roofs and paving; roofs as a share of that
     # Michigan post-construction standard and removal by practice (share removed). Captured share of annual runoff [A].
     "controls": {
@@ -51,8 +50,9 @@ PARAMS = {
         "infiltration": {"tss": 0.95, "tp": 0.70, "tn": 0.51, "volume": 0.5, "sources": ["semcog_lid", "kcdc_rules"]},
         "standard": "Treat the first inch of runoff or 90% of runoff-producing storms with at least 80% TSS removal (or 80 mg/L), and hold peak rate and volume to pre-development for storms up to the 2-year, 24-hour event",
     },
-    # Construction: soil moved off bare ground per acre per year; EPA: construction sites shed sediment 10-20x agricultural land
-    "construction": {"t_per_ac_yr": [30, 100, 200], "ratio_to_farm": [10, 20], "years": [1, 2, 3], "sources": ["epa_fact26", "epa_mm8"],
+    # Construction. emc_tss: farmland's concentration x EPA's ratio of construction to farmland, end for end (50 x 10, 100 x 15, 160 x 20), on bare ground at rv_bare [A].
+    # t_per_ac_yr: gross erosion, soil moved off bare ground before any of it is delivered (EPA MM8 Table 8.1, a Wisconsin range of 30-200), not on the same basis as a load.
+    "construction": {"emc_tss": [500, 1500, 3200], "rv_bare": 0.20, "t_per_ac_yr": [30, 100, 200], "ratio_to_farm": [10, 15, 20], "years": [1, 2, 3], "sources": ["epa_fact26", "epa_mm8", "mpca_emc"],
                      "permits": "Part 91 soil erosion permit for 1 acre or more, or within 500 ft of a lake or stream; construction storm water permit-by-rule (R 323.2190) with a Notice of Coverage above 5 acres and weekly inspection by a certified operator"},
     # Road salt on parking and drives: lb per 1,000 sq ft per event (MPCA targets; practice is often higher) x events per winter [A]
     "salt": {"lb_per_ksf": [0.75, 1.5, 3.0], "events": [20, 40, 60], "paved_share": 0.60, "chloride_share": 0.607,
@@ -99,12 +99,6 @@ def loads(acres, rain_in, before="farm", imp=None, roof_share=None):
         now_perv = E[before][k] if before != "built" else E["turf"][k]
         now_imp = E["built"][k]
         now = [LB * acres * (i0 * r_imp * _w(now_imp, i) + (1 - i0) * r_before * _w(now_perv, i)) / div for i in range(3)]
-        if before == "farm":
-            fs = P["farm_soil"]
-            if k == "tss":
-                now = [LB * acres * i0 * r_imp * _w(now_imp, i) / div + acres * (1 - i0) * fs["t_per_ac_yr"][i] for i in range(3)]
-            elif k == "tp":
-                now = [now[i] + acres * (1 - i0) * fs["t_per_ac_yr"][i] * 2000 * fs["p_share"][i] for i in range(3)]
         after = [LB * acres * (imp * r_imp * (roof * E["roof"][k][i] + (1 - roof) * E["paved"][k][i]) + (1 - imp) * r_turf * E["turf"][k][i]) / div for i in range(3)]
         cap = P["controls"]["captured"]
         # lo pairs with the most capture, hi with the least
@@ -118,10 +112,15 @@ def loads(acres, rain_in, before="farm", imp=None, roof_share=None):
     return out
 
 
-def construction(acres_disturbed, before="farm"):
-    """Soil that can move off bare ground in a year of construction (tons, before controls catch part of it)."""
-    c = PARAMS["construction"]["t_per_ac_yr"]
-    return [acres_disturbed * x for x in c]
+def construction(acres_disturbed, rain_in):
+    """Sediment runoff carries off bare ground in a year of construction, tons, on the same basis as loads(): runoff x concentration, before controls catch part of it."""
+    c = PARAMS["construction"]
+    return [LB * acres_disturbed * rain_in * PJ * c["rv_bare"] * x / 2000 for x in c["emc_tss"]]
+
+
+def soil_moved(acres_disturbed):
+    """Gross erosion off bare ground in a year of construction, tons: soil loosened, not all of it carried off the site."""
+    return [acres_disturbed * x for x in PARAMS["construction"]["t_per_ac_yr"]]
 
 
 def rain_median(rain_in):
