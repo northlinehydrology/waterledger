@@ -18,17 +18,16 @@ COVERAGE_MIN = {"watersheds": 0.99, "utilities": 0.95, "climate_division": 0.99,
 SAMPLE = 50
 
 
-def checks(state, pl, sample=SAMPLE, seed=1):
-    """Statewide checks: how much of the state each layer covers (failing below COVERAGE_MIN), and a random sample of places
-    run through place.context() and site.estimate() for every cooling design, failing on any error."""
+def checks(state, d, sample=SAMPLE, seed=1):
+    """Statewide checks on a state's data `d` (a snapshot, or a live build): how much of the state each layer covers (failing below
+    COVERAGE_MIN), and a random sample of places run through place.context() and site.estimate() for every cooling design, failing on any error."""
     import math
 
     import waterledger as wl
-    from waterledger.national import climate as nc
-    from waterledger_data import divisions, energy, receiving, supply, wastewater, wateruse
+    pl = d.places()
     n = len(pl)
-    plants = wastewater.plants(state)
-    usgs = wateruse.usgs_2015(state)["counties"]
+    plants = d.plants()
+    usgs = ((d.water_use() or {}).get("national") or {}).get("counties", {})
 
     def near_plant(lat, lon):
         for q in plants:
@@ -37,12 +36,12 @@ def checks(state, pl, sample=SAMPLE, seed=1):
             if 12742.0 * math.asin(math.sqrt(h)) <= 40:
                 return True
         return False
-    cd = divisions.county_divisions()
-    storms, rain = nc.storms_and_rain(state)
-    cov = {"water_system": len(supply.systems_by_place(state, pl)) / n,
-           "watersheds": sum(1 for v in receiving.watersheds_by_place(state, pl).values() if v["h12"]) / n,
-           "utilities": len(energy.utilities_by_place(state, pl)) / n,
-           "climate_division": sum(1 for f in pl.county_fips if f in cd) / n,
+    divs = {f: d.division_of(f) for f in set(pl.county_fips)}
+    storms, rain = d.storms(), d.rain()
+    cov = {"water_system": sum(1 for g in pl.geoid if d.systems_for(g)) / n,
+           "watersheds": sum(1 for g in pl.geoid if d.sheds_for(g)["h12"]) / n,
+           "utilities": sum(1 for g in pl.geoid if d.utilities_for(g)) / n,
+           "climate_division": sum(1 for f in pl.county_fips if divs[f]) / n,
            "sewer_plant_within_40km": sum(near_plant(r.lat, r.lon) for r in pl.itertuples()) / n,
            "county_water_use": sum(1 for f in pl.county_fips if f in usgs) / n,
            "rain": sum(1 for f in pl.county_fips if f in rain) / n,
@@ -102,7 +101,7 @@ def build(state, out=None, n=200, run_checks=True):
                 "state_counties": len(own["counties"]) if own else 0}
     stage("wateruse", water_use)
     if run_checks:
-        stage("checks", lambda: checks(state, pl))
+        stage("checks", lambda: checks(state, LiveData(state)))
     report["seconds"] = round(time.time() - t_all, 1)
     if out:
         os.makedirs(out, exist_ok=True)
@@ -111,11 +110,12 @@ def build(state, out=None, n=200, run_checks=True):
 
 
 def check_snapshot(state, root):
-    """Run the statewide checks against a written snapshot (root/<ST>/<date>/) instead of the live services, and record the
-    results in its manifest. Much faster than checking live: the downstream paths are already in the snapshot."""
+    """Run the statewide checks against a written snapshot (root/<ST>/<date>/), reading only what the snapshot holds, and record
+    the results in its manifest. Michigan's provider answers from the site files the snapshot carries."""
     import os
     import re
 
+    from waterledger import scenario as sc
     from waterledger.national import data
     from waterledger.national.snapshot import SNAPSHOT_ID
     state = state.upper()
@@ -125,7 +125,9 @@ def check_snapshot(state, root):
     os.environ["WATERLEDGER_DATA_DATE"] = date
     data.state_data.cache_clear()
     sd = data.state_data(state)
-    result = checks(state, sd.places())
+    sc._cache.clear()
+    sc._cache.update({n[len("michigan/"):-len(".json")]: json.load(open(os.path.join(sd.folder, n))) for n in sd.manifest["files"] if n.startswith("michigan/")})
+    result = checks(state, sd)
     m = json.load(open(os.path.join(folder, "manifest.json")))
     m["checks"] = result
     json.dump(m, open(os.path.join(folder, "manifest.json"), "w"), separators=(",", ":"))
