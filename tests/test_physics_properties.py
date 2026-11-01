@@ -31,10 +31,12 @@ def test_evaporative_ratio_bounds_and_trend():
 
 @pytest.mark.parametrize("design", model.DESIGNS)
 def test_water_balance(design):
-    _, t, rh = synthetic_weather(30)
+    t, rh = np.array([-20.0, 0.0, 15.0, 28.0, 33.0]), np.array([50.0, 70.0, 80.0, 85.0, 70.0])     # a bitter hour and humid ones, so humidifiers and condensate both run
     p = model.central_parameters()
-    w, c, r = model.hourly_rates(t, model.wet_bulb(t, rh), design, p)
-    np.testing.assert_allclose(w, c + r, rtol=1e-12)
+    w, c, r = model.hourly_rates(t, model.wet_bulb(t, rh), design, p, rh)
+    humidify, condensate = model.hourly_water_with_air(t, model.wet_bulb(t, rh), p, rh)
+    assert humidify.max() > 0 and condensate.max() > 0
+    np.testing.assert_allclose(w + condensate, c + r, rtol=1e-12)
     assert np.all(w > 0) and np.all(c >= 0) and np.all(r >= 0)
 
 

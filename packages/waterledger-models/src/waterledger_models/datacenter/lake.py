@@ -40,7 +40,7 @@ def _es(t):
 
 def evaporation_ratio(t, wind_mph):
     """Share of added heat lost by evaporation at natural water temperature t (deg C), linearized heat balance (Ward 1980; USGS 2013 eq. 12-20)."""
-    f = 7.0e-8 * wind_mph  # Ward wind function, cal/(cm2 s mb)
+    f = 7.0e-8 * wind_mph  # Ward wind function, g/(cm2 s mb)
     de = (_es(t + 0.5) - _es(t - 0.5))  # mb per deg C
     d_e = 585.0 * f * de
     d_c = 585.0 * f * BOWEN
