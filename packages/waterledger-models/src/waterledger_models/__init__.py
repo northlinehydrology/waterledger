@@ -12,5 +12,5 @@ They change independently. Every published estimate names the model version that
 from waterledger_models import datacenter, hydrology, runoff, weather
 
 __all__ = ["datacenter", "hydrology", "runoff", "weather", "MODEL_VERSION"]
-MODEL_VERSION = "1.5"
+MODEL_VERSION = "1.6"
 __version__ = "3.8.0"

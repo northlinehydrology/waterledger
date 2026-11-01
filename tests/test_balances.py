@@ -33,14 +33,15 @@ def test_every_kw_is_accounted_for(design):
     q = 1 / p["ups"] + 1 / (1 - p["dist_loss"]) - 1 + p["light"]
     air = (1 - p["liquid_share"]) + p["liquid_share"] * p["liquid_air_share"]
     kg_s = ph._outside_air(T, W, p)[0]
-    crah = ph._fan_kw(q * air / (ph.CP_AIR * p["air_rise"]) + kg_s, p["crah_pa"], p["fan_eff"])
+    room = q - (1 - air)
+    crah = ph._fan_kw(room / (ph.CP_AIR * p["air_rise"]) + kg_s, p["crah_pa"], p["fan_eff"])
     outside, latent = ph.hourly_outside_air_heat(T, W, p)
     wet = ph._wet_share(T, design, p)
     coil = T - (p["assist_eff"] * np.maximum(T - W, 0) * (T >= p["assist_on"]) if design == "assist" else 0.0)
     water = p["supply_air"] + p["air_rise"] - p["air_rise"] / p["coil_eff"]
-    air_load = q * air + crah + outside
+    air_load = room + crah + outside
     electric, fans = q + crah, 0.0
-    for load, supply in ((np.maximum(air_load, 0), water), (q * (1 - air) + np.minimum(air_load, 0), p["liquid_water"]), (latent, ph.DEHUMIDIFY_WATER)):
+    for load, supply in ((np.maximum(air_load, 0), water), (1 - air + np.minimum(air_load, 0), p["liquid_water"]), (latent, ph.DEHUMIDIFY_WATER)):
         assert (load >= 0).all()
         chiller, pumps, f = ph._loop(load, supply, T, W, coil, wet, design, p)
         electric, fans = electric + chiller + pumps, fans + f
@@ -260,3 +261,15 @@ def test_farmland_sediment_keeps_the_paved_part():
     P = runoff.PARAMS
     field = 200 * (1 - P["before_imp"]["farm"]) * P["farm_soil"]["t_per_ac_yr"][1]
     assert L > field
+
+
+def test_power_losses_go_to_the_room_not_the_liquid_loop():
+    """With all computers liquid-cooled but none of their heat to air, the air loop still carries the UPS, distribution and lighting losses."""
+    p = {**CENTRAL, "liquid_share": 1.0, "liquid_air_share": 0.0, "oa_cfm_per_mw": 0.0, "crah_pa": 0.0}
+    q = 1 / p["ups"] + 1 / (1 - p["dist_loss"]) - 1 + p["light"]
+    assert 1 - (1 - p["liquid_share"] + p["liquid_share"] * p["liquid_air_share"]) == 1.0
+    # one kW of computers to the warm liquid loop in free cooling, the losses to the air loop's cooler water: in a hot hour only the air loop runs its chiller
+    t, wb = np.array([31.0]), np.array([24.0])
+    hot = ph.hourly_heat_power(t, wb, "towers", p)[1][0]
+    none = ph.hourly_heat_power(t, wb, "towers", {**p, "ups": 1.0, "dist_loss": 0.0, "light": 0.0})[1][0]
+    assert hot - none > q - 1

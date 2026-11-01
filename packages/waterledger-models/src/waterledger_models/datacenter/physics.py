@@ -276,15 +276,16 @@ def hourly_heat_power(tdb, twb, design, p, rh=None):
     q = 1.0 + (1.0 / p["ups"] - 1.0) + (1.0 / (1.0 - p["dist_loss"]) - 1.0) + p["light"]
     air = (1.0 - p["liquid_share"]) + p["liquid_share"] * p["liquid_air_share"]
     kg_s = _outside_air(tdb, twb, p, rh)[0]
-    crah = _fan_kw(q * air / (CP_AIR * p["air_rise"]) + kg_s, p["crah_pa"], p["fan_eff"])
+    room = q - (1.0 - air)                                    # the heat that reaches the room's air: the air-cooled computers and all the power losses and lighting
+    crah = _fan_kw(room / (CP_AIR * p["air_rise"]) + kg_s, p["crah_pa"], p["fan_eff"])
     outside, latent = hourly_outside_air_heat(tdb, twb, p, rh)
     # supply air and the coil set the air loop's water temperature (Lei and Masanet); liquid-cooled heat goes to a warmer loop of its own
     air_water = p["supply_air"] + p["air_rise"] - p["air_rise"] / p["coil_eff"]
     coil_air = tdb - (p["assist_eff"] * np.maximum(tdb - twb, 0.0) * (tdb >= p["assist_on"]) if design == "assist" else 0.0)
     wet = _wet_share(tdb, design, p)
-    air_load = q * air + crah + outside                       # in rare, bitter hours outside air could cool more than the air loop carries; the rest comes off the liquid loop
+    air_load = room + crah + outside                          # in rare, bitter hours outside air could cool more than the air loop carries; the rest comes off the liquid loop
     power, heat = q + crah + 0.0 * tdb, q + crah + outside + latent
-    for load, supply in ((np.maximum(air_load, 0.0), air_water), (q * (1.0 - air) + np.minimum(air_load, 0.0), p["liquid_water"]), (latent, DEHUMIDIFY_WATER)):
+    for load, supply in ((np.maximum(air_load, 0.0), air_water), (1.0 - air + np.minimum(air_load, 0.0), p["liquid_water"]), (latent, DEHUMIDIFY_WATER)):
         chiller, pumps, fans = _loop(load, supply, tdb, twb, coil_air, wet, design, p)
         power, heat = power + chiller + pumps + fans, heat + chiller + pumps
     return power, heat
