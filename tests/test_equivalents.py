@@ -39,6 +39,8 @@ def test_equivalents_count_water_taken():
 def test_lake_source_counts_what_the_lake_loses():
     q = cm.equivalents(SimpleNamespace(water=water(lake=True), electricity=POWER), REF)
     assert q.homes.p50 == pytest.approx(0.15e6 / 300) and q.golf_courses.p50 == pytest.approx(3.75)
+    w = water(lake=True)
+    assert q.homes_peak_day.p50 == pytest.approx(w.consumed.peak_day.p50 * 1e6 / 300)
 
 
 def test_a_value_the_state_lacks_is_none_not_zero():

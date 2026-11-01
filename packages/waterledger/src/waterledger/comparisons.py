@@ -59,9 +59,10 @@ def equivalents(est, ref):
     """An estimate in homes and golf courses. Water counts what is taken; for lake-source cooling, what the lake loses, since nearly all it takes
     goes back. `ref` is the state's reference values (the provider's `reference`): golf_gpd, home_kwh_month and home_customers, any of them None."""
     w, base = est.water, est.water.consumed.avg if est.water.lake_source else est.water.withdrawn.avg
+    base_peak = w.consumed.peak_day if w.lake_source else w.withdrawn.peak_day
     golf, kwh, cust, e = ref["golf_gpd"], ref["home_kwh_month"], ref["home_customers"], est.electricity
     homes_e = _range(lambda v: electricity_homes(v, kwh), e.avg_mw) if e and kwh else None
-    return Equivalents(homes=_range(water_homes, base), homes_peak_day=_range(water_homes, w.withdrawn.peak_day),
+    return Equivalents(homes=_range(water_homes, base), homes_peak_day=_range(water_homes, base_peak),
                        golf_courses=_range(lambda v: golf_courses(v, golf), base) if golf else None, golf_course_gpd=golf,
                        evaporated_share=evaporated_share(w.consumed.avg.p50, w.withdrawn.avg.p50),
                        electricity_homes=homes_e, electricity_homes_peak=_range(lambda v: electricity_homes(v, kwh), e.peak_mw) if e and kwh else None,
