@@ -133,6 +133,8 @@ def cooling_estimate(D, region, cool, mw, dest):
         m = max(0.0, E[k_w]["mid"] + E[k_n]["mid"] - E[k_r]["mid"])
         E[k_c] = {"lo": min(E[k_c]["lo"], m), "mid": m, "hi": max(E[k_c]["hi"], m)}
     E["sewer"] = E["rAvg"]
+    if "withdrawn_peak_full_capacity" in per_100mw and dest != "reuse":
+        E["wPeakFull"] = F("withdrawn_peak_full_capacity")
     if dest == "reuse":
         E["full"] = {"wAvg": E["wAvg"], "rAvg": E["rAvg"]}
         E["wAvg"] = {k: max(E["cAvg"][k] - E["condAvg"][k], 0.0) for k in ("lo", "mid", "hi")}     # the condensate is reused too

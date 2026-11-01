@@ -38,6 +38,7 @@ class WaterUse(BaseModel):
     to_sewer: Range
     lake_source: bool = False
     reuse: bool = False
+    withdrawn_peak_full_capacity: Range | None = None   # the upper case: the peak day with every computer at capacity all day; peak_day is at average utilization
     condensate: Flow | None = None       # also in returned and to_sewer; none for lake-source's lake water or data from before model 1.5
 
 
@@ -47,7 +48,8 @@ def water_use(E):
     return WaterUse(withdrawn=Flow(avg=R(E["wAvg"]), peak_day=R(E["wPeak"])), withdrawn_annual_mg=R(E["wAnn"]),
                     consumed=Flow(avg=R(E["cAvg"]), peak_day=R(E["cPeak"])), returned=Flow(avg=R(E["rAvg"]), peak_day=R(E["rPeak"])),
                     to_sewer=R(E["sewer"]), lake_source=E["lake"], reuse=E["reuse"],
-                    condensate=Flow(avg=R(E["condAvg"]), peak_day=R(E["condPeak"])) if "condAvg" in E else None)
+                    condensate=Flow(avg=R(E["condAvg"]), peak_day=R(E["condPeak"])) if "condAvg" in E else None,
+                    withdrawn_peak_full_capacity=R(E["wPeakFull"]) if "wPeakFull" in E else None)
 
 
 def electricity(e):

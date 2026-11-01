@@ -287,3 +287,9 @@ def test_power_losses_go_to_the_room_not_the_liquid_loop():
     hot = ph.hourly_heat_power(t, wb, "towers", p)[1][0]
     none = ph.hourly_heat_power(t, wb, "towers", {**p, "ups": 1.0, "dist_loss": 0.0, "light": 0.0})[1][0]
     assert hot - none > q - 1
+
+
+def test_the_full_capacity_peak_is_the_upper_case():
+    times = [f"2024-07-{d:02d}T{h:02d}:00" for d in range(1, 11) for h in range(24)]
+    r = cooling.run_location(times, [30.0] * 240, [60.0] * 240, n=20, mw=100.0)["towers"]
+    assert r["withdrawn_peak_full_capacity"]["p50"] > r["withdrawn_peak_1in10"]["p50"] * 1.2

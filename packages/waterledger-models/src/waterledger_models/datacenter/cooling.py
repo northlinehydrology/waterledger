@@ -165,6 +165,9 @@ def run_location(times, temps, rhs, n=200, seed=7, mw=100.0):
                 s = daily_stats(day_index, len(uniq), years, arr, kw, months if name == "withdrawn" else None)
                 for stat, v in s.items():
                     acc.setdefault(f"{name}_{stat}", []).append(v)
+            # the upper case: every computer at capacity all day, instead of at the run's average utilization (the middle estimates' basis)
+            at_capacity = hourly(tdb, twb, design, {**p, "utilization": 1.0}, rh)[0]
+            acc.setdefault("withdrawn_peak_full_capacity", []).append(daily_stats(day_index, len(uniq), years, at_capacity, mw * 1000.0)["peak_1in10"])
             # water use effectiveness: liters consumed per IT kWh (annual average), for comparison with LBNL/operators
             acc.setdefault("wue_l_per_kwh", []).append(float(np.average(c)) * 3.78541)          # consumed basis
             acc.setdefault("wue_makeup_l_per_kwh", []).append(float(np.average(w)) * 3.78541)   # LBNL/Lei basis (evaporation + drift + blowdown)
