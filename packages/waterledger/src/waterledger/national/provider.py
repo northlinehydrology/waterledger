@@ -137,7 +137,7 @@ def reference(state, place):
     G, res = wateruse.golf(state), sd.residential() or {}
     from waterledger.comparisons import default_power
     return {"power_options": options, "power": default_power(options, "state_mix" if "state_mix" in options else next(iter(options)), place.context().energy.utilities),
-            "golf_gpd": G.get("by_region", {}).get(_division(state, place)[0], G["gpd"]) if G else None,
+            "golf_gpd": G.get("by_region", {}).get(_division(state, place)[0], G["gpd"]), "golf_basis": G["basis"], "golf_note": G["note"],
             "home_kwh_month": res.get("kwh_month"), "home_customers": res.get("customers"), "state_avg_mw": sd.state_avg_mw(),
             "rain_median_in": rq.rain_median(sd.rain()), "salt_events": sd.salt_events().get(_division(state, place)[0]), "withdrawals": WITHDRAWAL_BANDS, "state_rules": False}
 
@@ -188,6 +188,7 @@ def estimate(state, site):
         why = "far" if not reach else "full" if evap and room is not None and sew > room else ""
         dest = ("water" if evap else "septic") if why else "sewer"
     water = water_use(sc.cooling_estimate(D, d, f.cooling, f.it_mw, dest))
-    resolved = site.model_copy(update={"source": src, "wastewater": dest})
+    acres, before = sc.land_default(place.kind)
+    resolved = site.model_copy(update={"source": src, "wastewater": dest, "acres": site.acres or acres, "land_before": site.land_before or before})
     power = electricity(sc.electricity(D, d, f.cooling, f.it_mw))
     return Estimate(site=resolved, water=water, electricity=power, model_version=MODEL_VERSION, data_date=sd.date or datetime.date.today().isoformat())

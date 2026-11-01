@@ -208,6 +208,11 @@ def dest_for(p, cool, sew_mgd):
     return {"dest": ("water" if evap else "septic") if why else "sewer", "q": q, "sys": bool(p["w"]), "room": room, "why": why}
 
 
+def land_default(kind):
+    """(acres, what the land is today) a site starts with [A], in every state: cities a smaller, built-up site; others farmland."""
+    return (50, "built") if kind == "city" else (200, "farm")
+
+
 def scenario(gid, mw=None, cool="dry", src=None, dest=None, acres=None, before=None, imp=0.5, power="state_mix", h12=0, name=None):
     p = place(gid)
     # the page's starting settings for a place [A]: cities a smaller campus on a smaller, built-up site; townships 300 MW on farmland
@@ -220,7 +225,8 @@ def scenario(gid, mw=None, cool="dry", src=None, dest=None, acres=None, before=N
         raise ValueError("Lake-source cooling needs lake surface water as the source")
     if not dest:
         dest = dest_for(p, cool, estimate(p, mw, cool, "sewer")["sewer"]["mid"])["dest"]
-    before = before or ("built" if p["k"] == "city" else "farm")   # [A] as on the page: cities built up, townships farmland
-    acres = acres or (50 if city else 200)
+    start_acres, start_land = land_default(p["k"])
+    before = before or start_land
+    acres = acres or start_acres
     return {"place": p, "mw": mw, "cool": cool, "src": src, "dest": dest, "acres": acres, "before": before, "imp": imp, "power": power,
             "h12": min(h12, len(p["h12"]) - 1) if p["h12"] else None, "name": name, "E": estimate(p, mw, cool, dest)}
