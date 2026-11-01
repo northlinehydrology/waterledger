@@ -12,6 +12,14 @@ def find(name, county=None):
     return sc.find(name, county)
 
 
+def geoids():
+    return [p["g"] for p in sc.data("places")["places"]]
+
+
+def shore_geoids():
+    return [p["g"] for p in sc.data("places")["places"] if p.get("gl")]
+
+
 def place(geoid):
     from waterledger.place import Place
     r = sc.place(geoid)

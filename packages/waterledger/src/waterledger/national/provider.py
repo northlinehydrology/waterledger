@@ -11,6 +11,17 @@ def _places(state):
     return state_data(state).places()
 
 
+def geoids(state):
+    """Every place in the state, by Census ID."""
+    return [str(g) for g in _places(state).geoid]
+
+
+def shore_geoids(state):
+    """The places within about 5 km of a Great Lake (none in a snapshot from before 3.9.0)."""
+    sd = state_data(state)
+    return [g for g in geoids(state) if sd.great_lake(g)]
+
+
 def _display(r):
     """How a place is written: cities, towns and villages by name, townships and counties with their kind."""
     return r["base"] if r["level"] == "place" else f"{r['base']} {r['kind'].title()}" if r["level"] == "township" else r["name"]
