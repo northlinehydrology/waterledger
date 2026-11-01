@@ -1,5 +1,5 @@
 """Estimates: what the model says a site would take, use up and send back, as ranges (p10, p50, p90 of the Monte Carlo)."""
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, ConfigDict
 
@@ -186,7 +186,7 @@ class Estimate(BaseModel):
     equivalents: Equivalents | None = None
     before_after: list[BeforeAfterRow] = []
     household_wells: WellsSummary | None = None
-    levels: dict[str, str] = {}    # the levels a reader sees, by card (waterledger.levels)
+    levels: dict[str, Any] = {}    # what a reader sees, by card (waterledger.levels): words, numbers and flags. Never changes an estimate
     not_covered: dict[str, str] = {}   # what isn't covered yet for this state, in words: labeled, not silently empty
     power_plants: dict[str, PlantWater] = {}    # every power option for the state; site.power says which one the site uses
     weather: str = "region"     # "region": the stored results for the place's weather region or division; "local": the model run at the place (ERA5)

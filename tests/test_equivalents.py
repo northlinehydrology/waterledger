@@ -172,8 +172,7 @@ def test_levels_bands():
     assert lv.sewer(True, None) == "large" and lv.sewer(False, None) == "info"
     W = {"register_mgd": 0.1, "zone_c_permit_mgd": 1, "permit_mgd": 2, "compact_use_mgd": 5}
     assert [lv.withdrawal(v, W)[1] for v in (0.09, 0.1, 1, 1.5, 2, 2.1)] == ["below", "register", "register", "zone_c", "zone_c", "permit"]
-    N = {"low_mgd": 0.5, "high_mgd": 5.0}
-    assert [lv.withdrawal(v, N, False)[1] for v in (0.49, 0.5, 5.0, 5.1)] == ["low", "moderate", "moderate", "high"]
+    assert (lv.permit_flag("permit"), lv.permit_flag("zone_c"), lv.permit_flag("register"), lv.permit_flag("below")) == ("permit", "zone_c", None, None)
     assert lv.compact_share(5, W) == 100 and lv.compact(99.9) == "small" and lv.compact(100) == "large"
     assert lv.small_system(4999, 0) and lv.small_system(10000, 2501) and not lv.small_system(10000, 2500) and not lv.small_system(None, 9e9)
     assert lv.near_design(85, 100) and not lv.near_design(84, 100) and not lv.near_design(None, 100)

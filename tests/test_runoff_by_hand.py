@@ -161,13 +161,46 @@ def test_90_day_stat_by_hand():
     assert st[ensemble.STATS.index("max_90day")] <= st[ensemble.STATS.index("peak_1in10")]
 
 
-def test_neutral_bands_are_not_michigans_lines():
-    from waterledger.national.provider import NOT_COVERED, WITHDRAWAL_BANDS
-    # 3,300 people x 140 gallons a day = 462,000; 33,000 people x 140 = 4,620,000: about 0.5 and 5 MGD
-    assert 3300 * 140 / 1e6 == pytest.approx(0.462) and 33000 * 140 / 1e6 == pytest.approx(4.62)
-    assert WITHDRAWAL_BANDS["low_mgd"] == 0.5 and WITHDRAWAL_BANDS["high_mgd"] == 5.0
-    assert not {"register_mgd", "zone_c_permit_mgd", "permit_mgd"} & set(WITHDRAWAL_BANDS)
-    assert "mcl327" not in WITHDRAWAL_BANDS["sources"] and "state_rules" in NOT_COVERED
+def test_no_invented_lines_where_rules_arent_reviewed():
+    from waterledger.levels import PUBLIC_SUPPLY_GPCD, people_supplied
+    from waterledger.national.provider import NOT_COVERED, WITHDRAWALS
+    assert PUBLIC_SUPPLY_GPCD == pytest.approx(137.81, abs=0.01)                 # 39,000 million gallons a day / 283 million people
+    assert people_supplied(1.3781) == pytest.approx(10000, abs=1)                # 1,378,100 gallons at 137.81
+    assert set(WITHDRAWALS) == {"compact_use_mgd"} and "state_rules" in NOT_COVERED
+    x = _levels(_month_water(1.5, 3.0), False)
+    assert "withdrawal" not in x and "withdrawal_line" not in x and "withdrawal_flag" not in x
+    assert x["withdrawal_mgd"] == 0.5 and x["withdrawal_peak_day_mgd"] == 3.0 and x["withdrawal_people_peak_day"] == pytest.approx(3e6 / 137.81, rel=1e-3)     # 21,769 people
+    assert "not yet reviewed" in x["withdrawal_note"]
+
+
+def test_flags_when_an_estimate_exceeds_a_permit_line():
+    # 2.5 in the highest month and 3 on the peak day: over 2 on both
+    x = _levels(_month_water(2.5, 3.0), True)
+    assert x["withdrawal_flag"] == "permit" and x["withdrawal_flag_peak_day"] == "permit" and "2 million gallons" in x["withdrawal_flag_note"]
+    # 0.5 in the highest month, 3 on the peak day: no flag on the rule's period, a flag on the peak day
+    x = _levels(_month_water(0.5, 3.0), True)
+    assert x["withdrawal_flag"] is None and x["withdrawal_flag_peak_day"] == "permit" and x["withdrawal_line"] == "register"
+    x = _levels(_month_water(0.5, 0.9), True)                                     # under every permit line: no flag, no note
+    assert x["withdrawal_flag"] is None and x["withdrawal_flag_peak_day"] is None and "withdrawal_flag_note" not in x
+
+
+@pytest.mark.parametrize("name", ["Gaines charter township, MI", "Jerome Township, OH"])
+def test_no_level_or_limit_changes_any_estimated_value(name, monkeypatch):
+    import waterledger as wl
+    from waterledger import levels as lv
+    site = lambda: wl.Site(place=wl.place(name), facility=wl.DataCenter(it_mw=300, cooling="towers"), source="wells")
+    numbers = lambda e: e.model_dump(exclude={"levels"})
+    base = site().estimate()
+    real = lv.site_levels
+    seen = []
+    # every line and band pushed to one extreme and then the other, reviewed or not. site_levels is what reads them
+    for line in (0.0, 1e9):
+        lines = {"register_mgd": line, "zone_c_permit_mgd": line, "permit_mgd": line, "compact_use_mgd": line or 1e-6}
+        for rules in (True, False):
+            monkeypatch.setattr(lv, "site_levels", lambda e, ref, lines=lines, rules=rules: seen.append(real(e, {**ref, "withdrawals": lines, "state_rules": rules})) or seen[-1])
+            monkeypatch.setattr(lv, "LEVELS", {**lv.LEVELS, "water_system_pct": [line, line], "sewer_spare_pct": [line, line]})
+            assert numbers(site().estimate()) == numbers(base)
+    assert seen[0]["withdrawal_line"] == "permit" and seen[2]["withdrawal_line"] == "below" and "withdrawal_line" not in seen[1]      # the lines did reach the levels
 
 
 def test_salt_events_one_method():

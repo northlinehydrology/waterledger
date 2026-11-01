@@ -1,6 +1,6 @@
 """The levels and verdicts waterledger.org shows a reader: how large a campus is against what is there, and how an estimate reads against a reported figure.
 The bands are this project's reading of the numbers, not regulations [A]; where a reviewed rule sets a line (Michigan's Part 327, the Great Lakes Compact), the line comes from the state's context
-(context.withdrawals); a state whose rules aren't reviewed has neutral bands instead, and says so (Estimate.not_covered). A display words the levels. The paid review's ratings are its own and are not here."""
+(context.withdrawals); a state whose rules aren't reviewed has no lines, and says so (Estimate.not_covered). The calculator is a what-if: nothing here changes an estimate. A display words the levels. The paid review's ratings are its own and are not here."""
 import decimal
 import math
 
@@ -10,6 +10,18 @@ LEVELS = {"water_system_pct": [2, 10],        # campus at its peak, as homes, pe
           "near_design": 0.85,                # a plant averaging this share of its design flow is close to its size [A]
           "peak_differs": 1.15,               # a peak this far above the average is worth saying [A]
           "sediment_about_same": [0.8, 1.25]}  # finished site's sediment against today's, within which "about as much" is fair [A]
+
+# USGS Circular 1441 (Dieter et al. 2018): 39,000 Mgal/d of public supply to 283 million people in 2015, about 138 gallons a person a day, businesses and losses included
+PUBLIC_SUPPLY_GPCD = 39000e6 / 283e6
+NOT_REVIEWED_NOTE = "This state's water rules are not yet reviewed, so no legal line or level is shown. The estimate stands as it is."
+# What follows a permit line, in plain words (EGLE's water withdrawal pages; MCL 324.32723)
+PERMIT_NOTES = {"permit": "The estimated need exceeds Michigan's 2 million gallons a day. A new or increased withdrawal above that needs a water withdrawal permit from EGLE before it starts.",
+                "zone_c": "The estimated need exceeds 1 million gallons a day. In a Zone C area, a new or increased withdrawal above that needs a permit from EGLE."}
+
+
+def people_supplied(mgd):
+    """Water as the public supply of about this many people, at the national figure per person."""
+    return mgd * 1e6 / PUBLIC_SUPPLY_GPCD
 
 
 def _bands(v, b):
@@ -25,13 +37,16 @@ def sewer(full, peak_pct):
     return "large" if full else "info" if peak_pct is None else _bands(peak_pct, LEVELS["sewer_spare_pct"])
 
 
-def withdrawal(mgd, W, rules=True):
-    """(level, line) for water pumped at a site. Where a state's rules are reviewed, `line` is the rule that applies: "below", "register", "zone_c" or "permit", and `mgd` should be on the
-    rule's own period (Part 327: the average over 30 days; site_levels uses the highest month). Elsewhere neutral bands that are no state's lines, on the peak day: "low", "moderate" or "high". W: context.withdrawals."""
-    if not rules:
-        return ("small", "low") if mgd < W["low_mgd"] else ("mid", "moderate") if mgd <= W["high_mgd"] else ("large", "high")
+def withdrawal(mgd, W):
+    """(level, line) for water pumped at a site, where a state's rules are reviewed: `line` is the rule that applies, "below", "register", "zone_c" or "permit", and `mgd` should be on the
+    rule's own period (Part 327: the average over 30 days; site_levels uses the highest month). W: context.withdrawals. A state whose rules aren't reviewed has no lines and no level."""
     return (("small", "below") if mgd < W["register_mgd"] else ("mid", "register") if mgd <= W["zone_c_permit_mgd"]
             else ("mid", "zone_c") if mgd <= W["permit_mgd"] else ("large", "permit"))
+
+
+def permit_flag(line):
+    """The permit line an estimate exceeds, from withdrawal()'s `line`: "permit", "zone_c" (above Zone C's line, which applies only in a Zone C area) or None. A flag for the reader. It never changes an estimate."""
+    return line if line in ("permit", "zone_c") else None
 
 
 def compact_share(evaporated_mgd, W):
@@ -89,7 +104,8 @@ def compare(ask, ours, at_least=False):
 
 
 def site_levels(est, ref):
-    """The levels a reader sees for an estimate, by card; a card that doesn't apply is left out."""
+    """The levels a reader sees for an estimate, by card; a card that doesn't apply is left out. Read from the estimate, never written back to it. For well pumping: the number, as the public supply
+    of about how many people, and either a reviewed rule's line and flags or a note that the state's rules aren't reviewed."""
     from waterledger import comparisons as cm
     out, s, w = {}, est.site, est.water
     ctx = s.place.context()
@@ -100,14 +116,22 @@ def site_levels(est, ref):
     if s.wastewater == "sewer" and not w.reuse and ctx.wastewater.plants:
         room = cm.sewer_room(ctx.wastewater.plants[0])
         out["sewer"] = sewer(room is not None and room <= 0, by["sewer_spare_room"].percent.peak_day.p50 if "sewer_spare_room" in by else None)
-    if W and s.source == "wells":
-        rules, peak = ref.get("state_rules", False), w.withdrawn.peak_day.p50
-        # A reviewed rule is tested on its own period, the highest month for Part 327's 30 days, with the peak day shown beside it. Elsewhere, bands on the peak day.
-        on_month = rules and w.withdrawn_max_month is not None
-        out["withdrawal"], out["withdrawal_line"] = withdrawal(w.withdrawn_max_month.p50 if on_month else peak, W, rules)
-        out["withdrawal_period"] = "highest_month" if on_month else "peak_day"
-        if on_month:
-            out["withdrawal_line_peak_day"] = withdrawal(peak, W, rules)[1]
+    if s.source == "wells":
+        avg, peak = w.withdrawn.avg.p50, w.withdrawn.peak_day.p50
+        out["withdrawal_mgd"], out["withdrawal_peak_day_mgd"] = avg, peak
+        out["withdrawal_people"], out["withdrawal_people_peak_day"] = people_supplied(avg), people_supplied(peak)
+        if W and ref.get("state_rules", False):
+            # A reviewed rule is tested on its own period, the highest month for Part 327's 30 days, and on the peak day beside it
+            on_month = w.withdrawn_max_month is not None
+            out["withdrawal"], out["withdrawal_line"] = withdrawal(w.withdrawn_max_month.p50 if on_month else peak, W)
+            out["withdrawal_period"] = "highest_month" if on_month else "peak_day"
+            out["withdrawal_line_peak_day"] = withdrawal(peak, W)[1]
+            flag, flag_peak = permit_flag(out["withdrawal_line"]), permit_flag(out["withdrawal_line_peak_day"])
+            out["withdrawal_flag"], out["withdrawal_flag_peak_day"] = flag, flag_peak
+            if flag or flag_peak:
+                out["withdrawal_flag_note"] = PERMIT_NOTES[flag or flag_peak]
+        else:
+            out["withdrawal_note"] = NOT_REVIEWED_NOTE
     if W and ctx.receiving.great_lake:
         # The Compact's period is 90 days. Data from before model 1.7 has only the average
         on_90 = w.consumed_max_90day is not None
