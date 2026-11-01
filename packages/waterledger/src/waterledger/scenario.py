@@ -133,6 +133,9 @@ def cooling_estimate(D, region, cool, mw, dest):
         m = max(0.0, E[k_w]["mid"] + E[k_n]["mid"] - E[k_r]["mid"])
         E[k_c] = {"lo": min(E[k_c]["lo"], m), "mid": m, "hi": max(E[k_c]["hi"], m)}
     E["sewer"] = E["rAvg"]
+    if dest == "septic":        # condensate is clean water and would not go to a drainfield: a site drain or stormwater [A]. It stays in the returned water, so the books close
+        E["sewer"] = {k: max(E["rAvg"][k] - E["condAvg"][k], 0.0) for k in ("lo", "mid", "hi")}
+        E["sewer"]["lo"], E["sewer"]["hi"] = min(E["sewer"]["lo"], E["sewer"]["mid"]), max(E["sewer"]["hi"], E["sewer"]["mid"])
     if "withdrawn_peak_full_capacity" in per_100mw and dest != "reuse":
         E["wPeakFull"] = F("withdrawn_peak_full_capacity")
     if dest == "reuse":
@@ -146,7 +149,8 @@ def cooling_estimate(D, region, cool, mw, dest):
 
 
 def septic_rule(gpd):
-    """Michigan's rules for sanitary sewage to a septic system (Part 22: R 323.2210, 2211, 2216), as on the page (WQ.septicRule)."""
+    """Michigan's rules for sanitary sewage to a septic system (Part 22: R 323.2210, 2211, 2216), as on the page (WQ.septicRule). `gpd` is what goes to the system, without
+    condensate (a septic estimate's to_sewer)."""
     return ("the county health department approves the design; no state permit is needed under 6,000 gallons a day" if gpd < 6000
             else "it falls under a state permit-by-rule (6,000 to 10,000 gallons a day): the county health department approves it, and the flow is metered and reported to EGLE each year" if gpd < 10000
             else "it needs a groundwater discharge permit from EGLE (above 10,000 gallons a day)")

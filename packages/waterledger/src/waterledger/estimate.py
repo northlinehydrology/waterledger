@@ -35,7 +35,7 @@ class WaterUse(BaseModel):
     withdrawn_annual_mg: Range
     consumed: Flow
     returned: Flow
-    to_sewer: Range
+    to_sewer: Range                      # to the wastewater destination; with a septic system, without the condensate, which is assumed to go to a site drain or stormwater [A]
     lake_source: bool = False
     reuse: bool = False
     withdrawn_peak_full_capacity: Range | None = None   # the upper case: the peak day with every computer at capacity all day; peak_day is at average utilization
