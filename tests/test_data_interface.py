@@ -21,3 +21,15 @@ def test_a_package_reads_the_snapshot_for_its_own_model():
     assert p["latest"] == "2026-11-01" and snapshot_for_model(p) == "2026-11-01.2"
     assert pointer(p, "OH", "2026-12-01", "99.0")["by_model"][MODEL_VERSION] == "2026-11-01.2"
     assert re.fullmatch(SNAPSHOT_ID, "2026-11-01.2") and re.fullmatch(SNAPSHOT_ID, "2026-11-01") and not re.fullmatch(SNAPSHOT_ID, "latest.json")
+
+
+def test_an_estimate_reports_the_model_of_the_data_it_read():
+    """A package reading older data says so: the numbers are that model's, as Michigan's estimate and design 0003 have it."""
+    from waterledger.national import data
+    from waterledger_models import MODEL_VERSION
+    assert data.LiveData("OH").model_version() == MODEL_VERSION
+    snap = data.SnapshotData.__new__(data.SnapshotData)
+    snap.manifest = {"model_version": "1.5"}
+    assert snap.model_version() == "1.5"
+    source = open(data.__file__.replace("data.py", "provider.py")).read()
+    assert "model_version=sd.model_version()" in source

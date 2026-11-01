@@ -55,6 +55,10 @@ class SnapshotData:
         import geopandas as gpd
         return gpd.read_parquet(os.path.join(self.folder, "places.parquet"))
 
+    def model_version(self):
+        """The model version of the numbers in this snapshot."""
+        return self.manifest["model_version"]
+
     def places(self):
         return self._places
 
@@ -136,6 +140,10 @@ class LiveData:
     def _pl(self):
         from waterledger_data import census
         return census.places(_fips(self.state))
+
+    def model_version(self):
+        from waterledger_models import MODEL_VERSION
+        return MODEL_VERSION
 
     def places(self):
         return self._pl
