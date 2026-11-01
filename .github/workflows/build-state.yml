@@ -73,7 +73,13 @@ jobs:
           ST: ${{ inputs.state }}
         run: |
           DATE=$(ls snapshot/$ST)
-          if aws s3api head-object --bucket waterledger-data --key $ST/$DATE/manifest.json --endpoint-url $R2 >/dev/null 2>&1; then
+          # is this object there? Only a real not-found counts as absent; any other error stops the job
+          exists() {
+            if err=$(aws s3api head-object --bucket waterledger-data --key "$1" --endpoint-url $R2 2>&1); then return 0; fi
+            case "$err" in *"(404)"*) return 1;; esac
+            echo "could not check $1: $err"; exit 1
+          }
+          if exists $ST/$DATE/manifest.json; then
             echo "$ST/$DATE is already published and a published snapshot never changes: run again with snapshot_id=$DATE.2 (or the next free number)"; exit 1
           fi
           aws s3 cp --recursive snapshot/$ST/$DATE s3://waterledger-data/$ST/$DATE --endpoint-url $R2
