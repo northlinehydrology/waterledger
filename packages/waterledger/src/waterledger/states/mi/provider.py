@@ -77,7 +77,7 @@ def context(place):
     energy = cx.Energy(provider="MI", sources=["mpsc_territory", "eia861", "eia923_2024", "macknick2012"], power_plant_water=_ppw("MI"),
                        utilities=[cx.Utility(name=U[i]["n"], type=U[i]["type"], share_of_place=sh, customers=U[i].get("cust"),
                                              avg_mw=U[i].get("avg_mw"), summer_peak_mw=U[i].get("summer_mw")) for i, sh in P["places"].get(r["g"], [])])
-    jur = cx.Jurisdiction(provider="MI", sources=["census_tiger"], name=place.name, kind=place.kind, county=place.county, state="MI")
+    jur = cx.Jurisdiction(provider="MI", not_covered=["rules"], sources=["census_tiger"], name=place.name, kind=place.kind, county=place.county, state="MI")
     return cx.Context(place=place, jurisdiction=jur, supply=supply, wastewater=cx.Wastewater(provider="MI", sources=["echo", "cwns2022"], plants=plants),
                       receiving=receiving, climate=climate, energy=energy)
 

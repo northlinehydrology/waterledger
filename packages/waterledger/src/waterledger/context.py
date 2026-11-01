@@ -7,6 +7,7 @@ class _Category(BaseModel):
     model_config = ConfigDict(frozen=True)
     provider: str                       # "national" or a state code ("MI") whose own data replaced the national layer
     sources: list[str] = []             # source ids, as cited on waterledger.org's methods pages
+    not_covered: list[str] = []         # fields Water Ledger has no data for in this state yet: empty there means not covered, not none.
 
 
 class Jurisdiction(_Category):

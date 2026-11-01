@@ -55,7 +55,7 @@ def context(state, place):
     mine = sd.systems_for(place.geoid)
     near, near_km = (None, None) if mine else sd.nearest_system(place.geoid)
     use, usgs = county_water_use(state, place.county_fips)
-    supply = cx.Supply(provider="national", sources=["epa_sa", *dict.fromkeys(u.source for u in (use, usgs) if u)], systems=[sys_(w) for w in mine],
+    supply = cx.Supply(provider="national", not_covered=["household_wells"], sources=["epa_sa", *dict.fromkeys(u.source for u in (use, usgs) if u)], systems=[sys_(w) for w in mine],
                        nearest_system=sys_(near) if near else None, nearest_system_km=near_km,
                        county_use_mgd=use.mgd if use else {}, county_water_use=use, county_water_use_usgs=usgs)
     plants = [cx.SewerPlant(npdes=q["id"], name=q["name"], design_mgd=q["design_mgd"], flow_mgd=q["flow_mgd"], km=q["km"],
@@ -63,12 +63,12 @@ def context(state, place):
               for q in ww.nearest(sd.plants(), place.lat, place.lon, base, km=PLANTS_KM)[:PLANTS_MAX]]
     sheds = sd.sheds_for(place.geoid)
     path = sd.downstream(sheds["h12"][0]["code"]) if sheds["h12"] else []
-    receiving = cx.Receiving(provider="national", sources=["usgs_wbd", "attains"],
+    receiving = cx.Receiving(provider="national", not_covered=["coldwater_streams"], sources=["usgs_wbd", "attains"],
                              watersheds=[cx.Watershed(huc12=w["code"], name=w["name"], share_of_place=w["share"]) for w in sheds["h12"]],
                              basin=cx.Watershed(huc12=sheds["h8"]["code"], name=sheds["h8"]["name"]) if sheds["h8"] else None,
                              downstream=[cx.Reach(huc12=p["code"], name=p["name"], impairments=[LABELS[g] for g, _, _ in p["listings"]],
                                                   tmdl=[LABELS[g] for g, t, _ in p["listings"] if t], assessed=p.get("assessed")) for p in path])
-    jur = cx.Jurisdiction(provider="national", sources=["census_tiger"], name=place.name, kind=place.kind, county=place.county, state=state)
+    jur = cx.Jurisdiction(provider="national", not_covered=["rules"], sources=["census_tiger"], name=place.name, kind=place.kind, county=place.county, state=state)
     return cx.Context(place=place, jurisdiction=jur, supply=supply,
                       wastewater=cx.Wastewater(provider="national", sources=["cwns2022", "echo"], plants=plants), receiving=receiving,
                       climate=_climate(state, place), energy=_energy(state, place))
