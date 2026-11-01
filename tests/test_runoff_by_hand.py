@@ -156,7 +156,8 @@ def test_90_day_stat_by_hand():
     months = np.array([f"2020-{i // 30 + 1:02d}" for i in range(200)])
     out = cooling.daily_stats(np.arange(200), 200, years, daily * 1e6, np.ones(200), months)
     assert out["max_90day"] == pytest.approx(2.0)
-    st = ensemble._stats(daily.reshape(1, -1), years, months)[0]
+    d = daily.reshape(1, -1)
+    st = ensemble._stats(d, d, years, months)[0]
     assert st[ensemble.STATS.index("max_90day")] == pytest.approx(2.0)
     assert st[ensemble.STATS.index("max_90day")] <= st[ensemble.STATS.index("peak_1in10")]
 
