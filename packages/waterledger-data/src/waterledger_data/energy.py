@@ -51,7 +51,7 @@ def grid_water():
 L_KWH_TO_GAL_MWH = 1000 / 3.785411784
 # Natural gas combined cycle with cooling towers: Macknick et al. 2012, Table 2 consumption, Table 3 withdrawal; a technology, not a state's mix
 NEW_GAS = {"label": "Gas plants", "gal_mwh": 205, "lo": 130, "hi": 300, "wd_gal_mwh": 255, "wd_lo": 150, "wd_hi": 283, "sources": ["macknick2012"],
-           "note": "Natural gas combined cycle with cooling towers (Michigan's tower-cooled combined-cycle plants reported about 189 consumed in 2024)"}
+           "note": "Natural gas combined cycle with cooling towers"}
 
 
 def wind_solar(pv_share):
