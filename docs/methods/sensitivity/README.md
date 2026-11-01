@@ -1,8 +1,21 @@
 # Global sensitivity analysis of the data center water model
 
+## Model 1.5 (Nov 1, 2026): mass and energy balances, outside air
+
+The CSVs and `run_info.json` here are the model 1.5 run, from the 3.8.0 code: 39 cooling parameters (the sensible heat ratio gone, outside air flow and humidifier share added), N = 8192, West Michigan weather, 2023-2024. The model 1.4 tables below are kept for comparison; their CSVs are in the git history.
+
+Total-order indices (ST), largest first:
+
+| Design | Water taken, average day | Water taken, peak day | Annual PUE | Hottest-hour PUE |
+|---|---|---|---|---|
+| Closed loop | loop volume 0.53, top-up share 0.48, humidifier share 0.04 | humidifier share 0.62, outside air flow 0.50, loop volume 0.00 | UPS 0.64, liquid share 0.20, supply air 0.05 | liquid share 0.43, UPS 0.29, liquid water temperature 0.27 |
+| Assist | assist switch point 0.91, utilization 0.05, pad bleed 0.04 | assist switch point 0.71, utilization 0.14, pad bleed 0.10 | UPS 0.64, liquid share 0.18, supply air 0.06 | liquid share 0.56, UPS 0.25, supply air 0.07 |
+| Hybrid | hybrid switch point 0.82, utilization 0.10, hybrid full point 0.05 | hybrid switch point 0.42, utilization 0.35, cycles 0.10 | UPS 0.64, liquid share 0.18, supply air 0.06 | liquid share 0.52, UPS 0.27, supply air 0.08 |
+| Towers | utilization 0.66, cycles 0.18, evaporative ratio 0.12 | utilization 0.65, cycles 0.18, evaporative ratio 0.10 | UPS 0.70, L/G 0.09, liquid share 0.08 | liquid share 0.44, UPS 0.34, supply air 0.07 |
+
 ## Model 1.4 (Oct 30, 2026): electricity added
 
-The CSVs and `run_info.json` here are the model 1.4 run: 38 cooling parameters (`physics.POWER` added, the heat factor parameters gone), N = 8192, West Michigan weather, 2023-2024, with two new outputs: annual PUE and PUE in the 1-in-10-year hottest hour. No warnings. The sections below describe the method, and their result tables and discussion are from the model 1.3 run; read current values from the CSVs.
+The model 1.4 run: 38 cooling parameters (`physics.POWER` added, the heat factor parameters gone), N = 8192, West Michigan weather, 2023-2024, with two new outputs: annual PUE and PUE in the 1-in-10-year hottest hour. No warnings. The sections below describe the method, and their result tables and discussion are from the model 1.3 run; read current values from the CSVs.
 
 Total-order indices (ST), largest first:
 
@@ -80,7 +93,7 @@ range, and mu*/sd(output) for comparison across outputs.
 
 Sample sizes: N = 8,192 for the cooling model (155,648 runs per design, plus 1,800 Morris runs; 629,792 runs over the
 four designs) and N = 32,768 for the non-cooling term (294,912 runs, plus 800 Morris runs). Seeds are fixed
-(`SEED = 20261030`). The full run takes about three minutes on a laptop (198 s on a 14-core Apple machine, numpy 2.5.4).
+(`SEED = 20261030`). The full run takes 2.3 hours on one core of an Apple laptop; `run_info.json` records the time.
 
 **Convergence.** Indices were recomputed on nested subsamples of N/8, N/4 and N/2 rows (`convergence.csv`). Between
 N = 4,096 and N = 8,192 the largest change in any cooling index was 0.012 (S1) and 0.019 (ST), and the largest
@@ -209,7 +222,7 @@ sensitivity analysis.
 
 ## Reproduction
 
-    python docs/methods/sensitivity/sensitivity.py            # about 3 minutes; writes the CSVs and run_info.json here
+    python docs/methods/sensitivity/sensitivity.py            # about 2.3 hours; writes the CSVs and run_info.json here
     python docs/methods/sensitivity/sensitivity.py --quick    # N = 512, about 12 s, prints only, for checking the script
 
 The script imports `waterledger_models` from this checkout's `packages/waterledger-models/src` and needs only numpy.
