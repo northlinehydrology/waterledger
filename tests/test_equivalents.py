@@ -23,7 +23,7 @@ def test_the_arithmetic():
     assert cm.golf_courses(0.08, 40000) == pytest.approx(2)
     assert cm.electricity_homes(1, 730) == pytest.approx(1000)      # 730 kWh a month is 1 kW around the clock
     assert cm.share_of_customers(1000, 1000000) == pytest.approx(0.1)
-    assert cm.plant_water(100, 500) == pytest.approx(1.2)
+    assert cm.plant_water(100, 500) == pytest.approx(1.2 / (1 - cm.LINE_LOSS))
     assert cm.evaporated_share(0.15, 0.2) == pytest.approx(75)
 
 
@@ -50,8 +50,8 @@ def test_a_value_the_state_lacks_is_none_not_zero():
 
 def test_plant_water_pairs_each_end_of_the_range():
     p = cm.plant_waters(POWER, OPTIONS)["mix"]
-    assert p.consumed.p10 == pytest.approx(300 * 24 * 100 / 1e6) and p.consumed.p50 == pytest.approx(400 * 24 * 200 / 1e6) and p.consumed.p90 == pytest.approx(500 * 24 * 300 / 1e6)
-    assert p.withdrawn.p50 == pytest.approx(48.0) and p.returned == pytest.approx(48.0 - 1.92)
+    assert p.consumed.p10 == pytest.approx(300 * 24 * 100 / 1e6 / (1 - cm.LINE_LOSS)) and p.consumed.p50 == pytest.approx(400 * 24 * 200 / 1e6 / (1 - cm.LINE_LOSS)) and p.consumed.p90 == pytest.approx(1 / (1 - cm.LINE_LOSS) * 500 * 24 * 300 / 1e6)
+    assert p.withdrawn.p50 == pytest.approx(48.0 / (1 - cm.LINE_LOSS)) and p.returned == pytest.approx((48.0 - 1.92) / (1 - cm.LINE_LOSS))
     assert p.sources == ["x"]
 
 
@@ -64,7 +64,7 @@ def test_returned_is_never_below_zero():
 def test_a_michigan_site_reports_them():
     est = wl.Site(place=wl.place("Gaines charter township, MI"), facility=wl.DataCenter(it_mw=300, cooling="hybrid")).estimate()
     assert est.site.power == "mi_mix" and est.equivalents.homes.p50 == pytest.approx(est.water.withdrawn.avg.p50 * 1e6 / 300)
-    assert est.power_plants["mi_mix"].consumed.p50 == pytest.approx(est.electricity.avg_mw.p50 * 24 * 268 / 1e6)
+    assert est.power_plants["mi_mix"].consumed.p50 == pytest.approx(est.electricity.avg_mw.p50 * 24 * 268 / 1e6 / (1 - cm.LINE_LOSS))
     with pytest.raises(ValueError, match="power must be one of"):
         wl.Site(place=wl.place("Gaines charter township, MI"), facility=wl.DataCenter(it_mw=300, cooling="hybrid"), power="nope").estimate()
 
@@ -130,7 +130,7 @@ def _design(c, mw, peak):
 
 def test_compare_designs():
     d = cm.compare_designs({"dry": _design(0.01, 110, 150), "towers": _design(1.0, 100, 120)}, OPTS, "mix", "mix")
-    assert d.best == "dry" and d.designs["dry"].total == pytest.approx(0.01 + 110 * 24 * 200 / 1e6)
+    assert d.best == "dry" and d.designs["dry"].total == pytest.approx(0.01 + 110 * 24 * 200 / 1e6 / (1 - cm.LINE_LOSS))
     assert d.closed_loop_more_power_pct == pytest.approx(10) and d.closed_loop_more_peak_mw == 30 and d.closed_loop_saves_on_site == pytest.approx(0.99)
     d = cm.compare_designs({"dry": _design(0.01, 300, 400), "towers": _design(0.02, 100, 120)}, OPTS, "gas", "mix")
     assert d.best == "towers"     # on a thirsty supply, closed loop's extra power can cost more water than the towers evaporate

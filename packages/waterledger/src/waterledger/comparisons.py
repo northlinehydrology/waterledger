@@ -26,9 +26,13 @@ def share_of_customers(homes, customers):
     return 100 * homes / customers
 
 
+LINE_LOSS = 0.05     # transmission and distribution losses, share of the electricity sent out: EIA FAQ 105, U.S. average 2018-2022 ("about 5%"); a campus on the transmission system may lose less [A]
+
+
 def plant_water(mw, gal_mwh):
-    """Water at power plants (MGD) for electricity at `mw` around the clock, from a factor in gallons per MWh."""
-    return mw * 24 * gal_mwh / 1e6
+    """Water at power plants (MGD) for a campus using `mw` around the clock, from a factor in gallons per MWh generated (plant water over net generation).
+    The plants generate what the campus uses plus what the lines lose."""
+    return mw / (1 - LINE_LOSS) * 24 * gal_mwh / 1e6
 
 
 def evaporated_share(consumed, withdrawn):
