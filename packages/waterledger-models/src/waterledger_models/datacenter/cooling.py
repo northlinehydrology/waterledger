@@ -30,7 +30,7 @@ from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
 
-from waterledger_models.datacenter.physics import (ADIABATIC, DESIGNS as _DESIGNS, HFG, KWH_BTU, LB_GAL, OUTSIDE, POWER, RANGES, STAFF, TOPUP, _ramp,  # noqa: F401
+from waterledger_models.datacenter.physics import (ADIABATIC, DRAWS, DESIGNS as _DESIGNS, HFG, KWH_BTU, LB_GAL, OUTSIDE, POWER, RANGES, STAFF, TOPUP, _ramp,  # noqa: F401
                                                    evaporative_ratio, hourly_heat_power, hourly_rates, for_location, hourly_water_with_air, peak_utilization, sample_parameters, wet_bulb)
 
 DESIGNS = list(_DESIGNS)
@@ -47,7 +47,7 @@ def hourly(tdb, twb, design, p, rh=None, heat=None):
     return hourly_rates(tdb, twb, design, p, rh, heat)
 
 
-def sample(n=200, seed=7):
+def sample(n=DRAWS, seed=7):
     """The Monte Carlo draws, run by run: physics.sample_parameters as a list of {name: value}."""
     v = sample_parameters(n, seed)
     return [{k: float(a[i]) for k, a in v.items()} for i in range(n)]
@@ -60,7 +60,7 @@ def central():
 STAFF_KEYS = ("core", "per_mw", "gpcd", "used", "maint_base", "maint_per_mw", "maint_used")
 
 
-def staff_runs(n=200, seed=13):
+def staff_runs(n=DRAWS, seed=13):
     """Non-cooling water parameters per run, on their own stream: [core people, people per MW, gal per person a day, share used up,
     maintenance gal a day for the campus, maintenance gal a day per MW, maintenance share lost]."""
     rng = np.random.default_rng(seed)
@@ -125,7 +125,7 @@ def daily(times, temps, rhs, design, mw, p=None):
     return [str(d) for d in uniq], wd.tolist(), rd.tolist()
 
 
-def run_locations(weather, n=200, seed=7, mw=100.0, workers=None):
+def run_locations(weather, n=DRAWS, seed=7, mw=100.0, workers=None):
     """run_location for several places at once, one process each: {name: (times, temps, rhs)} to {name: results}. Each place's results are the same as
     running it alone. workers defaults to WATERLEDGER_WORKERS, else the machine's cores. A script calling this needs the usual `if __name__ == "__main__"` guard."""
     names = list(weather)
@@ -137,7 +137,7 @@ def run_locations(weather, n=200, seed=7, mw=100.0, workers=None):
         return {k: job.result() for k, job in jobs.items()}
 
 
-def run_location(times, temps, rhs, n=200, seed=7, mw=100.0):
+def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0):
     """Monte Carlo for every design at one location, per `mw` MW of IT capacity.
 
     Returns {design: {stat: {"p10","p50","p90"}}} for withdrawn/consumed/returned average, peak and annual, and electricity,

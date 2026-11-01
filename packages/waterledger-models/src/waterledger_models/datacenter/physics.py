@@ -416,7 +416,10 @@ def latin_hypercube(ranges, n, seed, linked=None):
     return {k: a + (b - a) * u[k] for k, (a, b) in ranges.items()}
 
 
-def sample_parameters(n=200, seed=7):
+DRAWS = 400       # Latin hypercube draws at each location: 12 seeds at 200 left the hybrid and assist average medians within 6-16% (methods log, Nov 1, 2026), and error falls with the square root of the draws
+
+
+def sample_parameters(n=DRAWS, seed=7):
     """Monte Carlo draws of the cooling parameters: {name: array (n,)}. cooling.py's per-run loop and ensemble.py both use these draws."""
     return latin_hypercube({**RANGES, "topup": TOPUP, **ADIABATIC, **POWER, **OUTSIDE}, n, seed, LINKED)
 
@@ -426,7 +429,7 @@ def central_parameters():
     return {**{k: (a + b) / 2 for k, (a, b) in {**RANGES, **ADIABATIC, **POWER, **OUTSIDE}.items()}, "topup": sum(TOPUP) / 2}
 
 
-def sample_staff(n=200, seed=13):
+def sample_staff(n=DRAWS, seed=13):
     """Monte Carlo draws of the staff water parameters on their own stream (run-major, as Water Ledger's
     staff_runs): {"staff_core", "staff_per_mw", "staff_gpcd", "staff_used": array (n,)}."""
     lo = np.array([v[0] for v in STAFF.values()])

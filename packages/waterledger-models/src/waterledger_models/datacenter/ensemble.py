@@ -14,6 +14,7 @@ import numpy as np
 import xarray as xr
 
 from waterledger_models.datacenter import physics as model
+from waterledger_models.datacenter.physics import DRAWS
 
 STATS = ("avg", "peak_1in10", "record", "annual_mg", "max_month", "worst_year_mg", "max_90day")
 ANNUAL = ("annual_mg", "worst_year_mg")       # million gallons a year; the rest are million gallons a day
@@ -76,7 +77,7 @@ def _evaluate(tdb, twb, rh, starts, years, months, hour_years, design, params, m
     return stats, wue, power, np.stack(daily, axis=1), _peak_stats(full, years)[0]
 
 
-def run_ensemble(time, air_temperature, relative_humidity, mw=100.0, n=200, seed=7, designs=model.DESIGNS,
+def run_ensemble(time, air_temperature, relative_humidity, mw=100.0, n=DRAWS, seed=7, designs=model.DESIGNS,
                  chunk=25, keep_daily=False):
     """Run the Monte Carlo ensemble for one location.
 
@@ -130,7 +131,7 @@ def run_ensemble(time, air_temperature, relative_humidity, mw=100.0, n=200, seed
     return ds
 
 
-def summarize(ds, quantiles=(0.1, 0.5, 0.9), staff=True, staff_n=200, staff_seed=13):
+def summarize(ds, quantiles=(0.1, 0.5, 0.9), staff=True, staff_n=DRAWS, staff_seed=13):
     """Quantiles across runs (and the central run) for each flow: (design, stat, quantile).
 
     With staff, staff water at the campus's size (ds.attrs["it_capacity_mw"]) is added as Water Ledger does: its own

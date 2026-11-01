@@ -963,3 +963,7 @@ The earlier national rule kept only plants with a live NPDES permit on ECHO's li
 **Snapshots.** JSON files are written with sorted keys. The cause of Virginia's two receiving.json files with different hashes was `_downstream` building `reaches` through a set of strings, whose order differs between Python runs.
 
 **Tests.** `tests/test_state_end_to_end.py` runs any state from `WATERLEDGER_TEST_STATE` with nothing hand-listed and no other state's data, and build-state's check step now runs it. On the published OH, MI and TX snapshots it takes seconds.
+
+## Nov 1, 2026: 400 draws
+
+Each location now runs 400 Latin hypercube draws, up from 200 (`physics.DRAWS`), set by Andrew. At 200, with 12 seeds, the 95% half-width was 2-3% on towers and under 1% on PUE, but 6-16% on the hybrid and assist average medians, and 21-66% on their low ends, which are about 0.01 MGD. Error falls with the square root of the draws, so 400 should cut that noise by about 30%. It doubles the cooling compute on every build. The convergence check is to be rerun at 400 and reported here.

@@ -6,6 +6,7 @@ does (design 0003). Each stage caches what it fetches or computes, so a stopped 
 import json, os, time
 
 from waterledger import states
+from waterledger_models.datacenter.physics import DRAWS
 
 STAGES = ["places", "supply", "wastewater", "receiving", "cooling", "storms_and_rain", "energy", "wateruse", "checks"]
 # The least share of a state's places each layer must cover; a build below these fails (a source may have broken).
@@ -64,7 +65,7 @@ def checks(state, pl, sample=SAMPLE, seed=1):
     return result
 
 
-def build(state, out=None, n=200, run_checks=True):
+def build(state, out=None, n=DRAWS, run_checks=True):
     """Run every stage for `state` and write a manifest of what was built (counts, timings, sources' dates) to `out`."""
     from waterledger.national import climate as nc
     from waterledger.national.data import LiveData

@@ -110,7 +110,7 @@ from waterledger_models.datacenter import run_ensemble, summarize
 from waterledger_models.weather import fetch_open_meteo
 
 w = fetch_open_meteo(42.88, -85.52, cache=".cache/grand_rapids.json")     # 30 years of hourly ERA5 weather
-ds = run_ensemble(w.time.values, w.air_temperature.values, w.relative_humidity.values, mw=300, n=200)
+ds = run_ensemble(w.time.values, w.air_temperature.values, w.relative_humidity.values, mw=300, n=400)
 s = summarize(ds)                                    # (design, stat, quantile), staff water included
 s["withdrawn"].sel(design="towers", stat="peak_1in10")      # million gallons on a 1-in-10-year peak day
 

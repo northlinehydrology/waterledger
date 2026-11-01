@@ -3,6 +3,7 @@
 import functools, json, os
 
 from waterledger import states
+from waterledger_models.datacenter.physics import DRAWS
 
 
 @functools.lru_cache(maxsize=8)
@@ -23,7 +24,7 @@ def climate_areas(state):
             + [{"geoid": r.county_fips, "lat": float(r.lat), "lon": float(r.lon)} for r in cities.itertuples()])
 
 
-def division_runs(state, n=200):
+def division_runs(state, n=DRAWS):
     """{division id: {"name", "station", "lat", "lon", "per_100mw"}}, per_100mw as cooling.run_location returns it."""
     from waterledger_data import climate, divisions
     from waterledger_data.config import CACHE
@@ -47,7 +48,7 @@ def division_runs(state, n=200):
 LAKE_TEMPERATURES = {"Lake Michigan": "m", "Lake Superior": "s", "Lake Huron": "h", "Lake Erie": "e", "Lake Ontario": "o", "Lake St. Clair": "e"}
 
 
-def lake_results(lakes, temperatures, n=200):
+def lake_results(lakes, temperatures, n=DRAWS):
     """Lake-source cooling results by lake, with the note, ranges and power block a reader needs: lake.run_lake on each lake's temperatures. `temperatures`: GLERL's table (lake, dayOfYear, temperature)."""
     from waterledger_models.datacenter import lake as lc
     out = {}
@@ -61,7 +62,7 @@ def lake_results(lakes, temperatures, n=200):
     return out
 
 
-def lake_source(lakes, n=200):
+def lake_source(lakes, n=DRAWS):
     """lake_results for the lakes on a state's shore, from GLERL's table (fetched once). Empty for a state with no shoreline."""
     if not lakes:
         return {}

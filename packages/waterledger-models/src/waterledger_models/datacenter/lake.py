@@ -14,7 +14,7 @@ puts the spread between wind functions at about 12% or less (p. 28), inside the 
 import numpy as np
 
 from waterledger_models.datacenter import cooling as cw
-from waterledger_models.datacenter.physics import latin_hypercube
+from waterledger_models.datacenter.physics import DRAWS, latin_hypercube
 
 RHO, CP, LV = 1000.0, 4186.0, 2.45e6  # kg/m3, J/(kg K), J/kg
 GAL_M3 = 264.172
@@ -55,7 +55,7 @@ def evaporation_ratio(t, wind_mph):
     return d_e / (d_e + d_c + d_r)
 
 
-def run_lake(water_temps, n=200, seed=11, mw=100.0):
+def run_lake(water_temps, n=DRAWS, seed=11, mw=100.0):
     """Monte Carlo over the parameter ranges for one lake. water_temps: 366 daily long-term average surface temperatures (deg C).
     Returns MGD per `mw` of IT capacity: withdrawn and returned (steady), forced evaporation average and its highest month, and the
     electricity from the same heat."""
@@ -92,12 +92,12 @@ def forced_evaporation_m3s(it_mw, utilization, heat_factor, water_temp_c, wind_m
     return evaporation_ratio(water_temp_c, wind_mph) * evap_error * heat_w / LV / RHO
 
 
-def sample_parameters(n=200, seed=11):
+def sample_parameters(n=DRAWS, seed=11):
     """The Monte Carlo draws for run_lake and run_lake_ensemble, a Latin hypercube like the cooling model's: {name: array (n,)}."""
     return latin_hypercube(RANGES, n, seed)
 
 
-def run_lake_ensemble(water_temps, n=200, seed=11, mw=100.0):
+def run_lake_ensemble(water_temps, n=DRAWS, seed=11, mw=100.0):
     """run_lake vectorized over runs, as an xarray Dataset (needs waterledger-models[ensemble]): withdrawn (steady), forced
     evaporation by day of year, its average and highest 30-day mean, and the evaporative share of the added heat, in million
     gallons a day per `mw` of IT capacity, plus each run's parameters."""

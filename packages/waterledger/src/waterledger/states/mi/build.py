@@ -11,6 +11,7 @@ from waterledger_data import energy, places as pl
 from waterledger_data.climate import hourly_weather
 from waterledger_data.wastewater import OWN_KM
 from waterledger_models.datacenter import cooling as cw
+from waterledger_models.datacenter.physics import DRAWS
 from waterledger_data.config import CACHE, SITE as SITE_ROOT, setting
 
 from waterledger.comparisons import HOUSEHOLD_GPD, it_mw_from_contract
@@ -452,7 +453,7 @@ def round_tree(x, nd=5):
     return x
 
 
-def main(n=200):
+def main(n=DRAWS):
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     weather = {rid: hourly_weather(r["lat"], r["lon"], "1995-01-01", "2024-12-31", f"{r.get('cache', rid)}_1995_2024") for rid, r in REGIONS.items()}
     runs = cw.run_locations(weather, n=n, mw=100.0)
