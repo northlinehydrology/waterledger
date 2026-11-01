@@ -576,3 +576,7 @@ division, so the national tier does not need NOAA's station files at estimate ti
 
 `est.levels` uses full values and the pages rate the figures they show, so a figure rounded across a line can read differently: 9 of 952 well withdrawal levels and 94 of 9,520 spare-room levels checked, and none of the Compact levels or the verdicts on the 6 proposals with a reported figure. Wording stays with each page: the simple and detailed pages say "with the state" and "with EGLE" for the same line, which is left alone as a choice of words. The single-storm method was settled earlier (curve numbers, `runoff.storm_mg`); the private review's yearly and first-inch figures remain its own.
 
+## Oct 31, 2026: a stable order for utilities tied on customers
+
+`energy.ranked` orders a place's utilities by EIA customers in the state. Utilities reporting the same number, usually delivery-only ones reporting none, kept whatever order the territory data arrived in, and two builds a day apart swapped them at 158 places in Texas and one in Virginia, with the same utilities and shares. Ties now go to the larger share of the place, then the name. Share is the better first tie-break because it is the only other measure of how much of the place a utility covers, though HIFLD's whole-county territories overstate it; the name only makes the order repeatable.
+

@@ -187,3 +187,11 @@ def test_compare_verdicts():
     assert lv.compare([0.5, 0.5], O) == "Our middle estimate is about 2 times the reported figure, which is inside our likely range."
     assert lv.compare([0.5, 2], O, True) == "Our middle estimate is above the reported minimum."
     assert lv.compare([1.5, 2], O, True) == "The reported minimum is about 1.5 times our middle estimate, inside our likely range."
+
+
+def test_ranked_order_does_not_depend_on_the_input_order():
+    from waterledger_data import energy
+    U = [{"eia_id": 1, "name": "Oncor", "share": 1.0}, {"eia_id": 2, "name": "Texas-New Mexico", "share": 1.0}, {"eia_id": 3, "name": "Coop", "share": 0.2}, {"eia_id": 4, "name": "Small share", "share": 0.1}, {"eia_id": 5, "name": "Big", "share": 0.01}]
+    L = {3: {"customers": 500}, 5: {"customers": 90000}}
+    want = ["Big", "Coop", "Oncor", "Texas-New Mexico", "Small share"]
+    assert [u["name"] for u in energy.ranked(U, L)] == want and [u["name"] for u in energy.ranked(U[::-1], L)] == want

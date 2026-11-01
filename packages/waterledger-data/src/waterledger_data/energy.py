@@ -157,6 +157,7 @@ def loads(state):
 def ranked(utilities, loads_):
     """A place's utilities in the order to show them: by EIA customers in the state (AEP Ohio before the City of Columbus's
     own small utility; Austin Energy before the cooperatives around it). HIFLD draws many territories as whole counties, so
-    area shares overstate small utilities and are kept as "may serve", not as the share served."""
+    area shares overstate small utilities and are kept as "may serve", not as the share served. Ties (delivery-only utilities report no customers) go to the larger share, then the name,
+    so a rebuild keeps the same order."""
     cust = lambda u: (loads_.get(u["eia_id"]) or {}).get("customers") or 0
-    return sorted(utilities, key=lambda u: -cust(u))
+    return sorted(utilities, key=lambda u: (-cust(u), -(u.get("share") or 0), u.get("name") or ""))
