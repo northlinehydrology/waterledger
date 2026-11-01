@@ -5,9 +5,10 @@ import re
 import pytest
 
 STATES = ("OH", "VA", "TX", "MI")
-# tests whose state can't be read from their parameters
+# tests whose state can't be read from their parameters. test_hotter_climate_uses_more_water_with_towers has no state: it needs two whole states' climate, so
+# it runs nightly, not in a state's build job, where it took over half an hour to rebuild the other state.
 BY_NAME = {"test_counts_and_independent_cities_once": ("VA", "OH"), "test_statewide_impairment_table": ("OH",),
-           "test_hotter_climate_uses_more_water_with_towers": ("TX", "OH"), "test_lake_source_is_great_lakes_only": ("TX",),
+           "test_lake_source_is_great_lakes_only": ("TX",),
            "test_ohio_snapshot": ("OH",), "test_snapshot_equals_live": ("OH",), "test_michigan_point_lookup_uses_michigan_places": ("MI",),
            "test_ohio_franklin_2024": ("OH",), "test_texas_travis_2024": ("TX",), "test_virginia_loudoun_2024": ("VA",)}
 POINTS = {"Columbus": "OH", "Austintown Township": "OH", "Loudoun County": "VA", "Austin": "TX"}
