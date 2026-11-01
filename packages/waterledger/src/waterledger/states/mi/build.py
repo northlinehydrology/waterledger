@@ -467,13 +467,9 @@ def round_tree(x, nd=5):
 
 def main(n=200):
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    regions = {}
-    for rid, r in REGIONS.items():
-        cache = f"{r.get('cache', rid)}_1995_2024"
-        t, T, RH = hourly_weather(r["lat"], r["lon"], "1995-01-01", "2024-12-31", cache)
-        res = cw.run_location(t, T, RH, n=n, mw=100.0)
-        regions[rid] = {"name": r["name"], "station": r["station"], "lat": r["lat"], "lon": r["lon"], "per_100mw": res}
-        print("ran", rid)
+    weather = {rid: hourly_weather(r["lat"], r["lon"], "1995-01-01", "2024-12-31", f"{r.get('cache', rid)}_1995_2024") for rid, r in REGIONS.items()}
+    runs = cw.run_locations(weather, n=n, mw=100.0)
+    regions = {rid: {"name": r["name"], "station": r["station"], "lat": r["lat"], "lon": r["lon"], "per_100mw": runs[rid]} for rid, r in REGIONS.items()}
 
     staff = cw.staff_runs(n)
     Dv = {"regions": regions, "staff": {"runs": staff}}
