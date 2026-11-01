@@ -12,7 +12,8 @@ class Place(BaseModel):
     model_config = ConfigDict(frozen=True)
     geoid: str
     name: str
-    kind: str                   # city, township, charter township, village, county, state or point
+    kind: str                   # as Census writes it: city, town, village, borough, township, charter township, county, state or point
+    level: str | None = None    # "place" (Census's places layer: incorporated, except census-designated places), "township" (county subdivisions, including New England's towns) or "county"
     state: str                  # postal code, e.g. "MI"
     county: str | None = None
     county_fips: str | None = None
@@ -22,6 +23,13 @@ class Place(BaseModel):
     def context(self):
         """The public water facts around this place, by category (see waterledger.context)."""
         return states.provider(self.state).context(self)
+
+    @property
+    def incorporated(self):
+        """A place incorporated as a municipality: Census's places layer other than census-designated places. A New England or New York "town" is a county subdivision, mostly rural, and doesn't count."""
+        if self.level is not None:
+            return self.level == "place" and "cdp" not in self.kind
+        return self.kind in ("city", "village", "town", "borough")
 
 
 def place(query=None, *, geoid=None, state=None, county=None, lat=None, lon=None):

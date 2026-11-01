@@ -38,7 +38,7 @@ def place(state, geoid):
     if not len(hit):
         raise KeyError(f"no {state} place with GEOID {geoid}")
     r = hit.iloc[0]
-    return Place(geoid=r.geoid, name=_display(r), kind=r.kind.lower(), state=state, county=r.county, county_fips=r.county_fips,
+    return Place(geoid=r.geoid, name=_display(r), kind=r.kind.lower(), level=r.level, state=state, county=r.county, county_fips=r.county_fips,
                  lat=round(float(r.lat), 4), lon=round(float(r.lon), 4))
 
 

@@ -206,3 +206,12 @@ def test_michigan_salt_by_its_own_winters():
     from waterledger import states
     p = wl.place("Gaines charter township, MI")          # West Michigan, Grand Rapids' 72 days
     assert states.provider("MI").reference(p)["salt_events"] == pytest.approx([21.6, 43.2, 64.8])
+
+
+def test_incorporated_places_count_as_built():
+    from waterledger.place import Place
+    make = lambda kind, level=None: Place(geoid="1", name="x", kind=kind, level=level, state="OH", lat=0, lon=0)
+    assert make("city", "place").incorporated and make("village", "place").incorporated and make("town", "place").incorporated
+    assert not make("cdp", "place").incorporated and not make("township", "township").incorporated and not make("county", "county").incorporated
+    assert not make("town", "township").incorporated       # New England's towns are county subdivisions
+    assert make("village").incorporated and not make("charter township").incorporated      # data without a level

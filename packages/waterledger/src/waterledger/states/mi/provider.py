@@ -21,7 +21,7 @@ def place(geoid):
     from waterledger.place import Place
     r = sc.place(geoid)
     lon, lat = sc.lonlat(r)
-    return Place(geoid=r["g"], name=r["base"], kind=r["k"], state="MI", county=r["c"], county_fips=r["cf"], lat=round(lat, 4), lon=round(lon, 4))
+    return Place(geoid=r["g"], name=r["base"], kind=r["k"], level="place" if r["k"] == "city" else "township", state="MI", county=r["c"], county_fips=r["cf"], lat=round(lat, 4), lon=round(lon, 4))
 
 
 def estimate(site):
