@@ -140,8 +140,11 @@ def cooling_estimate(D, region, cool, mw, dest):
         E["wPeakFull"] = F("withdrawn_peak_full_capacity")
     if dest == "reuse":
         E["full"] = {"wAvg": E["wAvg"], "rAvg": E["rAvg"]}
-        E["wAvg"] = {k: max(E["cAvg"][k] - E["condAvg"][k], 0.0) for k in ("lo", "mid", "hi")}     # the condensate is reused too
-        E["wPeak"] = {k: E["wPeak"][k] - E["rPeak"][k] for k in ("lo", "mid", "hi")}
+        # the condensate is reused too; where it covers everything, nothing is taken. Each end is worked from separate model outputs, so the range is put back in order
+        def taken(a, b):
+            v = {k: max(a[k] - b[k], 0.0) for k in ("lo", "mid", "hi")}
+            return {"lo": min(v.values()), "mid": v["mid"], "hi": max(v.values())}
+        E["wAvg"], E["wPeak"] = taken(E["cAvg"], E["condAvg"]), taken(E["wPeak"], E["rPeak"])
         E["wAnn"] = {k: v * 365.25 for k, v in E["wAvg"].items()}
         E["rAvg"] = E["rPeak"] = E["sewer"] = {"lo": 0, "mid": 0, "hi": 0}
         E["reuse"] = True

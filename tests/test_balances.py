@@ -210,6 +210,16 @@ def test_estimate_books_close_on_the_middle_estimate():
     assert R["wAvg"]["mid"] + R["condAvg"]["mid"] == pytest.approx(R["cAvg"]["mid"] + R["rAvg"]["mid"])
 
 
+def test_reuse_never_takes_less_than_nothing_and_its_range_stays_in_order():
+    from waterledger.scenario import cooling_estimate
+    per = {k: {"p10": 0.01, "p50": 0.02, "p90": 0.03} for k in ("withdrawn_avg", "withdrawn_peak_1in10", "withdrawn_annual_mg", "consumed_avg", "consumed_peak_1in10", "returned_avg", "returned_peak_1in10")}
+    per = {**per, "returned_peak_1in10": {"p10": 0.05, "p50": 0.09, "p90": 0.2}, "condensate_avg": {"p10": 0.0, "p50": 0.05, "p90": 0.08}, "condensate_peak_1in10": {"p10": 0.0, "p50": 0.1, "p90": 0.2}}
+    D = {"regions": {"r": {"per_100mw": {"dry": per}}}, "staff": {"runs": cooling.staff_runs(5)}}
+    R = cooling_estimate(D, "r", "dry", 100, "reuse")
+    for k in ("wAvg", "wPeak", "wAnn"):
+        assert 0 <= R[k]["lo"] <= R[k]["mid"] <= R[k]["hi"], (k, R[k])
+
+
 def test_a_septic_system_does_not_take_condensate():
     from waterledger.scenario import cooling_estimate
     per = {k: {"p10": 0.1, "p50": 0.2, "p90": 0.3} for k in ("withdrawn_avg", "withdrawn_peak_1in10", "withdrawn_annual_mg", "consumed_avg", "consumed_peak_1in10", "returned_avg", "returned_peak_1in10")}
