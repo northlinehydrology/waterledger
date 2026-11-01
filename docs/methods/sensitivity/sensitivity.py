@@ -56,7 +56,7 @@ NC_OUTPUTS = ("nc_withdrawn", "nc_consumed")
 def cooling_space():
     """[(name, low, high)] for the cooling model: physics.RANGES, topup and physics.ADIABATIC, in the order of physics.PARAMETERS. The
     package samples topup and ADIABATIC on their own streams; here all are independent uniforms on one design."""
-    bounds = {**ph.RANGES, "topup": ph.TOPUP, **ph.ADIABATIC, **ph.POWER}
+    bounds = {**ph.RANGES, "topup": ph.TOPUP, **ph.ADIABATIC, **ph.POWER, **ph.OUTSIDE}
     return [(k, float(bounds[k][0]), float(bounds[k][1])) for k in ph.PARAMETERS]
 
 
