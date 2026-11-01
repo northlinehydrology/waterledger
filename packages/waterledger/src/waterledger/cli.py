@@ -1,7 +1,6 @@
 """waterledger build-state <ST>: build a state's data. waterledger build <state> [all|estimates|waters|power]: Michigan's site
 data, part by part (paths from waterledger_data.config); kept for scripts, build-state MI runs the same build."""
-import os
-import argparse, sys
+import argparse, os, sys
 
 from waterledger.states import STATES, builder
 
