@@ -164,16 +164,29 @@ def test_tower_flow_in_the_two_equations_is_the_same_water():
     assert gal_kwh == pytest.approx(kg_s * 3600 / GAL_KG, rel=0.003)
 
 
+def _tower_fan(tdb, twb, **over):
+    p = {**CENTRAL, "liquid_share": 0.0, "oa_cfm_per_mw": 0.0, **over}
+    t, w = np.array([tdb]), np.array([twb])
+    return float(ph.hourly_heat_power(t, w, "towers", p)[0][0] - ph.hourly_heat_power(t, w, "towers", {**p, "tower_fan_pa": 0.0})[0][0])
+
+
 def test_tower_air_can_carry_the_heat():
-    """Air at the capped ratio takes up the tower's heat and leaves saturated at the hot water's temperature, no hotter."""
-    p = {**CENTRAL, "liquid_share": 0.0}
+    """Above the ratio where air would leave hotter than saturated at the hot water, the design air flow does not fall: no less air, no less fan."""
+    p = CENTRAL
     rng = p["range_f"] / 1.8
-    tw, hot = 26.0, 26.0 + p["tower_approach"] + rng
-    cap = (ph._saturated_enthalpy(hot) - ph._saturated_enthalpy(tw)) / (ph.CP_WATER * rng)
+    cap = (ph._saturated_enthalpy(ph.TOWER_DESIGN_WB + p["tower_approach"] + rng) - ph._saturated_enthalpy(ph.TOWER_DESIGN_WB)) / (ph.CP_WATER * rng)
     assert cap < ph.POWER["lg"][1]
-    fan = lambda lg: ph.hourly_heat_power(np.array([p["hybrid_full"] + 3]), np.array([tw]), "towers", {**p, "lg": lg})[0][0]
-    assert fan(ph.POWER["lg"][1]) == pytest.approx(fan(cap))       # above the cap, no less air
-    assert fan(cap / 2) > fan(cap)
+    assert _tower_fan(35.0, 27.0, lg=ph.POWER["lg"][1]) == pytest.approx(_tower_fan(35.0, 27.0, lg=cap))
+    assert _tower_fan(35.0, 27.0, lg=cap / 2) > _tower_fan(35.0, 27.0, lg=cap)
+
+
+def test_tower_fans_slow_in_cool_weather_and_stop_with_no_evaporation():
+    """By the cube law, fans use a fraction of their power when cold air takes up more heat per kg; none when a hybrid is dry."""
+    hot, cold = _tower_fan(35.0, 27.0), _tower_fan(0.0, -2.0)
+    assert 0 < cold < hot / 3
+    t, w = np.array([ph.central_parameters()["hybrid_on"] - 1.0]), np.array([15.0])
+    p = {**CENTRAL, "oa_cfm_per_mw": 0.0}
+    assert ph.hourly_heat_power(t, w, "hybrid", p)[0][0] == pytest.approx(ph.hourly_heat_power(t, w, "hybrid", {**p, "tower_fan_pa": 0.0})[0][0])
 
 
 def test_chiller_rejects_by_the_wet_share():

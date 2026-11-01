@@ -96,6 +96,7 @@ OUTSIDE = {"oa_cfm_per_mw": (100.0, 1500.0), "humidify_share": (0.0, 1.0)}
 # Indoor dew point limits, C: ASHRAE TC 9.9's recommended -9 to 15, as secondary sources give them, not read directly. Water to the outside air unit's
 # dehumidifying coil, C [A]: it must be colder than the 15 C dew point, while the air loop's water, at 18.7 C or more, is not, so those coils stay dry.
 DEW_LOW, DEW_HIGH, DEHUMIDIFY_WATER = -9.0, 15.0, 9.0
+TOWER_DESIGN_WB = 25.6     # C, the 78 F wet-bulb of the standard cooling tower rating (95/85/78 F) [A]; a site's own design wet-bulb differs by a few degrees
 PARAMETERS = tuple(RANGES) + ("topup",) + tuple(ADIABATIC) + tuple(POWER) + tuple(OUTSIDE)
 
 # Staff water. People = the campus's permanent headcount (employees and on-site contractors), a fixed core plus a share per MW of IT
@@ -253,11 +254,17 @@ def _loop(load, supply, tdb, twb, coil_air, wet, design, p):
     tower_range = p["range_f"] / 1.8
     tower_water = (load + chiller + pumps) * wet / (CP_WATER * tower_range - wet * pump_per_flow)
     tower_pump = tower_water * pump_per_flow
-    # the air must carry that heat: at most, it leaves saturated at the hot water's temperature, which caps the water-to-air ratio. In cool weather
-    # the tower runs its water no colder than the loop needs, so the hot water sits near the loop's return, not the wet-bulb's
+    # tower fans: a tower is sized for a design point and its fans slow when less air will do. Design: full heat through evaporation at the rating wet-bulb, with air
+    # at the sampled water-to-air ratio, capped where air would leave hotter than saturated at the hot water. Each hour the air needed goes with the tower's heat over
+    # the enthalpy the air can pick up, saturated at the hot water less the air coming in (Merkel's driving potential, with the design point's effectiveness); the
+    # fan affinity law then gives the power, cubic with a 10% floor as for the dry coolers. In cool weather the water stays near the loop's return, not the wet-bulb's.
+    design_water = load / (CP_WATER * tower_range)
+    design_hot = TOWER_DESIGN_WB + p["tower_approach"] + tower_range
+    design_potential = _saturated_enthalpy(design_hot) - _saturated_enthalpy(TOWER_DESIGN_WB)
+    design_air = design_water / np.minimum(p["lg"], design_potential / (CP_WATER * tower_range))
     hot_water = np.maximum(twb + p["tower_approach"] + tower_range, ret - p["hx_approach"])
-    lg_max = (_saturated_enthalpy(hot_water) - _saturated_enthalpy(twb)) / (CP_WATER * tower_range)
-    tower_fan = _fan_kw(tower_water / np.minimum(p["lg"], lg_max), p["tower_fan_pa"], p["fan_eff"])
+    air_share = tower_water / np.maximum(design_water, 1e-12) * design_potential / (_saturated_enthalpy(hot_water) - _saturated_enthalpy(twb))
+    tower_fan = _fan_kw(design_air, p["tower_fan_pa"], p["fan_eff"]) * np.clip(air_share, 0.1, 1.0) ** 3 * (wet > 0)
     # dry cooler fans: the air flow that carries the economizer's heat, up to design flow, by the fan affinity law (cubic; 10% floor, immaterial)
     design_flow = load / (CP_AIR * p["assist_dt_air"])
     rise = np.maximum(ret - p["dc_approach"] - coil_air, p["assist_dt_air"])
@@ -272,7 +279,7 @@ def hourly_heat_power(tdb, twb, design, p, rh=None):
 
     After Lei and Masanet's Eqs. 2-4, with these departures, each so that it closes: air handler fan and pump heat are counted in the heat; their sensible
     heat ratio is replaced by outside air's own heat and moisture, since the warm air loop's coils run above the indoor dew point and condense nothing; the
-    tower's air flow is capped by what air can carry. Dry cooler and liquid cooling designs are added, which their cases do not have. p as in hourly_rates."""
+    tower's fans slow to the air the hour's heat needs, capped by what air can carry. Dry cooler and liquid cooling designs are added, which their cases do not have. p as in hourly_rates."""
     q = 1.0 + (1.0 / p["ups"] - 1.0) + (1.0 / (1.0 - p["dist_loss"]) - 1.0) + p["light"]
     air = (1.0 - p["liquid_share"]) + p["liquid_share"] * p["liquid_air_share"]
     kg_s = _outside_air(tdb, twb, p, rh)[0]
