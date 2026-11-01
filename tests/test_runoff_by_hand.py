@@ -178,3 +178,12 @@ def test_90_day_stat_by_hand():
     st = ensemble._stats(daily.reshape(1, -1), years, months)[0]
     assert st[ensemble.STATS.index("max_90day")] == pytest.approx(2.0)
     assert st[ensemble.STATS.index("max_90day")] <= st[ensemble.STATS.index("peak_1in10")]
+
+
+def test_neutral_bands_are_not_michigans_lines():
+    from waterledger.national.provider import NOT_COVERED, WITHDRAWAL_BANDS
+    # 3,300 people x 140 gallons a day = 462,000; 33,000 people x 140 = 4,620,000: about 0.5 and 5 MGD
+    assert 3300 * 140 / 1e6 == pytest.approx(0.462) and 33000 * 140 / 1e6 == pytest.approx(4.62)
+    assert WITHDRAWAL_BANDS["low_mgd"] == 0.5 and WITHDRAWAL_BANDS["high_mgd"] == 5.0
+    assert not {"register_mgd", "zone_c_permit_mgd", "permit_mgd"} & set(WITHDRAWAL_BANDS)
+    assert "mcl327" not in WITHDRAWAL_BANDS["sources"] and "state_rules" in NOT_COVERED

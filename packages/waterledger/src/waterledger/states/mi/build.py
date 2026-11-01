@@ -222,7 +222,7 @@ CONTEXT = {"household_gpd": {"value": HOUSEHOLD_GPD, "note": "more than 300 gall
            "liters_per_gallon": {"value": 3.78541},
            "golf_season_days": {"value": 153, "note": "May through September, the watering season [estimate]"},
            # Michigan's Part 327: registration above 100,000 gallons a day, a permit for new withdrawals above 2 MGD, 1 MGD in Zone C. The other Great Lakes
-           # states review projects using up more than 5 MGD. Where a state's rules are not yet reviewed, the 0.1 and 2 are only low and high bands [A].
+           # states review projects using up more than 5 MGD. These are Michigan's and the Compact's: elsewhere see waterledger.national.provider.WITHDRAWAL_BANDS.
            "withdrawals": {"register_mgd": 0.1, "zone_c_permit_mgd": 1.0, "permit_mgd": 2.0, "compact_use_mgd": 5.0, "sources": ["mcl327", "wgvu2026"]},
            "levels": LEVELS}
 

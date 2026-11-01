@@ -187,6 +187,7 @@ class Estimate(BaseModel):
     before_after: list[BeforeAfterRow] = []
     household_wells: WellsSummary | None = None
     levels: dict[str, str] = {}    # the levels a reader sees, by card (waterledger.levels)
+    not_covered: dict[str, str] = {}   # what isn't covered yet for this state, in words: labeled, not silently empty
     power_plants: dict[str, PlantWater] = {}    # every power option for the state; site.power says which one the site uses
     weather: str = "region"     # "region": the stored results for the place's weather region or division; "local": the model run at the place (ERA5)
     model_version: str

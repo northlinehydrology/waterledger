@@ -1,6 +1,6 @@
 """The levels and verdicts waterledger.org shows a reader: how large a campus is against what is there, and how an estimate reads against a reported figure.
-The bands are this project's reading of the numbers, not regulations [A]; where a rule sets a line (Michigan's Part 327, the Great Lakes Compact), the line comes from the state's context
-(context.withdrawals). A display words the levels. The paid review's ratings are its own and are not here."""
+The bands are this project's reading of the numbers, not regulations [A]; where a reviewed rule sets a line (Michigan's Part 327, the Great Lakes Compact), the line comes from the state's context
+(context.withdrawals); a state whose rules aren't reviewed has neutral bands instead, and says so (Estimate.not_covered). A display words the levels. The paid review's ratings are its own and are not here."""
 import decimal
 import math
 
@@ -27,9 +27,9 @@ def sewer(full, peak_pct):
 
 def withdrawal(mgd, W, rules=True):
     """(level, line) for water pumped at a site. Where a state's rules are reviewed, `line` is the rule that applies: "below", "register", "zone_c" or "permit", and `mgd` should be on the
-    rule's own period (Part 327: the average over 30 days; site_levels uses the highest month). Elsewhere the same numbers are only low and high bands: "low", "moderate" or "high". W: context.withdrawals."""
+    rule's own period (Part 327: the average over 30 days; site_levels uses the highest month). Elsewhere neutral bands that are no state's lines, on the peak day: "low", "moderate" or "high". W: context.withdrawals."""
     if not rules:
-        return ("small", "low") if mgd < W["register_mgd"] else ("mid", "moderate") if mgd <= W["permit_mgd"] else ("large", "high")
+        return ("small", "low") if mgd < W["low_mgd"] else ("mid", "moderate") if mgd <= W["high_mgd"] else ("large", "high")
     return (("small", "below") if mgd < W["register_mgd"] else ("mid", "register") if mgd <= W["zone_c_permit_mgd"]
             else ("mid", "zone_c") if mgd <= W["permit_mgd"] else ("large", "permit"))
 

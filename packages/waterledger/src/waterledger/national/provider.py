@@ -122,8 +122,11 @@ def _ppw(state):
                               main_balancing_authority=w["main_ba"], import_share=w["import_share"]) if w else None
 
 
-# Where a state's rules aren't reviewed, Michigan's lines serve only as low and high bands [A]
-WITHDRAWAL_BANDS = {"register_mgd": 0.1, "zone_c_permit_mgd": 1.0, "permit_mgd": 2.0, "compact_use_mgd": 5.0}
+# Where a state's rules aren't reviewed: low and high bands that are this project's reading, not any state's lines [A]. 0.5 MGD is about what a public system at EPA's line between small and
+# medium (3,300 people) supplies, and 5 MGD a city ten times that, at about 140 gallons a person a day of public supply (USGS Circular 1441, 2015: 39 billion gallons a day to 283 million people).
+# The Compact's 5 MGD is a line of the eight Great Lakes states, used only for a place on the lakes.
+WITHDRAWAL_BANDS = {"low_mgd": 0.5, "high_mgd": 5.0, "compact_use_mgd": 5.0, "basis": "Bands for reading the number, not a rule: about the public supply of 3,300 people and of 33,000 [A]", "sources": ["epa_size_classes", "usgs_cir1441"]}
+NOT_COVERED = {"state_rules": "This state's water rules are not yet reviewed. Withdrawal levels are bands for reading the number, not legal lines."}
 
 
 def home_gpd(state):
@@ -146,7 +149,7 @@ def reference(state, place):
     return {"power_options": options, "power": default_power(options, "state_mix" if "state_mix" in options else next(iter(options)), place.context().energy.utilities),
             "golf_gpd": G.get("by_region", {}).get(_division(state, place)[0], G["gpd"]) if G else None,
             "home_gpd": home_gpd(state), "home_kwh_month": res.get("kwh_month"), "home_customers": res.get("customers"), "state_avg_mw": sd.state_avg_mw(),
-            "rain_median_in": rq.rain_median(sd.rain()), "salt_events": sd.salt_events().get(_division(state, place)[0]), "withdrawals": WITHDRAWAL_BANDS, "state_rules": False}
+            "rain_median_in": rq.rain_median(sd.rain()), "salt_events": sd.salt_events().get(_division(state, place)[0]), "withdrawals": WITHDRAWAL_BANDS, "state_rules": False, "not_covered": NOT_COVERED}
 
 
 def _division(state, place):
