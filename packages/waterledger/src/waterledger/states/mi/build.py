@@ -120,6 +120,12 @@ SOURCES = {
     "noaa_cag": ("NOAA NCEI. Climate at a Glance, county time series (nClimGrid): annual precipitation, mean of 1991–2020.", "https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/county/time-series"),
     "echo": ("U.S. EPA ECHO, Clean Water Act facility search, Michigan publicly owned treatment works: location, receiving water, combined sewer flag and the past calendar year's average reported flow.", "https://echo.epa.gov/"),
     "cwns2022": ("U.S. EPA Clean Watersheds Needs Survey 2022, current design flow by facility (Hodson et al. 2026 HydroShare compilation, CC BY 4.0). CWNS has no actual flows.", "https://www.hydroshare.org/resource/3dab07fd628a4af2ba812f038b1af89f/"),
+    "runoff_reduction2008": ("Hirschman, D., Collins, K., & Schueler, T. (2008). Technical Memorandum: The Runoff Reduction Method. Center for Watershed Protection and Chesapeake Stormwater Network, Table 4: runoff coefficients by land cover and hydrologic soil group.", "https://media.clear.uconn.edu/projects/TMDL/library/papers/RRTechMemo_2008.pdf"),
+    "nsqd11": ("Maestre, A., & Pitt, R. (2005). The National Stormwater Quality Database, Version 1.1. University of Alabama and Center for Watershed Protection, for U.S. EPA, Table 3: medians and coefficients of variation by land use.", "https://www.waterboards.ca.gov/rwqcb9/water_issues/programs/stormwater/docs/wqip/2013-0001/J_References/J099.pdf"),
+    "acs2015": ("U.S. Census Bureau. American Community Survey 2015 1-year summary file, table B11001: households by state.", "https://www2.census.gov/programs-surveys/acs/summary_file/2015/data/1_year_seq_by_state/"),
+    "noaa_normals": ("NOAA NCEI. U.S. Climate Normals 1991-2020, annual and seasonal: average days with 0.1 in or more of snow (ANN-SNOW-AVGNDS-GE001TI).", "https://www.ncei.noaa.gov/products/land-based-station/us-climate-normals"),
+    "usgs_cir1441": ("Dieter, C.A., et al. (2018). Estimated use of water in the United States in 2015. U.S. Geological Survey Circular 1441: public supply and the people it serves.", "https://doi.org/10.3133/cir1441"),
+    "epa_size_classes": ("U.S. EPA. Information about Public Water Systems: system size by people served (small 501-3,300, medium 3,301-10,000).", "https://www.epa.gov/dwreginfo/information-about-public-water-systems"),
     "usgs_marquette": ("Steuer, J., Selbig, W., Hornewer, N., & Prey, J. (1997). Sources of contamination in an urban basin in Marquette, Michigan, and an analysis of concentrations, loads, and data quality. USGS Water-Resources Investigations Report 97-4242, Table 4 (rooftops, parking lots).", "https://pubs.usgs.gov/wri/1997/4242/report.pdf"),
     "mpca_emc": ("Minnesota Pollution Control Agency. Minnesota Stormwater Manual: event mean concentrations of total suspended solids and of total phosphorus in stormwater runoff, by land use.", "https://stormwater.pca.state.mn.us/node/6015"),
     "nsqd": ("Pitt, R. (2011). The National Stormwater Quality Database, Version 3.1, Tables 2–4 (EPA Rain Zone 1, which includes Michigan).", "https://yosemite.epa.gov/oa/eab_web_docket.nsf/Attachments%20By%20ParentFilingId/0579A9DB19C5446F85257CBA00593372/$FILE/Attachment%202%20-%20Pitt%2C%20National%20Stormwater%20Quality%20Database%20Version%203.1.pdf"),
@@ -159,7 +165,7 @@ SHORT = {"lbnl2024": "LBNL 2024", "lei2021": "Lei & Masanet 2021", "wa_energy_co
          "han2026": "Han et al. 2026", "mytton2021": "Mytton 2021", "census_tiger": "Census", "epa_sa": "EPA service areas", "usgs_wbd": "USGS WBD",
          "noaa_atlas14": "NOAA Atlas 14", "simple_method": "Simple Method", "nrcs_tr55": "NRCS TR-55", "egle_impaired": "EGLE", "mcl327": "MCL Part 327", "wgvu2026": "WGVU 2026", "naturalearth": "Natural Earth", "glerl": "NOAA GLERL", "eia_res": "EIA-861 2025", "msft2024": "Microsoft 2024", "lsc_cornell": "Cornell LSC", "cfr125_81": "40 CFR 125.81", "egle_npdes": "EGLE NPDES", "mi_part22": "Mich. Part 22 rules",
          "attains2026": "EPA ATTAINS 2026", "mdnr_trout": "Michigan DNR trout streams", "noaa_cag": "NOAA 1991–2020", "echo": "EPA ECHO", "cwns2022": "EPA CWNS 2022",
-         "usgs_marquette": "USGS Marquette 1997", "mpca_emc": "MPCA", "nsqd": "NSQD", "stepl": "EPA STEPL", "egle_ms4": "EGLE MS4 standard", "kcdc_rules": "Kent County rules",
+         "usgs_marquette": "USGS Marquette 1997", "runoff_reduction2008": "Runoff Reduction memo 2008", "nsqd11": "NSQD 1.1", "acs2015": "ACS 2015", "noaa_normals": "NOAA Normals", "usgs_cir1441": "USGS Circular 1441", "epa_size_classes": "EPA size classes", "mpca_emc": "MPCA", "nsqd": "NSQD", "stepl": "EPA STEPL", "egle_ms4": "EGLE MS4 standard", "kcdc_rules": "Kent County rules",
          "bmpdb2020": "BMP Database 2020", "semcog_lid": "SEMCOG 2008", "epa_fact26": "EPA 2005", "epa_mm8": "EPA MM8", "part91": "Part 91", "mpca_salt": "MPCA salt guidance",
          "egle_rule57": "EGLE Rule 57", "cat3516c": "Caterpillar", "uptime2014": "Uptime Institute", "amazon_mo2026": "Amazon MO permit", "wyofile2025": "WyoFile 2025",
          "cfr112": "40 CFR 112", "herb2007": "Herb et al. 2007", "stefan2010": "Stefan & Herb 2010", "rule75": "R 323.1075", "jea2024": "JEA 2024", "rule60": "R 323.1060",
@@ -393,9 +399,9 @@ GREAT_LAKE_BY_HUC4 = {"0401": "Lake Superior", "0402": "Lake Superior", "0418": 
                       "0420": "Lake Huron", "0424": "Lake Huron", "0409": "Lake St. Clair and the Detroit River", "0410": "Lake Erie"}
 
 
-WATER_SOURCES = {"attains2026", "mi_part22", "mdnr_trout", "noaa_cag", "echo", "cwns2022", "usgs_marquette", "mpca_emc", "nsqd", "stepl", "egle_ms4", "kcdc_rules",
-                 "bmpdb2020", "semcog_lid", "epa_fact26", "epa_mm8", "part91", "mpca_salt", "egle_rule57", "cat3516c", "uptime2014", "amazon_mo2026",
-                 "wyofile2025", "cfr112", "herb2007", "stefan2010", "rule75", "jea2024", "rule60", "egle_dc_faq", "wleb_dap", "nri2017", "simple_method", "nrcs_tr55",
+WATER_SOURCES = {"runoff_reduction2008", "nsqd11", "noaa_normals", "attains2026", "mi_part22", "mdnr_trout", "noaa_cag", "echo", "cwns2022", "usgs_marquette", "mpca_emc", "nsqd", "stepl", "egle_ms4", "kcdc_rules",
+                 "semcog_lid", "epa_fact26", "epa_mm8", "part91", "mpca_salt", "egle_rule57", "cat3516c", "uptime2014", "amazon_mo2026",
+                 "wyofile2025", "cfr112", "herb2007", "stefan2010", "rule75", "jea2024", "rule60", "egle_dc_faq", "wleb_dap", "simple_method", "nrcs_tr55",
                  "usgs_wbd", "epa_wsaw", "noaa_atlas14", "wellogic", "wwat", "mcl327"}
 
 

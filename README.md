@@ -56,11 +56,12 @@ est.electricity.peak_mw          # the 1-in-10-year hottest hour, every computer
 est.site.source, est.site.wastewater     # the choices, with defaults filled in
 site.estimate(weather="local")   # the model run at the place's own ERA5 grid cell instead of its region's results (about 30 seconds)
 est.comparisons                  # against what is already there: the water system's connections, the county's water, the sewer plant and its spare room, the utilities and the state
-est.before_after                 # what changes at the place, today and after, as numbers
+est.before_after                 # what changes at the place, today and after, as numbers; loads in two rows, typical wet ponds and no controls
 est.levels                       # the levels a reader sees on waterledger.org, by card; waterledger.levels has the bands and levels.compare the verdict against a reported figure
+est.not_covered                  # what isn't covered yet for this state, in words
 est.household_wells              # the aquifer most household wells draw from, how deep, the water level, where a state has well records
 site.by_design().best            # the cooling design that evaporates least in total, campus and power plants; also .designs and the closed loop figures
-est.equivalents.homes            # the water as homes at 300 gallons a day; also .golf_courses, .evaporated_share, .electricity_homes, .share_of_home_customers
+est.equivalents.homes            # the water as homes at the state's own water for a home (.home_gpd: USGS 2015 over ACS 2015 households); also .golf_courses, .evaporated_share, .electricity_homes, .share_of_home_customers
 est.power_plants["mi_mix"].consumed   # water at power plants for one power option, MGD; also .withdrawn, .returned; est.site.power names the one in use
 est.model_dump_json()            # the whole estimate as JSON
 
