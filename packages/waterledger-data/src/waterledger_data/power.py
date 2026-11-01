@@ -57,9 +57,9 @@ def territories():
                 a = f["attributes"]
                 out.append({"name": a["Name"].strip(), "type": a["Type"], "customers": a["Customers"], "counties": a["Counties_1"],
                             "rings": (f.get("geometry") or {}).get("rings") or []})
-            if len(d.get("features", [])) < 100:
+            if len(d.get("features", [])) < 100 and not d.get("exceededTransferLimit"):
                 return out
-            off += 100
+            off += len(d.get("features", []))
     polys = _cached("mpsc_service_areas.json", fetch)
     for q in polys:
         xs = [p[0] for r in q["rings"] for p in r] or [0]

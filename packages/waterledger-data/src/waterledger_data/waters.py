@@ -43,9 +43,8 @@ ORDER = ["sed", "nut", "temp", "salt", "do", "bio", "flow", "ecoli", "oil", "met
 def _get(url, params, timeout=180):
     with urllib.request.urlopen(url + "?" + urllib.parse.urlencode(params), timeout=timeout) as r:
         d = json.load(r)
-    if isinstance(d, dict) and "error" in d:      # ArcGIS reports errors with HTTP 200
-        raise RuntimeError(str(d["error"])[:200])
-    return d
+    from waterledger_data.places import checked
+    return checked(d, params)
 
 
 def _paged(url, where, fields="*", page=2000):
@@ -53,10 +52,25 @@ def _paged(url, where, fields="*", page=2000):
     while True:
         d = _get(url, {"where": where, "outFields": fields, "returnGeometry": "false", "resultOffset": off,
                        "resultRecordCount": page, "orderByFields": "OBJECTID" if "ATTAINS" in url else "huc12", "f": "json"})
-        rows += [f["attributes"] for f in d.get("features", [])]
-        if len(d.get("features", [])) < page:
+        feats = d.get("features", [])
+        rows += [f["attributes"] for f in feats]
+        if len(feats) < page and not d.get("exceededTransferLimit"):
             return rows
-        off += page
+        off += len(feats)
+
+
+def echo_rows(state, get=None):
+    """A state's sewer plants from EPA ECHO, every page, or an error if ECHO gives fewer than it counted."""
+    get = get or _get
+    q = get(f"{ECHO}.get_facilities", {"output": "JSON", "p_st": state, "p_pcomp": "POT", "responseset": 1000})["Results"]
+    rows, page = [], 1
+    while len(rows) < int(q["QueryRows"]):
+        r = get(f"{ECHO}.get_qid", {"output": "JSON", "qid": q["QueryID"], "pageno": page, "responseset": 1000, "qcolumns": ECHO_COLS})["Results"]
+        if not r.get("Facilities"):
+            raise RuntimeError(f"ECHO gave {len(rows)} of {q['QueryRows']} sewer plants in {state}")
+        rows += r["Facilities"]
+        page += 1
+    return rows
 
 
 def _cached(name, fn):
@@ -142,10 +156,7 @@ def potws():
     from EPA ECHO where an NPDES permit matches. ECHO flows that don't fit the plant's design flow are dropped (unit errors are common)."""
     import csv
 
-    def fetch():
-        q = _get(f"{ECHO}.get_facilities", {"output": "JSON", "p_st": "MI", "p_pcomp": "POT", "responseset": 1000})["Results"]["QueryID"]
-        return _get(f"{ECHO}.get_qid", {"output": "JSON", "qid": q, "pageno": 1, "responseset": 1000, "qcolumns": ECHO_COLS})["Results"]["Facilities"]
-    rows = _cached("echo_potw_mi.json", lambda: {"Results": {"Facilities": fetch()}})
+    rows = _cached("echo_potw_mi.json", lambda: {"Results": {"Facilities": echo_rows("MI")}})
     rows = rows["Results"]["Facilities"] if isinstance(rows, dict) else rows
     echo = {r["SourceID"]: r for r in rows if r["CWPPermitStatusDesc"] not in ("Terminated", "Expired")}
     cwns_design_flows()   # downloads the CWNS tables if needed
@@ -197,9 +208,9 @@ def trout_by_huc12():
                 pts = [p for path in (f.get("geometry") or {}).get("paths", []) for p in path]
                 if pts:
                     out.append({"name": f["attributes"]["DNRName"], "type": f["attributes"]["StreamType"], "mid": pts[len(pts) // 2], "len": len(pts)})
-            if len(d["features"]) < 2000:
+            if len(d["features"]) < 2000 and not d.get("exceededTransferLimit"):
                 return {"source": "Michigan DNR, Trout and Salmon Regulations Stream Main, Designated=1 and isActive=1; segment midpoints", "segments": out}
-            off += 2000
+            off += len(d["features"])
     segs = _cached("mdnr_trout_streams_mid.json", fetch)["segments"]
     polys = pl._layer_polys(6, "huc12,name", "wbd_huc12_mi.json")
     out = {}

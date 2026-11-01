@@ -8,7 +8,7 @@ too). ECHO flows that don't fit the plant's design flow are dropped (unit errors
 import collections, csv, json, os, re, urllib.request
 
 from waterledger_data.config import CACHE
-from waterledger_data.waters import CWNS, ECHO, ECHO_COLS, _get
+from waterledger_data.waters import CWNS, _get, echo_rows
 
 RAW = os.path.join(CACHE, "wastewater")
 CWNS_RAW = os.path.join(CACHE, "waters")          # the national CWNS tables, shared with Michigan's builder
@@ -25,14 +25,7 @@ def _cwns(table):
 def _echo(state):
     path = os.path.join(RAW, f"{state}_echo_potw.json")
     if not os.path.exists(path):
-        q = _get(f"{ECHO}.get_facilities", {"output": "JSON", "p_st": state, "p_pcomp": "POT", "responseset": 1000})["Results"]
-        rows, page = [], 1
-        while True:
-            r = _get(f"{ECHO}.get_qid", {"output": "JSON", "qid": q["QueryID"], "pageno": page, "responseset": 1000, "qcolumns": ECHO_COLS})["Results"]
-            rows += r.get("Facilities", [])
-            if len(rows) >= int(q["QueryRows"]) or not r.get("Facilities"):
-                break
-            page += 1
+        rows = echo_rows(state, _get)
         os.makedirs(RAW, exist_ok=True)
         json.dump(rows, open(path, "w"))
     return json.load(open(path))
