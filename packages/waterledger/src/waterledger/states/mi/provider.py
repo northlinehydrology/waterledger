@@ -61,7 +61,7 @@ def context(place):
     path, h = [], (r["h12"][0]["code"] if r["h12"] else None)
     while h and h in Wd["h12"] and len(path) < 25:
         x = Wd["h12"][h]
-        path.append(cx.Reach(huc12=h, name=x["n"], impairments=[G[i[0]] for i in x.get("i", [])], tmdl=[G[i[0]] for i in x.get("i", []) if i[1]],
+        path.append(cx.Reach(huc12=h, name=x["n"], assessed=bool(x["a"]) if "a" in x else None, impairments=[G[i[0]] for i in x.get("i", [])], tmdl=[G[i[0]] for i in x.get("i", []) if i[1]],
                              coldwater_streams=x["tr"][1] if x.get("tr") else []))
         h = x["t"]
     receiving = cx.Receiving(provider="MI", sources=["usgs_wbd", "attains2026", "mdnr_trout"],

@@ -67,7 +67,7 @@ def context(state, place):
                              watersheds=[cx.Watershed(huc12=w["code"], name=w["name"], share_of_place=w["share"]) for w in sheds["h12"]],
                              basin=cx.Watershed(huc12=sheds["h8"]["code"], name=sheds["h8"]["name"]) if sheds["h8"] else None,
                              downstream=[cx.Reach(huc12=p["code"], name=p["name"], impairments=[LABELS[g] for g, _, _ in p["listings"]],
-                                                  tmdl=[LABELS[g] for g, t, _ in p["listings"] if t]) for p in path])
+                                                  tmdl=[LABELS[g] for g, t, _ in p["listings"] if t], assessed=p.get("assessed")) for p in path])
     jur = cx.Jurisdiction(provider="national", sources=["census_tiger"], name=place.name, kind=place.kind, county=place.county, state=state)
     return cx.Context(place=place, jurisdiction=jur, supply=supply,
                       wastewater=cx.Wastewater(provider="national", sources=["cwns2022", "echo"], plants=plants), receiving=receiving,

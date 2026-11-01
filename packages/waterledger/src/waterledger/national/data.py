@@ -77,7 +77,8 @@ class SnapshotData:
 
     def downstream(self, huc12):
         R = self._json("receiving")
-        return [{"code": c, "name": R["reaches"][c]["n"], "listings": R["reaches"][c]["i"]} for c in R["downstream"].get(huc12, []) if c in R["reaches"]]
+        return [{"code": c, "name": R["reaches"][c]["n"], "listings": R["reaches"][c]["i"], "assessed": bool(R["reaches"][c]["a"]) if "a" in R["reaches"][c] else None}
+                for c in R["downstream"].get(huc12, []) if c in R["reaches"]]
 
     def division_runs(self):
         return self._json("climate")["divisions"]
@@ -182,7 +183,7 @@ class LiveData:
         """The same path a snapshot stores: the state's own watershed links, and the tracer past the state line."""
         from waterledger.national.snapshot import _downstream
         paths, reaches = _downstream(self.state, [huc12])
-        return [{"code": c, "name": reaches[c]["n"], "listings": reaches[c]["i"]} for c in paths[huc12] if c in reaches]
+        return [{"code": c, "name": reaches[c]["n"], "listings": reaches[c]["i"], "assessed": bool(reaches[c]["a"])} for c in paths[huc12] if c in reaches]
 
     def division_runs(self):
         from waterledger.national import climate as nc

@@ -90,6 +90,7 @@ class Reach(BaseModel):
     name: str
     impairments: list[str] = []                     # plain-language groups (e.g. "Bacteria (E. coli)")
     tmdl: list[str] = []                            # the groups with a TMDL (cleanup plan) in place
+    assessed: bool | None = None                    # whether the state has assessed any water here; no impairments and not assessed means nobody knows. None: not in this data
     coldwater_streams: list[str] = []
 
 

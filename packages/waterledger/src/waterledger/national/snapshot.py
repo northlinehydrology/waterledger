@@ -37,7 +37,7 @@ def _downstream(state, starts):
     state's own WBD links and continue through the tracer only where the water leaves the state (once per exit)."""
     from waterledger_data import receiving as rc
     H = rc.by_huc12(state)
-    reaches = {h: {"n": v["n"], "i": v.get("i", [])} for h, v in H.items()}
+    reaches = {h: {"n": v["n"], "i": v.get("i", []), "a": v.get("a", 0)} for h, v in H.items()}
     exits = {}
     paths = {}
     from tqdm.auto import tqdm
@@ -53,7 +53,7 @@ def _downstream(state, starts):
                 if nxt is None and len(exits[path[-1]]) > 1:
                     for r in exits[path[-1]][1:DOWNSTREAM_HUCS - len(path) + 1]:
                         path.append(r["code"])
-                        reaches.setdefault(r["code"], {"n": r["name"], "i": r["listings"]})
+                        reaches.setdefault(r["code"], {"n": r["name"], "i": r["listings"], "a": int(bool(r.get("assessed")))})
             else:
                 break
         paths[s] = path
