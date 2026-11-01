@@ -587,16 +587,24 @@ Working one hybrid hour by hand from the written equations matched the code, and
 
 **Energy.** Before, heat rejected was load / SHR + chillers and facility power also counted pumps and fans, so the two could not be reconciled. Now, per kW of IT:
 
-    heat rejected = q + air handler fans + chillers + pumps                         through the water or coil
-    facility power = heat rejected + heat rejection fans                            whose heat goes straight to the exhaust air
-    air loop load = q x air + air handler fans; liquid loop load = q x (1 - air)
+    facility power + outside air heat = heat rejected + heat rejection fans          whose heat goes straight to the exhaust air
+    heat rejected = q + air handler fans + outside air heat + chillers + pumps       through the water or coil
+    air loop load = q x air + air handler fans + outside air, sensible; liquid loop load = q x (1 - air); a third loop at 9 C carries the latent part [A]
     chiller = load x (1 - free) x (wet / COP_water + (1 - wet) / COP_air)
     tower flow m: m x cp x range = wet x (load + chiller + pumps + m x dP / eff)
     L/G <= (h_sat(hot water) - h_sat(wet-bulb)) / (cp x range), hot water = max(wet-bulb + approach + range, return - heat exchanger approach)
 
-The sensible heat ratio is removed. It is in Lei and Masanet's Eq. 2, but it adds latent heat, which needs a moisture source, and this model has none: it recirculates indoor air, with no humidification or outside air. Their table's range was 0.95-0.99, so it added 1-5% to the heat with no energy input. Its slot in the random stream is still drawn so the other parameters keep their draws, and the comparison below is not muddied by reshuffling.
+A balance does not by itself say all electricity becomes heat. Physics does: a data center stores almost nothing, so its electricity ends up as heat, and the balance asks where every kW comes from and goes. Electricity is also not the only energy crossing the boundary, which is why outside air is in the equation.
 
-Pump heat is added: pump work ends up in the water (about 2% of IT load at a tower in full use). The air handler fans' heat all goes to the air loop. CP_WATER is 4.1868 kJ/kg/K, the 1 BTU/lb/F the water terms use, so tower flow is one quantity in both equations.
+**Outside air, in place of the sensible heat ratio.** Lei and Masanet's Eq. 2 divides the load by a sensible heat ratio, 0.95-0.99, which adds 1-5% to the heat as the latent load of condensing moisture. Latent heat is real where moisture enters the building, but the ratio had no source for it. At 300 MW and 65% utilization, a ratio of 0.97 means about 56,000 gallons of condensate a day, every day, against about 79,000 for a hybrid's whole average-day water. Matching 0.97 on average would take about 34,000 cfm of outside air per MW in West Michigan, 7,200 in Austin and 4,800 in Houston, 16 to 110 times the 300 cfm/MW below. The air loop's water is also 18.7 C or warmer in every draw, above the 15 C indoor dew point limit, so those coils run dry.
+
+The ratio is replaced by the air's own balance. Flow: 100-1,500 cfm per MW of IT capacity [A]. ASHRAE 62.1's area rate for computer rooms, 0.06 cfm/ft2 (2007 table, quoted secondhand at leeduser.buildinggreen.com/forum/data-center-outside-air-requirement), at about 5,000 ft2 per MW [A] gives 300; the ends are a bracket; no published flow for large campuses was found. The air leaves at the supply air temperature with humidity held between dew points of -9 and 15 C (ASHRAE TC 9.9's recommended range as secondary sources give it, not read directly: hvacengineering.ca/guides/ashrae-tc-9-9-thermal-guidelines-for-data-centers/). Above the limit a coil at 9 C [A] condenses the extra, and it goes back with the wastewater. Below it, humidifiers make up a share sampled from none to all [A], since some facilities no longer humidify (hvac.best/ashrae-tc-9-9/); they are taken as adiabatic [A], and their water is consumed. Heat = air flow x (enthalpy outside - enthalpy leaving). The sensible part is usually larger than the latent part and usually cools: about -1,050 kW against +57 kW at 300 MW and 300 cfm/MW in West Michigan, on a 30 C indoor assumption.
+
+Water therefore closes as withdrawn + condensate = consumed + returned. Condensate comes from the air, not a water system. With reuse, it offsets water taken. Direct outside-air designs would use far more air and are not modeled. Moisture comes from the hour's relative humidity, passed through as `rh`: worked back from Stull's wet-bulb it is off by several times in cold, dry air, where humidifiers run.
+
+Heat through walls and roofs is not counted. Roughly, 5,000 ft2 of roof per MW at U = 0.3 W/m2K and a 40 K sol-air difference [A] is about 0.6% of IT load in the sun, and less otherwise, and it runs the other way in winter.
+
+The ratio's slot in the random stream is still drawn, so the other parameters keep their draws. Outside air has its own stream. Pump heat is added: pump work ends up in the water (about 2% of IT load at a tower in full use). The air handler fans' heat all goes to the air loop. CP_WATER is 4.1868 kJ/kg/K, the 1 BTU/lb/F the water terms use, so tower flow is one quantity in both equations.
 
 The L/G cap comes from the air side of the tower's energy balance. Lei and Masanet's Table 3 gives L/G 0.2-4, but at hot, humid hours the air could not carry the tower's heat at the top of that range, leaving hotter than saturated at the hot water. The cap sets air flow where the sampled ratio is impossible. Only fan power changes. In cool weather the tower's water is held near the loop's return, not at the wet-bulb plus approach, so the cap does not bind there.
 
@@ -615,22 +623,25 @@ DOE FEMP's blowdown relation neglects drift. With it, makeup x solids = (blowdow
 
 **Smaller.** Farmland sediment replaced the whole site's runoff load with field erosion, dropping the paved 2%. It now keeps that part. Reuse and lake annual totals used 365 days a year and the rest 365.25.
 
-**Checked, nothing to change.** Withdrawn = consumed + returned in every hour and run. Staff water closes. Assist evaporation is the air-side energy balance. Lake flow x rho x cp x rise = heat. Runoff is a part of the rain, and the unit constants (0.226, 27,154 gal/ac-in, 8.34) agree. Chloride is 35.45/58.44 of salt. Blowdown solids are makeup x cycles.
+**Checked, nothing to change.** Staff water closes. Assist evaporation is the air-side energy balance. Lake flow x rho x cp x rise = heat. Runoff is a part of the rain, and the unit constants (0.226, 27,154 gal/ac-in, 8.34) agree. Chloride is 35.45/58.44 of salt. Blowdown solids are makeup x cycles.
 
-**Measured** (per 100 MW of IT, 200 runs, 30 years of ERA5, p50, 1.4 to 1.5):
+**Measured** (per 100 MW of IT, 200 runs, 30 years of ERA5, p50 of cooling water, staff water excluded, 1.4 to 1.5):
 
-| | West Michigan | Austin, TX |
-|---|---|---|
-| Hybrid withdrawn, average day | 0.0240 to 0.0238 (-0.8%) | 0.1655 to 0.1636 (-1.2%) |
-| Hybrid withdrawn, peak day | 0.5120 to 0.5002 (-2.3%) | 0.7562 to 0.7403 (-2.1%) |
-| Hybrid annual PUE | 1.1148 to 1.1216 (+0.6%) | 1.1412 to 1.1487 (+0.7%) |
-| Hybrid hottest-hour PUE | 1.2039 to 1.2147 (+0.9%) | 1.2083 to 1.2181 (+0.8%) |
-| Towers withdrawn, average day | 0.6466 to 0.6357 (-1.7%) | 0.7146 to 0.6997 (-2.1%) |
-| Towers returned, average day | 0.1205 to 0.1125 (-6.6%) | 0.1316 to 0.1236 (-6.1%) |
-| Towers annual PUE | 1.1289 to 1.1289 | 1.1427 to 1.1420 (-0.1%) |
-| Assist withdrawn, peak day | 0.3594 to 0.3516 (-2.2%) | 0.6989 to 0.6802 (-2.7%) |
-| Closed loop hottest-hour PUE | 1.2906 to 1.2849 (-0.4%) | 1.3254 to 1.3179 (-0.6%) |
+| | West Michigan | Austin, TX | Houston, TX |
+|---|---|---|---|
+| Hybrid withdrawn, average day | 0.0240 to 0.0238 (-0.5%) | 0.1655 to 0.1643 (-0.8%) | 0.1500 to 0.1476 (-1.6%) |
+| Hybrid withdrawn, peak day | 0.5120 to 0.5068 (-1.0%) | 0.7562 to 0.7436 (-1.7%) | 0.6577 to 0.6522 (-0.8%) |
+| Hybrid annual PUE | 1.1148 to 1.1220 (+0.6%) | 1.1412 to 1.1498 (+0.7%) | 1.1438 to 1.1565 (+1.1%) |
+| Towers withdrawn, average day | 0.6466 to 0.6275 (-3.0%) | 0.7146 to 0.6974 (-2.4%) | 0.7167 to 0.7034 (-1.9%) |
+| Towers returned, average day | 0.1205 to 0.1119 (-7.1%) | 0.1316 to 0.1253 (-4.8%) | 0.1324 to 0.1273 (-3.9%) |
+| Assist withdrawn, peak day | 0.3594 to 0.3525 (-1.9%) | 0.6989 to 0.6832 (-2.2%) | 0.5830 to 0.5752 (-1.3%) |
+| Closed loop withdrawn, average day | 0.00004 to 0.00008 | 0.00004 to 0.00005 | 0.00004 to 0.00004 |
+| Closed loop withdrawn, peak day | 0.00004 to 0.00057 | 0.00004 to 0.00036 | 0.00004 to 0.00026 |
+| Condensate, average day | 0.00045 | 0.0022 | 0.0033 |
+| Condensate, peak day | 0.0079 | 0.0085 | 0.0101 |
+
+Staff and maintenance water is added to these, about 0.007 MGD at 300 MW, so closed loop's full estimate moves far less than these ratios. Southeast Michigan follows West Michigan. Midland, in dry West Texas, has condensate of 0.00037 on average, closer to Michigan than to Houston.
 
 Water at power plants rises 5.3% from line losses, on top of any change in electricity.
 
-**Still open, not balance errors.** The peak-day water is at the run's average utilization while the hottest-hour electricity is at full capacity, so the two peaks describe different conditions. Farmland phosphorus adds soil-attached phosphorus to a runoff concentration that may already include some, which could double count. Reuse takes all blowdown back, with no brine stream for the dissolved solids. The ranges of an estimate add the model's and staff water's ends together, so p10 and p90 of withdrawn, consumed and returned do not add up, though each run does.
+**Still open, not balance errors.** Outside air's flow is a bracket until a campus figure is found. Peak-hour electricity reads the outside air per kW at average utilization. The peak-day water is at the run's average utilization while the hottest-hour electricity is at full capacity, so the two peaks describe different conditions. Farmland phosphorus adds soil-attached phosphorus to a runoff concentration that may already include some, which could double count. Reuse takes all blowdown back, with no brine stream for the dissolved solids. The ranges of an estimate add the model's and staff water's ends together, so p10 and p90 of withdrawn, consumed and returned do not add up, though each run does.

@@ -6,7 +6,8 @@ Package changes (code). Changes to the numbers are listed by model version on th
 
 Model version 1.5: the cooling model's energy and mass now close, hour by hour, in every design. Tests in `tests/test_balances.py` hold them to it. Water and electricity estimates change by a few percent; `docs/methods/methods-log.md` has the measured differences.
 
-- **All the electricity leaves as heat.** Heat rejected through the water or coil is facility power less the heat rejection fans. Pump heat now counts, and the sensible heat ratio, which added heat with no energy behind it, is gone.
+- **Every kW is accounted for.** Facility power + the heat outside air brings = heat through the water or coil + the heat rejection fans. Pump heat now counts.
+- **Outside air joins the balance** (`physics.OUTSIDE`, `hourly_outside_air_heat`, `hourly_water_with_air`), in place of Lei and Masanet's sensible heat ratio: its heat and moisture each hour, a coil's condensate above the indoor dew point limit, and humidifiers below it. **Withdrawn + condensate = consumed + returned**, with `est.water.condensate`. `hourly_rates` and `hourly_heat_power` take the hour's relative humidity as `rh`.
 - **A hybrid's chiller rejects heat through the same split as everything else**: to evaporating water in the wet share and to air in the rest. It was water-cooled even in hours with no evaporation.
 - **Drift follows the water through the wet part of a hybrid**, not all the heat.
 - **Blowdown comes from the dissolved solids balance**: blowdown + drift = evaporation / (cycles - 1). It left drift out, which counted that water twice.
