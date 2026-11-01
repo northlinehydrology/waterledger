@@ -25,11 +25,21 @@ def main(argv=None):
     ck = sub.add_parser("check-snapshot", help="run the statewide checks on a written snapshot and record them in its manifest")
     ck.add_argument("state")
     ck.add_argument("--dir", required=True, help="the snapshot root (the --out given to snapshot)")
+    lj = sub.add_parser("latest-json", help="print a state's latest.json after publishing a snapshot: reads the old one from --from, if any")
+    lj.add_argument("state")
+    lj.add_argument("snapshot_id")
+    lj.add_argument("--from", dest="old", default=None)
     sn = sub.add_parser("snapshot", help="write a state's snapshot files from its built data (run build-state first)")
     sn.add_argument("state")
     sn.add_argument("--out", required=True)
     sn.add_argument("--date", default=None)
     a = ap.parse_args(argv)
+    if a.cmd == "latest-json":
+        import json, os
+        from waterledger.national.snapshot import pointer
+        from waterledger_models import MODEL_VERSION
+        print(json.dumps(pointer(json.load(open(a.old)) if a.old and os.path.exists(a.old) else None, a.state.upper(), a.snapshot_id, MODEL_VERSION)))
+        return
     if a.cmd == "snapshot":
         if a.state.upper() == "MI":                       # Michigan: from its own data, with its site files carried along
             from waterledger.states.mi.snapshot import write as write_mi

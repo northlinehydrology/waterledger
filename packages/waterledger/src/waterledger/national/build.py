@@ -116,8 +116,9 @@ def check_snapshot(state, root):
     import re
 
     from waterledger.national import data
+    from waterledger.national.snapshot import SNAPSHOT_ID
     state = state.upper()
-    date = sorted(d for d in os.listdir(os.path.join(root, state)) if re.fullmatch(r"\d{4}-\d{2}-\d{2}", d))[-1]   # not latest.json
+    date = sorted(d for d in os.listdir(os.path.join(root, state)) if re.fullmatch(SNAPSHOT_ID, d))[-1]   # not latest.json
     folder = os.path.join(root, state, date)
     os.environ["WATERLEDGER_DATA_URL"] = "file://" + os.path.abspath(root)
     os.environ["WATERLEDGER_DATA_DATE"] = date

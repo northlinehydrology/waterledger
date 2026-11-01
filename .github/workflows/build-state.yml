@@ -13,6 +13,10 @@ on:
         description: "Upload the snapshot to R2"
         type: boolean
         default: false
+      snapshot_id:
+        description: "Snapshot name, if not today's date: a published snapshot never changes, so a second build the same day is YYYY-MM-DD.2"
+        required: false
+        default: ""
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -35,9 +39,10 @@ jobs:
           WATERLEDGER_DATA=live uv run pytest -m "live and state_$st" -v tests/test_national_places.py tests/test_national_water.py tests/test_national_context.py tests/test_national_estimate.py
       - name: Write the snapshot and check it statewide
         run: |
-          uv run waterledger snapshot ${{ inputs.state }} --out snapshot
+          uv run waterledger snapshot ${{ inputs.state }} --out snapshot ${{ inputs.snapshot_id && format('--date {0}', inputs.snapshot_id) || '' }}
           if [ "${{ inputs.state }}" = "MI" ]; then
             uv run pytest -m live -v tests/test_snapshot_michigan.py
+            uv run waterledger check-snapshot MI --dir snapshot
             echo '{"state": "MI", "note": "built from Michigan sources by build-state"}' > snapshot/MI_build.json
           else
             uv run waterledger check-snapshot ${{ inputs.state }} --dir snapshot
@@ -58,8 +63,12 @@ jobs:
           ST: ${{ inputs.state }}
         run: |
           DATE=$(ls snapshot/$ST)
+          if aws s3api head-object --bucket waterledger-data --key $ST/$DATE/manifest.json --endpoint-url $R2 >/dev/null 2>&1; then
+            echo "$ST/$DATE is already published and a published snapshot never changes: run again with snapshot_id=$DATE.2 (or the next free number)"; exit 1
+          fi
           aws s3 cp --recursive snapshot/$ST/$DATE s3://waterledger-data/$ST/$DATE --endpoint-url $R2
           aws s3 cp snapshot/${ST}_build.json s3://waterledger-data/$ST/$DATE/build.json --endpoint-url $R2
-          echo "{\"state\": \"$ST\", \"latest\": \"$DATE\"}" > latest.json
+          aws s3 cp s3://waterledger-data/$ST/latest.json old-latest.json --endpoint-url $R2 || true
+          uv run waterledger latest-json $ST $DATE --from old-latest.json > latest.json
           aws s3 cp latest.json s3://waterledger-data/$ST/latest.json --endpoint-url $R2 --cache-control "max-age=300"
           echo "published https://data.waterledger.org/$ST/$DATE/manifest.json"

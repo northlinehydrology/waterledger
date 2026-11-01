@@ -18,6 +18,9 @@ week apart can get different answers).
      `data.waterledger.org`, with a manifest of what is current.
    - Snapshots are dated and immutable. The package downloads the snapshot for the state asked about, caches it, and
      every Estimate records the data date it used.
+   - A second build the same day is named `YYYY-MM-DD.2`, and the upload refuses a name that exists. Old URLs keep working (Nov 1, 2026).
+   - `latest.json` has `by_model`, the newest snapshot for each model version, and a package reads the one for its own model, so a new model's numbers never reach
+     an older package. `latest` is what packages before 3.8.1 read, and stays on model 1.5 (Nov 1, 2026).
    - Michigan's published files (waterledger.org/mi/data) are the first instance of this pattern.
 2. **Building locally is the fallback, so the package keeps working even if the hosted data never comes back.** If the
    snapshot can't be reached (the site is down, a network error, or a state not yet published), the package offers to
@@ -69,3 +72,8 @@ week apart can get different answers).
 3. Resumable stages and progress bars in the builders; the fallback prompt.
 4. R2 upload and the manifest, once the bucket and the GitHub secret are set up (Cloudflare account steps are Andrew's).
 5. The package reads snapshots first, then falls back.
+
+## Data release notes
+
+- **2026-11-01 was replaced once, before this rule.** MI, OH, VA and TX were first published as 2026-11-01 with model 1.4 (package 3.7.0, and 3.7.1 for OH, VA and TX), then overwritten the same day with model 1.5 (package 3.8.0). A result that names data date 2026-11-01 could be either; its `model_version` says which. It is the only replaced date.
+- **Packages 3.7.x read model 1.5 data from that date on,** through `latest`. Run on Nov 1: the estimates report model 1.5, water taken and evaporated are model 1.5's, and wastewater's middle value leaves out the condensate, which its range includes. Upgrade to 3.8.x.

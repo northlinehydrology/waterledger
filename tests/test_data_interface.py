@@ -8,3 +8,16 @@ def public(cls):
 
 def test_live_data_has_every_method_a_snapshot_has():
     assert public(SnapshotData) - public(LiveData) == set()
+
+
+def test_a_package_reads_the_snapshot_for_its_own_model():
+    from waterledger.national.data import snapshot_for_model
+    from waterledger.national.snapshot import SNAPSHOT_ID, pointer
+    from waterledger_models import MODEL_VERSION
+    import re
+    old = {"state": "OH", "latest": "2026-11-01"}
+    assert snapshot_for_model(old) == "2026-11-01"
+    p = pointer(old, "OH", "2026-11-01.2", MODEL_VERSION)
+    assert p["latest"] == "2026-11-01" and snapshot_for_model(p) == "2026-11-01.2"
+    assert pointer(p, "OH", "2026-12-01", "99.0")["by_model"][MODEL_VERSION] == "2026-11-01.2"
+    assert re.fullmatch(SNAPSHOT_ID, "2026-11-01.2") and re.fullmatch(SNAPSHOT_ID, "2026-11-01") and not re.fullmatch(SNAPSHOT_ID, "latest.json")

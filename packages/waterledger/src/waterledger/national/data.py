@@ -266,12 +266,19 @@ def _get(url, timeout=30):
         return r.read()
 
 
+def snapshot_for_model(pointer):
+    """Which snapshot this package reads: the newest for its own model version (a snapshot of another model's numbers is not read silently), else the pointer's
+    `latest`. `latest` is what packages before 3.8.1 read, so it stays on the last model they understand."""
+    from waterledger_models import MODEL_VERSION
+    return pointer.get("by_model", {}).get(MODEL_VERSION) or pointer.get("current") or pointer["latest"]
+
+
 def fetch_snapshot(state, date=None, url=None):
     """Download a state's snapshot (the latest, or `date`) into the cache, check every file against the manifest, and return
     its folder. A snapshot already cached and complete is used without downloading."""
     from waterledger_data.config import CACHE
     url = (url or os.environ.get("WATERLEDGER_DATA_URL") or DATA_URL).rstrip("/")
-    date = date or os.environ.get("WATERLEDGER_DATA_DATE") or json.loads(_get(f"{url}/{state}/latest.json"))["latest"]
+    date = date or os.environ.get("WATERLEDGER_DATA_DATE") or snapshot_for_model(json.loads(_get(f"{url}/{state}/latest.json")))
     folder = os.path.join(CACHE, "snapshots", state, date)
     os.makedirs(folder, exist_ok=True)
     mpath = os.path.join(folder, "manifest.json")
@@ -294,9 +301,10 @@ def fetch_snapshot(state, date=None, url=None):
 
 
 def _newest_cached(state):
+    from waterledger.national.snapshot import SNAPSHOT_ID
     from waterledger_data.config import CACHE
     root = os.path.join(CACHE, "snapshots", state)
-    dates = sorted(d for d in os.listdir(root) if re.fullmatch(r"\d{4}-\d{2}-\d{2}", d)
+    dates = sorted(d for d in os.listdir(root) if re.fullmatch(SNAPSHOT_ID, d)
                    and os.path.exists(os.path.join(root, d, "manifest.json"))) if os.path.isdir(root) else []
     for d in reversed(dates):
         m = json.load(open(os.path.join(root, d, "manifest.json")))

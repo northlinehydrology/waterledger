@@ -22,6 +22,7 @@ import datetime, hashlib, json, os
 
 from waterledger import states
 
+SNAPSHOT_ID = r"\d{4}-\d{2}-\d{2}(\.\d+)?"    # a date, with .2, .3 ... for another snapshot of a state built the same day; a published snapshot never changes
 FORMAT = 2              # 2 (Oct 30, 2026): adds wateruse.json and inputs/; readers treat a format 1 snapshot as having no water use
 WATERUSE_FORMAT = 1
 DOWNSTREAM_HUCS = 25
@@ -80,6 +81,13 @@ def write_water_use(state, folder, state_layer=None):
     if st:
         src += f"; {st['basis']['citation']}, {st['basis']['year']} ({st['basis']['kind']} {st['basis']['measure']})"
     return src, inputs, {"national": b["year"], "state": st["basis"]["year"] if st else None}
+
+
+def pointer(existing, state, snapshot_id, model):
+    """The state's latest.json after publishing `snapshot_id` of `model`. by_model names the newest snapshot for each model version, which is what a package reads;
+    `latest` stays where it is, for packages before 3.8.1, so they are not moved onto numbers they do not understand."""
+    existing = existing or {}
+    return {"state": state, "latest": existing.get("latest", snapshot_id), "current": snapshot_id, "by_model": {**existing.get("by_model", {}), model: snapshot_id}}
 
 
 def write(state, out, date=None, checks=None):
