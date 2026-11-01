@@ -94,7 +94,7 @@ def site_levels(est, ref):
     ctx = s.place.context()
     W = ref.get("withdrawals")
     by = {c.against: c for c in est.comparisons}
-    if "water_system" in by:
+    if "water_system" in by and by["water_system"].percent:
         out["water_system"] = water_system(by["water_system"].percent.peak_day.p50)
     if s.wastewater == "sewer" and not w.reuse and ctx.wastewater.plants:
         room = cm.sewer_room(ctx.wastewater.plants[0])

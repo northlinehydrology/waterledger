@@ -19,6 +19,28 @@ def _sys(n, pop, share):
     return WaterSystem(pwsid=n, name=n, population=pop, connections=100, share_of_place=share)
 
 
+def _tiny(n, connections, share, pop=50):
+    return WaterSystem(pwsid=n, name=n, population=pop, connections=connections, share_of_place=share)
+
+
+def test_very_small_system_covering_little_gets_no_percent():
+    c = cm.water_system_share(R, [_tiny("Trailer park", 40, 0.15)])
+    assert c.percent is None and c.measure == "too_small_for_percent" and (c.name, c.existing) == ("Trailer park", 40) and "only systems" in c.basis
+    assert cm.tiny_system([_tiny("Park", 40, 0.15), _tiny("Camp", 12, 0.02, 10)]) == "only"
+
+
+def test_larger_system_at_a_sliver_is_said_so():
+    both = [_tiny("Park", 40, 0.15), _tiny("City", 5000, 0.03)]
+    assert cm.main_system(both).name == "Park" and cm.tiny_system(both) == "main"
+    assert "larger ones cover little" in cm.water_system_share(R, both).basis
+
+
+def test_small_town_keeps_its_percent():
+    assert cm.tiny_system([_tiny("Dodson", 48, 0.998)]) is None
+    assert cm.water_system_share(R, [_tiny("Dodson", 48, 0.998)]).percent is not None
+    assert cm.tiny_system([_tiny("Edge", 100, 0.1)]) is None
+
+
 def test_main_system_covers_most_of_the_place_even_if_a_neighbor_is_bigger():
     assert cm.water_system_share(R, [_sys("Columbus", 900000, 0.008), _sys("Westerville", 40000, 0.997)]).name == "Westerville"
 

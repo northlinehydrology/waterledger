@@ -77,14 +77,14 @@ class Percent(BaseModel):
 
 class Comparison(BaseModel):
     """An estimate against something already there. `measure` and `basis` say what it compares, because a percent of connections is not a
-    percent of water use."""
+    percent of water use. `percent` is None where a percent would mean nothing (a very small water system), and `basis` says why."""
     model_config = ConfigDict(frozen=True)
     against: str
     name: str
     measure: str
     existing: float
     unit: str
-    percent: Percent
+    percent: Percent | None
     basis: str
 
 

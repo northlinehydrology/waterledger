@@ -70,6 +70,7 @@ def equivalents(est, ref):
 
 
 MAIN_SYSTEM_SHARE, MIN_SYSTEM_SHARE = 0.5, 0.05     # shares of the place's mapped area [A]; see main_system
+TINY_SYSTEM_CONNECTIONS = 100                       # [A]; see tiny_system
 
 
 def main_system(systems):
@@ -85,13 +86,27 @@ def main_system(systems):
     return max([x for x in systems if share(x) >= MIN_SYSTEM_SHARE] or systems, key=lambda x: x.population or 0)
 
 
+def tiny_system(systems):
+    """Whether the place's main system is too small for a percent to mean anything: under 100 connections and covering under half of the place, such as a mobile home
+    park inside a township. "only" if every mapped system with a connection count is that small, "main" if a larger one is mapped, which then covers little of the place; else None.
+    A small town's own system, covering most of the town, is not one of these."""
+    s = main_system(systems)
+    if not s or not s.connections or s.connections >= TINY_SYSTEM_CONNECTIONS or (s.share_of_place or 0) >= MAIN_SYSTEM_SHARE:
+        return None
+    return "only" if all((x.connections or 0) < TINY_SYSTEM_CONNECTIONS for x in systems) else "main"
+
+
 def water_system_share(withdrawn, systems):
     """The campus's water (a Flow) as homes, as a percent of the connections of the place's main public water system (main_system).
     Not a percent of the system's water use: connections include businesses, and the system's own gallons are not in the public data.
-    None with no system mapped or no connection count."""
+    None with no system mapped or no connection count. With a very small system (tiny_system), no percent, and the basis says why."""
     s = main_system(systems)
     if not s or not s.connections:
         return None
+    if tiny := tiny_system(systems):
+        return Comparison(against="water_system", name=s.name, measure="too_small_for_percent", existing=s.connections, unit="connections", percent=None,
+                          basis=("The only systems mapped here are very small" if tiny == "only" else "The main system mapped here is very small; larger ones cover little of the place")
+                          + ", too small for a percent to mean anything. A campus would need a larger supply.")
     pct = lambda r: Range(**{q: 100 * (getattr(r, q) * 1e6 / HOUSEHOLD_GPD) / s.connections for q in ("p10", "p50", "p90")})
     return Comparison(against="water_system", name=s.name, measure="homes_vs_connections", existing=s.connections, unit="connections",
                       percent=Percent(avg=pct(withdrawn.avg), peak_day=pct(withdrawn.peak_day)),
