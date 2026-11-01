@@ -2,6 +2,10 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.7.1 (Oct 31, 2026)
+
+- **A state built live answers the same as one from a snapshot.** 3.7.0 added rainfall sources, salt events, residential electricity and state sales to snapshots only, so an estimate in a state without a published snapshot failed. Its power options now list only the state's grid regions, as a snapshot's do. A test holds the two data classes to the same methods.
+
 ## 3.7.0 (Oct 31, 2026)
 
 Model version 1.4 stays. No water or power estimate changes. Everything here is at full value; waterledger.org works its comparisons from the rounded water it shows, so its figures can differ by that rounding.

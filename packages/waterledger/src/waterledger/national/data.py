@@ -209,8 +209,38 @@ class LiveData:
         return energy.loads(self.state)
 
     def grid_water(self):
+        """The grid regions serving the state, as a snapshot stores them."""
         from waterledger_data import energy
-        return energy.grid_water()
+        bas = {u["balancing_authority"] for v in energy.utilities_by_place(self.state, self._pl).values() for u in v if u["balancing_authority"]}
+        return {b: w for b, w in energy.grid_water().items() if b in bas}
+
+    def rain_from(self):
+        from waterledger.national import climate as nc
+        return nc.rain_from(self.state)
+
+    @functools.cached_property
+    def _salt_events(self):
+        from waterledger.national import climate as nc
+        return nc.salt_events(self.division_runs())
+
+    def salt_events(self):
+        return self._salt_events
+
+    @functools.cached_property
+    def _residential(self):
+        from waterledger_data import power as pw
+        return pw.residential(self.state, pw.latest_eia861())
+
+    def residential(self):
+        return self._residential
+
+    @functools.cached_property
+    def _state_avg_mw(self):
+        from waterledger_data import power as pw
+        return pw.state_retail_mwh(self.state, pw.latest_eia861()) / 8760
+
+    def state_avg_mw(self):
+        return self._state_avg_mw
 
     @functools.cached_property
     def _water_use(self):
