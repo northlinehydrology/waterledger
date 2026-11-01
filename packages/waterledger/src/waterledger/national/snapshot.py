@@ -6,9 +6,9 @@
                       places.parquet  the same places with boundaries (GeoParquet, for point lookups and maps in Python)
                       supply.json     water systems, and the ones serving each place with their shares
                       wastewater.json sewer plants
-                      receiving.json  each place's watersheds; impairments and TMDLs by HUC12; each place's downstream path
-                      climate.json    climate divisions (station, cooling results per 100 MW), staff water draws, design
-                                      storms and rainfall by county
+                      receiving.json  each place's watersheds; impairments and TMDLs by HUC12; each place's downstream path; places on a Great Lake
+                      climate.json    climate divisions (station, what its screens removed, cooling results per 100 MW), staff water draws, design
+                                      storms and rainfall by county, lake-source results for the state's Great Lakes
                       energy.json     utilities by place, their loads, grid region and power-plant water per kWh
                       wateruse.json   water use by county: USGS's 2015 estimates ("national") and the state's own reported
                                       figures where Water Ledger has them ("state"), each with its basis (format 2)
@@ -29,8 +29,10 @@ DOWNSTREAM_HUCS = 25
 
 
 def _write(path, obj):
+    """JSON with sorted keys, so a file's checksum changes only when its data does. Paths were keyed through a set of strings, whose order differs between Python runs,
+    which is why two builds of Virginia's receiving.json differed only in key order."""
     with open(path, "w") as f:
-        json.dump(obj, f, separators=(",", ":"))
+        json.dump(obj, f, separators=(",", ":"), sort_keys=True)
 
 
 def _downstream(state, starts):
@@ -93,7 +95,7 @@ def pointer(existing, state, snapshot_id, model):
 def write(state, out, date=None, checks=None):
     """Write the snapshot for `state` under out/<ST>/<date>/ from the cached layers; returns the snapshot folder."""
     from waterledger.national import climate as nc
-    from waterledger_data import divisions, energy, power as pw, receiving, supply, wastewater
+    from waterledger_data import divisions, energy, greatlakes, power as pw, receiving, supply, wastewater
     from waterledger_models import MODEL_VERSION
     from waterledger_models.datacenter import cooling as cw
     import waterledger
@@ -117,8 +119,8 @@ def write(state, out, date=None, checks=None):
     by = supply.systems_by_place(state, pl)
     from waterledger.national.data import LiveData
     live = LiveData(state)
-    # places with no system mapped: the nearest sizable one, edge to edge
-    nearest = {g: [w["pwsid"], km] for g, (w, km) in live.nearest_systems([g for g in pl.geoid if g not in by]).items() if w}
+    # places with no system on 5% or more of them: the nearest sizable one (supply.nearest_sizable)
+    nearest = {g: [w["pwsid"], km] for g, (w, km) in live.nearest_systems([g for g in pl.geoid if not any(v["share"] >= supply.SERVES_SHARE for v in by.get(g, []))]).items() if w}
     _write(os.path.join(folder, "supply.json"), {
         "systems": {r.pwsid: {"name": r.name, "population": int(r.population or 0), "connections": int(r.connections or 0)} for r in sy.itertuples()},
         "by_place": {g: [[w["pwsid"], w["share"]] for w in ws] for g, ws in by.items()}, "nearest": nearest})
@@ -128,12 +130,14 @@ def write(state, out, date=None, checks=None):
     sheds = receiving.watersheds_by_place(state, pl)
     starts = sorted({v["h12"][0]["code"] for v in sheds.values() if v["h12"]})
     paths, reaches = _downstream(state, starts)
-    _write(os.path.join(folder, "receiving.json"), {"by_place": sheds, "reaches": reaches, "downstream": paths,
+    shore = greatlakes.near(pl)
+    _write(os.path.join(folder, "receiving.json"), {"by_place": sheds, "reaches": reaches, "downstream": paths, "great_lakes": shore,
                                                      "attains": dict(zip(("organization", "cycle"), receiving.organization(state)))})
 
     storms, rain = nc.storms_and_rain(state)
     _write(os.path.join(folder, "climate.json"), {"divisions": nc.division_runs(state), "staff_runs": cw.staff_runs(200),
-                                                   "design_storms_in": storms, "rain_in": rain, "rain_from": nc.rain_from(state), "salt_events": nc.salt_events(nc.division_runs(state))})
+                                                   "design_storms_in": storms, "rain_in": rain, "rain_from": nc.rain_from(state), "salt_events": nc.salt_events(nc.division_runs(state)),
+                                                   "lake_source": nc.lake_source(sorted({v["lake"] for v in shore.values()}))})
 
     us = energy.utilities_by_place(state, pl)
     loads = energy.loads(state)
@@ -154,7 +158,7 @@ def write(state, out, date=None, checks=None):
                 "model_version": MODEL_VERSION, "packages": {"waterledger": waterledger.__version__, "waterledger-data": waterledger_data.__version__,
                                                               "waterledger-models": waterledger_models.__version__},
                 "sources": {"places": "Census TIGERweb", "supply": "EPA CWS service areas, SDWIS", "wastewater": "EPA CWNS 2022, ECHO",
-                            "receiving": "USGS WBD, EPA ATTAINS (assessments by HUC12)", "climate": "NOAA ISD, NCEI climate divisions, Atlas 14, Climate at a Glance",
+                            "receiving": "USGS WBD, EPA ATTAINS (assessments by HUC12), Natural Earth 1:50m lakes", "climate": "NOAA ISD, NCEI climate divisions, Atlas 14, Climate at a Glance, NOAA GLERL",
                             "energy": "HIFLD retail service territories (PNNL), EIA-861, Siddik et al. 2024", "wateruse": wu_source},
                 "water_use_years": wu_years, "files": files, "inputs": inputs, "checks": checks}
     _write(os.path.join(folder, "manifest.json"), manifest)

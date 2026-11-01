@@ -11,7 +11,6 @@ from waterledger_data import energy, places as pl
 from waterledger_data.climate import hourly_weather
 from waterledger_data.wastewater import OWN_KM
 from waterledger_models.datacenter import cooling as cw
-from waterledger_models.datacenter import lake as lc
 from waterledger_data.config import CACHE, SITE as SITE_ROOT, setting
 
 from waterledger.comparisons import HOUSEHOLD_GPD, it_mw_from_contract
@@ -207,7 +206,7 @@ POWER = {
 # MWh. Macknick et al. 2012 medians and ranges (Table 2 consumption, Table 3 withdrawal; wind and PV withdrawal equals consumption, p. 6)
 # unless noted.
 POWER_SUPPLY = {
-    "mi_mix": {"label": "Michigan's current mix", "gal_mwh": round(_MI["consumed"] * L_KWH_TO_GAL_MWH), "lo": round(_MI["consumed_lo"] * L_KWH_TO_GAL_MWH),
+    "state_mix": {"label": "Michigan's current mix", "gal_mwh": round(_MI["consumed"] * L_KWH_TO_GAL_MWH), "lo": round(_MI["consumed_lo"] * L_KWH_TO_GAL_MWH),
                "hi": round(_MI["consumed_hi"] * L_KWH_TO_GAL_MWH), "wd_gal_mwh": round(_MI["withdrawn"] * L_KWH_TO_GAL_MWH),
                "wd_lo": round(_MI["withdrawn_lo"] * L_KWH_TO_GAL_MWH), "wd_hi": round(_MI["withdrawn_hi"] * L_KWH_TO_GAL_MWH),
                **energy.withdrawal_split(round(_MI["withdrawn"] * L_KWH_TO_GAL_MWH), _MI["withdrawn_saline"] * L_KWH_TO_GAL_MWH),
@@ -293,41 +292,23 @@ def build_map(counties):
     return out
 
 
-GREAT_LAKES = ("Lake Superior", "Lake Michigan", "Lake Huron", "Lake Erie", "Lake Saint Clair")
-SHORE_KM = 5.0
-
-
 def great_lake_near(bounds):
-    """Nearest Great Lake (or Lake St. Clair) within SHORE_KM of each municipal boundary (Natural Earth 1:50m shoreline; Census boundaries)."""
-    import numpy as np
-    lakes = json.load(open(os.path.join(RAW_PLACES, "lakes50.json")))
-    pts = {}
-    for f in lakes["features"]:
-        n = f["properties"].get("name")
-        if n in GREAT_LAKES:
-            polys = f["geometry"]["coordinates"] if f["geometry"]["type"] == "MultiPolygon" else [f["geometry"]["coordinates"]]
-            pts[n] = np.array([pt for poly in polys for ring in poly for pt in ring])
-    kx = 111.32 * math.cos(math.radians(44.5))
-    out = {}
-    for gid, rings in bounds.items():
-        b = np.array([pt for r in rings for pt in r])
-        x0, y0 = b.min(0) - 0.1
-        x1, y1 = b.max(0) + 0.1
-        best = None
-        for n, L in pts.items():
-            near = L[(L[:, 0] >= x0) & (L[:, 0] <= x1) & (L[:, 1] >= y0) & (L[:, 1] <= y1)]
-            if not len(near):
-                continue
-            d = np.sqrt((((b[:, None, 0] - near[None, :, 0]) * kx) ** 2 + ((b[:, None, 1] - near[None, :, 1]) * 110.95) ** 2)).min()
-            if d <= SHORE_KM and (best is None or d < best[1]):
-                best = (n.replace("Saint", "St."), round(float(d), 1))
-        if best:
-            out[gid] = {"lake": best[0], "km": best[1]}
-    return out
+    """The nearest Great Lake within 5 km of each municipal boundary, by the rule every state has (waterledger_data.greatlakes)."""
+    import geopandas as gpd
+    from waterledger_data import greatlakes
+    from waterledger_data.census import _polygon
+    return greatlakes.near(gpd.GeoDataFrame([{"geoid": g, "geometry": _polygon(rings)} for g, rings in bounds.items()], geometry="geometry", crs=4326))
 
 
-def build_places(counties, munis, enrich, cmap, shore=None):
-    shore = shore or {}
+def near_systems(munis, enrich):
+    """For each place with no water system mapped, the nearest sizable one, by the rule every state has (waterledger_data.supply.nearest_sizable), in the places file's form."""
+    from waterledger_data import supply
+    empty = pd.DataFrame([{"geoid": m["geoid"], "lat": m["lat"], "lon": m["lon"]} for m in munis if not enrich.get(m["geoid"], {}).get("water")])
+    return {g: {"pwsid": w["pwsid"], "name": w["name"], "pop": w["population"], "connections": w["connections"], "km": km} for g, (w, km) in supply.nearest_sizable("MI", empty).items()}
+
+
+def build_places(counties, munis, enrich, cmap, shore=None, near=None):
+    shore, near = shore or {}, near or {}
     cname = {c["geoid"]: c["name"] for c in counties}
     out = []
     for m in munis:
@@ -336,7 +317,7 @@ def build_places(counties, munis, enrich, cmap, shore=None):
         ws = e.get("watershed", {})
         out.append({"g": m["geoid"], "n": m["name"], "k": m["kind"], "c": cname.get(m["county_fips"], ""), "cf": m["county_fips"],
                     "r": cmap["counties"].get(m["county_fips"], {}).get("region") or nearest_region(m["lat"], m["lon"]), "x": x, "y": y,
-                    "w": e.get("water", []), "h12": ws.get("huc12"), "h8": ws.get("huc8"), "gl": shore.get(m["geoid"])})
+                    "w": e.get("water", []), "h12": ws.get("huc12"), "h8": ws.get("huc8"), "gl": shore.get(m["geoid"]), "near": near.get(m["geoid"])})
     out.sort(key=lambda p: (p["n"].lower(), p["c"]))
     return out
 
@@ -405,12 +386,15 @@ def build_waters():
     county rainfall and the runoff water quality parameters. Public data only."""
     from waterledger_data import waters as wi
     from waterledger_models import runoff as rq
+    from waterledger_data import receiving as rc
     h12 = wi.by_huc12()
     trout = wi.trout_by_huc12()
     for k, v in h12.items():
         v["gl"] = GREAT_LAKE_BY_HUC4.get(k[:4])
         if k in trout:
             v["tr"] = [trout[k]["n"], trout[k]["names"]]
+    # past the state line, as every other state's paths go (a reach the tracer adds is marked "o"), from each place's main watershed
+    h12 = rc.past_the_line(h12, sorted({p["h12"][0]["code"] for p in json.load(open(OUT_PLACES))["places"] if p["h12"]}))
     plants = []
     for p in wi.potws():
         x, y = proj(p["lon"], p["lat"])
@@ -534,7 +518,7 @@ def main(n=200):
     bounds = pl.boundaries(cnt)
     enr = pl.enrich(munis, bounds)
     cmap = build_map(cnt)
-    places = build_places(cnt, munis, enr, cmap, great_lake_near(bounds))
+    places = build_places(cnt, munis, enr, cmap, great_lake_near(bounds), near_systems(munis, enr))
     storms = pl.county_design_storms(cnt)
     tracker_muni = {}
     for tid, (name, county) in TRACKER_MUNI.items():
@@ -548,13 +532,8 @@ def main(n=200):
 
     uses, n_golf, golf_stats = county_uses()
     lake_t = pd.read_csv(os.path.join(RAW, "glerl_lt_avg_temp.csv"), skiprows=[1])
-    lake_src = {}
-    for name, code in (("Lake Michigan", "m"), ("Lake Superior", "s"), ("Lake Huron", "h"), ("Lake Erie", "e"), ("Lake St. Clair", "e")):
-        t = lake_t[lake_t["lake"] == code].sort_values("dayOfYear")["temperature"].values
-        lake_src[name] = lc.run_lake(t, n=n)
-    lake_src["note"] = "Lake St. Clair is not in the GLERL series; Lake Erie temperatures stand in for it."
-    lake_src["ranges"] = {k: list(v) for k, v in lc.RANGES.items()}
-    lake_src["power"] = {k: lake_src["Lake Michigan"][k] for k in ("power_mw_avg", "power_mw_peak_1in10", "pue_avg", "pue_peak_1in10")}   # the same draws at every lake
+    from waterledger.national.climate import lake_results
+    lake_src = lake_results(["Lake Michigan", "Lake Superior", "Lake Huron", "Lake Erie", "Lake St. Clair"], lake_t, n)
     pue_design = pue_by_design(regions, lake_src["power"])
     data = {
         "model_version": MODEL_VERSION,

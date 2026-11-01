@@ -56,7 +56,7 @@ def write(out, date=None):
         if r["w"]:
             by_place[r["g"]] = [[w["pwsid"], w.get("share")] for w in r["w"]]
         else:
-            n = sc.near_system(r)                      # Michigan's rule: center to center
+            n = sc.near_system(r)                      # the nearest sizable one (scenario.near_system)
             if n:
                 systems.setdefault(n["w"]["pwsid"], {"name": n["w"]["name"], "population": int(n["w"].get("pop") or 0),
                                                       "connections": int(n["w"].get("connections") or 0)})
@@ -82,14 +82,14 @@ def write(out, date=None):
                 h = H[h]["t"]
             paths[v["h12"][0]["code"]] = path
     used = {c for p in paths.values() for c in p}
-    _write(os.path.join(folder, "receiving.json"), {"by_place": sheds, "reaches": {c: {"n": H[c]["n"], "i": H[c].get("i", [])} for c in used},
-                                                     "downstream": paths, "attains": {"organization": "21MICH", "cycle": W.get("cycle")}})
+    _write(os.path.join(folder, "receiving.json"), {"by_place": sheds, "reaches": {c: {"n": H[c]["n"], "i": H[c].get("i", []), "a": H[c].get("a", 0)} for c in used},
+                                                     "downstream": paths, "great_lakes": {r["g"]: r["gl"] for r in P["places"] if r.get("gl")}, "attains": {"organization": "21MICH", "cycle": W.get("cycle")}})
 
     divisions = {k: {"name": v["name"], "station": v["station"], "station_id": None, "lat": v["lat"], "lon": v["lon"], "share_observed": None,
                      "per_100mw": v["per_100mw"]} for k, v in E["regions"].items()}
     _write(os.path.join(folder, "climate.json"), {"divisions": divisions, "staff_runs": E["staff"]["runs"],
                                                    "design_storms_in": {k: {str(a): b for a, b in v.items()} for k, v in E["county_storms_in"].items()},
-                                                   "rain_in": W["rain_in"]})
+                                                   "rain_in": W["rain_in"], "lake_source": E["lake_source"]})
 
     U = PW["utilities"]
     from waterledger.states.mi.provider import balancing_authority as ba

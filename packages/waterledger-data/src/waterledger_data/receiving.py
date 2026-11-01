@@ -128,6 +128,34 @@ def downstream(huc12, hops=100, network=None):
             for r in t.path.itertuples()]
 
 
+def past_the_line(H, starts, hops=25, trace=None):
+    """{huc12: {"n", "t", "a", "i"}} from a state's own links, continued where the water leaves the state: every path from `starts` that ends goes on through the tracer (once per exit), its reaches
+    added and linked, each marked "o" for outside the state's own table. A path that comes back into the state rejoins its own links. Returns a new table."""
+    trace = trace or (lambda h: downstream(h, hops=hops))
+    out = {k: dict(v) for k, v in H.items()}
+    ends = set()
+    for s in starts:
+        h, n = s, 0
+        while h in out and n < hops:
+            if out[h]["t"] is None:
+                ends.add(h)
+                break
+            h, n = out[h]["t"], n + 1
+    for end in sorted(ends):
+        last = end
+        for r in trace(end)[1:]:
+            known = r["code"] in out
+            out[last]["t"] = r["code"]
+            if known:
+                break
+            rec = {"n": r["name"], "t": None, "a": int(bool(r.get("assessed"))), "o": 1}
+            if r["listings"]:
+                rec["i"] = r["listings"]
+            out[r["code"]] = rec
+            last = r["code"]
+    return out
+
+
 def watersheds_by_place(state, places):
     """For each place, the HUC12s it covers (largest share first) and its HUC8: {geoid: {"h12": [{code, name, share}], "h8": {code, name}}}."""
     path = os.path.join(RAW, f"{state}_by_place.json")

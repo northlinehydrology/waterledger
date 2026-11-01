@@ -13,7 +13,7 @@ PUBLISHED = "https://waterledger.org/mi/data/{name}.json"     # the same files, 
 DESIGNS = {"dry": "Closed loop (designed to use no water for cooling)", "hybrid": "Hybrid", "towers": "Cooling towers", "lake": "Lake-source (once-through)"}
 SOURCE_LABEL = {"muni": "a public water system", "wells": "new wells in the aquifer", "lake": "lake surface water"}
 DEST_LABEL = {"sewer": "the public sewer", "septic": "a septic system on site", "water": "a river or lake (its own discharge)", "reuse": "treatment and reuse on site"}
-SYS_POP = 3300    # [A] a "sizable" public water system serves more than this many people (EPA's medium size and up)
+SYS_POP = 3300    # [A] a "sizable" public water system serves more than this many people (EPA's medium size and up; as waterledger_data.supply)
 SEWER_KM = 10     # [A] with no public water system mapped, a large sewer plant this close is assumed reachable by an extension
 LAND_LABEL = {"farm": "farm fields", "woods": "woods or meadow", "built": "existing development"}
 _cache = {}
@@ -107,14 +107,27 @@ def pue_by_design(regions, lake=None):
 def estimate(p, mw, cool, dest, region=None):
     """Water taken, evaporated or lost, and sent out (MGD, lo/mid/hi), as on the page."""
     D = data("estimates")
-    x = mw / 100
     region = region or p["r"]
     if cool == "lake":
-        L = D["lake_source"][p["gl"]["lake"]]
-        w = band(L["withdrawn"], x)
-        return {"lake": True, "wAvg": w, "wPeak": w, "wAnn": {k: v * 365.25 for k, v in w.items()}, "cAvg": band(L["evap_avg"], x),
-                "cPeak": band(L["evap_peak_month"], x), "rAvg": w, "rPeak": w, "wMonth": w, "c90": band(L["evap_peak_month"], x), "sewer": cooling_estimate(D, region, "dry", mw, "septic" if dest == "septic" else "sewer")["sewer"], "reuse": False}
+        return lake_estimate(D, p["gl"]["lake"], region, mw, dest)
     return cooling_estimate(D, region, cool, mw, dest)
+
+
+def lake_estimate(D, lake, region, mw, dest):
+    """Lake-source cooling on one of the Great Lakes, from D["lake_source"]. What goes to the sewer or septic is a closed-loop campus's, which is the region's."""
+    L = D["lake_source"][lake]
+    x = mw / 100
+    w = band(L["withdrawn"], x)
+    return {"lake": True, "wAvg": w, "wPeak": w, "wAnn": {k: v * 365.25 for k, v in w.items()}, "cAvg": band(L["evap_avg"], x),
+            "cPeak": band(L["evap_peak_month"], x), "rAvg": w, "rPeak": w, "wMonth": w, "c90": band(L["evap_peak_month"], x), "sewer": cooling_estimate(D, region, "dry", mw, "septic" if dest == "septic" else "sewer")["sewer"], "reuse": False}
+
+
+def check_lake(place_name, great_lake, cool, src):
+    """Lake surface water and lake-source cooling need a Great Lake within about 5 km, and lake-source cooling needs the lake as its source, in every state."""
+    if (src == "lake" or cool == "lake") and not great_lake:
+        raise ValueError(f"{place_name} is not within about 5 km of a Great Lake; lake surface water and lake-source cooling are not options there")
+    if cool == "lake" and src != "lake":
+        raise ValueError("Lake-source cooling needs lake surface water as the source")
 
 
 def cooling_estimate(D, region, cool, mw, dest):
@@ -163,19 +176,26 @@ def septic_rule(gpd):
 
 
 def _plants_near(p, km=40):
-    """Sewer plants for a place exactly as the page finds them (WQ.plants: waters.json map coordinates, 1/60 degree = 1.852 km),
-    so the page and the engine pick the same destination at the SEWER_KM edge."""
+    """Sewer plants for a place by the rule every state has (wastewater.nearest): the place's own first, then any of 0.5 MGD or more, nearest first, by true distance. The site's data gives places and plants in
+    map coordinates, to about 200 m. WQ.plants on the page has to work out the same distance."""
     from waterledger_data import waters as wi
-    from waterledger_data.wastewater import is_own
+    from waterledger_data.wastewater import distance_km, is_own
     st = wi.place_stem(p["n"])
-    rows = [{**q, "km": math.hypot(q["x"] - p["x"], q["y"] - p["y"]) * 1.852} for q in data("waters")["plants"]]
-    rows = [{**q, "own": is_own(q["city"] == st, q["km"])} for q in rows]
-    return sorted([q for q in rows if q["km"] <= km and (q["own"] or q["design"] >= 0.5)], key=lambda q: (not q["own"], q["km"]))
+    lon, lat = lonlat(p)
+    rows = []
+    for q in data("waters")["plants"]:
+        q_lon, q_lat = lonlat(q)
+        d = distance_km(lat, lon, q_lat, q_lon)
+        rows.append({**q, "km": d, "own": is_own(q["city"] == st, d)})
+    return sorted([q for q in rows if q["km"] <= km and (q["own"] or (q["design"] or 0) >= 0.5)], key=lambda q: (not q["own"], q["km"]))
 
 
 def near_system(p):
-    """The nearest sizable public water system to a place, as on the page (WQ.nearSystem): serving more than SYS_POP people and
-    covering at least a quarter of a city or township, measured center to center (map coordinates, 1/60 degree = 1.852 km)."""
+    """The nearest sizable public water system to a place, by the rule every state has (waterledger_data.supply.nearest_sizable): from the place's point to the edge of the system's service
+    area. Michigan's builder stores it as the place's "near" (WQ.nearSystem reads the same). Data from before 3.9.0 has none, and the rule then was center to center: serving more
+    than SYS_POP people and covering at least a quarter of a city or township (map coordinates, 1/60 degree = 1.852 km)."""
+    if "near" in p:
+        return {"w": p["near"], "place": None, "km": p["near"]["km"]} if p["near"] else None
     best = None
     for q in data("places")["places"]:
         if q["g"] == p["g"] or not q["w"]:
@@ -214,19 +234,22 @@ def dest_for(p, cool, sew_mgd):
     return {"dest": ("water" if evap else "septic") if why else "sewer", "q": q, "sys": bool(p["w"]), "room": room, "why": why}
 
 
-def scenario(gid, mw=None, cool="dry", src=None, dest=None, acres=None, before=None, imp=0.5, power="mi_mix", h12=0, name=None):
+def land_default(kind):
+    """(acres, what the land is today) a site starts with [A], in every state: cities a smaller, built-up site; others farmland."""
+    return (50, "built") if kind == "city" else (200, "farm")
+
+
+def scenario(gid, mw=None, cool="dry", src=None, dest=None, acres=None, before=None, imp=0.5, power="state_mix", h12=0, name=None):
     p = place(gid)
     # the page's starting settings for a place [A]: cities a smaller campus on a smaller, built-up site; townships 300 MW on farmland
     city = p["k"] == "city"
     mw = mw or (100 if city else 300)
     src = src or src_for(p, cool)["src"]   # the page's starting water source for the place and cooling design
-    if src == "lake" and not p.get("gl"):
-        raise ValueError(f"{p['base']} is not within about 5 km of a Great Lake; lake surface water is not an option")
-    if cool == "lake" and src != "lake":
-        raise ValueError("Lake-source cooling needs lake surface water as the source")
+    check_lake(p["base"], p.get("gl"), cool, src)
     if not dest:
         dest = dest_for(p, cool, estimate(p, mw, cool, "sewer")["sewer"]["mid"])["dest"]
-    before = before or ("built" if p["k"] == "city" else "farm")   # [A] as on the page: cities built up, townships farmland
-    acres = acres or (50 if city else 200)
+    start_acres, start_land = land_default(p["k"])
+    before = before or start_land
+    acres = acres or start_acres
     return {"place": p, "mw": mw, "cool": cool, "src": src, "dest": dest, "acres": acres, "before": before, "imp": imp, "power": power,
             "h12": min(h12, len(p["h12"]) - 1) if p["h12"] else None, "name": name, "E": estimate(p, mw, cool, dest)}

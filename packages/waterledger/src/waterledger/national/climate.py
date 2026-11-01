@@ -34,13 +34,43 @@ def division_runs(state, n=200):
         return json.load(open(path))
     fips = next(f for f, s in states.FIPS.items() if s == state)
     stations = divisions.division_stations(fips, counties(state))
-    weather = {d: climate.isd_hourly(s, divisions.FIRST, divisions.LAST)[:3] for d, s in stations.items()}
-    runs = cw.run_locations(weather, n=n, mw=100.0)
+    got = {d: climate.isd_hourly(s, divisions.FIRST, divisions.LAST) for d, s in stations.items()}
+    runs = cw.run_locations({d: g[:3] for d, g in got.items()}, n=n, mw=100.0)
     out = {d: {"name": f"{state} climate division {int(d[2:])}", "station": s["name"], "station_id": s["id"], "lat": s["lat"], "lon": s["lon"],
-               "share_observed": s["share_observed"], "per_100mw": runs[d]} for d, s in stations.items()}
+               "share_observed": s["share_observed"], "screen": got[d][4], "per_100mw": runs[d]} for d, s in stations.items()}
     os.makedirs(os.path.dirname(path), exist_ok=True)
     json.dump(out, open(path, "w"))
     return out
+
+
+# NOAA GLERL's daily long-term average surface temperatures have the five lakes; Lake St. Clair isn't in the series, and Lake Erie's stand in, as they do in Michigan's build.
+LAKE_TEMPERATURES = {"Lake Michigan": "m", "Lake Superior": "s", "Lake Huron": "h", "Lake Erie": "e", "Lake Ontario": "o", "Lake St. Clair": "e"}
+
+
+def lake_results(lakes, temperatures, n=200):
+    """Lake-source cooling results by lake, with the note, ranges and power block a reader needs: lake.run_lake on each lake's temperatures. `temperatures`: GLERL's table (lake, dayOfYear, temperature)."""
+    from waterledger_models.datacenter import lake as lc
+    out = {}
+    for name in lakes:
+        out[name] = lc.run_lake(temperatures[temperatures["lake"] == LAKE_TEMPERATURES[name]].sort_values("dayOfYear")["temperature"].values, n=n)
+    if "Lake St. Clair" in out:
+        out["note"] = "Lake St. Clair is not in the GLERL series; Lake Erie temperatures stand in for it."
+    out["ranges"] = {k: list(v) for k, v in lc.RANGES.items()}
+    if lakes:
+        out["power"] = {k: out[lakes[0]][k] for k in ("power_mw_avg", "power_mw_peak_1in10", "pue_avg", "pue_peak_1in10")}   # the same draws at every lake
+    return out
+
+
+def lake_source(lakes, n=200):
+    """lake_results for the lakes on a state's shore, from GLERL's table (fetched once). Empty for a state with no shoreline."""
+    if not lakes:
+        return {}
+    import pandas as pd
+
+    from waterledger_data import climate
+    from waterledger_data.config import CACHE
+    from waterledger_models.datacenter import lake as lc
+    return lake_results(lakes, pd.read_csv(climate._fetch(lc.GLERL, os.path.join(CACHE, "climate", "glerl_lt_avg_temp.csv")), skiprows=[1]), n)
 
 
 def surrounding_county(pl, fips):

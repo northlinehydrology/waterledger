@@ -7,6 +7,7 @@ class _Category(BaseModel):
     model_config = ConfigDict(frozen=True)
     provider: str                       # "national" or a state code ("MI") whose own data replaced the national layer
     sources: list[str] = []             # source ids, as cited on waterledger.org's methods pages
+    not_covered: list[str] = []         # fields Water Ledger has no data for in this state yet: empty there means not covered, not none.
 
 
 class Jurisdiction(_Category):
@@ -53,7 +54,7 @@ class CountyWaterUse(BaseModel):
 class Supply(_Category):
     """Where the water comes from."""
     systems: list[WaterSystem] = []                 # public water systems mapped in the place
-    nearest_system: WaterSystem | None = None       # with none mapped: the nearest sizable one
+    nearest_system: WaterSystem | None = None       # with none on 5% or more of the place: the nearest sizable one
     nearest_system_km: float | None = None
     county_use_mgd: dict[str, float] = {}           # water used in the county by category, million gallons a day (as county_water_use.mgd;
                                                     # Michigan: EGLE's reported withdrawals under its own labels)
@@ -98,7 +99,8 @@ class Receiving(_Category):
     """What is downstream."""
     watersheds: list[Watershed] = []
     basin: Watershed | None = None                  # the HUC8
-    great_lake: str | None = None                   # within about 5 km of a Great Lake
+    great_lake: str | None = None                   # within about 5 km of a Great Lake (waterledger_data.greatlakes), in any state
+    great_lakes_basin: bool | None = None           # the place's main watershed drains to the Great Lakes (HUC region 04), which is what the Great Lakes Compact covers, shore or not
     downstream: list[Reach] = []                    # from the place's main watershed, following the water
 
 

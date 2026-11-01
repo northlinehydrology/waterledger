@@ -599,7 +599,35 @@ GOLF = {
 }
 
 
+# A state without a golf figure of its own: the survey's median for its agronomic region. GCSAA, Golf Course Environmental Profile Phase III, Vol. 1 (2022), Table 2 and the
+# regional figures: median applied water per facility in 2020, acre-feet. An acre-foot is 325,851 gallons (the report's own figure).
+GCSAA_REGION_ACRE_FEET = {"North Central": 40.5, "Northeast": 29.0, "Pacific": 68.4, "Southeast": 111.1, "Southwest": 375.7, "Transition": 38.5, "Upper West/Mountain": 163.2}
+GCSAA_NATIONAL_ACRE_FEET = 66.3
+GALLONS_PER_ACRE_FOOT = 325851
+# The survey's regions are drawn across state lines. Each state here takes the region holding most of it, read from the report's map (Figure 1) [A]. Split states include IL, IN
+# and OH (North Central in the north, Transition in the south), AR and NC, the Plains along the 100th meridian, and WA, OR and CA, where a coastal strip is Pacific.
+GCSAA_REGION = {**dict.fromkeys(("MI", "MN", "WI", "IA", "IL", "IN", "OH", "ND", "SD", "NE"), "North Central"),
+                **dict.fromkeys(("ME", "NH", "VT", "MA", "RI", "CT", "NY", "PA", "NJ", "DE"), "Northeast"),
+                **dict.fromkeys(("WA", "OR"), "Pacific"),
+                **dict.fromkeys(("LA", "MS", "AL", "GA", "SC", "FL", "AR", "TX"), "Southeast"),
+                **dict.fromkeys(("AZ", "NM", "CA"), "Southwest"),
+                **dict.fromkeys(("KS", "MO", "OK", "KY", "TN", "VA", "WV", "NC", "MD", "DC"), "Transition"),
+                **dict.fromkeys(("MT", "WY", "ID", "UT", "CO", "NV"), "Upper West/Mountain")}
+
+
+def golf_regional(state):
+    """The survey's figure for a state with none of its own, labeled as that: {"gpd", "sources", "note", "basis"}. Alaska and Hawaii are off the survey's map, so the national median."""
+    state = state.upper()
+    region = GCSAA_REGION.get(state)
+    acre_feet = GCSAA_REGION_ACRE_FEET[region] if region else GCSAA_NATIONAL_ACRE_FEET
+    where = f"its {region} region, the one holding most of the state" if region else "the country, as the survey's regions leave this state out"
+    return {"gpd": acre_feet * GALLONS_PER_ACRE_FOOT / 365, "sources": ["gcsaa2022"], "basis": "regional survey",
+            "note": f"This is a national survey's median for {where} ({acre_feet} acre-feet a year), not this state's own reports. It is a survey, not metered."}
+
+
 def golf(state):
-    """A typical golf course's water in `state`: {"gpd", "sources", "note", and "by_region" where it differs within the state}, or None."""
-    return GOLF.get(state.upper())
+    """A typical golf course's water in `state`: {"gpd", "sources", "note", "basis", and "by_region" where it differs within the state}. Where Water Ledger has no figure for the
+    state, the survey's regional one, labeled in "basis" and "note"."""
+    state = state.upper()
+    return {"basis": "state reports" if "odnr_wwfr" in GOLF[state]["sources"] else "regional survey", **GOLF[state]} if state in GOLF else golf_regional(state)
 

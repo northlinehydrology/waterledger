@@ -62,7 +62,7 @@ est.not_covered                  # what isn't covered yet for this state, in wor
 est.household_wells              # the aquifer most household wells draw from, how deep, the water level, where a state has well records
 site.by_design().best            # the cooling design that evaporates least in total, campus and power plants; also .designs and the closed loop figures
 est.equivalents.homes            # the water as homes at the state's own water for a home (.home_gpd: USGS 2015 over ACS 2015 households); also .golf_courses, .evaporated_share, .electricity_homes, .share_of_home_customers
-est.power_plants["mi_mix"].consumed   # water at power plants for one power option, MGD; also .withdrawn, .returned; est.site.power names the one in use
+est.power_plants["state_mix"].consumed   # water at power plants for one power option, MGD; also .withdrawn, .returned; est.site.power names the one in use
 est.model_dump_json()            # the whole estimate as JSON
 
 ctx = place.context()            # the public water facts around the place, by category

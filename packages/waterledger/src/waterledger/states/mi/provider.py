@@ -1,7 +1,7 @@
 """Michigan's provider: answers for Michigan places from Water Ledger Michigan's data files (the same ones waterledger.org/mi
 reads), through waterledger.scenario, so the package and the page agree."""
 from waterledger import scenario as sc
-from waterledger.national.provider import home_gpd, water_use_record
+from waterledger.national.provider import PLANTS_MAX, home_gpd, water_use_record
 
 # EGLE's groups on waterledger.org/mi -> the county water-use categories (waterledger_data.wateruse.CATEGORIES)
 EGLE_CATS = {"Public water systems": "public_supply", "Industry": "industrial", "Bottled water": "industrial", "Farm irrigation": "irrigation",
@@ -15,6 +15,14 @@ SALT_DAYS = {"southeast": 59, "southwest": 64, "west": 72, "central": 71, "thumb
 
 def find(name, county=None):
     return sc.find(name, county)
+
+
+def geoids():
+    return [p["g"] for p in sc.data("places")["places"]]
+
+
+def shore_geoids():
+    return [p["g"] for p in sc.data("places")["places"] if p.get("gl")]
 
 
 def place(geoid):
@@ -52,8 +60,18 @@ def reference(place):
     from waterledger_models import runoff as rq
     D, P, W = sc.data("estimates"), sc.data("power"), sc.data("waters")
     T = P.get("total") or P["michigan"]
-    return {"power_options": D["power_supply"], "power": "mi_mix", "golf_gpd": D["golf"]["golf_median_gpd"], "home_gpd": home_gpd("MI"), "home_kwh_month": D["home_kwh_month"],
+    options = {"state_mix" if k == "mi_mix" else k: v for k, v in D["power_supply"].items()}      # data built before 3.9.0 calls the state's mix mi_mix
+    return {"power_options": options, "power": "state_mix", "golf_gpd": D["golf"]["golf_median_gpd"], "golf_basis": "state reports", "golf_note": "The median of Michigan courses reporting to EGLE. Only facilities able to withdraw 100,000 gallons a day report.", "home_gpd": home_gpd("MI"), "home_kwh_month": D["home_kwh_month"],
             "home_customers": D["home_customers"], "state_avg_mw": T["avg_mw"], "rain_median_in": W.get("rain_median_in"), "salt_events": rq.salt_events(SALT_DAYS[sc.place(place.geoid)["r"]]), "withdrawals": D["context"].get("withdrawals"), "state_rules": True}
+
+
+def _usgs_water_use(county_fips):
+    """USGS's 2015 estimate for a county from Michigan's snapshot, which carries it; None where the snapshot can't be had, so Michigan's answers don't depend on it."""
+    from waterledger.national.provider import county_water_use
+    try:
+        return county_water_use("MI", county_fips)[1]
+    except Exception:                                   # noqa: BLE001  no snapshot, or one without water use
+        return None
 
 
 def context(place):
@@ -65,14 +83,15 @@ def context(place):
     wells = Wd["wells"].get(r["g"])
     L = egle_layer()
     egle = L["counties"].get(r["cf"])
-    supply = cx.Supply(provider="MI", sources=["epa_sa", "egle2025", "wellogic"], systems=[sys_(w) for w in r["w"]],
+    usgs = _usgs_water_use(r["cf"])
+    supply = cx.Supply(provider="MI", sources=["epa_sa", "egle2025", "wellogic", *(["usgs_wu2015"] if usgs else [])], systems=[sys_(w) for w in r["w"]],
                        nearest_system=sys_(near["w"]) if near else None, nearest_system_km=near["km"] if near else None,
                        county_use_mgd=E["county_uses_mgd"].get(r["c"], {}),
-                       county_water_use=water_use_record(egle, L["basis"], r["cf"]) if egle else None,
+                       county_water_use=water_use_record(egle, L["basis"], r["cf"]) if egle else None, county_water_use_usgs=usgs,
                        household_wells=dict(zip(("drift_n", "drift_depth_ft", "drift_level_ft", "rock_n", "rock_depth_ft", "rock_level_ft"), wells)) if wells else None)
     plants = [cx.SewerPlant(npdes=q["id"], name=q["n"], design_mgd=q.get("design"), flow_mgd=q.get("flow"), km=q["km"],
                             own=bool(q.get("own")), receiving_water=q.get("recv") or None, combined_sewer=bool(q.get("cso")), lagoon=bool(q.get("lagoon")))
-              for q in sc._plants_near(r)]
+              for q in sc._plants_near(r)[:PLANTS_MAX]]
     G = Wd["groups"]
     path, h = [], (r["h12"][0]["code"] if r["h12"] else None)
     while h and h in Wd["h12"] and len(path) < 25:
@@ -83,7 +102,7 @@ def context(place):
     receiving = cx.Receiving(provider="MI", sources=["usgs_wbd", "attains2026", "mdnr_trout"],
                              watersheds=[cx.Watershed(huc12=w["code"], name=w["name"], share_of_place=w.get("share")) for w in r["h12"]],
                              basin=cx.Watershed(huc12=r["h8"]["code"], name=r["h8"]["name"]) if r.get("h8") else None,
-                             great_lake=(r.get("gl") or {}).get("lake"), downstream=path)
+                             great_lake=(r.get("gl") or {}).get("lake"), great_lakes_basin=r["h12"][0]["code"].startswith("04") if r["h12"] else None, downstream=path)
     meta = E["region_meta"][r["r"]]
     climate = cx.Climate(provider="MI", sources=["era5", "noaa_cag", "noaa_atlas14"], region=r["r"], region_name=meta["name"], station=meta["station"],
                          rain_in=Wd["rain_in"].get(r["cf"]), design_storms_in=E["county_storms_in"].get(r["cf"], {}))
@@ -95,7 +114,7 @@ def context(place):
                        utilities=[cx.Utility(name=U[i]["n"], type=U[i]["type"], share_of_place=sh, customers=U[i].get("cust"),
                                              avg_mw=U[i].get("avg_mw"), summer_peak_mw=U[i].get("summer_mw"), balancing_authority=balancing_authority(U[i]["n"]),
                                              power_plant_water_l_per_kwh=GW[balancing_authority(U[i]["n"])]["consumed_excl_hydro"]) for i, sh in P["places"].get(r["g"], [])])
-    jur = cx.Jurisdiction(provider="MI", sources=["census_tiger"], name=place.name, kind=place.kind, county=place.county, state="MI")
+    jur = cx.Jurisdiction(provider="MI", not_covered=["rules"], sources=["census_tiger"], name=place.name, kind=place.kind, county=place.county, state="MI")
     return cx.Context(place=place, jurisdiction=jur, supply=supply, wastewater=cx.Wastewater(provider="MI", sources=["echo", "cwns2022"], plants=plants),
                       receiving=receiving, climate=climate, energy=energy)
 

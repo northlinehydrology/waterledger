@@ -65,8 +65,10 @@ def test_returned_is_never_below_zero():
 @pytest.mark.live
 def test_a_michigan_site_reports_them():
     est = wl.Site(place=wl.place("Gaines charter township, MI"), facility=wl.DataCenter(it_mw=300, cooling="hybrid")).estimate()
-    assert est.site.power == "mi_mix" and est.equivalents.homes.p50 == pytest.approx(est.water.withdrawn.avg.p50 * 1e6 / est.equivalents.home_gpd)
-    assert est.power_plants["mi_mix"].consumed.p50 == pytest.approx(est.electricity.avg_mw.p50 * 24 * 268 / 1e6 / (1 - cm.LINE_LOSS))
+    assert est.site.power == "state_mix" and est.equivalents.homes.p50 == pytest.approx(est.water.withdrawn.avg.p50 * 1e6 / est.equivalents.home_gpd)
+    assert est.power_plants["state_mix"].consumed.p50 == pytest.approx(est.electricity.avg_mw.p50 * 24 * 268 / 1e6 / (1 - cm.LINE_LOSS))
+    old = wl.Site(place=wl.place("Gaines charter township, MI"), facility=wl.DataCenter(it_mw=300, cooling="hybrid"), power="mi_mix").estimate()   # the old name still works
+    assert old.site.power == "state_mix" and old.power_plants["mi_mix"] == old.power_plants["state_mix"] and "mi_mix" in old.power_plants
     with pytest.raises(ValueError, match="power must be one of"):
         wl.Site(place=wl.place("Gaines charter township, MI"), facility=wl.DataCenter(it_mw=300, cooling="hybrid"), power="nope").estimate()
 
@@ -198,3 +200,11 @@ def test_ranked_order_does_not_depend_on_the_input_order():
     L = {3: {"customers": 500}, 5: {"customers": 90000}}
     want = ["Big", "Coop", "Oncor", "Texas-New Mexico", "Small share"]
     assert [u["name"] for u in energy.ranked(U, L)] == want and [u["name"] for u in energy.ranked(U[::-1], L)] == want
+
+
+def test_power_plants_answer_to_the_old_name_of_the_state_mix():
+    from waterledger.site import _PowerPlants
+    q = _PowerPlants({"state_mix": 1, "coal": 2})
+    assert q["mi_mix"] == 1 and q["state_mix"] == 1 and "mi_mix" in q and q.get("mi_mix") == 1 and q["coal"] == 2 and "gas" not in q and q.get("gas", 9) == 9
+    with pytest.raises(KeyError):
+        q["gas"]

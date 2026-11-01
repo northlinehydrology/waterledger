@@ -68,7 +68,7 @@ def build(state, out=None, n=200, run_checks=True):
     """Run every stage for `state` and write a manifest of what was built (counts, timings, sources' dates) to `out`."""
     from waterledger.national import climate as nc
     from waterledger.national.data import LiveData
-    from waterledger_data import energy, receiving, supply, wastewater, wateruse
+    from waterledger_data import energy, greatlakes, receiving, supply, wastewater, wateruse
     from waterledger_models import MODEL_VERSION
     state = state.upper()
     fips = next(f for f, s in states.FIPS.items() if s == state)
@@ -90,8 +90,9 @@ def build(state, out=None, n=200, run_checks=True):
     stage("places", places)
     stage("supply", lambda: {"systems": int(len(supply.water_systems(state))), "places_served": len(supply.systems_by_place(state, pl))})
     stage("wastewater", lambda: {"plants": len(wastewater.plants(state))})
-    stage("receiving", lambda: {"huc12": len(receiving.by_huc12(state)), "places_with_watersheds": len(receiving.watersheds_by_place(state, pl))})
-    stage("cooling", lambda: {"divisions": len(nc.division_runs(state, n))})
+    stage("receiving", lambda: {"huc12": len(receiving.by_huc12(state)), "places_with_watersheds": len(receiving.watersheds_by_place(state, pl)),
+                                    "places_on_a_great_lake": len(greatlakes.near(pl))})
+    stage("cooling", lambda: {"divisions": len(nc.division_runs(state, n)), "great_lakes": sorted({v["lake"] for v in greatlakes.near(pl).values()})})
     stage("storms_and_rain", lambda: {"counties_with_storms": len(nc.storms_and_rain(state)[0])})
     stage("energy", lambda: {"places_with_utilities": len(energy.utilities_by_place(state, pl)), "utilities_with_loads": len(energy.loads(state))})
 
@@ -126,8 +127,9 @@ def check_snapshot(state, root):
     data.state_data.cache_clear()
     sd = data.state_data(state)
     result = checks(state, sd.places())
+    from waterledger.national.snapshot import _write
     m = json.load(open(os.path.join(folder, "manifest.json")))
     m["checks"] = result
-    json.dump(m, open(os.path.join(folder, "manifest.json"), "w"), separators=(",", ":"))
+    _write(os.path.join(folder, "manifest.json"), m)
     print(f"{state} snapshot {date} checks: {result}")
     return result
