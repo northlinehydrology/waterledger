@@ -15,7 +15,7 @@ def grid_name(ba):
 
 def options(state, grid_water, order=None):
     """{option: factors}: the state's own mix where its plants' reports allow (energy.state_power_water), then its grid regions (`order`, or as
-    `grid_water` lists them), new gas plants, and wind and solar weighted by the state's own generation."""
+    `grid_water` lists them), new gas plants, its own coal and nuclear plants where it has them, and wind and solar weighted by the state's own generation."""
     name = states.NAMES[state]
     g_ = lambda v: round(v * en.L_KWH_TO_GAL_MWH)
     SW, out = en.state_power_water(state), {}
@@ -32,5 +32,6 @@ def options(state, grid_water, order=None):
         out[b.lower()] = {"label": f"{grid_name(b)} grid average", "gal_mwh": g, "lo": g, "hi": g, "wd_gal_mwh": w, "wd_lo": w, "wd_hi": w, "sources": ["siddik2024"],
                           "note": f"{grid_water[b]['consumed_excl_hydro']:.2f} L/kWh consumed and {grid_water[b]['withdrawn_excl_hydro']:.0f} withdrawn, {grid_name(b)} excluding hydropower (2022)"}
     out["new_gas"] = dict(en.NEW_GAS)
+    out.update(en.fuel_options(state, name))
     out["renew"] = en.wind_solar(en.pv_share(state))
     return out

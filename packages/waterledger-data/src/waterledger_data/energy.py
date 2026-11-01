@@ -15,6 +15,7 @@ TERRITORIES = "https://eedgis.pnnl.gov/arcgis/rest/services/Hosted/Electric_Serv
 ALBERS = 5070
 TABLE = os.path.join(os.path.dirname(__file__), "tables", "grid_water_2022.csv")
 STATE_TABLE = os.path.join(os.path.dirname(__file__), "tables", "state_power_water_2024.csv")
+FUEL_TABLE = os.path.join(os.path.dirname(__file__), "tables", "state_fuel_water_2024.csv")
 
 # HIFLD control area names -> EIA-930 balancing authority codes (as in the grid water table). Areas without a code in
 # the table (New Brunswick, Hawaii, Alaska, OVEC, Electric Energy Inc., PowerSouth, New Smyrna Beach) map to None.
@@ -78,6 +79,26 @@ def withdrawal_split(wd_gal_mwh, saline_gal_mwh):
     """A power option's withdrawal split into whole gallons of fresh and saline water that add back to it."""
     saline = min(round(saline_gal_mwh), wd_gal_mwh)
     return {"wd_fresh_gal_mwh": wd_gal_mwh - saline, "wd_saline_gal_mwh": saline}
+
+
+COOLING_WORDS = (("once", "once-through"), ("tower", "towers"), ("pond", "cooling reservoirs"), ("dry", "dry"))
+
+
+def fuel_options(state, name):
+    """A state's coal and nuclear plants as power options, for each it has: Macknick et al. 2012 factors for how they are cooled (EIA-860, by water body), weighted by
+    their 2024 generation (docs/methods/power_water/fuels.py). {"coal": factors, "nuclear": factors}, without a fuel the state did not generate with in 2024."""
+    out = {}
+    for r in csv.DictReader(open(FUEL_TABLE)):
+        if r["state"] != state:
+            continue
+        g, fuel = lambda k: round(float(r[k])), r["fuel"]
+        wd = g("withdrawn_gal_mwh")
+        how = ", ".join(f"{round(100 * float(r['share_' + k]))}% {w}" for k, w in COOLING_WORDS if round(100 * float(r["share_" + k])))
+        out[r["fuel"]] = {"label": f"{name}'s {fuel} plants", "gal_mwh": g("consumed_gal_mwh"), "lo": g("consumed_lo"), "hi": g("consumed_hi"),
+                          "wd_gal_mwh": wd, "wd_lo": g("withdrawn_lo"), "wd_hi": g("withdrawn_hi"), **withdrawal_split(wd, wd * float(r["saline_share"])),
+                          "sources": ["macknick2012", "eia923_2024"],
+                          "note": f"Macknick factors for how {name}'s {fuel} plants are cooled, weighted by 2024 generation: {how}"}
+    return out
 
 
 def state_power_water(state):

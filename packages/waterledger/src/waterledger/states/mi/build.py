@@ -195,7 +195,7 @@ POWER = {
 # with an air-cooled chiller (about 1.20). Lake-source is not in LBNL; the cooling-tower range stands in for it [estimate].
 # Water at power plants per MWh, by what supplies the campus: consumed (gal_mwh, lo, hi) and withdrawn (wd_gal_mwh, wd_lo, wd_hi), gallons per
 # MWh. Macknick et al. 2012 medians and ranges (Table 2 consumption, Table 3 withdrawal; wind and PV withdrawal equals consumption, p. 6)
-# unless noted; blends are weighted by Michigan's 2024 generation (EIA).
+# unless noted.
 POWER_SUPPLY = {
     "mi_mix": {"label": "Michigan's current mix", "gal_mwh": round(_MI["consumed"] * L_KWH_TO_GAL_MWH), "lo": round(_MI["consumed_lo"] * L_KWH_TO_GAL_MWH),
                "hi": round(_MI["consumed_hi"] * L_KWH_TO_GAL_MWH), "wd_gal_mwh": round(_MI["withdrawn"] * L_KWH_TO_GAL_MWH),
@@ -204,15 +204,7 @@ POWER_SUPPLY = {
                "sources": ["eia923_2024", "eia_mi", "macknick2012"],
                "note": f"{_MI['consumed']:.2f} L/kWh consumed ({_MI['consumed_lo']:.2f} to {_MI['consumed_hi']:.2f}) and {_MI['withdrawn']:.0f} L/kWh withdrawn ({_MI['withdrawn_lo']:.0f} to {_MI['withdrawn_hi']:.0f}): EIA's 2024 plant-reported cooling water over Michigan's 2024 generation, flagged and missing reports filled with Macknick factors, updated with 2022 reports (docs/methods/power_water)"},
     "new_gas": energy.NEW_GAS,
-    # Michigan's own plants (EIA-860 cooling types, 2024): the large coal plants (Monroe, Belle River, Campbell) and Cook nuclear are cooled
-    # with lake or river water passing through once; Fermi 2 has natural-draft towers. Nuclear is weighted by 2024 generation: Cook 68.6%
-    # once-through, Fermi 31.4% towers (model 1.3; was two-thirds and one-third). Coal uses Macknick's generic once-through coal.
-    "coal": {"label": "Michigan's coal plants", "gal_mwh": 250, "lo": 100, "hi": 317, "wd_gal_mwh": 36350, "wd_lo": 20000, "wd_hi": 50000,
-             "sources": ["macknick2012", "eia_mi", "eia923_2024"],
-             "note": "Coal cooled with lake or river water passing through once, as Michigan's large coal plants are"},
-    "nuclear": {"label": "Michigan's nuclear plants", "gal_mwh": 396, "lo": 251, "hi": 540, "wd_gal_mwh": 30770, "wd_lo": 17400, "wd_hi": 41980,
-                "sources": ["macknick2012", "eia_mi", "eia923_2024"],
-                "note": "Cook (68.6% of Michigan's nuclear generation in 2024) cooled with Lake Michigan water passing through once; Fermi 2 with cooling towers"},
+    **energy.fuel_options("MI", "Michigan"),      # the same method as every state
     "renew": energy.wind_solar(_MI["pv_share_of_wind_solar"]),     # Michigan's own wind and solar mix (other states pass theirs)
     "miso": {"label": "MISO grid average", "gal_mwh": 415, "lo": 415, "hi": 415, "wd_gal_mwh": 15080, "wd_lo": 15080, "wd_hi": 15080, "sources": ["siddik2024"],
              "note": "1.57 L/kWh consumed and 57.1 L/kWh withdrawn, MISO excluding hydropower consumption, 2022 (Siddik et al. dataset, load-weighted)"},
