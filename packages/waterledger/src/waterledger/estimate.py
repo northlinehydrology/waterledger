@@ -40,6 +40,8 @@ class WaterUse(BaseModel):
     reuse: bool = False
     withdrawn_peak_full_capacity: Range | None = None   # the upper case: the peak day with every computer at capacity all day; peak_day is at average utilization
     condensate: Flow | None = None       # also in returned and to_sewer; none for lake-source's lake water or data from before model 1.5
+    withdrawn_max_month: Range | None = None    # the highest month's average day: the period of Part 327's 30-day test. Lake-source: constant, as the withdrawal
+    consumed_max_90day: Range | None = None     # the highest 90 straight days' average: the Compact's period. None for data from before model 1.7. Lake-source: its highest month, which is no lower
 
 
 def water_use(E):
@@ -49,7 +51,8 @@ def water_use(E):
                     consumed=Flow(avg=R(E["cAvg"]), peak_day=R(E["cPeak"])), returned=Flow(avg=R(E["rAvg"]), peak_day=R(E["rPeak"])),
                     to_sewer=R(E["sewer"]), lake_source=E["lake"], reuse=E["reuse"],
                     condensate=Flow(avg=R(E["condAvg"]), peak_day=R(E["condPeak"])) if "condAvg" in E else None,
-                    withdrawn_peak_full_capacity=R(E["wPeakFull"]) if "wPeakFull" in E else None)
+                    withdrawn_peak_full_capacity=R(E["wPeakFull"]) if "wPeakFull" in E else None,
+                    withdrawn_max_month=R(E["wMonth"]) if "wMonth" in E else None, consumed_max_90day=R(E["c90"]) if "c90" in E else None)
 
 
 def electricity(e):

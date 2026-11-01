@@ -101,14 +101,15 @@ def staff_q(runs, mw, part=None):
 
 def daily_stats(day_index, ndays, years, gal_per_kwh_hour, kw, months=None):
     """From hourly gal/kWh and IT kW, compute daily MGD and summary statistics: average day, 1-in-10-year peak day (90th percentile
-    of annual maxima), record day, average year, and with `months` (each day's YYYY-MM) the highest month's average day and the
-    highest calendar year."""
+    of annual maxima), record day, average year, and with `months` (each day's YYYY-MM) the highest month's average day, the highest
+    90 straight days' average and the highest calendar year."""
     daily = np.bincount(day_index, weights=gal_per_kwh_hour * kw, minlength=ndays) / 1e6
     ann_max = np.array([daily[years == y].max() for y in np.unique(years)])
     out = {"avg": float(daily.mean()), "peak_1in10": float(np.quantile(ann_max, 0.9)), "record": float(daily.max()),
            "annual_mg": float(daily.mean() * 365.25)}
     if months is not None:
         out["max_month"] = float(max(daily[months == m].mean() for m in np.unique(months)))
+        out["max_90day"] = float(np.convolve(daily, np.ones(90) / 90, "valid").max()) if len(daily) >= 90 else float(daily.mean())
         out["worst_year_mg"] = float(max(daily[years == y].sum() for y in np.unique(years)))
     return out
 
@@ -178,7 +179,7 @@ def run_location(times, temps, rhs, n=200, seed=7, mw=100.0):
             pue, heat = hourly_heat_power(tdb, twb, design, p, rh)      # the slow part: once for the run's water and PUE
             w, c, r = hourly(tdb, twb, design, p, rh, heat)
             for name, arr in (("withdrawn", w), ("consumed", c), ("returned", r), ("condensate", hourly_water_with_air(tdb, twb, p, rh)[1])):
-                s = daily_stats(day_index, len(uniq), years, arr, kw, months if name == "withdrawn" else None)
+                s = daily_stats(day_index, len(uniq), years, arr, kw, months if name in ("withdrawn", "consumed") else None)
                 for stat, v in s.items():
                     acc.setdefault(f"{name}_{stat}", []).append(v)
             # the upper case: every computer at capacity all day, instead of at the run's average utilization (the middle estimates' basis)

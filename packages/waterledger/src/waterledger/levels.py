@@ -25,17 +25,18 @@ def sewer(full, peak_pct):
     return "large" if full else "info" if peak_pct is None else _bands(peak_pct, LEVELS["sewer_spare_pct"])
 
 
-def withdrawal(peak_mgd, W, rules=True):
-    """(level, line) for water pumped at a site, on its peak day. Where a state's rules are reviewed, `line` is the rule that applies: "below", "register", "zone_c" or "permit". Elsewhere
-    the same numbers are only low and high bands: "low", "moderate" or "high". W: context.withdrawals."""
+def withdrawal(mgd, W, rules=True):
+    """(level, line) for water pumped at a site. Where a state's rules are reviewed, `line` is the rule that applies: "below", "register", "zone_c" or "permit", and `mgd` should be on the
+    rule's own period (Part 327: the average over 30 days; site_levels uses the highest month). Elsewhere the same numbers are only low and high bands: "low", "moderate" or "high". W: context.withdrawals."""
     if not rules:
-        return ("small", "low") if peak_mgd < W["register_mgd"] else ("mid", "moderate") if peak_mgd <= W["permit_mgd"] else ("large", "high")
-    return (("small", "below") if peak_mgd < W["register_mgd"] else ("mid", "register") if peak_mgd <= W["zone_c_permit_mgd"]
-            else ("mid", "zone_c") if peak_mgd <= W["permit_mgd"] else ("large", "permit"))
+        return ("small", "low") if mgd < W["register_mgd"] else ("mid", "moderate") if mgd <= W["permit_mgd"] else ("large", "high")
+    return (("small", "below") if mgd < W["register_mgd"] else ("mid", "register") if mgd <= W["zone_c_permit_mgd"]
+            else ("mid", "zone_c") if mgd <= W["permit_mgd"] else ("large", "permit"))
 
 
 def compact_share(evaporated_mgd, W):
-    """Water leaving the Great Lakes basin, percent of the consumptive use at which the other states review a project."""
+    """Water leaving the Great Lakes basin, percent of the consumptive use at which the other states review a project. The Compact's period is any 90 days:
+    `evaporated_mgd` should be the highest 90 days' average (site_levels)."""
     return 100 * evaporated_mgd / W["compact_use_mgd"]
 
 
@@ -100,7 +101,16 @@ def site_levels(est, ref):
         room = cm.sewer_room(ctx.wastewater.plants[0])
         out["sewer"] = sewer(room is not None and room <= 0, by["sewer_spare_room"].percent.peak_day.p50 if "sewer_spare_room" in by else None)
     if W and s.source == "wells":
-        out["withdrawal"], out["withdrawal_line"] = withdrawal(w.withdrawn.peak_day.p50, W, ref.get("state_rules", False))
+        rules, peak = ref.get("state_rules", False), w.withdrawn.peak_day.p50
+        # A reviewed rule is tested on its own period, the highest month for Part 327's 30 days, with the peak day shown beside it. Elsewhere, bands on the peak day.
+        on_month = rules and w.withdrawn_max_month is not None
+        out["withdrawal"], out["withdrawal_line"] = withdrawal(w.withdrawn_max_month.p50 if on_month else peak, W, rules)
+        out["withdrawal_period"] = "highest_month" if on_month else "peak_day"
+        if on_month:
+            out["withdrawal_line_peak_day"] = withdrawal(peak, W, rules)[1]
     if W and ctx.receiving.great_lake:
-        out["great_lakes"] = compact(compact_share(w.consumed.avg.p50, W))
+        # The Compact's period is 90 days. Data from before model 1.7 has only the average
+        on_90 = w.consumed_max_90day is not None
+        out["great_lakes"] = compact(compact_share(w.consumed_max_90day.p50 if on_90 else w.consumed.avg.p50, W))
+        out["great_lakes_period"] = "highest_90_days" if on_90 else "average"
     return out

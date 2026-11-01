@@ -113,7 +113,7 @@ def estimate(p, mw, cool, dest, region=None):
         L = D["lake_source"][p["gl"]["lake"]]
         w = band(L["withdrawn"], x)
         return {"lake": True, "wAvg": w, "wPeak": w, "wAnn": {k: v * 365.25 for k, v in w.items()}, "cAvg": band(L["evap_avg"], x),
-                "cPeak": band(L["evap_peak_month"], x), "rAvg": w, "rPeak": w, "sewer": cooling_estimate(D, region, "dry", mw, "septic" if dest == "septic" else "sewer")["sewer"], "reuse": False}
+                "cPeak": band(L["evap_peak_month"], x), "rAvg": w, "rPeak": w, "wMonth": w, "c90": band(L["evap_peak_month"], x), "sewer": cooling_estimate(D, region, "dry", mw, "septic" if dest == "septic" else "sewer")["sewer"], "reuse": False}
     return cooling_estimate(D, region, cool, mw, dest)
 
 
@@ -132,6 +132,10 @@ def cooling_estimate(D, region, cool, mw, dest):
     for k_c, k_w, k_r, k_n in (("cAvg", "wAvg", "rAvg", "condAvg"), ("cPeak", "wPeak", "rPeak", "condPeak")):
         m = max(0.0, E[k_w]["mid"] + E[k_n]["mid"] - E[k_r]["mid"])
         E[k_c] = {"lo": min(E[k_c]["lo"], m), "mid": m, "hi": max(E[k_c]["hi"], m)}
+    if "withdrawn_max_month" in per_100mw:           # the rules' own periods: Part 327's 30 days and the Compact's 90 (data from before model 1.7 has no 90-day figure)
+        E["wMonth"] = F("withdrawn_max_month")
+    if "consumed_max_90day" in per_100mw:
+        E["c90"] = F("consumed_max_90day")
     E["sewer"] = E["rAvg"]
     if dest == "septic":        # condensate is clean water and would not go to a drainfield: a site drain or stormwater [A]. It stays in the returned water, so the books close
         E["sewer"] = {k: max(E["rAvg"][k] - E["condAvg"][k], 0.0) for k in ("lo", "mid", "hi")}
@@ -141,6 +145,8 @@ def cooling_estimate(D, region, cool, mw, dest):
     if dest == "reuse":
         E["full"] = {"wAvg": E["wAvg"], "rAvg": E["rAvg"]}
         E["wAvg"] = {k: max(E["cAvg"][k] - E["condAvg"][k], 0.0) for k in ("lo", "mid", "hi")}     # the condensate is reused too
+        if "wMonth" in E:          # the share reuse saves on an average day, in the highest month too [A]
+            E["wMonth"] = {k: E["wMonth"][k] * E["wAvg"][k] / max(E["full"]["wAvg"][k], 1e-12) for k in ("lo", "mid", "hi")}
         E["wPeak"] = {k: E["wPeak"][k] - E["rPeak"][k] for k in ("lo", "mid", "hi")}
         E["wAnn"] = {k: v * 365.25 for k, v in E["wAvg"].items()}
         E["rAvg"] = E["rPeak"] = E["sewer"] = {"lo": 0, "mid": 0, "hi": 0}

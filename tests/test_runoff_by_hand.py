@@ -132,3 +132,49 @@ def test_homes_and_the_water_system_use_the_state_value():
     c = cm.water_system_share(Flow(avg=r, peak_day=r), [WaterSystem(pwsid="x", name="X", population=1, connections=50000, share_of_place=1.0)], 173)
     assert c.percent.avg.p50 == pytest.approx(20)                                # 10,000 homes of 50,000 connections
     assert "173 gallons" in c.basis
+
+
+def _month_water(month, peak, avg_c=1.0, c90=None):
+    from waterledger.estimate import Flow, Range, WaterUse
+    r = lambda v: Range(p10=v, p50=v, p90=v)
+    f = Flow(avg=r(0.5), peak_day=r(peak))
+    return WaterUse(withdrawn=f, withdrawn_annual_mg=r(1), consumed=Flow(avg=r(avg_c), peak_day=r(avg_c)), returned=f, to_sewer=r(0.1), withdrawn_max_month=r(month), consumed_max_90day=r(c90) if c90 else None)
+
+
+def _levels(water, rules, lake=None):
+    from types import SimpleNamespace as NS
+
+    from waterledger import levels as lv
+    ctx = NS(wastewater=NS(plants=[]), receiving=NS(great_lake=lake))
+    est = NS(site=NS(place=NS(context=lambda: ctx), source="wells", wastewater="water"), water=water, comparisons=[])
+    W = {"register_mgd": 0.1, "zone_c_permit_mgd": 1.0, "permit_mgd": 2.0, "compact_use_mgd": 5.0, "low_mgd": 0.5, "high_mgd": 5.0}
+    return lv.site_levels(est, {"withdrawals": W, "state_rules": rules})
+
+
+def test_part_327_is_tested_on_the_highest_month_with_the_peak_beside_it():
+    # 1.5 MGD in the highest month is under the 2 MGD permit line; a 3 MGD peak day alone is over it
+    x = _levels(_month_water(1.5, 3.0), True)
+    assert x["withdrawal_line"] == "zone_c" and x["withdrawal_period"] == "highest_month" and x["withdrawal_line_peak_day"] == "permit"
+
+
+def test_the_compact_is_tested_on_the_highest_90_days():
+    # 4 MGD on average, 6 MGD over the highest 90 days: over the Compact's 5
+    assert _levels(_month_water(1, 1, 4.0, 6.0), True, "Michigan")["great_lakes"] == "large"
+    x = _levels(_month_water(1, 1, 4.0), True, "Michigan")       # no 90-day figure in data from before model 1.7
+    assert x["great_lakes"] == "small" and x["great_lakes_period"] == "average"
+
+
+def test_90_day_stat_by_hand():
+    import numpy as np
+
+    from waterledger_models.datacenter import cooling, ensemble
+    # 200 days at 1 MGD, with 30 days at 4 MGD: the best 30 days average 4, the best 90 (30 x 4 + 60 x 1) / 90 = 2
+    daily = np.ones(200)
+    daily[50:80] = 4.0
+    years = np.array(["2020"] * 200)
+    months = np.array([f"2020-{i // 30 + 1:02d}" for i in range(200)])
+    out = cooling.daily_stats(np.arange(200), 200, years, daily * 1e6, np.ones(200), months)
+    assert out["max_90day"] == pytest.approx(2.0)
+    st = ensemble._stats(daily.reshape(1, -1), years, months)[0]
+    assert st[ensemble.STATS.index("max_90day")] == pytest.approx(2.0)
+    assert st[ensemble.STATS.index("max_90day")] <= st[ensemble.STATS.index("peak_1in10")]
