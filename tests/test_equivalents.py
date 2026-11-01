@@ -65,7 +65,7 @@ def test_returned_is_never_below_zero():
 @pytest.mark.live
 def test_a_michigan_site_reports_them():
     est = wl.Site(place=wl.place("Gaines charter township, MI"), facility=wl.DataCenter(it_mw=300, cooling="hybrid")).estimate()
-    assert est.site.power == "mi_mix" and est.equivalents.homes.p50 == pytest.approx(est.water.withdrawn.avg.p50 * 1e6 / 300)
+    assert est.site.power == "mi_mix" and est.equivalents.homes.p50 == pytest.approx(est.water.withdrawn.avg.p50 * 1e6 / est.equivalents.home_gpd)
     assert est.power_plants["mi_mix"].consumed.p50 == pytest.approx(est.electricity.avg_mw.p50 * 24 * 268 / 1e6 / (1 - cm.LINE_LOSS))
     with pytest.raises(ValueError, match="power must be one of"):
         wl.Site(place=wl.place("Gaines charter township, MI"), facility=wl.DataCenter(it_mw=300, cooling="hybrid"), power="nope").estimate()

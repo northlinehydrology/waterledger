@@ -89,13 +89,14 @@ class Comparison(BaseModel):
 
 
 class Equivalents(BaseModel):
-    """An estimate in things people know. Homes at 300 gallons a day; golf courses at the state's typical course; electricity homes at the state's
+    """An estimate in things people know. Homes at `home_gpd`, the state's own water for a home (USGS 2015 over ACS 2015 households); golf courses at the state's typical course; electricity homes at the state's
     average residential use. `homes` and `golf_courses` count water taken on an average day, or for lake-source cooling what the lake loses.
     `evaporated_share` is the percent of the water taken that evaporates, from the middle estimates. None where a state's data doesn't have the value.
     Full values: waterledger.org works these out from the rounded water it shows, so its figures can differ by that rounding."""
     model_config = ConfigDict(frozen=True)
     homes: Range
     homes_peak_day: Range
+    home_gpd: float | None = None
     golf_courses: Range | None = None
     golf_course_gpd: float | None = None
     evaporated_share: float

@@ -110,3 +110,25 @@ def test_after_with_means_by_hand():
     L = runoff.loads(200, 36)["tss_t"]["after"][1]
     # 100 ac x 30.78 in x (0.4 x 53.67 + 0.6 x 152.83 = 113.17) + 100 ac x 6.48 in x 87.43
     assert L == pytest.approx(0.226 * (100 * 30.78 * 113.17 + 100 * 6.48 * 87.43) / 2000, rel=1e-3)      # 45.7 tons
+
+
+def test_a_home_from_usgs_water_and_census_households():
+    from waterledger_data import wateruse
+    # Two counties: 3 + 1 and 5 + 1 million gallons a day into Vermont's 254,865 households of 2015: 10,000,000 / 254,865
+    layer = {"counties": {"a": {"delivered_to_homes_mgd": 3.0, "mgd": {"domestic": 1.0}}, "b": {"delivered_to_homes_mgd": 5.0, "mgd": {"domestic": 1.0}}}}
+    assert wateruse.home_gpd("VT", layer) == pytest.approx(39.2364, abs=1e-3)
+    assert wateruse.home_gpd("VT", {"counties": {"a": {"mgd": {}}}}) is None     # nothing to say, not zero
+    assert len(wateruse.HOUSEHOLDS_2015) == 51                                   # every state and D.C.
+    assert wateruse.HOUSEHOLDS_2015["MI"] == 3858532 and wateruse.HOUSEHOLDS_2015["TX"] == 9421412
+
+
+def test_homes_and_the_water_system_use_the_state_value():
+    from waterledger import comparisons as cm
+    from waterledger.context import WaterSystem
+    from waterledger.estimate import Flow, Range
+    assert cm.water_homes(1.73) == pytest.approx(1.73e6 / 300)                   # EPA's family
+    assert cm.water_homes(1.73, 173) == pytest.approx(10000)                     # 1,730,000 gallons at 173 a home
+    r = Range(p10=1.73, p50=1.73, p90=1.73)
+    c = cm.water_system_share(Flow(avg=r, peak_day=r), [WaterSystem(pwsid="x", name="X", population=1, connections=50000, share_of_place=1.0)], 173)
+    assert c.percent.avg.p50 == pytest.approx(20)                                # 10,000 homes of 50,000 connections
+    assert "173 gallons" in c.basis

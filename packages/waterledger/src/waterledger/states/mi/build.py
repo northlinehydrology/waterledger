@@ -15,6 +15,7 @@ from waterledger_models.datacenter import lake as lc
 from waterledger_data.config import CACHE, SITE as SITE_ROOT, setting
 
 from waterledger.comparisons import HOUSEHOLD_GPD, it_mw_from_contract
+from waterledger_data import wateruse
 from waterledger.levels import LEVELS
 from waterledger_models import MODEL_VERSION
 STATE = "mi"      # Water Ledger is organized by state: site/waterledger/<state>/
@@ -570,7 +571,7 @@ def main(n=200):
         "home_customers": 4538056,   # EIA-861 2025, Michigan residential customers
         "size_examples": {"van_buren": it_t + it_d, "saline": saline_it},   # computing capacity of two proposals, from their contracts (MW)
         "home_kwh_month": 634.9,   # EIA-861 2025, Michigan (model 1.3; was 618.2 from EIA's 2024 Table 5A)
-        "context": CONTEXT,
+        "context": {**CONTEXT, "household_gpd": {"value": wateruse.home_gpd("MI"), "epa_family_gpd": HOUSEHOLD_GPD, "note": "USGS 2015 water to homes over ACS 2015 households; EPA WaterSense's figure for a family is more than 300 gallons a day", "sources": ["usgs_wu2015", "acs2015", "epa_watersense"]}},
         "county_uses_mgd": uses,
         "lake_source": lake_src,
         "county_golf_courses": n_golf,

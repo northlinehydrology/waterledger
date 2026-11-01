@@ -2,13 +2,14 @@
 from waterledger.estimate import BeforeAfterRow, Comparison, DesignComparison, DesignTotal, Equivalents, Percent, PlantWater, Range, WellsSummary
 from waterledger_models import runoff as rq
 
-# U.S. EPA WaterSense, How We Use Water: "The average American family uses more than 300 gallons of water per day at home."
+# U.S. EPA WaterSense, How We Use Water: "The average American family uses more than 300 gallons of water per day at home." A family's, stated as a note and used only where
+# a state's data has no home figure. A home is the state's own (waterledger_data.wateruse.home_gpd: USGS 2015 over ACS 2015 households).
 HOUSEHOLD_GPD = 300
 
 
-def water_homes(mgd):
-    """Water (MGD) as homes, at EPA WaterSense's 300 gallons a day."""
-    return mgd * 1e6 / HOUSEHOLD_GPD
+def water_homes(mgd, gpd=HOUSEHOLD_GPD):
+    """Water (MGD) as homes, at `gpd` gallons a day: the state's own (a provider's reference["home_gpd"])."""
+    return mgd * 1e6 / gpd
 
 
 def golf_courses(mgd, course_gpd):
@@ -61,8 +62,9 @@ def equivalents(est, ref):
     w, base = est.water, est.water.consumed.avg if est.water.lake_source else est.water.withdrawn.avg
     base_peak = w.consumed.peak_day if w.lake_source else w.withdrawn.peak_day
     golf, kwh, cust, e = ref["golf_gpd"], ref["home_kwh_month"], ref["home_customers"], est.electricity
+    gpd = ref.get("home_gpd") or HOUSEHOLD_GPD
     homes_e = _range(lambda v: electricity_homes(v, kwh), e.avg_mw) if e and kwh else None
-    return Equivalents(homes=_range(water_homes, base), homes_peak_day=_range(water_homes, base_peak),
+    return Equivalents(homes=_range(lambda v: water_homes(v, gpd), base), homes_peak_day=_range(lambda v: water_homes(v, gpd), base_peak), home_gpd=gpd,
                        golf_courses=_range(lambda v: golf_courses(v, golf), base) if golf else None, golf_course_gpd=golf,
                        evaporated_share=evaporated_share(w.consumed.avg.p50, w.withdrawn.avg.p50),
                        electricity_homes=homes_e, electricity_homes_peak=_range(lambda v: electricity_homes(v, kwh), e.peak_mw) if e and kwh else None,
@@ -85,17 +87,19 @@ def main_system(systems):
     return max([x for x in systems if share(x) >= MIN_SYSTEM_SHARE] or systems, key=lambda x: x.population or 0)
 
 
-def water_system_share(withdrawn, systems):
-    """The campus's water (a Flow) as homes, as a percent of the connections of the place's main public water system (main_system).
+def water_system_share(withdrawn, systems, home_gpd=None):
+    """The campus's water (a Flow) as homes at `home_gpd` gallons a day (the state's own; EPA's family figure without one), as a percent of the connections of the place's main public water system (main_system).
     Not a percent of the system's water use: connections include businesses, and the system's own gallons are not in the public data.
     None with no system mapped or no connection count."""
     s = main_system(systems)
     if not s or not s.connections:
         return None
-    pct = lambda r: Range(**{q: 100 * (getattr(r, q) * 1e6 / HOUSEHOLD_GPD) / s.connections for q in ("p10", "p50", "p90")})
+    gpd = home_gpd or HOUSEHOLD_GPD
+    pct = lambda r: Range(**{q: 100 * (getattr(r, q) * 1e6 / gpd) / s.connections for q in ("p10", "p50", "p90")})
     return Comparison(against="water_system", name=s.name, measure="homes_vs_connections", existing=s.connections, unit="connections",
                       percent=Percent(avg=pct(withdrawn.avg), peak_day=pct(withdrawn.peak_day)),
-                      basis=f"Campus water as homes at {HOUSEHOLD_GPD} gallons a day (EPA WaterSense), against the system's connections (EPA)")
+                      basis=(f"Campus water as homes at {gpd:.0f} gallons a day (USGS 2015 water to homes over ACS 2015 households, the state's own), against the system's connections (EPA)" if home_gpd
+                             else f"Campus water as homes at {gpd} gallons a day (EPA WaterSense, a family), against the system's connections (EPA)"))
 
 
 def it_mw_from_contract(contract_mw, pue):
@@ -259,7 +263,7 @@ def comparisons(est, ref=None):
     nothing from the public system, and one not on the sewer sends a plant nothing."""
     out, s, ctx = [], est.site, est.site.place.context()
     if s.source == "muni":
-        c = water_system_share(est.water.withdrawn, ctx.supply.systems)
+        c = water_system_share(est.water.withdrawn, ctx.supply.systems, (ref or {}).get("home_gpd"))
         if c:
             out.append(c)
         if not est.water.lake_source:

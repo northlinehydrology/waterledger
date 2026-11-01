@@ -53,8 +53,9 @@ def test_on_an_estimate_and_through_json():
     c = est.comparisons[0]
     s = p.context().supply.systems[0]
     assert c.name == s.name and c.existing == s.connections
-    assert c.percent.avg.p50 == 100 * (est.water.withdrawn.avg.p50 * 1e6 / cm.HOUSEHOLD_GPD) / s.connections
-    assert c.percent.peak_day.p90 == 100 * (est.water.withdrawn.peak_day.p90 * 1e6 / cm.HOUSEHOLD_GPD) / s.connections
+    gpd = est.equivalents.home_gpd
+    assert c.percent.avg.p50 == 100 * (est.water.withdrawn.avg.p50 * 1e6 / gpd) / s.connections
+    assert c.percent.peak_day.p90 == 100 * (est.water.withdrawn.peak_day.p90 * 1e6 / gpd) / s.connections
     assert json.loads(est.model_dump_json())["comparisons"][0]["measure"] == "homes_vs_connections"
 
 
