@@ -84,7 +84,7 @@ def write(out, date=None):
                 h = H[h]["t"]
             paths[v["h12"][0]["code"]] = path
     used = {c for p in paths.values() for c in p}
-    _write(os.path.join(folder, "receiving.json"), {"by_place": sheds, "reaches": {c: {"n": H[c]["n"], "i": H[c].get("i", [])} for c in used},
+    _write(os.path.join(folder, "receiving.json"), {"by_place": sheds, "reaches": {c: {"n": H[c]["n"], "i": H[c].get("i", []), "a": H[c].get("a", 0)} for c in used},
                                                      "downstream": paths, "great_lakes": {r["g"]: r["gl"] for r in P["places"] if r.get("gl")}, "attains": {"organization": "21MICH", "cycle": W.get("cycle")}})
 
     divisions = {k: {"name": v["name"], "station": v["station"], "station_id": None, "lat": v["lat"], "lon": v["lon"], "share_observed": None,

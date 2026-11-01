@@ -41,6 +41,15 @@ def reference(place):
             "home_customers": D["home_customers"], "state_avg_mw": T["avg_mw"], "rain_median_in": W.get("rain_median_in"), "withdrawals": D["context"].get("withdrawals"), "state_rules": True}
 
 
+def _usgs_water_use(county_fips):
+    """USGS's 2015 estimate for a county from Michigan's snapshot, which carries it; None where the snapshot can't be had, so Michigan's answers don't depend on it."""
+    from waterledger.national.provider import county_water_use
+    try:
+        return county_water_use("MI", county_fips)[1]
+    except Exception:                                   # noqa: BLE001  no snapshot, or one without water use
+        return None
+
+
 def context(place):
     """Michigan's context for a place: every category from Water Ledger Michigan's data (EGLE, EPA, USGS, NOAA, MPSC, EIA)."""
     from waterledger import context as cx
@@ -50,10 +59,11 @@ def context(place):
     wells = Wd["wells"].get(r["g"])
     L = egle_layer()
     egle = L["counties"].get(r["cf"])
-    supply = cx.Supply(provider="MI", sources=["epa_sa", "egle2025", "wellogic"], systems=[sys_(w) for w in r["w"]],
+    usgs = _usgs_water_use(r["cf"])
+    supply = cx.Supply(provider="MI", sources=["epa_sa", "egle2025", "wellogic", *(["usgs_wu2015"] if usgs else [])], systems=[sys_(w) for w in r["w"]],
                        nearest_system=sys_(near["w"]) if near else None, nearest_system_km=near["km"] if near else None,
                        county_use_mgd=E["county_uses_mgd"].get(r["c"], {}),
-                       county_water_use=water_use_record(egle, L["basis"], r["cf"]) if egle else None,
+                       county_water_use=water_use_record(egle, L["basis"], r["cf"]) if egle else None, county_water_use_usgs=usgs,
                        household_wells=dict(zip(("drift_n", "drift_depth_ft", "drift_level_ft", "rock_n", "rock_depth_ft", "rock_level_ft"), wells)) if wells else None)
     plants = [cx.SewerPlant(npdes=q["id"], name=q["n"], design_mgd=q.get("design"), flow_mgd=q.get("flow"), km=q["km"],
                             own=bool(q.get("own")), receiving_water=q.get("recv") or None, combined_sewer=bool(q.get("cso")), lagoon=bool(q.get("lagoon")))

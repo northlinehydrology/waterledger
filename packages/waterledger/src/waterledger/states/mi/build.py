@@ -383,12 +383,15 @@ def build_waters():
     county rainfall and the runoff water quality parameters. Public data only."""
     from waterledger_data import waters as wi
     from waterledger_models import runoff as rq
+    from waterledger_data import receiving as rc
     h12 = wi.by_huc12()
     trout = wi.trout_by_huc12()
     for k, v in h12.items():
         v["gl"] = GREAT_LAKE_BY_HUC4.get(k[:4])
         if k in trout:
             v["tr"] = [trout[k]["n"], trout[k]["names"]]
+    # past the state line, as every other state's paths go (a reach the tracer adds is marked "o"), from each place's main watershed
+    h12 = rc.past_the_line(h12, sorted({p["h12"][0]["code"] for p in json.load(open(OUT_PLACES))["places"] if p["h12"]}))
     plants = []
     for p in wi.potws():
         x, y = proj(p["lon"], p["lat"])
