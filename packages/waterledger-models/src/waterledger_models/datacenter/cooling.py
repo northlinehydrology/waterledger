@@ -10,9 +10,9 @@ Hour by hour over 30 years of weather:
   blowdown + drift = evaporation ÷ (cycles of concentration − 1)  (the dissolved solids balance; Lei and Masanet Eq. 7; DOE FEMP BMP #10).
 Designs differ in when they evaporate:
   dry       air-cooled / dry closed loop, designed to use no water for cooling: loop top-ups only, plus the staff water every design has
-  assist    dry coolers with adiabatic pre-cooling above a dry-bulb switch point: water evaporates into the air ahead of the
+  assist    dry coolers with adiabatic pre-cooling above a dry-bulb switch point tied to the loop's temperature, an operator's setting: water evaporates into the air ahead of the
             coil, in proportion to the wet-bulb depression; no tower drift
-  hybrid    dry coolers most of the year, evaporative in warm weather (ramp between two dry-bulb setpoints, the top at the location's own 0.4% design dry-bulb)
+  hybrid    dry coolers most of the year, evaporative in warm weather (ramp from the same switch point; the top at the location's own 0.4% design dry-bulb)
   towers    open cooling towers, evaporative all year (upper bound for typical practice)
 Outputs per run: withdrawn (makeup), consumed (evaporation + drift + loop top-up + humidifiers), returned to sewer (blowdown + condensate),
 condensate (from the outside air, not withdrawn, so withdrawn + condensate = consumed + returned).

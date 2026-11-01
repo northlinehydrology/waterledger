@@ -51,17 +51,17 @@ RANGES = {
     # (8,500); Vantage Port Washington about 11.8 million gal for about 1 GW (about 12,000); chilled-water loops of 3-10 gal per ton
     # (850-2,840 per MW of heat) at the low end.
     "fill_gal_per_mw": (2000.0, 12000.0),
-    # Dry coolers with adiabatic pre-cooling (model 1.3; on Michigan's detailed calculator only). Turns on at a switch point no maker publishes, since it is a
-    # selection and control output (EVAPCO 2018, p. 2): Uptime Institute (2025) reports 20 °C or higher; 30 °C is the top [A]. Microsoft's
-    # 85 °F is for its direct-air evaporative design, a different system, and is no longer used here. Pad saturation effectiveness: EVAPCO
-    # (2018, p. 2) measured 72-78% at 400-700 fpm across 10 pads; ASHRAE (2016, ch. 41) gives 70 to over 95% for rigid media.
-    "assist_on": (20.0, 30.0),
+    # When a dry cooler goes wet is an operator's setting, not a property of the equipment (EVAPCO 2019, p. 2: a selection and control output; Trane DC-WPR004A: the
+    # customer chooses; US 12,426,214 B1: customer-set). It is tied to the loop (model 1.7): the setting sits at the dry-bulb where the dry coil can no longer hold loop
+    # supply, loop_limit below, give or take this margin in K for operators who go wet early or trim with chillers a while longer [A]. Same for assist and hybrid.
+    "switch_margin": (-2.0, 2.0),
+    # Dry coolers with adiabatic pre-cooling (model 1.3; on Michigan's detailed calculator only). Microsoft's 85 °F is for its direct-air evaporative design, a
+    # different system, and is not used here. Pad saturation effectiveness: EVAPCO (presented at CTI, Feb 2019, p. 2) measured 72-78% at 400-700 fpm across 10
+    # pads, a maker's own test; ASHRAE (2016, ch. 41) gives 70 to over 95% for rigid media.
     "assist_eff": (0.70, 0.80),
-    # Hybrid dry coolers: wet mode from a customer-set switch point, 70-95 °F (21-35 °C) in US 12,426,214 B1 (2025), 82 °F (27.8 °C)
-    # in its example (model 1.3, was 21-27). Fully evaporative at each location's own 0.4% design dry-bulb (design_dry_bulb; model 1.7, was 30-33 °C everywhere,
+    # Hybrid dry coolers: wet mode from the switch point up (above). Fully evaporative at each location's own 0.4% design dry-bulb (design_dry_bulb; model 1.7, was 30-33 °C everywhere,
     # which is West Michigan's), give or take this many K [A]: the source gives no such point, so this says the dry section is sized to carry part of the load
     # up to the hottest weather the plant is designed for.
-    "hybrid_on": (21.0, 28.0),
     "hybrid_full_offset": (-1.5, 1.5),
 }
 # Share of the loop volume lost to small leaks and topped up each year (NIH 2023 Technical Bulletin: "typically less than 5% of the
@@ -105,6 +105,8 @@ OUTSIDE = {"oa_cfm_per_mw": (100.0, 1500.0), "humidify_share": (0.0, 1.0)}
 # dehumidifying coil, C [A]: it must be colder than the 15 C dew point, while the air loop's water, at 18.7 C or more, is not, so those coils stay dry.
 DEW_LOW, DEW_HIGH, DEHUMIDIFY_WATER = -9.0, 15.0, 9.0
 TOWER_DESIGN_WB = 25.6     # C, the 78 F wet-bulb of the standard cooling tower rating (95/85/78 F) [A]; a site's own design wet-bulb differs by a few degrees
+# Switch settings stay within the 70-95 °F (21.1-35.1 °C) that US 12,426,214 B1 (2025) gives for customer settings (example: 82 °F, 27.8 °C); applied to assist by analogy [A].
+SWITCH_SETTINGS = (21.1, 35.1)
 HYBRID_MIN_RAMP = 1.0      # K [A]: where a location's design dry-bulb is at or below the switch point, wet mode still comes on over this span, in its hottest hours only
 PARAMETERS = tuple(RANGES) + ("topup",) + tuple(ADIABATIC) + tuple(POWER) + tuple(OUTSIDE)
 
@@ -135,9 +137,8 @@ SOURCES = {
     "range_f": "Lei and Masanet (preprint rs-769999/v1), Table 3; 10 F rating",
     "drift": "EPA WaterSense at Work 2012, section 6.3, p. 6-9; EPA AP-42 13.4, Table 13.4-1",
     "fill_gal_per_mw": "Crusoe 2026; Vantage Port Washington; chilled-water loops of 3-10 gal per ton",
-    "assist_on": "Uptime Institute 2025 (20 C or higher); 30 C top [A]",
-    "assist_eff": "EVAPCO 2018, p. 2; ASHRAE 2016, ch. 41",
-    "hybrid_on": "US 12,426,214 B1 (2025)",
+    "switch_margin": "Operator's setting around the loop's limit [A]: Trane DC-WPR004A and US 12,426,214 B1 (customer-set); EVAPCO 2019, p. 2",
+    "assist_eff": "EVAPCO 2019 (presented at CTI, Feb 2019), p. 2; ASHRAE 2016, ch. 41",
     "hybrid_full_offset": "Around the location's own 0.4% design dry-bulb [A], no published value",
     "topup": "NIH 2023 Technical Bulletin (under 5% a year); 1% floor [A]",
     "assist_dt_air": "Makers' selection sheets: Thermokey, Kelvion [A]",
@@ -192,11 +193,25 @@ def for_location(p, tdb):
     return {**p, "design_db": design_dry_bulb(tdb)}
 
 
+def loop_limit(p):
+    """Dry-bulb where a dry coil can no longer hold the loops' supply temperature, C: supply less the coil's approach, with the air and liquid loops weighted by their
+    shares of the heat (Lei and Masanet's air loop water; a liquid loop of its own). Above it, a dry plant needs chillers or evaporation."""
+    air = (1.0 - p["liquid_share"]) + p["liquid_share"] * p["liquid_air_share"]
+    air_water = p["supply_air"] + p["air_rise"] - p["air_rise"] / p["coil_eff"]
+    return air * air_water + (1.0 - air) * p["liquid_water"] - p["dc_approach"]
+
+
+def switch_point(p):
+    """Dry-bulb at which assist or hybrid goes wet, C: the operator's setting. Set "switch_on" to fix it, for example as a scenario; otherwise the loop's limit plus the
+    run's margin, within SWITCH_SETTINGS."""
+    return p["switch_on"] if "switch_on" in p else np.clip(loop_limit(p) + p["switch_margin"], *SWITCH_SETTINGS)
+
+
 def hybrid_full(p):
     """Dry-bulb at which a hybrid is fully evaporative, C: the location's design dry-bulb plus the run's offset, and at least HYBRID_MIN_RAMP above the switch point."""
     if "design_db" not in p:
         raise ValueError("the hybrid design needs the location's design dry-bulb: pass parameters through for_location(p, tdb), or set design_db (in a BMI configuration, under parameters, unless a forcing file supplies it)")
-    return np.maximum(p["design_db"] + p["hybrid_full_offset"], p["hybrid_on"] + HYBRID_MIN_RAMP)
+    return np.maximum(p["design_db"] + p["hybrid_full_offset"], switch_point(p) + HYBRID_MIN_RAMP)
 
 
 def _ramp(x, lo, hi):
@@ -262,7 +277,7 @@ def _wet_share(tdb, design, p):
     if design == "towers":
         return np.ones_like(tdb)
     if design == "hybrid":
-        return _ramp(tdb, p["hybrid_on"], hybrid_full(p)) * np.ones_like(tdb)
+        return _ramp(tdb, switch_point(p), hybrid_full(p)) * np.ones_like(tdb)
     return np.zeros_like(tdb)
 
 
@@ -320,7 +335,7 @@ def hourly_heat_power(tdb, twb, design, p, rh=None):
     outside, latent = hourly_outside_air_heat(tdb, twb, p, rh)
     # supply air and the coil set the air loop's water temperature (Lei and Masanet); liquid-cooled heat goes to a warmer loop of its own
     air_water = p["supply_air"] + p["air_rise"] - p["air_rise"] / p["coil_eff"]
-    coil_air = tdb - (p["assist_eff"] * np.maximum(tdb - twb, 0.0) * (tdb >= p["assist_on"]) if design == "assist" else 0.0)
+    coil_air = tdb - (p["assist_eff"] * np.maximum(tdb - twb, 0.0) * (tdb >= switch_point(p)) if design == "assist" else 0.0)
     wet = _wet_share(tdb, design, p)
     air_load = room + crah + outside                          # in rare, bitter hours outside air could cool more than the air loop carries; the rest comes off the liquid loop
     power, heat = q + crah + 0.0 * tdb, q + crah + outside + latent
@@ -351,8 +366,9 @@ def hourly_rates(tdb, twb, design, p, rh=None, heat=None):
         # it leaves the coil where it would at the switch point (on + rise), so air flow = heat / (cp x (on + rise - tdb + depr)), and
         # evaporation as a share of all the heat is depr over that same difference, at most 1. Pads have no tower drift.
         depr = p["assist_eff"] * np.maximum(tdb - twb, 0.0)
-        share = np.clip(depr / np.maximum(p["assist_on"] + p["assist_dt_air"] - tdb + depr, 1e-6), 0.0, 1.0)
-        evap = btu * share / HFG / LB_GAL * (tdb >= p["assist_on"])
+        on = switch_point(p)
+        share = np.clip(depr / np.maximum(on + p["assist_dt_air"] - tdb + depr, 1e-6), 0.0, 1.0)
+        evap = btu * share / HFG / LB_GAL * (tdb >= on)
         drift = np.zeros_like(evap)
         blow = evap * p["assist_bleed"]
     # loop top-up, gal/day per MW of capacity, as gal per IT kWh

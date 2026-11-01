@@ -81,10 +81,41 @@ def test_design_dry_bulb_by_hand():
 
 
 def test_hybrid_ramp_runs_to_the_locations_own_design_temperature():
-    p = {**C, "hybrid_on": 24.0, "hybrid_full_offset": 0.0}
+    p = {**C, "switch_on": 24.0, "hybrid_full_offset": 0.0}
     # Houston-like, design dry-bulb 36.7: at 30.35 C the ramp is (30.35 - 24) / (36.7 - 24) = 0.5. Michigan-like, 31.0: (27.5 - 24) / (31 - 24) = 0.5
     assert ph._wet_share(np.array([30.35]), "hybrid", {**p, "design_db": 36.7})[0] == pytest.approx(0.5)
     assert ph._wet_share(np.array([27.5]), "hybrid", {**p, "design_db": 31.0})[0] == pytest.approx(0.5)
     # design dry-bulb 23 is under the 24 C switch: wet mode runs over the 1 K above the switch, half at 24.5 and all of it at 25
     cool = {**p, "design_db": 23.0}
     assert ph._wet_share(np.array([24.0, 24.5, 25.0, 30.0]), "hybrid", cool) == pytest.approx([0.0, 0.5, 1.0, 1.0])
+
+
+def test_switch_point_by_hand():
+    # Air loop water = supply air + air rise - air rise / coil effectiveness = 31 + 16.65 - 16.65 / 0.8 = 26.8375 C. Half the computers liquid-cooled, with 20% of their
+    # heat still going to air: the air share is 0.5 + 0.5 x 0.2 = 0.6. Weighted supply 0.6 x 26.8375 + 0.4 x 38.5 = 31.5025 C; less the 7.5 K approach, 24.0025 C.
+    mid = {**C, "supply_air": 31.0, "air_rise": 16.65, "coil_eff": 0.8, "liquid_share": 0.5, "liquid_air_share": 0.2, "liquid_water": 38.5, "dc_approach": 7.5, "switch_margin": 0.0}
+    assert ph.loop_limit(mid) == pytest.approx(24.0025)
+    assert ph.switch_point(mid) == pytest.approx(24.0025)
+    assert ph.switch_point({**mid, "switch_margin": 2.0}) == pytest.approx(26.0025)
+    # All air, 27 C supply: 27 + 19.4 - 19.4 / 0.7 = 18.686 C, less 10 K = 8.686 C, below any published setting, so 70 F (21.1 C)
+    cold = {**mid, "supply_air": 27.0, "air_rise": 19.4, "coil_eff": 0.7, "liquid_share": 0.0, "dc_approach": 10.0}
+    assert ph.loop_limit(cold) == pytest.approx(8.686, abs=1e-3)
+    assert ph.switch_point(cold) == pytest.approx(21.1)
+    # All liquid at 45 C with 10% to air on a 26.8375 C air loop: 0.1 x 26.8375 + 0.9 x 45 = 43.18 C, less 5 K = 38.18 C, above 95 F, so 35.1 C
+    warm = {**mid, "liquid_share": 1.0, "liquid_air_share": 0.1, "liquid_water": 45.0, "dc_approach": 5.0}
+    assert ph.loop_limit(warm) == pytest.approx(38.184, abs=1e-3)
+    assert ph.switch_point(warm) == pytest.approx(35.1)
+    # An operator's setting wins
+    assert ph.switch_point({**mid, "switch_on": 27.8}) == 27.8
+
+
+def test_assist_water_at_the_loop_switch_by_hand():
+    # Setting 24 C, 30 C air at 21 C wet-bulb, effectiveness 0.75: the pads take 0.75 x 9 = 6.75 K off the air. The fans slow until the air leaves at 24 + 11 = 35 C,
+    # so of 1 kW of heat the share to evaporation is 6.75 / (35 - 30 + 6.75) = 0.57447. No outside air, no losses: 3412.14 x 0.57447 / 1050 / 8.34 = 0.22385 gal per IT kWh.
+    p = {**SIMPLE, "switch_on": 24.0, "assist_eff": 0.75, "assist_dt_air": 11.0, "assist_bleed": 0.0, "topup": 0.0}
+    t, wb = np.array([30.0]), np.array([21.0])
+    heat = ph.hourly_heat_power(t, wb, "assist", p)[1]
+    w = ph.hourly_rates(t, wb, "assist", p, heat=np.array([1.0]))[0]
+    assert w[0] == pytest.approx(0.22385, rel=1e-3)
+    assert ph.hourly_rates(np.array([23.9]), wb, "assist", p, heat=np.array([1.0]))[0][0] == pytest.approx(0.0)     # below the setting, no evaporation
+    assert heat[0] > 0
