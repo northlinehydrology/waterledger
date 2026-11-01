@@ -11,6 +11,7 @@ sewer plants, weather and design storms.
 - **Weather-driven cooling water model** for cooling towers, hybrid, closed loop, and dry coolers with adiabatic pre-cooling,
   hour by hour over decades of weather, with Monte Carlo uncertainty over published parameter ranges; plus lake-source
   (once-through) cooling and staff water.
+- **Mass and energy balances** that close in every hour of every run, for every cooling design, held to it by `tests/test_balances.py`.
 - **Hourly electricity from the same heat balance**, by design and weather, after Lei and Masanet (2022): average power, PUE,
   and the hottest hour with every computer at capacity.
 - **Vectorized ensembles** as xarray Datasets, with dask across many locations.
@@ -48,6 +49,7 @@ est = site.estimate()
 
 est.water.withdrawn.avg          # Range(p10=..., p50=..., p90=...), million gallons a day
 est.water.withdrawn.peak_day     # on a 1-in-10-year peak day
+est.water.condensate.avg         # water a coil takes out of outside air; withdrawn + condensate = consumed + returned on the middle estimate
 est.electricity.avg_mw           # average power, MW, from the hourly heat balance at this place's weather
 est.electricity.peak_mw          # the 1-in-10-year hottest hour, every computer at capacity
 est.site.source, est.site.wastewater     # the choices, with defaults filled in

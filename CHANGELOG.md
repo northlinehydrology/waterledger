@@ -2,7 +2,7 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## Unreleased
+## 3.8.0 (Nov 1, 2026)
 
 Model version 1.5: the cooling model's energy and mass now close, hour by hour, in every design. Tests in `tests/test_balances.py` hold them to it. Water and electricity estimates change by a few percent; `docs/methods/methods-log.md` has the measured differences.
 

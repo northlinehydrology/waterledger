@@ -1,6 +1,6 @@
 [project]
 name = "waterledger"
-version = "3.7.1"
+version = "3.8.0"
 description = "Water Ledger: public estimates of what large new water users mean for local water and streams, state by state (import waterledger as wl)"
 readme = "README.md"
 license = "BSD-3-Clause"
@@ -12,8 +12,8 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Hydrology",
 ]
 dependencies = [
-    "waterledger-models[all]>=3.7.1,<4",
-    "waterledger-data>=3.7.1,<4",
+    "waterledger-models[all]>=3.8.0,<4",
+    "waterledger-data>=3.8.0,<4",
     "pandas>=2.0",
     "openpyxl>=3.1",
     "pydantic>=2.6",
