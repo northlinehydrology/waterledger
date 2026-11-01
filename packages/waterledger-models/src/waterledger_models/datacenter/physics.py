@@ -44,10 +44,10 @@ RANGES = {
     # for operators, 0.72-0.91, are about 3.6-11 cycles, median about 4.5; ICPRB's 75% is 4. DOE FEMP BMP #10's typical range is lower, two to four, with six or more
     # possible. Nothing is published for large campuses, and source water sets the real limit, so 3-6 is the part of the operators' values that is common practice [A].
     "coc": (3.0, 6.0),
-    "range_f": (7.0, 15.0),            # tower range, °F (model 1.3, was 8-15): Lei and Masanet preprint, Table 3, 4-6 °C (7.2-10.8 °F); 10 °F rating
-    # Drift as a share of circulating flow (model 1.3, was 0.005-0.05%): modern eliminators under 0.005% (EPA WaterSense at Work 2012,
-    # section 6.3, p. 6-9) to EPA AP-42 13.4's induced-draft 0.020% (Table 13.4-1).
-    "drift": (0.000005, 0.0002),
+    "range_f": (7.2, 10.8),            # tower range, °F (model 1.7, was 7-15, whose top had no source): Lei and Masanet preprint, Table 3, 4-6 °C; the 10 °F rating sits inside it
+    # Drift as a share of circulating flow (model 1.7, was 0.0005-0.02%, whose low end was ten times under the source): modern eliminators at 0.005% (EPA WaterSense at
+    # Work 2012, section 6.3, p. 6-9: less than 0.005%; the end of Lei and Masanet's Table 3) to EPA AP-42 13.4's induced-draft 0.020% (Table 13.4-1).
+    "drift": (0.00005, 0.0002),
     # Closed loop volume, gal per MW of IT capacity (model 1.3, was 2,000-6,000): Crusoe (2026) about 1.7 million gal for a typical system, which is 8,500 if that is
     # its 200 MW building, as its figure suggests; chilled-water loops of 3-10 gal per ton (850-2,840 per MW of heat), not read directly, at the low end. The top is
     # that 8,500 and a margin, for lack of a filing that states a volume and a capacity together [A]. Vantage's 11.8 million gal, used until model 1.7, is out: it was a
