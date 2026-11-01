@@ -15,9 +15,13 @@ Inputs, in a work folder (`$WL_POWER_WORK`, default `./work`, not committed):
 
 Order: `fetch_eia.py`, `states.py` (state totals, plant flags, Macknick-filled adjusted case, bottom-up), `ba_compare.py`
 (the same by balancing authority), `imports.py` (net imports, blend with the main balancing authority, ranges).
+`combine.py` writes the package's state table, and `fuels.py` the coal and nuclear table (`tables/state_fuel_water_2024.csv`).
 `verify_table.py` checks `grid_water_2022.csv` against the Siddik et al. dataset.
 
 Rules, the same for every state:
+- A fresh-water plant that draws from and returns to a built reservoir is pond class, whatever its EIA code, unless it sits on a river main stem the plant is small against.
+  `cooling_water_bodies.csv` is the review, with each plant's reason and evidence; rows outside Michigan, Ohio, Virginia and Texas rest on EIA-860's fields.
+- Saline withdrawal is EIA's Saline and Brackish water types; the table splits withdrawn into fresh and saline, adding back to it.
 - Plant water is summed over unique (plant, cooling system, month) rows; cooled generation over unique (plant,
   generator, month), falling back to the plant's 2024 net generation.
 - A plant is flagged when its reported consumption exceeds its withdrawal or 1,500 gal/MWh, when a once-through or

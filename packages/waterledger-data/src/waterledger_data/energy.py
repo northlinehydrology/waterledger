@@ -15,6 +15,7 @@ TERRITORIES = "https://eedgis.pnnl.gov/arcgis/rest/services/Hosted/Electric_Serv
 ALBERS = 5070
 TABLE = os.path.join(os.path.dirname(__file__), "tables", "grid_water_2022.csv")
 STATE_TABLE = os.path.join(os.path.dirname(__file__), "tables", "state_power_water_2024.csv")
+FUEL_TABLE = os.path.join(os.path.dirname(__file__), "tables", "state_fuel_water_2024.csv")
 
 # HIFLD control area names -> EIA-930 balancing authority codes (as in the grid water table). Areas without a code in
 # the table (New Brunswick, Hawaii, Alaska, OVEC, Electric Energy Inc., PowerSouth, New Smyrna Beach) map to None.
@@ -51,7 +52,19 @@ def grid_water():
 L_KWH_TO_GAL_MWH = 1000 / 3.785411784
 # Natural gas combined cycle with cooling towers: Macknick et al. 2012, Table 2 consumption, Table 3 withdrawal; a technology, not a state's mix
 NEW_GAS = {"label": "Gas plants", "gal_mwh": 205, "lo": 130, "hi": 300, "wd_gal_mwh": 255, "wd_lo": 150, "wd_hi": 283, "sources": ["macknick2012"],
-           "note": "Natural gas combined cycle with cooling towers (Michigan's tower-cooled combined-cycle plants reported about 189 consumed in 2024)"}
+           "note": "Natural gas combined cycle with cooling towers"}
+
+
+def pv_share(state=None):
+    """PV's share of wind and solar generation in 2024: a state's own, from EIA, for any state in the table with either. A state with neither has no mix of
+    its own, and takes the U.S. share, the only figure that favors no state (None asks for it directly)."""
+    rows = list(csv.DictReader(open(STATE_TABLE)))
+    for r in rows:
+        if r["state"] == state and r["pv_share_of_wind_solar"]:
+            return float(r["pv_share_of_wind_solar"])
+    solar = sum(float(r["solar_share"] or 0) * float(r["net_gen_mwh"]) for r in rows)
+    wind = sum(float(r["wind_share"] or 0) * float(r["net_gen_mwh"]) for r in rows)
+    return solar / (solar + wind)
 
 
 def wind_solar(pv_share):
@@ -62,16 +75,43 @@ def wind_solar(pv_share):
             "sources": ["macknick2012", "eia_sep2024"], "note": f"Wind 0 and utility solar about 1 (0 to 5) for panel washing, weighted by the state's 2024 wind and solar generation (PV {round(100 * pv_share)}%)"}
 
 
+def withdrawal_split(wd_gal_mwh, saline_gal_mwh):
+    """A power option's withdrawal split into whole gallons of fresh and saline water that add back to it."""
+    saline = min(round(saline_gal_mwh), wd_gal_mwh)
+    return {"wd_fresh_gal_mwh": wd_gal_mwh - saline, "wd_saline_gal_mwh": saline}
+
+
+COOLING_WORDS = (("once", "once-through"), ("tower", "towers"), ("pond", "cooling reservoirs"), ("dry", "dry"))
+
+
+def fuel_options(state, name):
+    """A state's coal and nuclear plants as power options, for each it has: Macknick et al. 2012 factors for how they are cooled (EIA-860, by water body), weighted by
+    their 2024 generation (docs/methods/power_water/fuels.py). {"coal": factors, "nuclear": factors}, without a fuel the state did not generate with in 2024."""
+    out = {}
+    for r in csv.DictReader(open(FUEL_TABLE)):
+        if r["state"] != state:
+            continue
+        g, fuel = lambda k: round(float(r[k])), r["fuel"]
+        wd = g("withdrawn_gal_mwh")
+        how = ", ".join(f"{round(100 * float(r['share_' + k]))}% {w}" for k, w in COOLING_WORDS if round(100 * float(r["share_" + k])))
+        out[r["fuel"]] = {"label": f"{name}'s {fuel} plants", "gal_mwh": g("consumed_gal_mwh"), "lo": g("consumed_lo"), "hi": g("consumed_hi"),
+                          "wd_gal_mwh": wd, "wd_lo": g("withdrawn_lo"), "wd_hi": g("withdrawn_hi"), **withdrawal_split(wd, wd * float(r["saline_share"])),
+                          "sources": ["macknick2012", "eia923_2024"],
+                          "note": f"Macknick factors for how {name}'s {fuel} plants are cooled, weighted by 2024 generation: {how}"}
+    return out
+
+
 def state_power_water(state):
     """Water at power plants per kWh of electricity used in a state, 2024, from plant-reported data (EIA-923 cooling water and
     EIA-860, flagged reports replaced by Macknick et al. 2012 medians, blended with the main balancing authority by the state's
     net import share, then updated with the 2022 plant reports and Siddik et al. 2024 on the same basis; docs/methods/power_water): {"consumed", "consumed_lo", "consumed_hi", "withdrawn", "withdrawn_lo",
-    "withdrawn_hi" (L/kWh), "main_ba", "import_share", "wind_share", "solar_share", "pv_share_of_wind_solar", "year"}, or None."""
+    "withdrawn_hi" (L/kWh), "withdrawn_fresh", "withdrawn_saline" (L/kWh, adding to "withdrawn"; saline includes brackish), "main_ba", "import_share", "wind_share", "solar_share", "pv_share_of_wind_solar", "year"}, or None."""
     num = lambda v: float(v) if v not in ("", None) else None
     for r in csv.DictReader(open(STATE_TABLE)):
         if r["state"] == state and r["consumed_l_per_kwh"]:
             return {"consumed": num(r["consumed_l_per_kwh"]), "consumed_lo": num(r["consumed_lo"]), "consumed_hi": num(r["consumed_hi"]),
                     "withdrawn": num(r["withdrawn_l_per_kwh"]), "withdrawn_lo": num(r["withdrawn_lo"]), "withdrawn_hi": num(r["withdrawn_hi"]),
+                    "withdrawn_fresh": num(r["withdrawn_fresh_l_per_kwh"]), "withdrawn_saline": num(r["withdrawn_saline_l_per_kwh"]),
                     "main_ba": r["main_ba"], "import_share": num(r["import_share"]), "wind_share": num(r["wind_share"]),
                     "solar_share": num(r["solar_share"]), "pv_share_of_wind_solar": num(r["pv_share_of_wind_solar"]), "year": 2024}
     return None

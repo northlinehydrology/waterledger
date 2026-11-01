@@ -90,6 +90,7 @@ def plants(y):
     tg = gen.groupby(['Plant Code', 'tech']).agg(g=('net', 'sum'), n=('tech', 'size')).reset_index()
     tg = tg.sort_values(['Plant Code', 'g', 'n'], ascending=[True, False, False]).drop_duplicates('Plant Code')[['Plant Code', 'tech']]
     p = pw.merge(pg, on='Plant Code', how='left').merge(ct, on='Plant Code', how='left').merge(tg, on='Plant Code', how='left')
+    p['cool'] = S.by_water_body(p['Plant Code'], p['cool'])
     g = gen923(y)
     p['plant_gen'] = p['Plant Code'].map(g.groupby('Plant Id').gen.sum()).fillna(0.0)
     p['gen_basis'] = np.where(p.cooled_gen > 0, p.cooled_gen, p.plant_gen)

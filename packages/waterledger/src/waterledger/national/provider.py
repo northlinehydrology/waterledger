@@ -119,6 +119,7 @@ def _ppw(state):
     w = en.state_power_water(state)
     return cx.PowerPlantWater(consumed_l_per_kwh=w["consumed"], consumed_range=(w["consumed_lo"], w["consumed_hi"]),
                               withdrawn_l_per_kwh=w["withdrawn"], withdrawn_range=(w["withdrawn_lo"], w["withdrawn_hi"]),
+                              withdrawn_fresh_l_per_kwh=w["withdrawn_fresh"], withdrawn_saline_l_per_kwh=w["withdrawn_saline"],
                               main_balancing_authority=w["main_ba"], import_share=w["import_share"]) if w else None
 
 

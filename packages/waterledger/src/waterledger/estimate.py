@@ -128,6 +128,8 @@ class PlantWater(BaseModel):
     consumed: Range
     withdrawn: Range
     returned: float
+    withdrawn_fresh: float | None = None    # of withdrawn's middle estimate, where the option's plants are known: fresh and saline (with brackish) add to it
+    withdrawn_saline: float | None = None
     sources: list[str] = []
 
 

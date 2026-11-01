@@ -32,6 +32,16 @@ def estimate(site):
     return Estimate(site=resolved, water=water, electricity=power, model_version=D["model_version"], data_date=D["generated"])
 
 
+# Michigan's utilities in PJM, from the same sources as every state: the service territory layer's control area (HIFLD: Dowagiac, Midwest Energy Cooperative, Niles, Paw Paw,
+# South Haven, Sturgis) and EIA-861 where that layer has none (Indiana Michigan Power). The rest are MISO; that layer lists none for Bayfield and Northern States Wisconsin,
+# in MISO's Wisconsin zone.
+PJM = {"City of Dowagiac", "City of Niles", "City of South Haven", "City of Sturgis", "Indiana Michigan Power Company", "Midwest Energy Cooperative", "Village of Paw Paw"}
+
+
+def balancing_authority(name):
+    return "PJM" if name in PJM else "MISO"
+
+
 def reference(place):
     """Michigan's values to compare an estimate with: its power options, the starting one, a typical golf course, and its homes' electricity."""
     D, P, W = sc.data("estimates"), sc.data("power"), sc.data("waters")
@@ -73,9 +83,12 @@ def context(place):
                          rain_in=Wd["rain_in"].get(r["cf"]), design_storms_in=E["county_storms_in"].get(r["cf"], {}))
     U = P["utilities"]
     from waterledger.national.provider import _ppw
-    energy = cx.Energy(provider="MI", sources=["mpsc_territory", "eia861", "eia923_2024", "macknick2012"], power_plant_water=_ppw("MI"),
+    from waterledger_data.energy import grid_water
+    GW = grid_water()
+    energy = cx.Energy(provider="MI", sources=["mpsc_territory", "eia861", "eia923_2024", "macknick2012", "siddik2024"], power_plant_water=_ppw("MI"),
                        utilities=[cx.Utility(name=U[i]["n"], type=U[i]["type"], share_of_place=sh, customers=U[i].get("cust"),
-                                             avg_mw=U[i].get("avg_mw"), summer_peak_mw=U[i].get("summer_mw")) for i, sh in P["places"].get(r["g"], [])])
+                                             avg_mw=U[i].get("avg_mw"), summer_peak_mw=U[i].get("summer_mw"), balancing_authority=balancing_authority(U[i]["n"]),
+                                             power_plant_water_l_per_kwh=GW[balancing_authority(U[i]["n"])]["consumed_excl_hydro"]) for i, sh in P["places"].get(r["g"], [])])
     jur = cx.Jurisdiction(provider="MI", sources=["census_tiger"], name=place.name, kind=place.kind, county=place.county, state="MI")
     return cx.Context(place=place, jurisdiction=jur, supply=supply, wastewater=cx.Wastewater(provider="MI", sources=["echo", "cwns2022"], plants=plants),
                       receiving=receiving, climate=climate, energy=energy)
