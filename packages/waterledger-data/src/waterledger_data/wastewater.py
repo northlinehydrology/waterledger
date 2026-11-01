@@ -1,8 +1,8 @@
 """Sewer plants in any state: EPA's Clean Watersheds Needs Survey 2022 for every wastewater plant (design flow and location; HydroShare compilation, Hodson et al. 2026), with EPA ECHO's
-last-year average flow, receiving water, major/minor and combined-sewer status where an NPDES permit matches. One rule in every state, Michigan's included: a plant counts unless the survey gives it no permit at all,
-which leaves out capital-project and collection-system records (Austin's "5 Year CIP", 152 MGD), or ECHO has terminated every permit it has. ECHO's "Expired" is not closed: Cincinnati's Mill Creek
-(221 MGD) and Mount Pleasant, Michigan, are both listed so and running. A permit ECHO doesn't list stays too, which keeps general-permit lagoons and state groundwater permits (Fremont, Michigan; Fort Bliss, Texas). ECHO flows that don't fit the plant's
-design flow are dropped (unit errors are common at small plants). Cached under <cache>/wastewater/."""
+last-year average flow, receiving water, major/minor and combined-sewer status where an NPDES permit matches. One rule in every state, Michigan's included: a plant counts if ECHO has one of its permits and hasn't terminated it,
+or the survey gives it a state permit, which ECHO doesn't carry (groundwater and land application: Fremont, Michigan; Fort Bliss, Texas). ECHO's "Expired" is not closed: Cincinnati's Mill Creek (221 MGD) and Mount Pleasant,
+Michigan, are listed so and running. ECHO's list of publicly owned plants misses some (Marietta, Ohio; Ontonagon, Michigan), so a permit not on it is looked up by number. What's left out: capital-project and collection-system records with no permit (Austin's "5 Year CIP", 152 MGD),
+closed plants (Austin's Govalle, which ECHO no longer has; Chesapeake-Elizabeth, terminated). ECHO flows that don't fit the plant's design flow are dropped (unit errors are common at small plants). Cached under <cache>/wastewater/."""
 import collections, csv, json, math, os, re, urllib.request
 
 from waterledger_data.config import CACHE
@@ -36,25 +36,43 @@ def _echo(state):
     return json.load(open(path))
 
 
+def _echo_by_permit(state, permits):
+    """ECHO's records for permit numbers, asked for by number, a hundred at a time. Cached for the state."""
+    path = os.path.join(RAW, f"{state}_echo_by_permit.json")
+    if not os.path.exists(path):
+        rows, permits = [], sorted(permits)
+        for i in range(0, len(permits), 100):
+            q = _get(f"{ECHO}.get_facilities", {"output": "JSON", "p_pid": ",".join(permits[i:i + 100]), "responseset": 1000})["Results"]
+            if int(q.get("QueryRows") or 0):
+                rows += _get(f"{ECHO}.get_qid", {"output": "JSON", "qid": q["QueryID"], "pageno": 1, "responseset": 1000, "qcolumns": ECHO_COLS})["Results"].get("Facilities", [])
+        os.makedirs(RAW, exist_ok=True)
+        json.dump(rows, open(path, "w"))
+    return json.load(open(path))
+
+
 def plants(state):
     """A state's wastewater plants: [{id (NPDES), name, city, lat, lon, design_mgd, flow_mgd, major, cso, receiving, huc12, lagoon}]."""
-    reports = {r["SourceID"]: r for r in _echo(state)}
-    echo = {k: r for k, r in reports.items() if r["CWPPermitStatusDesc"] != "Terminated"}
     fac = {r["CWNS_ID"]: r for r in _cwns("FACILITIES") if r["STATE_CODE"] == state and r["INFRASTRUCTURE_TYPE"] == "Wastewater"}
     flow = {r["CWNS_ID"]: float(r["CURRENT_DESIGN_FLOW"]) for r in _cwns("FLOW")
             if r["STATE_CODE"] == state and r["FLOW_TYPE"] == "Total Flow" and r["CURRENT_DESIGN_FLOW"]}
     loc = {r["CWNS_ID"]: r for r in _cwns("PHYSICAL_LOCATION") if r["STATE_CODE"] == state and r["LATITUDE"]}
-    permits = collections.defaultdict(list)
+    permits, state_permit = collections.defaultdict(list), set()
     for r in _cwns("FACILITY_PERMIT"):
         if r["STATE_CODE"] == state:
             permits[r["CWNS_ID"]].append(r["PERMIT_NUMBER"].strip())
+            if r["PERMIT_TYPE"].startswith(("State", "Land Application")):
+                state_permit.add(r["CWNS_ID"])
+    reports = {r["SourceID"]: r for r in _echo(state)}
+    unlisted = {pm for cid in fac if cid in flow and cid in loc and cid not in state_permit for pm in permits[cid] if pm not in reports}
+    reports.update({r["SourceID"]: r for r in (_echo_by_permit(state, unlisted) if unlisted else [])})
+    echo = {k: r for k, r in reports.items() if r["CWPPermitStatusDesc"] != "Terminated"}
     out = []
     for cid, fr in fac.items():
         if cid not in flow or cid not in loc:
             continue
-        if not permits[cid] or all(pm in reports and pm not in echo for pm in permits[cid]):       # no permit: capital projects, collection systems. All terminated: closed
-            continue
         e = next((echo[pm] for pm in permits[cid] if pm in echo), None)
+        if e is None and cid not in state_permit:
+            continue
         design = flow[cid] or None          # a few plants report a design flow of 0: treated as unknown
         f_echo = float(e["PastCalYrAverageFlow"]) if e and e["PastCalYrAverageFlow"] else None
         if f_echo and (design is None or not 0.1 <= f_echo / design <= 1.3):

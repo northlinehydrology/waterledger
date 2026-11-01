@@ -41,17 +41,21 @@ def test_michigan_distance_is_true_not_map_units():
 
 
 def test_which_plants_count(monkeypatch):
-    """The same rule in every state: dropped only with no permit at all, or every permit terminated."""
+    """The same rule in every state: ECHO has a permit it hasn't terminated, whether on its list of public plants or looked up by number, or the survey gives a state permit."""
     tables = {"FACILITIES": [], "FLOW": [], "PHYSICAL_LOCATION": [], "FACILITY_PERMIT": []}
-    for cid, permits in (("ok", ["XX1"]), ("expired", ["XX2"]), ("terminated", ["XX3"]), ("no_permit", []), ("unlisted", ["GW99  "]), ("one_terminated", ["XX3", "XX1"])):
+    plants = (("ok", ["XX1"]), ("expired", ["XX2"]), ("terminated", ["XX3"]), ("no_permit", []), ("state", ["GW99  "]), ("one_terminated", ["XX3", "XX1"]),
+              ("off_the_list", ["XX4"]), ("off_the_list_terminated", ["XX5"]), ("gone_from_echo", ["XX6"]))
+    for cid, permits in plants:
         tables["FACILITIES"].append({"CWNS_ID": cid, "STATE_CODE": "XX", "INFRASTRUCTURE_TYPE": "Wastewater", "FACILITY_NAME": cid})
         tables["FLOW"].append({"CWNS_ID": cid, "STATE_CODE": "XX", "FLOW_TYPE": "Total Flow", "CURRENT_DESIGN_FLOW": "2.0"})
         tables["PHYSICAL_LOCATION"].append({"CWNS_ID": cid, "STATE_CODE": "XX", "LATITUDE": "40.0", "LONGITUDE": "-90.0", "CITY": "C"})
-        tables["FACILITY_PERMIT"] += [{"CWNS_ID": cid, "STATE_CODE": "XX", "PERMIT_NUMBER": pm} for pm in permits]
-    echo = [{"SourceID": k, "CWPPermitStatusDesc": v, "PastCalYrAverageFlow": "1.0", "CWPMajorMinorStatusFlag": "M", "CWPCsoFlag": "N", "CWPStateWaterBodyName": "R", "RadWBDHuc12": "1"}
-            for k, v in (("XX1", "Effective"), ("XX2", "Expired"), ("XX3", "Terminated"))]
+        tables["FACILITY_PERMIT"] += [{"CWNS_ID": cid, "STATE_CODE": "XX", "PERMIT_NUMBER": pm, "PERMIT_TYPE": "State" if pm.startswith("GW") else "Individual Permit"} for pm in permits]
+    row = lambda k, v: {"SourceID": k, "CWPPermitStatusDesc": v, "PastCalYrAverageFlow": "1.0", "CWPMajorMinorStatusFlag": "M", "CWPCsoFlag": "N", "CWPStateWaterBodyName": "R", "RadWBDHuc12": "1"}
+    asked = {}
     monkeypatch.setattr(ww, "_cwns", lambda t: tables[t])
-    monkeypatch.setattr(ww, "_echo", lambda st: echo)
+    monkeypatch.setattr(ww, "_echo", lambda st: [row("XX1", "Effective"), row("XX2", "Expired"), row("XX3", "Terminated")])
+    monkeypatch.setattr(ww, "_echo_by_permit", lambda st, ids: asked.setdefault("ids", set(ids)) and [row("XX4", "Admin Continued"), row("XX5", "Terminated")])
     got = {q["name"].lower(): q for q in ww.plants("XX")}
-    assert set(got) == {"ok", "expired", "unlisted", "one_terminated"}
-    assert got["expired"]["flow_mgd"] == 1.0 and got["unlisted"]["flow_mgd"] is None and got["unlisted"]["id"] == "GW99" and got["one_terminated"]["id"] == "XX1"
+    assert set(got) == {"ok", "expired", "state", "one_terminated", "off_the_list"}
+    assert asked["ids"] == {"XX4", "XX5", "XX6"}                    # only what the list of public plants doesn't have, and no state permit
+    assert got["expired"]["flow_mgd"] == 1.0 and got["off_the_list"]["flow_mgd"] == 1.0 and got["state"]["flow_mgd"] is None and got["state"]["id"] == "GW99" and got["one_terminated"]["id"] == "XX1"

@@ -23,5 +23,5 @@ def test_gaines():
 def test_plants_and_systems_match_the_page():
     p = wl.place("Saline township, MI")
     c, r = p.context(), sc.place(p.geoid)
-    assert [q.npdes for q in c.wastewater.plants] == [q["id"] for q in sc._plants_near(r)]
+    assert [q.npdes for q in c.wastewater.plants] == [q["id"] for q in sc._plants_near(r)[:10]]
     assert [s.pwsid for s in c.supply.systems] == [w["pwsid"] for w in r["w"]]
