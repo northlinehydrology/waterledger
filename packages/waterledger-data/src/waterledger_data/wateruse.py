@@ -178,6 +178,27 @@ def usgs_2015(state=None):
     return {"basis": USGS_BASIS, "counties": {r["fips"]: usgs_record(r, cols) for r in df.to_dict("records")}}
 
 
+# Households by state, 2015: U.S. Census Bureau, American Community Survey 2015 1-year summary file, table B11001, line 1 (sequence 0047, state summary). The same year as USGS's estimates.
+HOUSEHOLDS_2015 = {
+                 "AK": 250185, "AL": 1846390, "AR": 1144663, "AZ": 2463008, "CA": 12896357, "CO": 2074735, "CT": 1343703, "DC": 281787,
+                 "DE": 352595, "FL": 7463184, "GA": 3656407, "HI": 445936, "IA": 1247249, "ID": 597421, "IL": 4794523, "IN": 2515143, "KS":
+                 1111582, "KY": 1716168, "LA": 1737908, "MA": 2559951, "MD": 2177934, "ME": 545226, "MI": 3858532, "MN": 2147262, "MO":
+                 2374180, "MS": 1104371, "MT": 414804, "NC": 3843745, "ND": 313475, "NE": 744159, "NH": 517615, "NJ": 3187963, "NM": 761797,
+                 "NV": 1042065, "NY": 7233694, "OH": 4606655, "OK": 1465951, "OR": 1553205, "PA": 4956037, "RI": 407484, "SC": 1857768,
+                 "SD": 339437, "TN": 2530260, "TX": 9421412, "UT": 930980, "VA": 3106895, "VT": 254865, "WA": 2728573, "WI": 2319538, "WV":
+                 734536, "WY": 228937}
+HOUSEHOLDS_SOURCE = "https://www2.census.gov/programs-surveys/acs/summary_file/2015/data/1_year_seq_by_state/"
+
+
+def home_gpd(state, layer=None):
+    """Water a home uses in a state, gallons a day: USGS's 2015 water delivered to homes by public systems plus self-supplied domestic withdrawals, summed over counties, over the
+    state's 2015 households (ACS). Any state, from its USGS layer (`layer`: a snapshot's "national" water-use layer; None reads USGS's table). Indoors and out, as USGS counts it.
+    EPA WaterSense's 300 gallons a day is an average family's, a different basis, and only a note here. None where the layer has no delivered or domestic water."""
+    counties = (layer or usgs_2015(state))["counties"]
+    water = sum((c.get("delivered_to_homes_mgd") or 0) + (c.get("mgd", {}).get("domestic") or 0) for c in counties.values())
+    return water * 1e6 / HOUSEHOLDS_2015[state.upper()] if water > 0 else None
+
+
 # ---------------------------------------------------------------------------------------------------------------------
 # Ohio: ODNR Water Withdrawal Facility Registration
 

@@ -1,11 +1,16 @@
 """Michigan's provider: answers for Michigan places from Water Ledger Michigan's data files (the same ones waterledger.org/mi
 reads), through waterledger.scenario, so the package and the page agree."""
 from waterledger import scenario as sc
-from waterledger.national.provider import water_use_record
+from waterledger.national.provider import home_gpd, water_use_record
 
 # EGLE's groups on waterledger.org/mi -> the county water-use categories (waterledger_data.wateruse.CATEGORIES)
 EGLE_CATS = {"Public water systems": "public_supply", "Industry": "industrial", "Bottled water": "industrial", "Farm irrigation": "irrigation",
              "Golf courses": "golf", "Livestock": "livestock", "Mining and dewatering": "mining", "Power plants": "thermoelectric", "Other": "other"}
+
+# Median winter's days with precipitation at 1 C or below, by region, from NOAA ISD-Lite 2005-2024 (national.climate._median_cold_precip_days), the same method as every other state: Ann Arbor 725374-94889,
+# Kalamazoo 726357-94815, Grand Rapids 726350-94860, Lansing 725390-14836, Saginaw 726379-14845, Traverse City 726387-14850, Alpena 726390-94849, and Hancock 727440-14858 for the Upper Peninsula:
+# the regions' weather itself is ERA5, and Marquette's airports report no precipitation in ISD-Lite.
+SALT_DAYS = {"southeast": 59, "southwest": 64, "west": 72, "central": 71, "thumb": 64, "north": 89, "northeast": 88, "up": 119}
 
 
 def find(name, county=None):
@@ -16,7 +21,7 @@ def place(geoid):
     from waterledger.place import Place
     r = sc.place(geoid)
     lon, lat = sc.lonlat(r)
-    return Place(geoid=r["g"], name=r["base"], kind=r["k"], state="MI", county=r["c"], county_fips=r["cf"], lat=round(lat, 4), lon=round(lon, 4))
+    return Place(geoid=r["g"], name=r["base"], kind=r["k"], level="place" if r["k"] == "city" else "township", state="MI", county=r["c"], county_fips=r["cf"], lat=round(lat, 4), lon=round(lon, 4))
 
 
 def estimate(site):
@@ -44,10 +49,11 @@ def balancing_authority(name):
 
 def reference(place):
     """Michigan's values to compare an estimate with: its power options, the starting one, a typical golf course, and its homes' electricity."""
+    from waterledger_models import runoff as rq
     D, P, W = sc.data("estimates"), sc.data("power"), sc.data("waters")
     T = P.get("total") or P["michigan"]
-    return {"power_options": D["power_supply"], "power": "mi_mix", "golf_gpd": D["golf"]["golf_median_gpd"], "home_kwh_month": D["home_kwh_month"],
-            "home_customers": D["home_customers"], "state_avg_mw": T["avg_mw"], "rain_median_in": W.get("rain_median_in"), "withdrawals": D["context"].get("withdrawals"), "state_rules": True}
+    return {"power_options": D["power_supply"], "power": "mi_mix", "golf_gpd": D["golf"]["golf_median_gpd"], "home_gpd": home_gpd("MI"), "home_kwh_month": D["home_kwh_month"],
+            "home_customers": D["home_customers"], "state_avg_mw": T["avg_mw"], "rain_median_in": W.get("rain_median_in"), "salt_events": rq.salt_events(SALT_DAYS[sc.place(place.geoid)["r"]]), "withdrawals": D["context"].get("withdrawals"), "state_rules": True}
 
 
 def context(place):

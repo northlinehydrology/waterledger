@@ -15,7 +15,7 @@ import xarray as xr
 
 from waterledger_models.datacenter import physics as model
 
-STATS = ("avg", "peak_1in10", "record", "annual_mg", "max_month", "worst_year_mg")
+STATS = ("avg", "peak_1in10", "record", "annual_mg", "max_month", "worst_year_mg", "max_90day")
 ANNUAL = ("annual_mg", "worst_year_mg")       # million gallons a year; the rest are million gallons a day
 FLOWS = ("withdrawn", "consumed", "returned", "condensate")
 L_PER_GAL = 3.78541
@@ -42,13 +42,16 @@ def _peak_stats(daily, years):
 
 def _stats(daily, peak_daily, years, months):
     """Per-run statistics from daily volumes (runs, days) in million gallons: average day, 1-in-10-year peak day, record day, average
-    year, highest month's average day and highest calendar year. Peak and record come from peak_daily, the volumes at the peak load."""
+    year, highest month's average day, highest calendar year and highest 90 straight days' average. Peak and record come from peak_daily, the volumes at the peak load."""
     uyears = np.unique(years)
     worst_year = np.stack([daily[:, years == y].sum(axis=1) for y in uyears], axis=1).max(axis=1)
     max_month = np.stack([daily[:, months == m].mean(axis=1) for m in np.unique(months)], axis=1).max(axis=1)
     avg = daily.mean(axis=1)
     peak, record = _peak_stats(peak_daily, years)
-    return np.stack([avg, peak, record, avg * 365.25, max_month, worst_year], axis=1)
+    window = min(90, daily.shape[1])
+    run = np.cumsum(np.c_[np.zeros(daily.shape[0]), daily], axis=1)
+    max_90 = ((run[:, window:] - run[:, :-window]) / window).max(axis=1)
+    return np.stack([avg, peak, record, avg * 365.25, max_month, worst_year, max_90], axis=1)
 
 
 def _evaluate(tdb, twb, rh, starts, years, months, hour_years, design, params, mw):
@@ -107,7 +110,7 @@ def run_ensemble(time, air_temperature, relative_humidity, mw=100.0, n=200, seed
 
     coords = {"design": list(designs), "run": np.arange(n), "stat": list(STATS)}
     ds = xr.Dataset(coords=coords, attrs={"it_capacity_mw": mw, "n_runs": n, "seed": seed,
-                                          "units": "avg, peak_1in10, record and max_month in million gallons per day; annual_mg and worst_year_mg in million gallons",
+                                          "units": "avg, peak_1in10, record, max_month and max_90day in million gallons per day; annual_mg and worst_year_mg in million gallons",
                                           "design_dry_bulb_c": model.design_dry_bulb(tdb),
                                           "staff_water": "not included; summarize() adds it at the campus's size"})
     for f, flow in enumerate(FLOWS):

@@ -38,7 +38,7 @@ def place(state, geoid):
     if not len(hit):
         raise KeyError(f"no {state} place with GEOID {geoid}")
     r = hit.iloc[0]
-    return Place(geoid=r.geoid, name=_display(r), kind=r.kind.lower(), state=state, county=r.county, county_fips=r.county_fips,
+    return Place(geoid=r.geoid, name=_display(r), kind=r.kind.lower(), level=r.level, state=state, county=r.county, county_fips=r.county_fips,
                  lat=round(float(r.lat), 4), lon=round(float(r.lon), 4))
 
 
@@ -123,8 +123,16 @@ def _ppw(state):
                               main_balancing_authority=w["main_ba"], import_share=w["import_share"]) if w else None
 
 
-# Where a state's rules aren't reviewed, Michigan's lines serve only as low and high bands [A]
-WITHDRAWAL_BANDS = {"register_mgd": 0.1, "zone_c_permit_mgd": 1.0, "permit_mgd": 2.0, "compact_use_mgd": 5.0}
+# Where a state's rules aren't reviewed there are no lines for well pumping. The Compact's 5 MGD belongs to the eight Great Lakes states and is used only for a place on the lakes.
+WITHDRAWALS = {"compact_use_mgd": 5.0}
+NOT_COVERED = {"state_rules": "This state's water rules are not yet reviewed, so no legal line or level is shown."}
+
+
+def home_gpd(state):
+    """A state's water for a home, gallons a day, from the USGS layer its data carries; None without one (a snapshot from before water use was added)."""
+    from waterledger_data import wateruse
+    layer = (state_data(state).water_use() or {}).get("national")
+    return wateruse.home_gpd(state, layer) if layer else None
 
 
 def reference(state, place):
@@ -139,8 +147,8 @@ def reference(state, place):
     from waterledger.comparisons import default_power
     return {"power_options": options, "power": default_power(options, "state_mix" if "state_mix" in options else next(iter(options)), place.context().energy.utilities),
             "golf_gpd": G.get("by_region", {}).get(_division(state, place)[0], G["gpd"]) if G else None,
-            "home_kwh_month": res.get("kwh_month"), "home_customers": res.get("customers"), "state_avg_mw": sd.state_avg_mw(),
-            "rain_median_in": rq.rain_median(sd.rain()), "salt_events": sd.salt_events().get(_division(state, place)[0]), "withdrawals": WITHDRAWAL_BANDS, "state_rules": False}
+            "home_gpd": home_gpd(state), "home_kwh_month": res.get("kwh_month"), "home_customers": res.get("customers"), "state_avg_mw": sd.state_avg_mw(),
+            "rain_median_in": rq.rain_median(sd.rain()), "salt_events": sd.salt_events().get(_division(state, place)[0]), "withdrawals": WITHDRAWALS, "state_rules": False, "not_covered": NOT_COVERED}
 
 
 def _division(state, place):

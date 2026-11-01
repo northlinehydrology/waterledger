@@ -15,7 +15,9 @@ from waterledger_models.datacenter import lake as lc
 from waterledger_data.config import CACHE, SITE as SITE_ROOT, setting
 
 from waterledger.comparisons import HOUSEHOLD_GPD, it_mw_from_contract
+from waterledger_data import wateruse
 from waterledger.levels import LEVELS
+from waterledger.states.mi.provider import SALT_DAYS
 from waterledger_models import MODEL_VERSION
 STATE = "mi"      # Water Ledger is organized by state: site/waterledger/<state>/
 SITE = os.path.join(SITE_ROOT, STATE)
@@ -118,6 +120,14 @@ SOURCES = {
     "noaa_cag": ("NOAA NCEI. Climate at a Glance, county time series (nClimGrid): annual precipitation, mean of 1991–2020.", "https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/county/time-series"),
     "echo": ("U.S. EPA ECHO, Clean Water Act facility search, Michigan publicly owned treatment works: location, receiving water, combined sewer flag and the past calendar year's average reported flow.", "https://echo.epa.gov/"),
     "cwns2022": ("U.S. EPA Clean Watersheds Needs Survey 2022, current design flow by facility (Hodson et al. 2026 HydroShare compilation, CC BY 4.0). CWNS has no actual flows.", "https://www.hydroshare.org/resource/3dab07fd628a4af2ba812f038b1af89f/"),
+    "nri2022": ("USDA NRCS (2025). 2022 National Resources Inventory Summary Report, Table 15: sheet and rill erosion on cropland by state, 2022.", "https://nrcs-prod.azureedge.us/sites/default/files/2026-02/2022%20NRI%20Summary%20Report.pdf"),
+    "helsel1985": ("Helsel, D.R. (1985). Contributions of suspended sediment from highway construction and other land uses to the Olentangy River, Columbus, Ohio. USGS WRI 84-4336: 9,580-15,700 tons per square mile per year from the active construction area.", "https://doi.org/10.3133/wri844336"),
+    "lee_ziegler2010": ("Lee, C.J., & Ziegler, A.C. (2010). Effects of urbanization, construction activity, management practices, and impoundments on suspended-sediment transport in Johnson County, northeast Kansas. USGS SIR 2010-5128: 9,300 and 12,200 tons per square mile with controls; 2,300-140,000 without, historically.", "https://doi.org/10.3133/sir20105128"),
+    "runoff_reduction2008": ("Hirschman, D., Collins, K., & Schueler, T. (2008). Technical Memorandum: The Runoff Reduction Method. Center for Watershed Protection and Chesapeake Stormwater Network, Table 4: runoff coefficients by land cover and hydrologic soil group.", "https://media.clear.uconn.edu/projects/TMDL/library/papers/RRTechMemo_2008.pdf"),
+    "nsqd11": ("Maestre, A., & Pitt, R. (2005). The National Stormwater Quality Database, Version 1.1. University of Alabama and Center for Watershed Protection, for U.S. EPA, Table 3: medians and coefficients of variation by land use.", "https://www.waterboards.ca.gov/rwqcb9/water_issues/programs/stormwater/docs/wqip/2013-0001/J_References/J099.pdf"),
+    "acs2015": ("U.S. Census Bureau. American Community Survey 2015 1-year summary file, table B11001: households by state.", "https://www2.census.gov/programs-surveys/acs/summary_file/2015/data/1_year_seq_by_state/"),
+    "noaa_normals": ("NOAA NCEI. U.S. Climate Normals 1991-2020, annual and seasonal: average days with 0.1 in or more of snow (ANN-SNOW-AVGNDS-GE001TI).", "https://www.ncei.noaa.gov/products/land-based-station/us-climate-normals"),
+    "usgs_cir1441": ("Dieter, C.A., et al. (2018). Estimated use of water in the United States in 2015. U.S. Geological Survey Circular 1441: public supply and the people it serves.", "https://doi.org/10.3133/cir1441"),
     "usgs_marquette": ("Steuer, J., Selbig, W., Hornewer, N., & Prey, J. (1997). Sources of contamination in an urban basin in Marquette, Michigan, and an analysis of concentrations, loads, and data quality. USGS Water-Resources Investigations Report 97-4242, Table 4 (rooftops, parking lots).", "https://pubs.usgs.gov/wri/1997/4242/report.pdf"),
     "mpca_emc": ("Minnesota Pollution Control Agency. Minnesota Stormwater Manual: event mean concentrations of total suspended solids and of total phosphorus in stormwater runoff, by land use.", "https://stormwater.pca.state.mn.us/node/6015"),
     "nsqd": ("Pitt, R. (2011). The National Stormwater Quality Database, Version 3.1, Tables 2–4 (EPA Rain Zone 1, which includes Michigan).", "https://yosemite.epa.gov/oa/eab_web_docket.nsf/Attachments%20By%20ParentFilingId/0579A9DB19C5446F85257CBA00593372/$FILE/Attachment%202%20-%20Pitt%2C%20National%20Stormwater%20Quality%20Database%20Version%203.1.pdf"),
@@ -157,7 +167,7 @@ SHORT = {"lbnl2024": "LBNL 2024", "lei2021": "Lei & Masanet 2021", "wa_energy_co
          "han2026": "Han et al. 2026", "mytton2021": "Mytton 2021", "census_tiger": "Census", "epa_sa": "EPA service areas", "usgs_wbd": "USGS WBD",
          "noaa_atlas14": "NOAA Atlas 14", "simple_method": "Simple Method", "nrcs_tr55": "NRCS TR-55", "egle_impaired": "EGLE", "mcl327": "MCL Part 327", "wgvu2026": "WGVU 2026", "naturalearth": "Natural Earth", "glerl": "NOAA GLERL", "eia_res": "EIA-861 2025", "msft2024": "Microsoft 2024", "lsc_cornell": "Cornell LSC", "cfr125_81": "40 CFR 125.81", "egle_npdes": "EGLE NPDES", "mi_part22": "Mich. Part 22 rules",
          "attains2026": "EPA ATTAINS 2026", "mdnr_trout": "Michigan DNR trout streams", "noaa_cag": "NOAA 1991–2020", "echo": "EPA ECHO", "cwns2022": "EPA CWNS 2022",
-         "usgs_marquette": "USGS Marquette 1997", "mpca_emc": "MPCA", "nsqd": "NSQD", "stepl": "EPA STEPL", "egle_ms4": "EGLE MS4 standard", "kcdc_rules": "Kent County rules",
+         "usgs_marquette": "USGS Marquette 1997", "nri2022": "USDA NRI 2022", "helsel1985": "Helsel 1985", "lee_ziegler2010": "Lee & Ziegler 2010", "runoff_reduction2008": "Runoff Reduction memo 2008", "nsqd11": "NSQD 1.1", "acs2015": "ACS 2015", "noaa_normals": "NOAA Normals", "usgs_cir1441": "USGS Circular 1441", "mpca_emc": "MPCA", "nsqd": "NSQD", "stepl": "EPA STEPL", "egle_ms4": "EGLE MS4 standard", "kcdc_rules": "Kent County rules",
          "bmpdb2020": "BMP Database 2020", "semcog_lid": "SEMCOG 2008", "epa_fact26": "EPA 2005", "epa_mm8": "EPA MM8", "part91": "Part 91", "mpca_salt": "MPCA salt guidance",
          "egle_rule57": "EGLE Rule 57", "cat3516c": "Caterpillar", "uptime2014": "Uptime Institute", "amazon_mo2026": "Amazon MO permit", "wyofile2025": "WyoFile 2025",
          "cfr112": "40 CFR 112", "herb2007": "Herb et al. 2007", "stefan2010": "Stefan & Herb 2010", "rule75": "R 323.1075", "jea2024": "JEA 2024", "rule60": "R 323.1060",
@@ -214,7 +224,7 @@ CONTEXT = {"household_gpd": {"value": HOUSEHOLD_GPD, "note": "more than 300 gall
            "liters_per_gallon": {"value": 3.78541},
            "golf_season_days": {"value": 153, "note": "May through September, the watering season [estimate]"},
            # Michigan's Part 327: registration above 100,000 gallons a day, a permit for new withdrawals above 2 MGD, 1 MGD in Zone C. The other Great Lakes
-           # states review projects using up more than 5 MGD. Where a state's rules are not yet reviewed, the 0.1 and 2 are only low and high bands [A].
+           # states review projects using up more than 5 MGD. These are Michigan's and the Compact's: a state whose rules aren't reviewed has no lines (waterledger.levels).
            "withdrawals": {"register_mgd": 0.1, "zone_c_permit_mgd": 1.0, "permit_mgd": 2.0, "compact_use_mgd": 5.0, "sources": ["mcl327", "wgvu2026"]},
            "levels": LEVELS}
 
@@ -384,9 +394,9 @@ GREAT_LAKE_BY_HUC4 = {"0401": "Lake Superior", "0402": "Lake Superior", "0418": 
                       "0420": "Lake Huron", "0424": "Lake Huron", "0409": "Lake St. Clair and the Detroit River", "0410": "Lake Erie"}
 
 
-WATER_SOURCES = {"attains2026", "mi_part22", "mdnr_trout", "noaa_cag", "echo", "cwns2022", "usgs_marquette", "mpca_emc", "nsqd", "stepl", "egle_ms4", "kcdc_rules",
-                 "bmpdb2020", "semcog_lid", "epa_fact26", "epa_mm8", "part91", "mpca_salt", "egle_rule57", "cat3516c", "uptime2014", "amazon_mo2026",
-                 "wyofile2025", "cfr112", "herb2007", "stefan2010", "rule75", "jea2024", "rule60", "egle_dc_faq", "wleb_dap", "nri2017", "simple_method", "nrcs_tr55",
+WATER_SOURCES = {"nri2022", "helsel1985", "lee_ziegler2010", "runoff_reduction2008", "nsqd11", "noaa_normals", "attains2026", "mi_part22", "mdnr_trout", "noaa_cag", "echo", "cwns2022", "usgs_marquette", "mpca_emc", "nsqd", "stepl", "egle_ms4", "kcdc_rules",
+                 "semcog_lid", "epa_fact26", "epa_mm8", "part91", "mpca_salt", "egle_rule57", "cat3516c", "uptime2014", "amazon_mo2026",
+                 "wyofile2025", "cfr112", "herb2007", "stefan2010", "rule75", "jea2024", "rule60", "egle_dc_faq", "wleb_dap", "simple_method", "nrcs_tr55",
                  "usgs_wbd", "epa_wsaw", "noaa_atlas14", "wellogic", "wwat", "mcl327"}
 
 
@@ -416,7 +426,7 @@ def build_waters():
         if w:
             d, r = w.get("drift", {}), w.get("rock", {})
             wells[p["g"]] = [d.get("n", 0), d.get("depth"), d.get("swl"), r.get("n", 0), r.get("depth"), r.get("swl")]
-    data = {"generated": datetime.date.today().isoformat(), "cycle": 2026, "groups": wi.LABELS, "wells": wells, "h12": h12, "plants": plants, "rain_in": wi.county_precip(), "rain_median_in": rq.rain_median(wi.county_precip()), "plant_rule": {"own_km": OWN_KM}, "runoff": rq.PARAMS,
+    data = {"generated": datetime.date.today().isoformat(), "cycle": 2026, "groups": wi.LABELS, "wells": wells, "h12": h12, "plants": plants, "rain_in": wi.county_precip(), "rain_median_in": rq.rain_median(wi.county_precip()), "plant_rule": {"own_km": OWN_KM}, "runoff": {**rq.PARAMS, "salt": {**rq.PARAMS["salt"], "events_by_region": {k: rq.salt_events(d) for k, d in SALT_DAYS.items()}}},
             "sources": {k: {"citation": c, "url": u, "short": SHORT.get(k, k)} for k, (c, u) in SOURCES.items() if k in WATER_SOURCES}}
     with open(OUT_WATERS, "w") as f:
         json.dump(round_tree(data, 3), f, separators=(",", ":"))
@@ -563,7 +573,7 @@ def main(n=200):
         "home_customers": 4538056,   # EIA-861 2025, Michigan residential customers
         "size_examples": {"van_buren": it_t + it_d, "saline": saline_it},   # computing capacity of two proposals, from their contracts (MW)
         "home_kwh_month": 634.9,   # EIA-861 2025, Michigan (model 1.3; was 618.2 from EIA's 2024 Table 5A)
-        "context": CONTEXT,
+        "context": {**CONTEXT, "household_gpd": {"value": wateruse.home_gpd("MI"), "epa_family_gpd": HOUSEHOLD_GPD, "note": "USGS 2015 water to homes over ACS 2015 households; EPA WaterSense's figure for a family is more than 300 gallons a day", "sources": ["usgs_wu2015", "acs2015", "epa_watersense"]}},
         "county_uses_mgd": uses,
         "lake_source": lake_src,
         "county_golf_courses": n_golf,

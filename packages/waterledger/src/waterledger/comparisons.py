@@ -2,13 +2,14 @@
 from waterledger.estimate import BeforeAfterRow, Comparison, DesignComparison, DesignTotal, Equivalents, Percent, PlantWater, Range, WellsSummary
 from waterledger_models import runoff as rq
 
-# U.S. EPA WaterSense, How We Use Water: "The average American family uses more than 300 gallons of water per day at home."
+# U.S. EPA WaterSense, How We Use Water: "The average American family uses more than 300 gallons of water per day at home." A family's, stated as a note and used only where
+# a state's data has no home figure. A home is the state's own (waterledger_data.wateruse.home_gpd: USGS 2015 over ACS 2015 households).
 HOUSEHOLD_GPD = 300
 
 
-def water_homes(mgd):
-    """Water (MGD) as homes, at EPA WaterSense's 300 gallons a day."""
-    return mgd * 1e6 / HOUSEHOLD_GPD
+def water_homes(mgd, gpd=HOUSEHOLD_GPD):
+    """Water (MGD) as homes, at `gpd` gallons a day: the state's own (a provider's reference["home_gpd"])."""
+    return mgd * 1e6 / gpd
 
 
 def golf_courses(mgd, course_gpd):
@@ -63,8 +64,9 @@ def equivalents(est, ref):
     w, base = est.water, est.water.consumed.avg if est.water.lake_source else est.water.withdrawn.avg
     base_peak = w.consumed.peak_day if w.lake_source else w.withdrawn.peak_day
     golf, kwh, cust, e = ref["golf_gpd"], ref["home_kwh_month"], ref["home_customers"], est.electricity
+    gpd = ref.get("home_gpd") or HOUSEHOLD_GPD
     homes_e = _range(lambda v: electricity_homes(v, kwh), e.avg_mw) if e and kwh else None
-    return Equivalents(homes=_range(water_homes, base), homes_peak_day=_range(water_homes, base_peak),
+    return Equivalents(homes=_range(lambda v: water_homes(v, gpd), base), homes_peak_day=_range(lambda v: water_homes(v, gpd), base_peak), home_gpd=gpd,
                        golf_courses=_range(lambda v: golf_courses(v, golf), base) if golf else None, golf_course_gpd=golf,
                        evaporated_share=evaporated_share(w.consumed.avg.p50, w.withdrawn.avg.p50),
                        electricity_homes=homes_e, electricity_homes_peak=_range(lambda v: electricity_homes(v, kwh), e.peak_mw) if e and kwh else None,
@@ -87,17 +89,19 @@ def main_system(systems):
     return max([x for x in systems if share(x) >= MIN_SYSTEM_SHARE] or systems, key=lambda x: x.population or 0)
 
 
-def water_system_share(withdrawn, systems):
-    """The campus's water (a Flow) as homes, as a percent of the connections of the place's main public water system (main_system).
+def water_system_share(withdrawn, systems, home_gpd=None):
+    """The campus's water (a Flow) as homes at `home_gpd` gallons a day (the state's own; EPA's family figure without one), as a percent of the connections of the place's main public water system (main_system).
     Not a percent of the system's water use: connections include businesses, and the system's own gallons are not in the public data.
     None with no system mapped or no connection count."""
     s = main_system(systems)
     if not s or not s.connections:
         return None
-    pct = lambda r: Range(**{q: 100 * (getattr(r, q) * 1e6 / HOUSEHOLD_GPD) / s.connections for q in ("p10", "p50", "p90")})
+    gpd = home_gpd or HOUSEHOLD_GPD
+    pct = lambda r: Range(**{q: 100 * (getattr(r, q) * 1e6 / gpd) / s.connections for q in ("p10", "p50", "p90")})
     return Comparison(against="water_system", name=s.name, measure="homes_vs_connections", existing=s.connections, unit="connections",
                       percent=Percent(avg=pct(withdrawn.avg), peak_day=pct(withdrawn.peak_day)),
-                      basis=f"Campus water as homes at {HOUSEHOLD_GPD} gallons a day (EPA WaterSense), against the system's connections (EPA)")
+                      basis=(f"Campus water as homes at {gpd:.0f} gallons a day (USGS 2015 water to homes over ACS 2015 households, the state's own), against the system's connections (EPA)" if home_gpd
+                             else f"Campus water as homes at {gpd} gallons a day (EPA WaterSense, a family), against the system's connections (EPA)"))
 
 
 def it_mw_from_contract(contract_mw, pue):
@@ -215,9 +219,9 @@ def sewer_shares(water, plant):
     return out
 
 
-def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, imp, mw, power_mw=None, county_public=None, plant=None, lake=False, reuse=False, salt_events=None):
+def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, imp, mw, power_mw=None, county_public=None, plant=None, lake=False, reuse=False, salt_events=None, state=None):
     """What changes at a place with the campus, as numbers; a display words them. Water, MGD: `w_avg` and `w_peak` taken, `used` evaporated, `sewer` to the sewer, each a
-    Range. Runoff and loads from runoff.loads with ponds, Michigan's standard. Rows for water and wastewater follow the source and destination."""
+    Range. Runoff and loads from runoff.loads, in two rows each: "mud" and "p" with typical wet ponds, "mud_no_controls" and "p_no_controls" with none. Rows for water and wastewater follow the source and destination."""
     Row, rows = BeforeAfterRow, []
     today = county_public if src == "muni" else None
     rows.append(Row(key="water", today=today, after=w_avg.p50, after_low=w_avg.p10, after_high=w_avg.p90, percent=percent_of(w_avg.p50, today) if today else None, unit="MGD"))
@@ -227,13 +231,20 @@ def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, 
             rows.append(Row(key="sewer", today=plant.flow_mgd, after=sewer.p50, after_low=sewer.p10, after_high=sewer.p90, percent=percent_of(sewer.p50, plant.flow_mgd) if plant.flow_mgd else None, unit="MGD"))
         elif dest in ("water", "septic") and not (lake and dest == "water"):
             rows.append(Row(key="wastewater", after=sewer.p50, after_low=sewer.p10, after_high=sewer.p90, unit="MGD"))
-    L, C, S, F = rq.loads(acres, rain_in, before, imp), rq.construction(acres), rq.salt(acres, imp, salt_events), rq.fuel(mw)
+    L, C, S, F = rq.loads(acres, rain_in, before, imp, state=state), rq.construction(acres), rq.salt(acres, imp, salt_events) if salt_events else None, rq.fuel(mw)
     rows.append(Row(key="runoff", today=L["runoff_gal"]["now"][1], after=L["runoff_gal"]["after"][1], unit="gallons a year"))
     for key, load, unit in (("mud", "tss_t", "tons a year"), ("p", "tp_lb", "pounds a year")):
-        now, pond = L[load]["now"], L[load]["pond"]
-        rows.append(Row(key=key, today=now[1], today_low=now[0], today_high=now[2], after=pond[1], after_low=pond[0], after_high=pond[2], unit=unit))
-    rows.insert(-1, Row(key="build", today=L["tss_t"]["now"][1], after=C[1], after_low=C[0], after_high=C[2], unit="tons a year"))
-    if S["salt_t"][1] > 0:
+        now = L[load]["now"]
+        for suffix, case, controls in (("", "pond", "typical_wet_pond"), ("_no_controls", "after", "none")):
+            a = L[load][case]
+            rows.append(Row(key=key + suffix, today=now[1], today_low=now[0], today_high=now[2], after=a[1], after_low=a[0], after_high=a[2], controls=controls, unit=unit))
+        if key == "mud":
+            G = rq.soil_moved(acres)
+            B = rq.construction_with_basin(acres)
+            rows.append(Row(key="build", today=now[1], after=C[1], after_low=C[0], after_high=C[2], controls="none", unit="tons a year"))    # a delivered yield, as today's on soil
+            rows.append(Row(key="build_basin", today=now[1], after=B[1], after_low=B[0], after_high=B[2], controls="sediment_basin", unit="tons a year"))
+            rows.append(Row(key="soil_moved", after=G[1], after_low=G[0], after_high=G[2], unit="tons a year"))              # gross erosion, not comparable with today
+    if S and S["salt_t"][1] > 0:      # no events known, or no salt season: no row
         rows.append(Row(key="salt", after=S["salt_t"][1], after_low=S["salt_t"][0], after_high=S["salt_t"][2], unit="tons a winter"))
     rows.append(Row(key="fuel", after=F["gal"][1], after_low=F["gal"][0], after_high=F["gal"][2], unit="gallons"))
     if power_mw:
@@ -242,13 +253,13 @@ def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, 
 
 
 def site_before_after(est, ref):
-    """before_after for an estimate, with land defaults as the page starts: cities 50 acres already built, others 200 acres of farmland [A]."""
+    """before_after for an estimate, with land defaults as the page starts: incorporated places (cities, villages, towns) 50 acres already built, others 200 acres of farmland [A]."""
     s, w = est.site, est.water
-    ctx, city = s.place.context(), s.place.kind == "city"
+    ctx, city = s.place.context(), s.place.incorporated
     plants = ctx.wastewater.plants
     rain = (ctx.climate.rain_in if ctx.climate else None) or ref.get("rain_median_in")
     return before_after(s.source, s.wastewater, w.withdrawn.avg, w.withdrawn.peak_day, w.consumed.avg, w.to_sewer, s.acres or (50 if city else 200), rain, s.land_before or ("built" if city else "farm"), s.impervious,
-                        s.facility.it_mw, est.electricity.avg_mw if est.electricity else None, county_public_mgd(ctx.supply.county_use_mgd), plants[0] if plants else None, w.lake_source, w.reuse, ref.get("salt_events"))
+                        s.facility.it_mw, est.electricity.avg_mw if est.electricity else None, county_public_mgd(ctx.supply.county_use_mgd), plants[0] if plants else None, w.lake_source, w.reuse, ref.get("salt_events"), s.place.state)
 
 
 def comparisons(est, ref=None):
@@ -256,7 +267,7 @@ def comparisons(est, ref=None):
     nothing from the public system, and one not on the sewer sends a plant nothing."""
     out, s, ctx = [], est.site, est.site.place.context()
     if s.source == "muni":
-        c = water_system_share(est.water.withdrawn, ctx.supply.systems)
+        c = water_system_share(est.water.withdrawn, ctx.supply.systems, (ref or {}).get("home_gpd"))
         if c:
             out.append(c)
         if not est.water.lake_source:

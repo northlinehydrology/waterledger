@@ -31,7 +31,7 @@ def test_vectorized_matches_loop():
     ds = ensemble.run_ensemble(time, t, rh, mw=50, n=12, seed=3, designs=("hybrid", "towers"), chunk=5)
     for design in ("hybrid", "towers"):
         ref = loop_reference(time, t, rh, design, 12, 3, 50)
-        np.testing.assert_allclose(ds["withdrawn"].sel(design=design).values, ref, rtol=1e-12)
+        np.testing.assert_allclose(ds["withdrawn"].sel(design=design, stat=list(ensemble.STATS[:6])).values, ref, rtol=1e-12)     # max_90day is checked by hand in test_runoff_by_hand
 
 
 def test_dataset_layout_and_summary():

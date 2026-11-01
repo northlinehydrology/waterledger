@@ -65,7 +65,7 @@ def test_returned_is_never_below_zero():
 @pytest.mark.live
 def test_a_michigan_site_reports_them():
     est = wl.Site(place=wl.place("Gaines charter township, MI"), facility=wl.DataCenter(it_mw=300, cooling="hybrid")).estimate()
-    assert est.site.power == "mi_mix" and est.equivalents.homes.p50 == pytest.approx(est.water.withdrawn.avg.p50 * 1e6 / 300)
+    assert est.site.power == "mi_mix" and est.equivalents.homes.p50 == pytest.approx(est.water.withdrawn.avg.p50 * 1e6 / est.equivalents.home_gpd)
     assert est.power_plants["mi_mix"].consumed.p50 == pytest.approx(est.electricity.avg_mw.p50 * 24 * 268 / 1e6 / (1 - cm.LINE_LOSS))
     with pytest.raises(ValueError, match="power must be one of"):
         wl.Site(place=wl.place("Gaines charter township, MI"), facility=wl.DataCenter(it_mw=300, cooling="hybrid"), power="nope").estimate()
@@ -106,9 +106,10 @@ def test_sewer_shares():
 def test_before_after_rows_follow_the_water():
     W = R(0.4, 0.5, 0.6)
     args = (W, R(1, 1.5, 2), R(0.2, 0.3, 0.4), R(0.1, 0.2, 0.3), 200, 34, "farm", 0.5, 300)
+    salt = [20, 40, 60]
     keys = lambda rows: [r.key for r in rows]
-    a = cm.before_after("muni", "sewer", *args, R(200, 210, 220), 100, _plant(14, 10))
-    assert keys(a) == ["water", "used", "sewer", "runoff", "mud", "build", "p", "salt", "fuel", "power"]
+    a = cm.before_after("muni", "sewer", *args, R(200, 210, 220), 100, _plant(14, 10), salt_events=salt)
+    assert keys(a) == ["water", "used", "sewer", "runoff", "mud", "mud_no_controls", "build", "build_basin", "soil_moved", "p", "p_no_controls", "salt", "fuel", "power"]
     assert a[0].today == 100 and a[0].percent == pytest.approx(0.5) and a[2].percent == pytest.approx(2)
     assert keys(cm.before_after("wells", "septic", *args))[:3] == ["water", "used", "wastewater"]
     assert "sewer" not in keys(cm.before_after("muni", "sewer", *args, reuse=True))
@@ -171,7 +172,7 @@ def test_levels_bands():
     assert lv.sewer(True, None) == "large" and lv.sewer(False, None) == "info"
     W = {"register_mgd": 0.1, "zone_c_permit_mgd": 1, "permit_mgd": 2, "compact_use_mgd": 5}
     assert [lv.withdrawal(v, W)[1] for v in (0.09, 0.1, 1, 1.5, 2, 2.1)] == ["below", "register", "register", "zone_c", "zone_c", "permit"]
-    assert [lv.withdrawal(v, W, False)[1] for v in (0.09, 2, 2.1)] == ["low", "moderate", "high"]
+    assert (lv.permit_flag("permit"), lv.permit_flag("zone_c"), lv.permit_flag("register"), lv.permit_flag("below")) == ("permit", "zone_c", None, None)
     assert lv.compact_share(5, W) == 100 and lv.compact(99.9) == "small" and lv.compact(100) == "large"
     assert lv.small_system(4999, 0) and lv.small_system(10000, 2501) and not lv.small_system(10000, 2500) and not lv.small_system(None, 9e9)
     assert lv.near_design(85, 100) and not lv.near_design(84, 100) and not lv.near_design(None, 100)
@@ -184,11 +185,11 @@ def test_compare_verdicts():
     assert lv.compare([1, 1], O) == "Our middle estimate is about the same as the reported figure."
     assert lv.compare([0.8, 1.2], O) == "Our middle estimate is inside the reported range."
     assert lv.compare([1.1, 1.1], O) == "Our middle estimate is about the same as the reported figure."
-    assert lv.compare([3, 3], O) == "The reported figure is about 3 times our middle estimate, outside our likely range."
-    assert lv.compare([0.4, 0.4], O) == "Our middle estimate is about 2.5 times the reported figure, outside our likely range."
-    assert lv.compare([0.5, 0.5], O) == "Our middle estimate is about 2 times the reported figure, which is inside our likely range."
+    assert lv.compare([3, 3], O) == "The reported figure is about 3 times our middle estimate, outside the range across our assumptions."
+    assert lv.compare([0.4, 0.4], O) == "Our middle estimate is about 2.5 times the reported figure, outside the range across our assumptions."
+    assert lv.compare([0.5, 0.5], O) == "Our middle estimate is about 2 times the reported figure, which is inside the range across our assumptions."
     assert lv.compare([0.5, 2], O, True) == "Our middle estimate is above the reported minimum."
-    assert lv.compare([1.5, 2], O, True) == "The reported minimum is about 1.5 times our middle estimate, inside our likely range."
+    assert lv.compare([1.5, 2], O, True) == "The reported minimum is about 1.5 times our middle estimate, inside the range across our assumptions."
 
 
 def test_ranked_order_does_not_depend_on_the_input_order():

@@ -14,5 +14,5 @@ def test_storm_by_curve_number_not_in_proportion():
 
 
 def test_salt_takes_a_region_events():
-    base = runoff.salt(100, 0.5)["salt_t"][1]
+    base = runoff.salt(100, 0.5, [20, 40, 60])["salt_t"][1]
     assert runoff.salt(100, 0.5, events=[10, 80, 120])["salt_t"][1] == 2 * base

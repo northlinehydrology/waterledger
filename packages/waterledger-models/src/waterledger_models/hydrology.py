@@ -6,8 +6,9 @@ Balmer 1954). Screening level: volumes and analytical solutions, not routed hydr
 """
 import math
 
-# Curve numbers for hydrologic soil group B [estimate; NRCS TR-55 Table 2-2]: row crops or meadow before, lawn after, pavement
-CN_PRE_PERV, CN_POST_PERV, CN_IMP = 72, 65, 98
+# Curve numbers for hydrologic soil group B (NRCS TR-55 Table 2-2): before, row crops, straight row, good condition (78; poor is 81, meadow 58);
+# after, lawn, the midpoint of open space in good and fair condition (61, 69) [estimate]; pavement
+CN_PRE_PERV, CN_POST_PERV, CN_IMP = 78, 65, 98
 
 
 def scs_runoff_in(p_in, cn):

@@ -1,5 +1,5 @@
 """Estimates: what the model says a site would take, use up and send back, as ranges (p10, p50, p90 of the Monte Carlo)."""
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, ConfigDict
 
@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 
 class Range(BaseModel):
-    """A likely range: p10 and p90 bracket 80% of the Monte Carlo runs; p50 is the middle estimate. Full values, not rounded for display."""
+    """The range across assumptions: p10 and p90 bracket 80% of the Monte Carlo runs across the parameter ranges, which are not a probability that the real value falls inside; p50 is the middle estimate. Full values, not rounded for display."""
     model_config = ConfigDict(frozen=True)
     p10: float
     p50: float
@@ -40,6 +40,8 @@ class WaterUse(BaseModel):
     reuse: bool = False
     withdrawn_peak_full_capacity: Range | None = None   # the upper case: the peak day with every computer at capacity all day; peak_day is at average utilization
     condensate: Flow | None = None       # also in returned and to_sewer; none for lake-source's lake water or data from before model 1.5
+    withdrawn_max_month: Range | None = None    # the highest month's average day: the period of Part 327's 30-day test. Lake-source: constant, as the withdrawal
+    consumed_max_90day: Range | None = None     # the highest 90 straight days' average: the Compact's period. None for data from before model 1.7. Lake-source: its highest month, which is no lower
 
 
 def water_use(E):
@@ -49,7 +51,8 @@ def water_use(E):
                     consumed=Flow(avg=R(E["cAvg"]), peak_day=R(E["cPeak"])), returned=Flow(avg=R(E["rAvg"]), peak_day=R(E["rPeak"])),
                     to_sewer=R(E["sewer"]), lake_source=E["lake"], reuse=E["reuse"],
                     condensate=Flow(avg=R(E["condAvg"]), peak_day=R(E["condPeak"])) if "condAvg" in E else None,
-                    withdrawn_peak_full_capacity=R(E["wPeakFull"]) if "wPeakFull" in E else None)
+                    withdrawn_peak_full_capacity=R(E["wPeakFull"]) if "wPeakFull" in E else None,
+                    withdrawn_max_month=R(E["wMonth"]) if "wMonth" in E else None, consumed_max_90day=R(E["c90"]) if "c90" in E else None)
 
 
 def electricity(e):
@@ -89,13 +92,14 @@ class Comparison(BaseModel):
 
 
 class Equivalents(BaseModel):
-    """An estimate in things people know. Homes at 300 gallons a day; golf courses at the state's typical course; electricity homes at the state's
+    """An estimate in things people know. Homes at `home_gpd`, the state's own water for a home (USGS 2015 over ACS 2015 households); golf courses at the state's typical course; electricity homes at the state's
     average residential use. `homes` and `golf_courses` count water taken on an average day, or for lake-source cooling what the lake loses.
     `evaporated_share` is the percent of the water taken that evaporates, from the middle estimates. None where a state's data doesn't have the value.
     Full values: waterledger.org works these out from the rounded water it shows, so its figures can differ by that rounding."""
     model_config = ConfigDict(frozen=True)
     homes: Range
     homes_peak_day: Range
+    home_gpd: float | None = None
     golf_courses: Range | None = None
     golf_course_gpd: float | None = None
     evaporated_share: float
@@ -105,7 +109,7 @@ class Equivalents(BaseModel):
 
 
 class BeforeAfterRow(BaseModel):
-    """One row of what changes at a place with the campus: today, after (with its likely range where there is one) and the percent added to today's
+    """One row of what changes at a place with the campus: today, after (with its range across assumptions where there is one) and the percent added to today's
     figure where that means something. `unit` says what the numbers are; a row with no `today` is new to the place."""
     model_config = ConfigDict(frozen=True)
     key: str
@@ -116,6 +120,7 @@ class BeforeAfterRow(BaseModel):
     today_low: float | None = None
     today_high: float | None = None
     percent: float | None = None
+    controls: str | None = None     # for a load: "typical_wet_pond" or "none"
     unit: str
 
 
@@ -183,7 +188,8 @@ class Estimate(BaseModel):
     equivalents: Equivalents | None = None
     before_after: list[BeforeAfterRow] = []
     household_wells: WellsSummary | None = None
-    levels: dict[str, str] = {}    # the levels a reader sees, by card (waterledger.levels)
+    levels: dict[str, Any] = {}    # what a reader sees, by card (waterledger.levels): words, numbers and flags. Never changes an estimate
+    not_covered: dict[str, str] = {}   # what isn't covered yet for this state, in words: labeled, not silently empty
     power_plants: dict[str, PlantWater] = {}    # every power option for the state; site.power says which one the site uses
     weather: str = "region"     # "region": the stored results for the place's weather region or division; "local": the model run at the place (ERA5)
     model_version: str
