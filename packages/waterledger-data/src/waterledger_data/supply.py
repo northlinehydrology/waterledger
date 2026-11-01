@@ -52,7 +52,7 @@ def systems_by_place(state, places):
     inter = shapely.intersection(geom_p.loc[pairs.geoid].values, sy.geometry.values[pairs.index_right.values])
     pairs["share"] = shapely.area(inter) / shapely.area(geom_p.loc[pairs.geoid].values)
     out = {}
-    for r in pairs[pairs.share >= MIN_SHARE].sort_values(["share", "population"], ascending=False).itertuples():
+    for r in pairs[pairs.share >= MIN_SHARE].sort_values(["share", "population", "pwsid"], ascending=False).itertuples():
         out.setdefault(r.geoid, []).append({"pwsid": r.pwsid, "name": r.name, "population": int(r.population or 0),
                                             "connections": int(r.connections or 0), "share": round(float(r.share), 3)})
     os.makedirs(RAW, exist_ok=True)

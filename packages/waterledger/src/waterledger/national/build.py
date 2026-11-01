@@ -126,8 +126,9 @@ def check_snapshot(state, root):
     data.state_data.cache_clear()
     sd = data.state_data(state)
     result = checks(state, sd.places())
+    from waterledger.national.snapshot import _write
     m = json.load(open(os.path.join(folder, "manifest.json")))
     m["checks"] = result
-    json.dump(m, open(os.path.join(folder, "manifest.json"), "w"), separators=(",", ":"))
+    _write(os.path.join(folder, "manifest.json"), m)
     print(f"{state} snapshot {date} checks: {result}")
     return result

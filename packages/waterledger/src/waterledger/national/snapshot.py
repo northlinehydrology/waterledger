@@ -29,8 +29,10 @@ DOWNSTREAM_HUCS = 25
 
 
 def _write(path, obj):
+    """JSON with sorted keys, so a file's checksum changes only when its data does. Paths were keyed through a set of strings, whose order differs between Python runs,
+    which is why two builds of Virginia's receiving.json differed only in key order."""
     with open(path, "w") as f:
-        json.dump(obj, f, separators=(",", ":"))
+        json.dump(obj, f, separators=(",", ":"), sort_keys=True)
 
 
 def _downstream(state, starts):
