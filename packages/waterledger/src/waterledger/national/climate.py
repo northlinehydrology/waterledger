@@ -34,10 +34,10 @@ def division_runs(state, n=200):
         return json.load(open(path))
     fips = next(f for f, s in states.FIPS.items() if s == state)
     stations = divisions.division_stations(fips, counties(state))
-    weather = {d: climate.isd_hourly(s, divisions.FIRST, divisions.LAST)[:3] for d, s in stations.items()}
-    runs = cw.run_locations(weather, n=n, mw=100.0)
+    got = {d: climate.isd_hourly(s, divisions.FIRST, divisions.LAST) for d, s in stations.items()}
+    runs = cw.run_locations({d: g[:3] for d, g in got.items()}, n=n, mw=100.0)
     out = {d: {"name": f"{state} climate division {int(d[2:])}", "station": s["name"], "station_id": s["id"], "lat": s["lat"], "lon": s["lon"],
-               "share_observed": s["share_observed"], "per_100mw": runs[d]} for d, s in stations.items()}
+               "share_observed": s["share_observed"], "screen": got[d][4], "per_100mw": runs[d]} for d, s in stations.items()}
     os.makedirs(os.path.dirname(path), exist_ok=True)
     json.dump(out, open(path, "w"))
     return out

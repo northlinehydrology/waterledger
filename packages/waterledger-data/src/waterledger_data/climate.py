@@ -76,17 +76,33 @@ def isd_stations(first=1995, last=2024):
     return out
 
 
-def isd_hourly(station, first=1995, last=2024, min_share=0.85):
-    """Hourly 2 m air temperature (C) and relative humidity (%) observed at an ISD station (ISD-Lite: hourly temperature and dew point),
-    in local standard time from the station's longitude, for the states without a hand-built weather set. Gaps up to 6 hours are
-    filled linearly and longer ones with the station's mean for that month and hour, so every day has 24 hours. Returns
-    (times, temp_c, rh_pct, share_observed), or None when fewer than `min_share` of hours were observed."""
+# Station screens, the same in every state (methods log, Nov 1, 2026). A year counts only with this share of its hours observed, the share the whole record already has to
+# reach: Kimble County's 1997 is 2% observed, and filling it from the station's own means would add a year of nothing but average weather. [A]
+YEAR_MIN_SHARE = 0.85
+# An hour's temperature is suspect this far beyond the 1st to 99th percentile of its month and hour, or this far from both hours beside it. Cold fronts and rain-cooled air
+# run further from normal than heat does, so the cold margin is wider. [A] Margins read against 26 stations in OH, VA and TX, and real heat records: see NEIGHBOR_C.
+HOT_MARGIN_C, COLD_MARGIN_C, STEP_C = 10.0, 12.0, 8.0
+# A suspect hour stands if a nearby station saw much the same then. Margins alone would remove real records: Portland and Seattle in June 2021 were 12 C or more past their
+# 99th percentile. Tentative flags reinstated by neighbors are HadISD's approach (Dunn et al. 2012). [A]
+NEIGHBOR_KM, NEIGHBORS, NEIGHBOR_C = 150, 3, 8.0
+# Dew point drops far further than temperature in a real dry spell (Lubbock and Abilene, June 9, 2020), so its low margin is wide. It goes with the temperature where the report is bad. [A]
+DEW_LOW_MARGIN_C = 20.0
+
+
+def _km(a_lat, a_lon, b_lat, b_lon):
+    import math
+    dlat, dlon = math.radians(b_lat - a_lat), math.radians(b_lon - a_lon)
+    h = math.sin(dlat / 2) ** 2 + math.cos(math.radians(a_lat)) * math.cos(math.radians(b_lat)) * math.sin(dlon / 2) ** 2
+    return 6371.0 * 2 * math.asin(math.sqrt(h))
+
+
+def _isd_frame(station, years):
+    """A station's reports with both temperature and dew point, in UTC, for `years`: a DataFrame indexed by hour, with T and Td (C)."""
     import gzip
-    import numpy as np
     import pandas as pd
     usaf, wban = station["id"].split("-")
     rows = []
-    for y in range(first, last + 1):
+    for y in years:
         path = os.path.join(RAW, "isd", "lite", f"{station['id']}-{y}.gz")
         try:
             _fetch(ISD_LITE.format(y=y, usaf=usaf, wban=wban), path)
@@ -101,18 +117,101 @@ def isd_hourly(station, first=1995, last=2024, min_share=0.85):
     if not rows:
         return None
     df = pd.DataFrame(rows, columns=["t", "T", "Td"]).drop_duplicates("t")
-    df.index = pd.to_datetime(df.pop("t")) + pd.Timedelta(hours=round(station["lon"] / 15))     # UTC to local standard time
+    df.index = pd.to_datetime(df.pop("t"))
+    return df[~df.index.duplicated()]
+
+
+def poor_years(observed, min_share=YEAR_MIN_SHARE):
+    """The years with too few hours observed. `observed`: a boolean Series by hour, over whole years."""
+    share = observed.groupby(observed.index.year).mean()
+    return sorted(int(y) for y in share.index[share < min_share])
+
+
+def _quantile_by_month_hour(x, q):
+    return x.groupby([x.index.month, x.index.hour]).transform(lambda v: v.quantile(q))
+
+
+def _spikes(x, step):
+    """Hours further than `step` from both hours beside them, the same way."""
+    up, dn = x - x.shift(1), x - x.shift(-1)
+    return ((up > step) & (dn > step)) | ((up < -step) & (dn < -step))
+
+
+def suspect_temperatures(T):
+    """Hours whose temperature is suspect: well outside its month and hour's usual range, or a one-hour spike. A boolean Series."""
+    return (T > _quantile_by_month_hour(T, 0.99) + HOT_MARGIN_C) | (T < _quantile_by_month_hour(T, 0.01) - COLD_MARGIN_C) | _spikes(T, STEP_C)
+
+
+def suspect_dew_points(Td):
+    return (Td < _quantile_by_month_hour(Td, 0.01) - DEW_LOW_MARGIN_C) | _spikes(Td, STEP_C)
+
+
+def _neighbor_frames(station, years, first, last):
+    """Up to NEIGHBORS other long-record stations within NEIGHBOR_KM, nearest first: their reports for `years`. Fetched only when a station has a suspect hour to check."""
+    near = sorted((_km(station["lat"], station["lon"], s["lat"], s["lon"]), s["id"], s) for s in isd_stations(first, last) if s["id"] != station["id"])
+    frames = []
+    for km, _, s in near[:NEIGHBORS]:
+        if km <= NEIGHBOR_KM:
+            f = _isd_frame(s, years)
+            if f is not None:
+                frames.append(f)
+    return frames
+
+
+def unconfirmed(T, suspect, frames):
+    """Of the `suspect` hours in T (a Series by hour), those no station in `frames` backs up: none reported within NEIGHBOR_C in that hour or the hours beside it."""
+    import pandas as pd
+    hours = T.index[suspect]
+    bad = pd.Series(True, index=hours)
+    for f in frames:
+        near = f["T"].reindex(hours, method="nearest", tolerance=pd.Timedelta(hours=1))
+        bad &= ~((near - T.reindex(hours)).abs() <= NEIGHBOR_C)
+    return bad.index[bad]
+
+
+def isd_hourly(station, first=1995, last=2024, min_share=0.85, neighbors=None):
+    """Hourly 2 m air temperature (C) and relative humidity (%) observed at an ISD station (ISD-Lite: hourly temperature and dew point),
+    in local standard time from the station's longitude, for the states without a hand-built weather set. Years with too few hours observed
+    are left out (poor_years), and bad readings are screened out (suspect_temperatures, which a nearby station can overrule; suspect_dew_points). Gaps up to 6 hours are
+    filled linearly and longer ones with the station's mean for that month and hour, so every day kept has 24 hours. Returns
+    (times, temp_c, rh_pct, share_observed, screen), or None when fewer than `min_share` of hours were observed. `screen` says what was removed:
+    {"years_left_out", "hours_removed", "dew_points_removed"}, with share_observed the share before screening. `neighbors`, for tests: f(years) -> frames."""
+    import numpy as np
+    import pandas as pd
+    raw = _isd_frame(station, range(first, last + 1))
+    if raw is None:
+        return None
+    full_utc = pd.date_range(f"{first}-01-01 00:00", f"{last}-12-31 23:00", freq="h")
+    offset = pd.Timedelta(hours=round(station["lon"] / 15))                                     # UTC to local standard time
+    df = raw.copy()
+    df.index = df.index + offset
     full = pd.date_range(f"{first}-01-01 00:00", f"{last}-12-31 23:00", freq="h")
-    df = df[~df.index.duplicated()].reindex(full)
-    share = float(df["T"].notna().mean())
+    share = float(df.reindex(full)["T"].notna().mean())
     if share < min_share:
         return None
+    left_out = poor_years(raw.reindex(full_utc)["T"].notna())
+    keep = raw[~raw.index.year.isin(left_out)]
+    T = keep["T"].reindex(full_utc[~full_utc.year.isin(left_out)])
+    suspect = suspect_temperatures(T)
+    removed = pd.DatetimeIndex([])
+    if suspect.any():
+        years = sorted(set(int(y) for y in T.index[suspect].year))
+        removed = unconfirmed(T, suspect, neighbors(years) if neighbors else _neighbor_frames(station, years, first, last))
+    keep = keep.copy()
+    keep.loc[keep.index.isin(removed), ["T", "Td"]] = np.nan
+    bad_dew = suspect_dew_points(keep["Td"].reindex(T.index))
+    keep.loc[keep.index.isin(T.index[bad_dew]), "Td"] = np.nan
+    screen = {"years_left_out": left_out, "hours_removed": len(removed), "dew_points_removed": int(bad_dew.sum())}
+    df = keep.copy()
+    df.index = df.index + offset
+    df = df.reindex(full)
     df = df.interpolate(limit=6, limit_area="inside")
     clim = df.groupby([df.index.month, df.index.hour]).transform("mean")
     df = df.fillna(clim)
+    df = df[~df.index.year.isin(left_out)]
     a = lambda x: np.exp(17.625 * x / (243.04 + x))                       # Magnus form (Alduchov and Eskridge 1996)
     rh = np.clip(100 * a(df["Td"].values) / a(df["T"].values), 1, 100)
-    return [i.strftime("%Y-%m-%dT%H:00") for i in df.index], df["T"].tolist(), rh.tolist(), share
+    return [i.strftime("%Y-%m-%dT%H:00") for i in df.index], df["T"].tolist(), rh.tolist(), share, screen
 
 
 def atlas14_depths(lat, lon, name):
