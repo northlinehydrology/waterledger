@@ -2,9 +2,13 @@
 
 Withdrawal follows from the heat load and the temperature rise: flow = heat / (density x specific heat x rise).
 Nearly all of it is returned. The returned heat drives extra ("forced") evaporation from the lake surface, estimated with
-the heat-balance method used by USGS for once-through power plants (Diehl et al. 2013, after Harbeck 1964 and Ward 1980):
+the heat-balance form USGS gives for once-through power plants (Diehl et al. 2013, Eqs. 10-20, after Harbeck 1964 and Ward 1980):
 the share of added heat that leaves as evaporation is dE / (dE + dC + dR), where evaporation and conduction share the same
 wind function and radiation does not. Natural surface temperatures are NOAA GLERL daily long-term averages for each lake.
+
+The wind function departs from USGS's practice. This module uses Ward's (1980), which USGS prints as an example (Eq. 14), while its own estimates for lakes used Webster
+and Sherman (1995), and it did not use functions that reach zero at no wind (p. 27). Ward's is kept here because winds are sampled at 5-15 mph, away from zero, where USGS
+puts the spread between wind functions at about 12% or less (p. 28), inside the error carried below. Webster and Sherman's coefficients are not in the USGS report and were not read.
 """
 
 import numpy as np
@@ -31,6 +35,8 @@ RANGES = {
     "heat_factor": (1.05, 1.17),      # model 1.5, was 1.03-1.25
     "rise_c": (6.0, 10.0),
     "wind_mph": (5.0, 15.0),
+    # USGS's error for the evaporation ratio from water surfaces: 18%, or 21% for once-through plants on the Great Lakes, where natural temperature adds uncertainty (p. 29). Model 1.7.
+    "evap_error": (0.79, 1.21),
 }
 
 
@@ -40,8 +46,8 @@ def _es(t):
 
 
 def evaporation_ratio(t, wind_mph):
-    """Share of added heat lost by evaporation at natural water temperature t (deg C), linearized heat balance (Ward 1980; USGS 2013 eq. 12-20)."""
-    f = 7.0e-8 * wind_mph  # Ward wind function, g/(cm2 s mb)
+    """Share of added heat lost by evaporation at natural water temperature t (deg C), linearized heat balance (Ward 1980; USGS 2013 eqs. 12-20), before evap_error."""
+    f = 7.0e-8 * wind_mph  # Ward's wind function (USGS 2013 eq. 14), g/(cm2 s mb)
     de = (_es(t + 0.5) - _es(t - 0.5))  # mb per deg C
     d_e = 585.0 * f * de
     d_c = 585.0 * f * BOWEN
@@ -61,7 +67,7 @@ def run_lake(water_temps, n=200, seed=11, mw=100.0):
         heat_w = mw * 1e6 * p["utilization"] * p["heat_factor"]
         m3s = heat_w / (RHO * CP * p["rise_c"])
         out["withdrawn"].append(m3s * 86400 * GAL_M3 / 1e6)
-        er = evaporation_ratio(t, p["wind_mph"])
+        er = evaporation_ratio(t, p["wind_mph"]) * p["evap_error"]
         evap = er * heat_w / LV / RHO * 86400 * GAL_M3 / 1e6  # MGD by day of year
         month = np.convolve(evap, np.ones(30) / 30, mode="valid")
         out["evap_avg"].append(float(evap.mean()))
@@ -80,10 +86,10 @@ def withdrawal_m3s(it_mw, utilization, heat_factor, rise_c):
     return it_mw * 1e6 * utilization * heat_factor / (RHO * CP * rise_c)
 
 
-def forced_evaporation_m3s(it_mw, utilization, heat_factor, water_temp_c, wind_mph):
+def forced_evaporation_m3s(it_mw, utilization, heat_factor, water_temp_c, wind_mph, evap_error=1.0):
     """Extra evaporation from the lake caused by the returned heat, m3/s."""
     heat_w = it_mw * 1e6 * utilization * heat_factor
-    return evaporation_ratio(water_temp_c, wind_mph) * heat_w / LV / RHO
+    return evaporation_ratio(water_temp_c, wind_mph) * evap_error * heat_w / LV / RHO
 
 
 def sample_parameters(n=200, seed=11):
@@ -101,7 +107,7 @@ def run_lake_ensemble(water_temps, n=200, seed=11, mw=100.0):
     heat_w = mw * 1e6 * p["utilization"] * p["heat_factor"]
     mgd = 86400 * GAL_M3 / 1e6
     withdrawn = (heat_w / (RHO * CP * p["rise_c"]))[:, 0] * mgd
-    er = evaporation_ratio(t[None, :], p["wind_mph"])
+    er = evaporation_ratio(t[None, :], p["wind_mph"]) * p["evap_error"]
     evap = er * heat_w / LV / RHO * mgd
     month = np.stack([np.convolve(e, np.ones(30) / 30, mode="valid") for e in evap])
     ds = xr.Dataset(

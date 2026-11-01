@@ -364,7 +364,7 @@ class LakeCoolingBmi(_ScalarPointBmi):
         self._values["data_center_cooling_water__withdrawal_volume_flux"][0] = q
         self._values["data_center_cooling_water__return_volume_flux"][0] = q
         self._values["lake_water__forced_evaporation_volume_flux"][0] = lake.forced_evaporation_m3s(
-            self._mw, p["utilization"], p["heat_factor"], t, wind_mph)[0]
+            self._mw, p["utilization"], p["heat_factor"], t, wind_mph, p["evap_error"])[0]
         self._values["data_center_cooling_water__return_temperature_rise"][0] = p["rise_c"]
 
     def finalize(self):

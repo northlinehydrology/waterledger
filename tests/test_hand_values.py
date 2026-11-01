@@ -119,3 +119,10 @@ def test_assist_water_at_the_loop_switch_by_hand():
     assert w[0] == pytest.approx(0.22385, rel=1e-3)
     assert ph.hourly_rates(np.array([23.9]), wb, "assist", p, heat=np.array([1.0]))[0][0] == pytest.approx(0.0)     # below the setting, no evaporation
     assert heat[0] > 0
+
+
+def test_lake_carries_usgs_error_by_hand():
+    # USGS's 21% for the Great Lakes on the 0.013592 m3/s worked above: 0.79 x 0.013592 = 0.010738 and 1.21 x 0.013592 = 0.016446, with the flow through unchanged
+    assert lake.RANGES["evap_error"] == (0.79, 1.21)
+    assert lake.forced_evaporation_m3s(100, 0.65, 1.11, 10.0, 10.0, 0.79) == pytest.approx(0.010738, rel=2e-3)
+    assert lake.forced_evaporation_m3s(100, 0.65, 1.11, 10.0, 10.0, 1.21) == pytest.approx(0.016446, rel=2e-3)

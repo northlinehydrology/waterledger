@@ -11,7 +11,7 @@ REF = json.load(open(os.path.join(os.path.dirname(__file__), "data", "water_ledg
 
 @pytest.mark.parametrize("name", sorted(REF))
 def test_ensemble_reproduces_published_lakes(name):
-    """Same NOAA GLERL temperatures, same seed: Water Ledger's published lake-source estimates (model 1.2)."""
+    """Same NOAA GLERL temperatures, same seed: the stored lake-source estimates. Regenerate them only on a deliberate model change."""
     ds = lake.run_lake_ensemble(REF[name]["temps"], n=200)
     for var in ("withdrawn", "evap_avg", "evap_peak_month", "er_avg"):
         for q, pct in (("p10", 10), ("p50", 50), ("p90", 90)):
