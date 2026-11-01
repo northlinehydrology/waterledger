@@ -9,10 +9,10 @@ Screening level, for a review or a public estimate, not a calibrated model:
   controls two cases, everywhere: no controls, and typical wet pond performance on the captured share of runoff (removal from the Center for Watershed
            Protection's national database, 2000, as printed in SEMCOG 2008 Table 9.5). 80% TSS is what wet ponds typically do, in any state, and also the
            level Michigan's post-construction standard asks for (EGLE MS4 permits, Kent County Drain Commissioner rules). Infiltration is the stronger option
-  sediment before and after is on one basis: what runoff carries, runoff x concentration. Farmland too, including its phosphorus; tile-drain nitrate is
-           not counted, so farmland nitrogen here is low. The construction years: bare ground at turf's coefficient [A], at the farmland concentration
-           times EPA's 10-20 (construction sites shed 10 to 20 times what farmland does). Gross erosion off bare ground (soil_moved) is a different
-           quantity, soil loosened rather than soil carried off, and is reported on its own
+  sediment two bases, on purpose. Today on soil and the construction years are yields, tons an acre a year, because runoff x concentration doesn't capture soil scoured off the
+           ground: gross erosion x a delivery ratio [A]. The finished site is runoff x concentration, because roofs, paving and established lawn aren't scouring.
+           Screening estimates: a study with site soils, slopes and sediment modeling would do better. Farmland phosphorus stays runoff x concentration, which holds its particulate part;
+           tile-drain nitrate is not counted, so farmland nitrogen here is low
 PARAMS is the single source of every value; Water Ledger reads it from waters.json and the Water Review reads it here.
 """
 
@@ -63,6 +63,20 @@ _EMC = {
 # Land already built: its roofs and paving as the campus's are, at the campus's roof share
 _EMC["built"] = {k: [_ROOF_SHARE * _EMC["roof"][k][i] + (1 - _ROOF_SHARE) * _EMC["paved"][k][i] for i in range(3)] for k in ("tss", "tp", "tn")} | {"sources": ["nsqd11", "usgs_marquette"]}
 
+# Sheet and rill erosion on cropland, tons an acre a year, 2022: [total cropland's median, total cropland's mean, cultivated cropland's mean].
+# USDA NRCS, 2022 National Resources Inventory Summary Report, Table 15. A state not there (Alaska, D.C.) takes the national row.
+CROPLAND_EROSION_US = [1.26, 2.67, 3.01]
+CROPLAND_EROSION = {
+    "AL": [0.89, 3.23, 4.14], "AR": [2.73, 3.04, 3.17], "AZ": [0.19, 0.36, 0.42], "CA": [0.1, 0.38, 0.41], "CO": [1.25, 1.7, 1.97], "CT": [0.98, 3.45,
+    6.64], "DE": [0.76, 1.52, 1.54], "FL": [0.09, 1.09, 1.49], "GA": [3.46, 4.52, 5.37], "HI": [1.11, 2.14, 2.23], "IA": [2.76, 5.65, 5.88], "ID":
+    [1.18, 2.19, 2.56], "IL": [2.18, 4.24, 4.29], "IN": [1.32, 2.72, 2.81], "KS": [1.51, 2.1, 2.19], "KY": [1.52, 3.44, 4.27], "LA": [1.68, 2.18,
+    2.29], "MA": [0.04, 0.59, 2.77], "MD": [1.21, 3.52, 3.96], "ME": [0.42, 1.21, 2.34], "MI": [0.58, 1.62, 1.88], "MN": [0.82, 1.88, 2.04], "MO":
+    [2.5, 4.95, 6.21], "MS": [3.09, 4.24, 4.52], "MT": [0.42, 0.73, 0.87], "NC": [1.97, 3.19, 3.54], "ND": [0.57, 0.87, 0.92], "NE": [1.22, 2.94,
+    3.09], "NH": [0.14, 0.61, 2.04], "NJ": [1.3, 2.45, 3.25], "NM": [0.34, 0.56, 0.7], "NV": [0.02, 0.06, 0.1], "NY": [0.6, 2.05, 3.34], "OH": [1.14,
+    2.16, 2.3], "OK": [1.9, 2.59, 2.78], "OR": [0.6, 1.29, 1.64], "PA": [1.65, 3.19, 4.3], "RI": [0.94, 0.96, 1.67], "SC": [1.43, 2.12, 2.45], "SD":
+    [0.76, 1.4, 1.59], "TN": [1.84, 3.92, 5.21], "TX": [1.5, 1.99, 2.11], "UT": [0.18, 0.63, 1.18], "VA": [1.1, 2.38, 3.56], "VT": [0.21, 1.47, 4.33],
+    "WA": [1.78, 4.11, 4.84], "WI": [2.08, 4.69, 5.25], "WV": [0.29, 0.86, 2.5], "WY": [0.12, 0.44, 1.02]}
+
 PARAMS = {
     # the impairments a site's runoff can add to, of the groups ATTAINS listings fall in (waterledger_data.waters.ORDER): not bacteria or mercury in fish
     "listed_groups": ["sed", "nut", "temp", "salt", "do", "bio", "flow", "oil", "metal"],
@@ -72,6 +86,9 @@ PARAMS = {
     # Runoff coefficients by land cover: Runoff Reduction memo Table 4, soil group B. farm [A]: no cropland value there; not below turf (see above)
     "rv": {"imp": 0.95, "turf": 0.20, "farm": 0.20, "woods": 0.03, "sources": ["simple_method", "runoff_reduction2008"]},
     "emc": _EMC,
+    # Yields today, a screening estimate: gross erosion x delivery. Delivery [A]: about a third leaves a site of a few hundred acres, the rest settling at field edges and in swales, as in published
+    # area relations (0.33 at half a square mile, Stewart et al. 1978, read only in excerpt); an agricultural figure of 25% +/-15% is reported there too. Woods: EPA MM8 Table 8.1's natural range, 0.01-1.0, its geometric middle 0.1 [A].
+    "sediment_yield": {"delivery": [0.2, 0.33, 0.5], "farm_gross": {"national": CROPLAND_EROSION_US, "by_state": CROPLAND_EROSION}, "woods_gross": [0.01, 0.1, 1.0], "sources": ["nri2022", "epa_mm8"]},
     "before_imp": {"farm": 0.02, "woods": 0.01, "built": 0.60},     # [A] impervious share of the land as it is now
     "after": {"imp": 0.50, "imp_range": [0.40, 0.60], "roof_share": _ROOF_SHARE},   # [A] roofs and paving; roofs as a share of that
     # Removal by practice (share removed): the national database's medians, SEMCOG Table 9.5. Captured share of annual runoff [A]. "standard" is Michigan's rule, for its pages.
@@ -82,9 +99,9 @@ PARAMS = {
         "standard_sources": ["egle_ms4", "kcdc_rules"],
         "standard": "Treat the first inch of runoff or 90% of runoff-producing storms with at least 80% TSS removal (or 80 mg/L), and hold peak rate and volume to pre-development for storms up to the 2-year, 24-hour event",
     },
-    # Construction. emc_tss: farmland's concentration x EPA's ratio of construction to farmland, end for end (50 x 10, 100 x 15, 160 x 20), on bare ground at rv_bare [A].
-    # t_per_ac_yr: gross erosion, soil moved off bare ground before any of it is delivered (EPA MM8 Table 8.1, a Wisconsin range of 30-200), not on the same basis as a load.
-    "construction": {"emc_tss": [500, 1500, 3200], "rv_bare": 0.20, "t_per_ac_yr": [30, 100, 200], "ratio_to_farm": [10, 15, 20], "years": [1, 2, 3], "sources": ["epa_fact26", "epa_mm8", "mpca_emc"],
+    # Construction, a screening estimate. t_per_ac_yr: gross erosion (EPA MM8 Table 8.1, Wisconsin's 30-200). delivery [A]: below a field's, because a site isn't all bare all year, and set so the middle, 20 t/ac, sits among yields
+    # measured leaving active sites (Helsel 1985, 15-25; Lee and Ziegler 2010, 15-19 with controls; Franklin County, Florida, 30, in Table 8.1). basin_removal: EPA MM8 Table 8.5, sediment basins average 70%, low 42%; perforated risers' 94% as the high end.
+    "construction": {"t_per_ac_yr": [30, 100, 200], "delivery": [0.1, 0.2, 0.33], "basin_removal": [0.42, 0.70, 0.94], "years": [1, 2, 3], "sources": ["epa_mm8", "epa_fact26", "helsel1985", "lee_ziegler2010"],
                      "permits": "Part 91 soil erosion permit for 1 acre or more, or within 500 ft of a lake or stream; construction storm water permit-by-rule (R 323.2190) with a Notice of Coverage above 5 acres and weekly inspection by a certified operator"},
     # Road salt on parking and drives: lb per 1,000 sq ft per event (MPCA targets; practice is often higher) x events per winter [A], in every state: the median winter's days with
     # precipitation at 1 C or below x 0.6, +/-50%. The 0.6 [A]: a salting event is taken to be a day with measurable snow, and 0.6 is NOAA's 1991-2020 normal days with 0.1 in or more of snow over
@@ -116,9 +133,16 @@ def runoff_in(rain_in, imp, cover="turf"):
     return rain_in * PJ * (PARAMS["rv"]["imp"] * imp + _rv_pervious(cover) * (1 - imp))
 
 
-def loads(acres, rain_in, before="farm", imp=None, roof_share=None):
+def sediment_yield(before, state=None):
+    """Sediment leaving soil-covered land today, tons an acre a year, [lo, mid, hi]: gross erosion x delivery. A screening estimate. `state`: a postal code, for farmland's NRI rate; without one, or for a state NRI doesn't have, the national rate."""
+    Y = PARAMS["sediment_yield"]
+    gross = Y["woods_gross"] if before == "woods" else Y["farm_gross"]["by_state"].get(state, Y["farm_gross"]["national"])
+    return [gross[i] * Y["delivery"][i] for i in range(3)]
+
+
+def loads(acres, rain_in, before="farm", imp=None, roof_share=None, state=None):
     """Annual runoff (gallons) and loads (TSS tons, TP lb, TN lb) now, after with no controls, after with typical wet ponds
-    and after with infiltration. Each value is [lo, mid, hi]."""
+    and after with infiltration. Each value is [lo, mid, hi]. Sediment today on farmland or woods is a yield (sediment_yield); everything else is runoff x concentration."""
     P, E = PARAMS, PARAMS["emc"]
     imp = P["after"]["imp"] if imp is None else imp
     roof = P["after"]["roof_share"] if roof_share is None else roof_share
@@ -133,6 +157,9 @@ def loads(acres, rain_in, before="farm", imp=None, roof_share=None):
         now_perv = E[before][k] if before != "built" else E["turf"][k]
         now_imp = E["built"][k]
         now = [LB * acres * (i0 * r_imp * _w(now_imp, i) + (1 - i0) * r_before * _w(now_perv, i)) / div for i in range(3)]
+        if k == "tss" and before in ("farm", "woods"):
+            y = sediment_yield(before, state)
+            now = [LB * acres * i0 * r_imp * _w(now_imp, i) / div + acres * (1 - i0) * y[i] for i in range(3)]
         after = [LB * acres * (imp * r_imp * (roof * E["roof"][k][i] + (1 - roof) * E["paved"][k][i]) + (1 - imp) * r_turf * E["turf"][k][i]) / div for i in range(3)]
         cap = P["controls"]["captured"]
         # lo pairs with the most capture, hi with the least
@@ -146,10 +173,16 @@ def loads(acres, rain_in, before="farm", imp=None, roof_share=None):
     return out
 
 
-def construction(acres_disturbed, rain_in):
-    """Sediment runoff carries off bare ground in a year of construction, tons, on the same basis as loads(): runoff x concentration, before controls catch part of it."""
+def construction(acres_disturbed):
+    """Sediment leaving bare ground in a year of construction, tons, no controls: gross erosion x delivery, a yield. A screening estimate."""
     c = PARAMS["construction"]
-    return [LB * acres_disturbed * rain_in * PJ * c["rv_bare"] * x / 2000 for x in c["emc_tss"]]
+    return [acres_disturbed * c["t_per_ac_yr"][i] * c["delivery"][i] for i in range(3)]
+
+
+def construction_with_basin(acres_disturbed):
+    """The same with sediment basins taking the whole site's runoff [A]; the low end pairs with the most removal."""
+    r = PARAMS["construction"]["basin_removal"]
+    return [x * (1 - r[2 - i]) for i, x in enumerate(construction(acres_disturbed))]
 
 
 def soil_moved(acres_disturbed):

@@ -109,7 +109,7 @@ def test_before_after_rows_follow_the_water():
     salt = [20, 40, 60]
     keys = lambda rows: [r.key for r in rows]
     a = cm.before_after("muni", "sewer", *args, R(200, 210, 220), 100, _plant(14, 10), salt_events=salt)
-    assert keys(a) == ["water", "used", "sewer", "runoff", "mud", "mud_no_controls", "build", "soil_moved", "p", "p_no_controls", "salt", "fuel", "power"]
+    assert keys(a) == ["water", "used", "sewer", "runoff", "mud", "mud_no_controls", "build", "build_basin", "soil_moved", "p", "p_no_controls", "salt", "fuel", "power"]
     assert a[0].today == 100 and a[0].percent == pytest.approx(0.5) and a[2].percent == pytest.approx(2)
     assert keys(cm.before_after("wells", "septic", *args))[:3] == ["water", "used", "wastewater"]
     assert "sewer" not in keys(cm.before_after("muni", "sewer", *args, reuse=True))

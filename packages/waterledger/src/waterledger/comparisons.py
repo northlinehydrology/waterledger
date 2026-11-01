@@ -217,7 +217,7 @@ def sewer_shares(water, plant):
     return out
 
 
-def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, imp, mw, power_mw=None, county_public=None, plant=None, lake=False, reuse=False, salt_events=None):
+def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, imp, mw, power_mw=None, county_public=None, plant=None, lake=False, reuse=False, salt_events=None, state=None):
     """What changes at a place with the campus, as numbers; a display words them. Water, MGD: `w_avg` and `w_peak` taken, `used` evaporated, `sewer` to the sewer, each a
     Range. Runoff and loads from runoff.loads, in two rows each: "mud" and "p" with typical wet ponds, "mud_no_controls" and "p_no_controls" with none. Rows for water and wastewater follow the source and destination."""
     Row, rows = BeforeAfterRow, []
@@ -229,7 +229,7 @@ def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, 
             rows.append(Row(key="sewer", today=plant.flow_mgd, after=sewer.p50, after_low=sewer.p10, after_high=sewer.p90, percent=percent_of(sewer.p50, plant.flow_mgd) if plant.flow_mgd else None, unit="MGD"))
         elif dest in ("water", "septic") and not (lake and dest == "water"):
             rows.append(Row(key="wastewater", after=sewer.p50, after_low=sewer.p10, after_high=sewer.p90, unit="MGD"))
-    L, C, S, F = rq.loads(acres, rain_in, before, imp), rq.construction(acres, rain_in), rq.salt(acres, imp, salt_events) if salt_events else None, rq.fuel(mw)
+    L, C, S, F = rq.loads(acres, rain_in, before, imp, state=state), rq.construction(acres), rq.salt(acres, imp, salt_events) if salt_events else None, rq.fuel(mw)
     rows.append(Row(key="runoff", today=L["runoff_gal"]["now"][1], after=L["runoff_gal"]["after"][1], unit="gallons a year"))
     for key, load, unit in (("mud", "tss_t", "tons a year"), ("p", "tp_lb", "pounds a year")):
         now = L[load]["now"]
@@ -238,7 +238,9 @@ def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, 
             rows.append(Row(key=key + suffix, today=now[1], today_low=now[0], today_high=now[2], after=a[1], after_low=a[0], after_high=a[2], controls=controls, unit=unit))
         if key == "mud":
             G = rq.soil_moved(acres)
-            rows.append(Row(key="build", today=now[1], after=C[1], after_low=C[0], after_high=C[2], unit="tons a year"))    # what runoff carries, as "mud"
+            B = rq.construction_with_basin(acres)
+            rows.append(Row(key="build", today=now[1], after=C[1], after_low=C[0], after_high=C[2], controls="none", unit="tons a year"))    # a delivered yield, as today's on soil
+            rows.append(Row(key="build_basin", today=now[1], after=B[1], after_low=B[0], after_high=B[2], controls="sediment_basin", unit="tons a year"))
             rows.append(Row(key="soil_moved", after=G[1], after_low=G[0], after_high=G[2], unit="tons a year"))              # gross erosion, not comparable with today
     if S and S["salt_t"][1] > 0:      # no events known, or no salt season: no row
         rows.append(Row(key="salt", after=S["salt_t"][1], after_low=S["salt_t"][0], after_high=S["salt_t"][2], unit="tons a winter"))
@@ -255,7 +257,7 @@ def site_before_after(est, ref):
     plants = ctx.wastewater.plants
     rain = (ctx.climate.rain_in if ctx.climate else None) or ref.get("rain_median_in")
     return before_after(s.source, s.wastewater, w.withdrawn.avg, w.withdrawn.peak_day, w.consumed.avg, w.to_sewer, s.acres or (50 if city else 200), rain, s.land_before or ("built" if city else "farm"), s.impervious,
-                        s.facility.it_mw, est.electricity.avg_mw if est.electricity else None, county_public_mgd(ctx.supply.county_use_mgd), plants[0] if plants else None, w.lake_source, w.reuse, ref.get("salt_events"))
+                        s.facility.it_mw, est.electricity.avg_mw if est.electricity else None, county_public_mgd(ctx.supply.county_use_mgd), plants[0] if plants else None, w.lake_source, w.reuse, ref.get("salt_events"), s.place.state)
 
 
 def comparisons(est, ref=None):

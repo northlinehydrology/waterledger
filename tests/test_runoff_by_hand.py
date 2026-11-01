@@ -39,30 +39,10 @@ def test_row_crops_shed_more_than_lawn_in_a_storm():
     assert hydrology.scs_runoff_in(5, 78) > hydrology.scs_runoff_in(5, 65)
 
 
-def test_farmland_sediment_is_runoff_times_concentration():
-    L = runoff.loads(200, 36)["tss_t"]["now"][1]
-    # fields 196 ac x 6.48 in x farm 100 mg/L, paved part 4 ac x 30.78 in x built 113.17 mg/L: at 0.226 lb per ac-in-mg/L and 2,000 lb a ton
-    assert L == pytest.approx(0.226 * (196 * 6.48 * 100 + 4 * 30.78 * 113.17) / 2000, rel=1e-3)     # 16.1 tons, 0.08 tons an acre
-
-
 def test_farmland_phosphorus_is_runoff_times_concentration_alone():
     L = runoff.loads(200, 36)["tp_lb"]["now"][1]
     # 0.533 mg/L on the fields, 0.314 on the paved part: 0.40 x 0.1406 + 0.60 x 0.430. 163 lb: no soil phosphorus on top of the concentration, which already holds it
     assert L == pytest.approx(0.226 * (196 * 6.48 * 0.533 + 4 * 30.78 * 0.3144), rel=1e-3)
-
-
-def test_construction_on_the_same_basis_as_today_at_epas_ratio():
-    c = runoff.construction(200, 36)
-    assert c[1] == pytest.approx(0.226 * 200 * 6.48 * 1500 / 2000)                    # 219.7 tons, 1.1 tons an acre
-    # EPA Fact Sheet 2.6: construction sheds 10-20 times what farmland does. Farmland alone, no paved part, same acres
-    farm = [0.226 * 200 * 6.48 * x / 2000 for x in (50, 100, 160)]
-    assert [round(c[i] / farm[i], 6) for i in range(3)] == [10, 15, 20]
-    assert runoff.soil_moved(200) == [6000, 20000, 40000]                             # 30, 100 and 200 tons an acre, gross
-
-
-def test_sediment_water_and_soil_stay_in_proportion_with_rain():
-    assert runoff.construction(200, 18)[1] == pytest.approx(runoff.construction(200, 36)[1] / 2)
-    assert runoff.loads(200, 18)["tss_t"]["now"][1] == pytest.approx(runoff.loads(200, 36)["tss_t"]["now"][1] / 2)
 
 
 def test_wet_ponds_remove_the_databases_share_of_the_captured_runoff():
@@ -82,7 +62,8 @@ def test_both_stormwater_cases_are_in_the_rows():
     assert rows["mud"].controls == "typical_wet_pond" and rows["mud"].after == pytest.approx(L["tss_t"]["pond"][1])
     assert rows["mud_no_controls"].controls == "none" and rows["mud_no_controls"].after == pytest.approx(L["tss_t"]["after"][1])
     assert rows["p"].after == pytest.approx(L["tp_lb"]["pond"][1]) and rows["p_no_controls"].after == pytest.approx(L["tp_lb"]["after"][1])
-    assert rows["mud"].today == rows["mud_no_controls"].today == rows["build"].today
+    assert rows["mud"].today == rows["mud_no_controls"].today == rows["build"].today == rows["build_basin"].today
+    assert rows["build"].controls == "none" and rows["build_basin"].controls == "sediment_basin"
     assert rows["soil_moved"].today is None
 
 
@@ -215,3 +196,41 @@ def test_incorporated_places_count_as_built():
     assert not make("cdp", "place").incorporated and not make("township", "township").incorporated and not make("county", "county").incorporated
     assert not make("town", "township").incorporated       # New England's towns are county subdivisions
     assert make("village").incorporated and not make("charter township").incorporated      # data without a level
+
+
+def test_farmland_sediment_is_a_yield_by_state():
+    # NRI 2022: Michigan's cropland 1.62 tons an acre gross x delivery 0.33 = 0.5346; Ohio 2.16, 0.7128; Virginia 2.38, 0.7854; Texas 1.99, 0.6567
+    for st, y in (("MI", 0.5346), ("OH", 0.7128), ("VA", 0.7854), ("TX", 0.6567)):
+        assert runoff.sediment_yield("farm", st)[1] == pytest.approx(y)
+    # the range: Michigan's median 0.58 x 0.2, mean 1.62 x 0.33, cultivated mean 1.88 x 0.5
+    assert runoff.sediment_yield("farm", "MI") == pytest.approx([0.116, 0.5346, 0.94])
+    assert runoff.sediment_yield("farm", "DC") == runoff.sediment_yield("farm") == pytest.approx([1.26 * 0.2, 2.67 * 0.33, 3.01 * 0.5])    # the national row, not Michigan's
+    # 196 acres of field x 0.5346 = 104.78 tons, plus the paved part: 4 ac x 30.78 in x 113.17 mg/L x 0.226 / 2,000 = 1.57 tons
+    assert runoff.loads(200, 36, state="MI")["tss_t"]["now"][1] == pytest.approx(196 * 0.5346 + 0.226 * 4 * 30.78 * 113.17 / 2000, rel=1e-3)
+
+
+def test_woods_are_a_yield_and_built_land_a_concentration():
+    assert runoff.sediment_yield("woods") == pytest.approx([0.002, 0.033, 0.5])     # 0.01 x 0.2, 0.1 x 0.33, 1.0 x 0.5
+    assert runoff.loads(200, 36, "woods")["tss_t"]["now"][1] == pytest.approx(198 * 0.033 + 0.226 * 2 * 30.78 * 113.17 / 2000, rel=1e-3)
+    # built: 60% roofs and paving at 113.17 mg/L, 40% turf at 87.43
+    assert runoff.loads(200, 36, "built")["tss_t"]["now"][1] == pytest.approx(0.226 * (120 * 30.78 * 113.17 + 80 * 6.48 * 87.43) / 2000, rel=1e-3)
+
+
+def test_construction_is_gross_erosion_times_delivery():
+    assert runoff.construction(200) == pytest.approx([600, 4000, 13200])            # 30 x 0.1, 100 x 0.2 and 200 x 0.33 tons an acre x 200 acres: 3, 20 and 66
+    assert runoff.soil_moved(200) == [6000, 20000, 40000]
+    # the middle basin removes 70%; the low end takes the most removal, 94%, and the high end the least, 42%
+    assert runoff.construction_with_basin(200) == pytest.approx([600 * 0.06, 4000 * 0.30, 13200 * 0.58])
+
+
+def test_construction_against_readable_measurements():
+    mid = runoff.construction(1)[1]
+    # Helsel 1985: 9,580-15,700 tons a square mile a year = 15.0-24.5 tons an acre. Lee and Ziegler 2010 without controls, historic: 2,300-140,000 = 3.6-219
+    assert 9580 / 640 <= mid <= 15700 / 640
+    assert runoff.construction(1) == pytest.approx([3, 20, 66]) and 66 < 140000 / 640        # the low end, 3, is just under the historic 3.6
+    # EPA's 10-20 times farmland: on today's rates this is above it, stated in the methods log. Michigan 20 / 0.5346 = 37; national 20 / 0.8811 = 23
+    assert mid / runoff.sediment_yield("farm", "MI")[1] == pytest.approx(37.41, abs=0.01) and mid / runoff.sediment_yield("farm")[1] == pytest.approx(22.70, abs=0.01)
+
+
+def test_no_construction_concentration_is_left():
+    assert not {"emc_tss", "rv_bare", "ratio_to_farm"} & set(runoff.PARAMS["construction"])
