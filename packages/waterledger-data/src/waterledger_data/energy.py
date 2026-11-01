@@ -54,6 +54,18 @@ NEW_GAS = {"label": "Gas plants", "gal_mwh": 205, "lo": 130, "hi": 300, "wd_gal_
            "note": "Natural gas combined cycle with cooling towers"}
 
 
+def pv_share(state=None):
+    """PV's share of wind and solar generation in 2024: a state's own, from EIA, for any state in the table with either. A state with neither has no mix of
+    its own, and takes the U.S. share, the only figure that favors no state (None asks for it directly)."""
+    rows = list(csv.DictReader(open(STATE_TABLE)))
+    for r in rows:
+        if r["state"] == state and r["pv_share_of_wind_solar"]:
+            return float(r["pv_share_of_wind_solar"])
+    solar = sum(float(r["solar_share"] or 0) * float(r["net_gen_mwh"]) for r in rows)
+    wind = sum(float(r["wind_share"] or 0) * float(r["net_gen_mwh"]) for r in rows)
+    return solar / (solar + wind)
+
+
 def wind_solar(pv_share):
     """The 'wind and solar' option weighted by a state's own 2024 wind and solar generation (pv_share = PV's share of the two):
     Macknick et al. 2012, wind 0 and PV 1 (0 to 5) gal/MWh, withdrawal equal to consumption."""
