@@ -113,7 +113,7 @@ def estimate(p, mw, cool, dest, region=None):
         L = D["lake_source"][p["gl"]["lake"]]
         w = band(L["withdrawn"], x)
         return {"lake": True, "wAvg": w, "wPeak": w, "wAnn": {k: v * 365.25 for k, v in w.items()}, "cAvg": band(L["evap_avg"], x),
-                "cPeak": band(L["evap_peak_month"], x), "rAvg": w, "rPeak": w, "sewer": flow(D, region, "dry", "returned_avg", mw), "reuse": False}
+                "cPeak": band(L["evap_peak_month"], x), "rAvg": w, "rPeak": w, "sewer": cooling_estimate(D, region, "dry", mw, "septic" if dest == "septic" else "sewer")["sewer"], "reuse": False}
     return cooling_estimate(D, region, cool, mw, dest)
 
 
