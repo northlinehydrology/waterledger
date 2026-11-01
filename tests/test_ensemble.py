@@ -15,7 +15,7 @@ def loop_reference(time, t, rh, design, n, seed, mw):
     params = model.sample_parameters(n, seed)
     out = []
     for i in range(n):
-        p = {k: v[i] for k, v in params.items()}
+        p = model.for_location({k: v[i] for k, v in params.items()}, t)
         w = model.hourly_rates(t, twb, design, p, rh)[0]
         daily = np.bincount(idx, weights=w * mw * 1000 * p["utilization"]) / 1e6
         at_peak = {**p, "utilization": p["utilization"] / p["load_factor"]}     # the peak and record days run at the peak load

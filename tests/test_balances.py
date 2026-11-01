@@ -7,8 +7,9 @@ from waterledger_models import runoff
 
 T = np.arange(-25.0, 41.0, 1.0)
 W = ph.wet_bulb(T, np.full_like(T, 55.0))
-DRAWS = {k: v[:, None] for k, v in ph.sample_parameters(100).items()}
-CENTRAL = ph.central_parameters()
+DESIGN_DB = 33.0      # C, a test location's 0.4% design dry-bulb
+DRAWS = {**{k: v[:, None] for k, v in ph.sample_parameters(100).items()}, "design_db": DESIGN_DB}
+CENTRAL = {**ph.central_parameters(), "design_db": DESIGN_DB}
 GAL_KG = 3.78541
 
 
@@ -194,7 +195,7 @@ def test_chiller_rejects_by_the_wet_share():
     p = CENTRAL
     t, wb = np.array([p["hybrid_on"] - 0.5]), np.array([18.0])
     assert ph.hourly_heat_power(t, wb, "hybrid", p)[1] == pytest.approx(ph.hourly_heat_power(t, wb, "dry", p)[1])
-    t, wb = np.array([p["hybrid_full"] + 1.0]), np.array([24.0])
+    t, wb = np.array([ph.hybrid_full(p) + 1.0]), np.array([24.0])
     assert ph.hourly_heat_power(t, wb, "hybrid", p)[1] == pytest.approx(ph.hourly_heat_power(t, wb, "towers", p)[1])
 
 

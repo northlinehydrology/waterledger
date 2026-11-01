@@ -55,7 +55,7 @@ def _evaluate(tdb, twb, rh, starts, years, months, hour_years, design, params, m
     """Stats (runs, flows, stats), water use effectiveness (runs, 2), electricity (runs, 4: pue_avg, power_mw_avg, pue_peak_1in10,
     power_mw_peak_1in10; as in cooling.run_location), daily volumes (runs, flows, days) at the average load and the upper case peak day (runs,): withdrawn
     with every computer at capacity all day."""
-    p = {k: np.asarray(v, dtype=float).reshape(-1, 1) for k, v in params.items()}
+    p = {k: np.asarray(v, dtype=float).reshape(-1, 1) for k, v in model.for_location(params, tdb).items()}
     kw = mw * 1000.0 * p["utilization"]
     rates = (*model.hourly_rates(tdb, twb, design, p, rh), model.hourly_water_with_air(tdb, twb, p, rh)[1])
     daily = [np.add.reduceat(r * kw, starts, axis=1) / 1e6 for r in rates]
@@ -108,6 +108,7 @@ def run_ensemble(time, air_temperature, relative_humidity, mw=100.0, n=200, seed
     coords = {"design": list(designs), "run": np.arange(n), "stat": list(STATS)}
     ds = xr.Dataset(coords=coords, attrs={"it_capacity_mw": mw, "n_runs": n, "seed": seed,
                                           "units": "avg, peak_1in10, record and max_month in million gallons per day; annual_mg and worst_year_mg in million gallons",
+                                          "design_dry_bulb_c": model.design_dry_bulb(tdb),
                                           "staff_water": "not included; summarize() adds it at the campus's size"})
     for f, flow in enumerate(FLOWS):
         ds[flow] = (("design", "run", "stat"), st[:, :, f, :])

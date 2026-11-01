@@ -242,13 +242,14 @@ class CoolingWaterBmi(_ScalarPointBmi):
         self._dt = float(cfg.get("time_step", 3600.0))
         self._params = {**model.central_parameters(), **model.central_staff(),
                         **{k: float(v) for k, v in (cfg.get("parameters") or {}).items()}}
-        unknown = set(self._params) - set(model.PARAMETERS) - set(model.STAFF_PARAMETERS)
+        unknown = set(self._params) - set(model.PARAMETERS) - set(model.STAFF_PARAMETERS) - {"design_db"}
         if unknown:
             raise ValueError(f"unknown parameters: {sorted(unknown)}")
         self._time = 0.0
         if cfg.get("forcing"):
             w = from_open_meteo_json(cfg["forcing"])
             self._forcing = (w["air_temperature"].values, w["relative_humidity"].values)
+            self._params.setdefault("design_db", model.design_dry_bulb(self._forcing[0]))
             self._end = float(cfg.get("end_time", len(self._forcing[0]) * self._dt))
             self._load_forcing()
         else:

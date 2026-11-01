@@ -12,7 +12,7 @@ Designs differ in when they evaporate:
   dry       air-cooled / dry closed loop, designed to use no water for cooling: loop top-ups only, plus the staff water every design has
   assist    dry coolers with adiabatic pre-cooling above a dry-bulb switch point: water evaporates into the air ahead of the
             coil, in proportion to the wet-bulb depression; no tower drift
-  hybrid    dry coolers most of the year, evaporative in warm weather (ramp between two dry-bulb setpoints)
+  hybrid    dry coolers most of the year, evaporative in warm weather (ramp between two dry-bulb setpoints, the top at the location's own 0.4% design dry-bulb)
   towers    open cooling towers, evaporative all year (upper bound for typical practice)
 Outputs per run: withdrawn (makeup), consumed (evaporation + drift + loop top-up + humidifiers), returned to sewer (blowdown + condensate),
 condensate (from the outside air, not withdrawn, so withdrawn + condensate = consumed + returned).
@@ -32,7 +32,7 @@ from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 
 from waterledger_models.datacenter.physics import (ADIABATIC, DESIGNS as _DESIGNS, HFG, KWH_BTU, LB_GAL, OUTSIDE, POWER, RANGES, STAFF, TOPUP, _ramp,  # noqa: F401
-                                                   evaporative_ratio, hourly_heat_power, hourly_rates, hourly_water_with_air, peak_utilization, sample_parameters, wet_bulb)
+                                                   evaporative_ratio, hourly_heat_power, hourly_rates, for_location, hourly_water_with_air, peak_utilization, sample_parameters, wet_bulb)
 
 DESIGNS = list(_DESIGNS)
 LABELS = {
@@ -113,8 +113,8 @@ def summarize(days, mgd):
 def daily(times, temps, rhs, design, mw, p=None):
     """One run's daily series at `mw` MW of IT capacity (central parameters by default), staff water at its central values included:
     (days, withdrawn MGD, returned MGD), at the average load. For seasonal figures and record days; the pages and reviews use the Monte Carlo percentiles."""
-    p = p or central()
     tdb, rh = np.array(temps, dtype=float), np.array(rhs, dtype=float)
+    p = {**for_location(central(), tdb), **(p or {})}
     w, c, r = hourly(tdb, wet_bulb(tdb, rh), design, p, rh)
     days = np.array([t[:10] for t in times])
     uniq, idx = np.unique(days, return_inverse=True)
@@ -160,6 +160,7 @@ def run_location(times, temps, rhs, n=200, seed=7, mw=100.0):
     for design in DESIGNS:
         acc = {}
         for p in runs + [central()]:
+            p = for_location(p, tdb)
             kw = mw * 1000 * p["utilization"]
             pue, heat = hourly_heat_power(tdb, twb, design, p, rh)      # the slow part: once for the run's water and PUE
             w, c, r = hourly(tdb, twb, design, p, rh, heat)

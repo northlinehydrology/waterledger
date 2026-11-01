@@ -73,3 +73,18 @@ def test_peak_day_in_the_model():
     assert tw["withdrawn_peak_1in10"]["central"] / tw["withdrawn_avg"]["central"] == pytest.approx(1 / 0.91, rel=2e-3)
     assert tw["withdrawn_peak_full_capacity"]["central"] / tw["withdrawn_avg"]["central"] == pytest.approx(1 / 0.65, rel=4e-3)
     assert r["dry"]["withdrawn_peak_1in10"]["central"] == pytest.approx(r["dry"]["withdrawn_avg"]["central"], rel=1e-9)
+
+
+def test_design_dry_bulb_by_hand():
+    # 1,000 hours at 1, 2, ... 1000 C, so the 0.4% is the temperature with 4 hours above it: position 0.996 x 999 = 995.004 between 1 and 1000, which is 996.004 C
+    assert ph.design_dry_bulb(np.arange(1.0, 1001.0)) == pytest.approx(996.004)
+
+
+def test_hybrid_ramp_runs_to_the_locations_own_design_temperature():
+    p = {**C, "hybrid_on": 24.0, "hybrid_full_offset": 0.0}
+    # Houston-like, design dry-bulb 36.7: at 30.35 C the ramp is (30.35 - 24) / (36.7 - 24) = 0.5. Michigan-like, 31.0: (27.5 - 24) / (31 - 24) = 0.5
+    assert ph._wet_share(np.array([30.35]), "hybrid", {**p, "design_db": 36.7})[0] == pytest.approx(0.5)
+    assert ph._wet_share(np.array([27.5]), "hybrid", {**p, "design_db": 31.0})[0] == pytest.approx(0.5)
+    # design dry-bulb 23 is under the 24 C switch: wet mode runs over the 1 K above the switch, half at 24.5 and all of it at 25
+    cool = {**p, "design_db": 23.0}
+    assert ph._wet_share(np.array([24.0, 24.5, 25.0, 30.0]), "hybrid", cool) == pytest.approx([0.0, 0.5, 1.0, 1.0])

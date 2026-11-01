@@ -82,7 +82,7 @@ def test_forcing_file_and_update_until(tmp_path):
     while m.get_current_time() < m.get_end_time():
         total += m.get_value(WITHDRAWN, np.empty(1))[0] * 3600
         m.update()
-    p = {**model.central_parameters(), "coc": 4.0}
+    p = {**model.for_location(model.central_parameters(), t), "coc": 4.0}
     gal = model.hourly_rates(t, model.wet_bulb(t, rh), "hybrid", p, rh)[0]
     staff = model.staff_water(model.central_staff(), 50)[0] * 1e6 / 24     # gallons an hour
     expected = (gal * 50 * 1000 * p["utilization"] + staff).sum() / model.GAL_M3

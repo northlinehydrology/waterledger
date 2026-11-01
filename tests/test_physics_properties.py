@@ -33,6 +33,7 @@ def test_evaporative_ratio_bounds_and_trend():
 def test_water_balance(design):
     t, rh = np.array([-20.0, 0.0, 15.0, 28.0, 33.0]), np.array([50.0, 70.0, 80.0, 85.0, 70.0])     # a bitter hour and humid ones, so humidifiers and condensate both run
     p = model.central_parameters()
+    p = model.for_location(p, t)
     w, c, r = model.hourly_rates(t, model.wet_bulb(t, rh), design, p, rh)
     humidify, condensate = model.hourly_water_with_air(t, model.wet_bulb(t, rh), p, rh)
     assert humidify.max() > 0 and condensate.max() > 0
@@ -68,7 +69,7 @@ def test_staff_water():
 
 def test_designs_order_by_water_use():
     _, t, rh = synthetic_weather(365)
-    p = model.central_parameters()
+    p = model.for_location(model.central_parameters(), t)
     tw = model.wet_bulb(t, rh)
     use = {d: model.hourly_rates(t, tw, d, p)[0].mean() for d in model.DESIGNS}
     assert use["dry"] < min(use["assist"], use["hybrid"]) and max(use["assist"], use["hybrid"]) < use["towers"]    # assist and hybrid overlap

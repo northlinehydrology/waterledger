@@ -58,9 +58,11 @@ RANGES = {
     "assist_on": (20.0, 30.0),
     "assist_eff": (0.70, 0.80),
     # Hybrid dry coolers: wet mode from a customer-set switch point, 70-95 °F (21-35 °C) in US 12,426,214 B1 (2025), 82 °F (27.8 °C)
-    # in its example (model 1.3, was 21-27); fully evaporative near the site's design dry-bulb [estimate, no published value].
+    # in its example (model 1.3, was 21-27). Fully evaporative at each location's own 0.4% design dry-bulb (design_dry_bulb; model 1.7, was 30-33 °C everywhere,
+    # which is West Michigan's), give or take this many K [A]: the source gives no such point, so this says the dry section is sized to carry part of the load
+    # up to the hottest weather the plant is designed for.
     "hybrid_on": (21.0, 28.0),
-    "hybrid_full": (30.0, 33.0),
+    "hybrid_full_offset": (-1.5, 1.5),
 }
 # Share of the loop volume lost to small leaks and topped up each year (NIH 2023 Technical Bulletin: "typically less than 5% of the
 # system's total volume in a year"; the 1% floor is an assumption), all of it counted as lost. Poorly kept loops can lose far more (NIH:
@@ -103,6 +105,7 @@ OUTSIDE = {"oa_cfm_per_mw": (100.0, 1500.0), "humidify_share": (0.0, 1.0)}
 # dehumidifying coil, C [A]: it must be colder than the 15 C dew point, while the air loop's water, at 18.7 C or more, is not, so those coils stay dry.
 DEW_LOW, DEW_HIGH, DEHUMIDIFY_WATER = -9.0, 15.0, 9.0
 TOWER_DESIGN_WB = 25.6     # C, the 78 F wet-bulb of the standard cooling tower rating (95/85/78 F) [A]; a site's own design wet-bulb differs by a few degrees
+HYBRID_MIN_RAMP = 1.0      # K [A]: where a location's design dry-bulb is at or below the switch point, wet mode still comes on over this span, in its hottest hours only
 PARAMETERS = tuple(RANGES) + ("topup",) + tuple(ADIABATIC) + tuple(POWER) + tuple(OUTSIDE)
 
 # Staff water. People = the campus's permanent headcount (employees and on-site contractors), a fixed core plus a share per MW of IT
@@ -135,7 +138,7 @@ SOURCES = {
     "assist_on": "Uptime Institute 2025 (20 C or higher); 30 C top [A]",
     "assist_eff": "EVAPCO 2018, p. 2; ASHRAE 2016, ch. 41",
     "hybrid_on": "US 12,426,214 B1 (2025)",
-    "hybrid_full": "Near the site's design dry-bulb [A], no published value",
+    "hybrid_full_offset": "Around the location's own 0.4% design dry-bulb [A], no published value",
     "topup": "NIH 2023 Technical Bulletin (under 5% a year); 1% floor [A]",
     "assist_dt_air": "Makers' selection sheets: Thermokey, Kelvion [A]",
     "assist_bleed": "Guentner; Spinazzola 2021; SCE ET13SCE1020, 2015, p. 29; ASHRAE 2016, ch. 41",
@@ -177,6 +180,23 @@ def evaporative_ratio(t_c, adj=0.0):
 def peak_utilization(p):
     """IT load on the peak day as a share of capacity: average load over the load factor, at most every computer at capacity."""
     return np.minimum(p["utilization"] / p["load_factor"], 1.0)
+
+
+def design_dry_bulb(tdb):
+    """The 0.4% design dry-bulb of an hourly record, C: the temperature exceeded in 0.4% of its hours, the way ASHRAE defines it. Any hourly record works, station or grid cell."""
+    return float(np.quantile(np.asarray(tdb, dtype=float), 0.996))
+
+
+def for_location(p, tdb):
+    """Parameters with the location's design dry-bulb from its whole hourly record. Every run at a location goes through this; hybrid needs it."""
+    return {**p, "design_db": design_dry_bulb(tdb)}
+
+
+def hybrid_full(p):
+    """Dry-bulb at which a hybrid is fully evaporative, C: the location's design dry-bulb plus the run's offset, and at least HYBRID_MIN_RAMP above the switch point."""
+    if "design_db" not in p:
+        raise ValueError("the hybrid design needs the location's design dry-bulb: pass parameters through for_location(p, tdb), or set design_db (in a BMI configuration, under parameters, unless a forcing file supplies it)")
+    return np.maximum(p["design_db"] + p["hybrid_full_offset"], p["hybrid_on"] + HYBRID_MIN_RAMP)
 
 
 def _ramp(x, lo, hi):
@@ -242,7 +262,7 @@ def _wet_share(tdb, design, p):
     if design == "towers":
         return np.ones_like(tdb)
     if design == "hybrid":
-        return _ramp(tdb, p["hybrid_on"], p["hybrid_full"]) * np.ones_like(tdb)
+        return _ramp(tdb, p["hybrid_on"], hybrid_full(p)) * np.ones_like(tdb)
     return np.zeros_like(tdb)
 
 
