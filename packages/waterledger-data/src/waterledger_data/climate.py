@@ -21,16 +21,21 @@ def _fetch(url, path):
 
 
 def hourly_weather(lat, lon, start, end, name):
-    """Hourly 2 m air temperature (C) and relative humidity (%) from the Open-Meteo archive (ERA5 reanalysis).
+    """Hourly 2 m air temperature (C) and relative humidity (%) from the Open-Meteo archive (ERA5 reanalysis), in local standard time at the point, for any place.
 
     Returns (times, temp_c, rh_pct) as lists. Reanalysis smooths local extremes slightly; a full engagement
     cross-checks against NOAA ISD hourly observations at the nearest airport.
     """
-    url = (f"https://archive-api.open-meteo.com/v1/archive?latitude={lat}&longitude={lon}&start_date={start}&end_date={end}"
-           "&hourly=temperature_2m,relative_humidity_2m&temperature_unit=celsius&timezone=America%2FDetroit")
-    with open(_fetch(url, os.path.join(RAW, f"openmeteo_{name}.json"))) as f:
+    import numpy as np
+    a, b = str(np.datetime64(start) - 1), str(np.datetime64(end) + 1)      # a day either side, so every local date asked for is whole
+    url = (f"https://archive-api.open-meteo.com/v1/archive?latitude={lat}&longitude={lon}&start_date={a}&end_date={b}"
+           "&hourly=temperature_2m,relative_humidity_2m&temperature_unit=celsius&timezone=GMT")
+    with open(_fetch(url, os.path.join(RAW, f"openmeteo_{name}_utc.json"))) as f:
         h = json.load(f)["hourly"]
-    return h["time"], h["temperature_2m"], h["relative_humidity_2m"]
+    t = np.array(h["time"], dtype="datetime64[m]") + np.timedelta64(round(lon / 15) * 60, "m")     # the rule isd_hourly uses
+    days = t.astype("datetime64[D]")
+    keep = np.flatnonzero((days >= np.datetime64(start)) & (days <= np.datetime64(end)))
+    return [str(x)[:16] for x in t[keep]], [h["temperature_2m"][i] for i in keep], [h["relative_humidity_2m"][i] for i in keep]
 
 
 POWER_HOURLY = "https://power.larc.nasa.gov/api/temporal/hourly/point"
