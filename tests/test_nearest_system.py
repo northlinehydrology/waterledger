@@ -44,3 +44,9 @@ def test_reach_is_the_same_line_as_everywhere(monkeypatch):
     assert sc.src_for(p, "dry") == {"src": "muni", "near": sc.near_system(p), "reach": True} and sc.src_for(p, "towers")["src"] == "wells"
     far = {**p, "near": {**p["near"], "km": 10.1}}
     assert sc.src_for(far, "dry")["src"] == "wells"
+
+
+def test_a_sliver_of_a_system_is_not_a_system_there():
+    from waterledger.national.provider import serves
+    assert serves([{"share": 0.05}]) and serves([{"share": 0.01}, {"share": 0.7}])
+    assert not serves([{"share": 0.049}]) and not serves([]) and not serves([{"share": None}])

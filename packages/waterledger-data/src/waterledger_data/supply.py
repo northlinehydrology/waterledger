@@ -12,6 +12,7 @@ from waterledger_data.places import EPA_SA, _get
 RAW = os.path.join(CACHE, "supply")
 ALBERS = 5070                   # NAD83 / Conus Albers: equal-area, for shares of a place's area
 MIN_SHARE = 0.005               # systems covering less than half a percent of a place are left out
+SERVES_SHARE = 0.05             # [A] a system on 5% or more of a place is taken to be there; below that it is listed but the place counts as having none in reach. Michigan's sampled shares start at the same 5%
 SYS_POP = 3300                  # [A] a "sizable" public water system serves more than this many people (EPA's medium size and up)
 
 

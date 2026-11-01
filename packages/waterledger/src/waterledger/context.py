@@ -54,7 +54,7 @@ class CountyWaterUse(BaseModel):
 class Supply(_Category):
     """Where the water comes from."""
     systems: list[WaterSystem] = []                 # public water systems mapped in the place
-    nearest_system: WaterSystem | None = None       # with none mapped: the nearest sizable one
+    nearest_system: WaterSystem | None = None       # with none on 5% or more of the place: the nearest sizable one
     nearest_system_km: float | None = None
     county_use_mgd: dict[str, float] = {}           # water used in the county by category, million gallons a day (as county_water_use.mgd;
                                                     # Michigan: EGLE's reported withdrawals under its own labels)

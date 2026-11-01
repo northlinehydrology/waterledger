@@ -119,8 +119,8 @@ def write(state, out, date=None, checks=None):
     by = supply.systems_by_place(state, pl)
     from waterledger.national.data import LiveData
     live = LiveData(state)
-    # places with no system mapped: the nearest sizable one (supply.nearest_sizable)
-    nearest = {g: [w["pwsid"], km] for g, (w, km) in live.nearest_systems([g for g in pl.geoid if g not in by]).items() if w}
+    # places with no system on 5% or more of them: the nearest sizable one (supply.nearest_sizable)
+    nearest = {g: [w["pwsid"], km] for g, (w, km) in live.nearest_systems([g for g in pl.geoid if not any(v["share"] >= supply.SERVES_SHARE for v in by.get(g, []))]).items() if w}
     _write(os.path.join(folder, "supply.json"), {
         "systems": {r.pwsid: {"name": r.name, "population": int(r.population or 0), "connections": int(r.connections or 0)} for r in sy.itertuples()},
         "by_place": {g: [[w["pwsid"], w["share"]] for w in ws] for g, ws in by.items()}, "nearest": nearest})

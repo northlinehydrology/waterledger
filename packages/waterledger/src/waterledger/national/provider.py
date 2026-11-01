@@ -41,6 +41,12 @@ def place(state, geoid):
                  lat=round(float(r.lat), 4), lon=round(float(r.lon), 4))
 
 
+def serves(systems):
+    """Whether any of a place's systems ({"share": ...}) covers enough of it to be taken as there (supply.SERVES_SHARE)."""
+    from waterledger_data.supply import SERVES_SHARE
+    return any((w.get("share") or 0) >= SERVES_SHARE for w in systems)
+
+
 def context(state, place):
     """The national context for a place: jurisdiction, supply (EPA water systems), wastewater (CWNS and ECHO sewer plants),
     receiving waters (USGS watersheds; the downstream path with EPA ATTAINS impairments, across state lines), climate and energy."""
@@ -52,7 +58,7 @@ def context(state, place):
     sys_ = lambda w: cx.WaterSystem(pwsid=w["pwsid"], name=w["name"].title(), population=w.get("population"),
                                     connections=w.get("connections"), share_of_place=w.get("share"))
     mine = sd.systems_for(place.geoid)
-    near, near_km = (None, None) if mine else sd.nearest_system(place.geoid)
+    near, near_km = (None, None) if serves(mine) else sd.nearest_system(place.geoid)
     use, usgs = county_water_use(state, place.county_fips)
     supply = cx.Supply(provider="national", not_covered=["household_wells"], sources=["epa_sa", *dict.fromkeys(u.source for u in (use, usgs) if u)], systems=[sys_(w) for w in mine],
                        nearest_system=sys_(near) if near else None, nearest_system_km=near_km,
@@ -175,18 +181,19 @@ def estimate(state, site):
     ctx = place.context()
     lake = ctx.receiving.great_lake
     src = site.source
+    mapped = serves([{"share": w.share_of_place} for w in ctx.supply.systems])
     sc.check_lake(place.name, lake, f.cooling, src)
     if f.cooling == "lake" and lake not in D["lake_source"]:
         raise ValueError(f"{state}'s data has no lake-source results for {lake} (a snapshot from before 3.9.0)")
     flows = lambda dest: sc.lake_estimate(D, lake, d, f.it_mw, dest) if f.cooling == "lake" else sc.cooling_estimate(D, d, f.cooling, f.it_mw, dest)
     if src is None:
         reach = ctx.supply.nearest_system_km is not None and ctx.supply.nearest_system_km <= SEWER_KM
-        src = "muni" if ctx.supply.systems or (reach and f.cooling not in ("towers", "hybrid")) else "wells"
+        src = "muni" if mapped or (reach and f.cooling not in ("towers", "hybrid")) else "wells"
     dest = site.wastewater
     if dest is None:
         sew = flows("sewer")["sewer"]["mid"]
         q = ctx.wastewater.plants[0] if ctx.wastewater.plants else None
-        reach = q is not None and (bool(ctx.supply.systems) or q.km <= SEWER_KM)
+        reach = q is not None and (mapped or q.km <= SEWER_KM)
         room = (q.design_mgd - q.flow_mgd) if q and q.design_mgd and q.flow_mgd else None
         evap = f.cooling in ("towers", "hybrid")
         why = "far" if not reach else "full" if evap and room is not None and sew > room else ""
