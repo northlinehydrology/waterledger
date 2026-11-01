@@ -187,3 +187,22 @@ def test_neutral_bands_are_not_michigans_lines():
     assert WITHDRAWAL_BANDS["low_mgd"] == 0.5 and WITHDRAWAL_BANDS["high_mgd"] == 5.0
     assert not {"register_mgd", "zone_c_permit_mgd", "permit_mgd"} & set(WITHDRAWAL_BANDS)
     assert "mcl327" not in WITHDRAWAL_BANDS["sources"] and "state_rules" in NOT_COVERED
+
+
+def test_salt_events_one_method():
+    # Grand Rapids' 72 days a winter x 0.6 = 43.2 events, +/-50%; 1 day: no salt season
+    assert runoff.salt_events(72) == pytest.approx([21.6, 43.2, 64.8])
+    assert runoff.salt_events(2) == pytest.approx([0.6, 1.2, 1.8]) and runoff.salt_events(1) == [0, 0, 0]
+
+
+def test_salt_tons_by_hand():
+    # 200 ac x 0.5 x 0.6 paved = 60 ac = 2,613.6 thousand sq ft; x 1.5 lb x 40 events / 2,000 lb a ton = 78.408 tons
+    s = runoff.salt(200, 0.5, [20, 40, 60])
+    assert s["salt_t"][1] == pytest.approx(78.408) and s["chloride_t"][1] == pytest.approx(78.408 * 0.607)
+
+
+def test_michigan_salt_by_its_own_winters():
+    import waterledger as wl
+    from waterledger import states
+    p = wl.place("Gaines charter township, MI")          # West Michigan, Grand Rapids' 72 days
+    assert states.provider("MI").reference(p)["salt_events"] == pytest.approx([21.6, 43.2, 64.8])

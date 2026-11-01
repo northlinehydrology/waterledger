@@ -17,6 +17,7 @@ from waterledger_data.config import CACHE, SITE as SITE_ROOT, setting
 from waterledger.comparisons import HOUSEHOLD_GPD, it_mw_from_contract
 from waterledger_data import wateruse
 from waterledger.levels import LEVELS
+from waterledger.states.mi.provider import SALT_DAYS
 from waterledger_models import MODEL_VERSION
 STATE = "mi"      # Water Ledger is organized by state: site/waterledger/<state>/
 SITE = os.path.join(SITE_ROOT, STATE)
@@ -424,7 +425,7 @@ def build_waters():
         if w:
             d, r = w.get("drift", {}), w.get("rock", {})
             wells[p["g"]] = [d.get("n", 0), d.get("depth"), d.get("swl"), r.get("n", 0), r.get("depth"), r.get("swl")]
-    data = {"generated": datetime.date.today().isoformat(), "cycle": 2026, "groups": wi.LABELS, "wells": wells, "h12": h12, "plants": plants, "rain_in": wi.county_precip(), "rain_median_in": rq.rain_median(wi.county_precip()), "plant_rule": {"own_km": OWN_KM}, "runoff": rq.PARAMS,
+    data = {"generated": datetime.date.today().isoformat(), "cycle": 2026, "groups": wi.LABELS, "wells": wells, "h12": h12, "plants": plants, "rain_in": wi.county_precip(), "rain_median_in": rq.rain_median(wi.county_precip()), "plant_rule": {"own_km": OWN_KM}, "runoff": {**rq.PARAMS, "salt": {**rq.PARAMS["salt"], "events_by_region": {k: rq.salt_events(d) for k, d in SALT_DAYS.items()}}},
             "sources": {k: {"citation": c, "url": u, "short": SHORT.get(k, k)} for k, (c, u) in SOURCES.items() if k in WATER_SOURCES}}
     with open(OUT_WATERS, "w") as f:
         json.dump(round_tree(data, 3), f, separators=(",", ":"))

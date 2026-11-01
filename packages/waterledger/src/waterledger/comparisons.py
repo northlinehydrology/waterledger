@@ -229,7 +229,7 @@ def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, 
             rows.append(Row(key="sewer", today=plant.flow_mgd, after=sewer.p50, after_low=sewer.p10, after_high=sewer.p90, percent=percent_of(sewer.p50, plant.flow_mgd) if plant.flow_mgd else None, unit="MGD"))
         elif dest in ("water", "septic") and not (lake and dest == "water"):
             rows.append(Row(key="wastewater", after=sewer.p50, after_low=sewer.p10, after_high=sewer.p90, unit="MGD"))
-    L, C, S, F = rq.loads(acres, rain_in, before, imp), rq.construction(acres, rain_in), rq.salt(acres, imp, salt_events), rq.fuel(mw)
+    L, C, S, F = rq.loads(acres, rain_in, before, imp), rq.construction(acres, rain_in), rq.salt(acres, imp, salt_events) if salt_events else None, rq.fuel(mw)
     rows.append(Row(key="runoff", today=L["runoff_gal"]["now"][1], after=L["runoff_gal"]["after"][1], unit="gallons a year"))
     for key, load, unit in (("mud", "tss_t", "tons a year"), ("p", "tp_lb", "pounds a year")):
         now = L[load]["now"]
@@ -240,7 +240,7 @@ def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, 
             G = rq.soil_moved(acres)
             rows.append(Row(key="build", today=now[1], after=C[1], after_low=C[0], after_high=C[2], unit="tons a year"))    # what runoff carries, as "mud"
             rows.append(Row(key="soil_moved", after=G[1], after_low=G[0], after_high=G[2], unit="tons a year"))              # gross erosion, not comparable with today
-    if S["salt_t"][1] > 0:
+    if S and S["salt_t"][1] > 0:      # no events known, or no salt season: no row
         rows.append(Row(key="salt", after=S["salt_t"][1], after_low=S["salt_t"][0], after_high=S["salt_t"][2], unit="tons a winter"))
     rows.append(Row(key="fuel", after=F["gal"][1], after_low=F["gal"][0], after_high=F["gal"][2], unit="gallons"))
     if power_mw:

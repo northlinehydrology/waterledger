@@ -97,7 +97,7 @@ class SnapshotData:
         return self._json("climate").get("rain_from", {})
 
     def salt_events(self):
-        """{division: [lo, mid, hi] road salt events a winter}; empty in a snapshot from before 3.7.0, when Michigan's assumption stands in."""
+        """{division: [lo, mid, hi] road salt events a winter}; empty in a snapshot from before 3.7.0."""
         return self._json("climate").get("salt_events", {})
 
     def residential(self):

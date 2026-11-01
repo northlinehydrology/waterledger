@@ -258,7 +258,7 @@ def test_runoff_is_a_part_of_the_rain_and_loads_are_concentration_times_water():
 
 
 def test_salt_and_blowdown_mass():
-    s = runoff.salt(100)
+    s = runoff.salt(100, 0.5, [20, 40, 60])
     assert s["chloride_t"][1] / s["salt_t"][1] == pytest.approx(35.45 / 58.44, rel=0.002)
     b = runoff.blowdown(1.0, "lake")
     assert b["tds_lb_day"][1] == pytest.approx(170 * 5 * 8.34)

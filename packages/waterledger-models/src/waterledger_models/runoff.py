@@ -86,9 +86,11 @@ PARAMS = {
     # t_per_ac_yr: gross erosion, soil moved off bare ground before any of it is delivered (EPA MM8 Table 8.1, a Wisconsin range of 30-200), not on the same basis as a load.
     "construction": {"emc_tss": [500, 1500, 3200], "rv_bare": 0.20, "t_per_ac_yr": [30, 100, 200], "ratio_to_farm": [10, 15, 20], "years": [1, 2, 3], "sources": ["epa_fact26", "epa_mm8", "mpca_emc"],
                      "permits": "Part 91 soil erosion permit for 1 acre or more, or within 500 ft of a lake or stream; construction storm water permit-by-rule (R 323.2190) with a Notice of Coverage above 5 acres and weekly inspection by a certified operator"},
-    # Road salt on parking and drives: lb per 1,000 sq ft per event (MPCA targets; practice is often higher) x events per winter [A]
-    "salt": {"lb_per_ksf": [0.75, 1.5, 3.0], "events": [20, 40, 60], "paved_share": 0.60, "chloride_share": 0.607,
-             "chronic_mg_l": 150, "sources": ["mpca_salt", "egle_rule57"]},
+    # Road salt on parking and drives: lb per 1,000 sq ft per event (MPCA targets; practice is often higher) x events per winter [A], in every state: the median winter's days with
+    # precipitation at 1 C or below x 0.6, +/-50%. The 0.6 [A]: a salting event is taken to be a day with measurable snow, and 0.6 is NOAA's 1991-2020 normal days with 0.1 in or more of snow over
+    # those days, median 0.62 at 17 stations in Michigan, Ohio, Virginia and Texas (0.39-0.74), and 0.60 without Michigan's. Under 2 such days a winter there is no salt season to speak of.
+    "salt": {"lb_per_ksf": [0.75, 1.5, 3.0], "events_per_day": 0.6, "events_range": 0.5, "min_days": 2, "paved_share": 0.60, "chloride_share": 0.607,
+             "chronic_mg_l": 150, "sources": ["mpca_salt", "noaa_normals", "egle_rule57"]},
     # Backup generators: diesel at full load (Cat 3516C, 133.6 gal/h at 2,000 ekW) x hours stored on site [A]
     "fuel": {"gal_per_mwh": 66.8, "hours": [12, 48, 72], "gen_mw_per_it_mw": 1.2, "unit_mw": 2.5, "spcc_gal": 1320,
              "sources": ["cat3516c", "uptime2014", "amazon_mo2026", "wyofile2025", "cfr112"]},
@@ -174,14 +176,19 @@ def storm_mg(acres, storm_in, imp=None):
     return hydrology.composite_runoff_in(storm_in, imp, hydrology.CN_POST_PERV) * acres * GAL_PER_AC_IN / 1e6
 
 
-def salt(acres, imp=None, events=None):
-    """Road salt a winter on parking and drives (tons of salt) and the chloride in it. `events`: [lo, mid, hi] events a winter where a state has
-    its own by region (national.climate.salt_events), else Michigan's assumption."""
+def salt_events(days):
+    """Road salt events a winter, [lo, mid, hi], from the median winter's days with precipitation at 1 C or below, at a station or a weather grid cell. One method for every state."""
+    S = PARAMS["salt"]
+    mid = S["events_per_day"] * days if days >= S["min_days"] else 0.0
+    return [(1 - S["events_range"]) * mid, mid, (1 + S["events_range"]) * mid]
+
+
+def salt(acres, imp, events):
+    """Road salt a winter on parking and drives (tons of salt) and the chloride in it. `events`: [lo, mid, hi] events a winter at the place (salt_events)."""
     S, A = PARAMS["salt"], PARAMS["after"]
     imp = A["imp"] if imp is None else imp
     paved_ksf = acres * imp * (1 - A["roof_share"]) * 43.56
-    ev = S["events"] if events is None else events
-    t = [paved_ksf * S["lb_per_ksf"][i] * ev[i] / 2000 for i in range(3)]
+    t = [paved_ksf * S["lb_per_ksf"][i] * events[i] / 2000 for i in range(3)]
     return {"salt_t": t, "chloride_t": [x * S["chloride_share"] for x in t], "paved_ac": acres * imp * (1 - A["roof_share"])}
 
 
