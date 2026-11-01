@@ -42,7 +42,10 @@ ORDER = ["sed", "nut", "temp", "salt", "do", "bio", "flow", "ecoli", "oil", "met
 
 def _get(url, params, timeout=180):
     with urllib.request.urlopen(url + "?" + urllib.parse.urlencode(params), timeout=timeout) as r:
-        return json.load(r)
+        d = json.load(r)
+    if isinstance(d, dict) and "error" in d:      # ArcGIS reports errors with HTTP 200
+        raise RuntimeError(str(d["error"])[:200])
+    return d
 
 
 def _paged(url, where, fields="*", page=2000):

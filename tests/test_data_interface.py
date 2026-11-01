@@ -1,4 +1,6 @@
 """A state answers the same from a snapshot or built live: both data classes offer the same methods."""
+import pytest
+
 from waterledger.national.data import LiveData, SnapshotData
 
 
@@ -41,3 +43,14 @@ def test_reading_another_models_snapshot_is_not_silent(capsys):
     assert snapshot_for_model({"state": "OH", "latest": "a", "by_model": {MODEL_VERSION: "b"}}) == "b" and capsys.readouterr().err == ""
     assert snapshot_for_model({"state": "OH", "latest": "a", "current": "c", "by_model": {"0.1": "c"}}) == "c"
     assert "OH" in capsys.readouterr().err
+
+
+def test_an_error_from_a_map_service_is_not_an_empty_answer(monkeypatch):
+    """ArcGIS services report errors with HTTP 200 and an "error" body. Read as no features, one took 50 Michigan counties' household wells out of a build with no failure."""
+    import io
+    import json as js
+
+    from waterledger_data import waters
+    monkeypatch.setattr(waters.urllib.request, "urlopen", lambda *a, **k: io.BytesIO(js.dumps({"error": {"code": 500, "message": "busy"}}).encode()))
+    with pytest.raises(RuntimeError, match="busy"):
+        waters._get("https://example.test/query", {"f": "json"})
