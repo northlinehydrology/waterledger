@@ -27,7 +27,7 @@ def test_information_and_variables(tmp_path):
     m.initialize(write_config(tmp_path, design="towers", it_capacity_mw=100))
     assert m.get_component_name()
     assert m.get_input_item_count() == len(m.get_input_var_names()) == 2
-    assert m.get_output_item_count() == len(m.get_output_var_names()) == 5
+    assert m.get_output_item_count() == len(m.get_output_var_names()) == 6
     for name in list(INPUTS) + list(OUTPUTS):
         assert m.get_var_grid(name) == 0
         assert m.get_var_type(name) == "float64"
@@ -52,7 +52,8 @@ def test_set_value_drives_the_model(tmp_path):
     cold = m.get_value(WITHDRAWN, out).copy()
     assert hot > cold > 0
     w, c, r = (m.get_value(n, np.empty(1))[0] for n in (WITHDRAWN, CONSUMED, RETURNED))
-    assert w == pytest.approx(c + r, rel=1e-12)
+    n = m.get_value("data_center_cooling_water__condensate_volume_flux", np.empty(1))[0]
+    assert w + n == pytest.approx(c + r, rel=1e-12)
     # matches the model directly: gal per kWh x kWh per second / gal per m3, plus staff water at 100 MW
     p = model.central_parameters()
     gal = model.hourly_rates(np.array([0.0]), model.wet_bulb(np.array([0.0]), 50.0), "towers", p, 50.0)[0][0]
@@ -114,3 +115,14 @@ def test_bad_configuration(tmp_path):
         m.initialize(write_config(tmp_path, design="spray-pond"))
     with pytest.raises(ValueError):
         m.initialize(write_config(tmp_path, parameters={"not_a_parameter": 1}))
+
+
+def test_condensate_output_in_humid_air(tmp_path):
+    m = CoolingWaterBmi()
+    m.initialize(write_config(tmp_path, design="dry"))
+    m.set_value(TEMP, np.array([32.0]))
+    m.set_value("atmosphere_bottom_air_water_vapor__relative_saturation", np.array([80.0]))
+    m.update()
+    w, c, r, n = (m.get_value(k, np.empty(1))[0] for k in (WITHDRAWN, CONSUMED, RETURNED, "data_center_cooling_water__condensate_volume_flux"))
+    assert n > 0 and w + n == pytest.approx(c + r, rel=1e-12)
+    assert "data_center_cooling_water__condensate_volume_flux" in m.get_output_var_names()

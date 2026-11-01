@@ -19,14 +19,16 @@ Variables (all on the one scalar grid point, float64):
     input   atmosphere_bottom_air_water_vapor__relative_saturation     percent  relative humidity
     output  data_center_cooling_water__withdrawal_volume_flux          m3 s-1   water taken: cooling makeup (evaporation,
                                                                                 drift, blowdown, loop top-ups) plus staff water
-    output  data_center_cooling_water__consumption_volume_flux         m3 s-1   water lost: evaporation, drift, loop top-ups and
-                                                                                the used-up share of staff water
-    output  data_center_cooling_water__return_volume_flux              m3 s-1   water sent out: blowdown and the rest of staff water
+    output  data_center_cooling_water__consumption_volume_flux         m3 s-1   water evaporated or lost: evaporation, drift, loop top-ups,
+                                                                                humidifiers and the lost share of staff water
+    output  data_center_cooling_water__return_volume_flux              m3 s-1   wastewater: blowdown, condensate and the rest of staff water
+    output  data_center_cooling_water__condensate_volume_flux          m3 s-1   water a coil takes out of outside air; it comes from the air
+                                                                                and is part of the wastewater, not of the withdrawal
     output  atmosphere_bottom_air__wet_bulb_temperature                degC     wet-bulb temperature (Stull 2011)
     output  data_center__electric_power                                MW       facility electricity: computers at the run's utilization, cooling
                                                                                 and losses (hour's PUE x IT power)
 Staff water is a constant flow at the configured capacity (it follows the people on site, not the weather or the
-IT load); withdrawal always equals consumption plus return.
+IT load); withdrawal plus condensate always equals consumption plus return.
 """
 import numpy as np
 import yaml
@@ -45,6 +47,7 @@ OUTPUTS = {
     "data_center_cooling_water__withdrawal_volume_flux": "m3 s-1",
     "data_center_cooling_water__consumption_volume_flux": "m3 s-1",
     "data_center_cooling_water__return_volume_flux": "m3 s-1",
+    "data_center_cooling_water__condensate_volume_flux": "m3 s-1",
     "atmosphere_bottom_air__wet_bulb_temperature": "degC",
     "data_center__electric_power": "MW",
 }
@@ -270,6 +273,7 @@ class CoolingWaterBmi(_ScalarPointBmi):
         self._values["data_center_cooling_water__withdrawal_volume_flux"][0] = w[0] * to_m3s + sw * mgd_to_m3s
         self._values["data_center_cooling_water__consumption_volume_flux"][0] = c[0] * to_m3s + sc * mgd_to_m3s
         self._values["data_center_cooling_water__return_volume_flux"][0] = r[0] * to_m3s + sr * mgd_to_m3s
+        self._values["data_center_cooling_water__condensate_volume_flux"][0] = model.hourly_water_with_air(tdb, twb, self._params, rh)[1][0] * to_m3s
         self._values["atmosphere_bottom_air__wet_bulb_temperature"][0] = twb[0]
         self._values["data_center__electric_power"][0] = model.hourly_heat_power(tdb, twb, self._design, self._params, rh)[0][0] * self._mw * self._params["utilization"]
 
@@ -290,6 +294,7 @@ LAKE_INPUTS = {
 LAKE_OUTPUTS = {
     "data_center_cooling_water__withdrawal_volume_flux": "m3 s-1",
     "data_center_cooling_water__return_volume_flux": "m3 s-1",
+    "data_center_cooling_water__condensate_volume_flux": "m3 s-1",
     "lake_water__forced_evaporation_volume_flux": "m3 s-1",
     "data_center_cooling_water__return_temperature_rise": "degC",
 }
