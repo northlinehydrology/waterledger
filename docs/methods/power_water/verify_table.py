@@ -1,7 +1,9 @@
 """Recompute every row of grid_water_2022.csv from the Siddik et al. 2024 v1.1 CSV (2022), load-weighted (elec_cons)."""
 import pandas as pd
 src='/Users/andrew/northline/engine/data/raw/lit/water_impact_consumption_2022_v1.1.csv'
-tab='/Users/andrew/repos/waterledger/packages/waterledger-data/src/waterledger_data/tables/grid_water_2022.csv'
+import os
+H=os.path.dirname(os.path.abspath(__file__))
+tab=os.path.join(H,'..','..','..','packages','waterledger-data','src','waterledger_data','tables','grid_water_2022.csv')
 df=pd.read_csv(src,index_col=0)
 rows=[]
 for ba,g in df.groupby('balancing_authority'):
@@ -22,6 +24,5 @@ for ba,r in j.iterrows():
             bad.append((ba,a,r[a],b,r[b],r.get(b+'_mean')))
 print('table rows',len(t),'source BAs',len(mine))
 for x in bad: print('DIFF',x)
-j.to_csv('../out/table_check.csv')
 pd.set_option('display.width',200,'display.max_rows',100)
 print(j[['consumed_l_per_kwh_excl_hydro','wci_zero','consumed_l_per_kwh_incl_hydro','wci_primary','withdrawn_l_per_kwh_excl_hydro','wwi_zero','wwi','twh_2022','twh','hours']].round(4).to_string())
