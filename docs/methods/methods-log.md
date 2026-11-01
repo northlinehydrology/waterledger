@@ -645,3 +645,60 @@ Staff and maintenance water is added to these, about 0.007 MGD at 300 MW, so clo
 Water at power plants rises 5.3% from line losses, on top of any change in electricity.
 
 **Still open, not balance errors.** Outside air's flow is a bracket until a campus figure is found. Peak-hour electricity reads the outside air per kW at average utilization. The peak-day water is at the run's average utilization while the hottest-hour electricity is at full capacity, so the two peaks describe different conditions. Farmland phosphorus adds soil-attached phosphorus to a runoff concentration that may already include some, which could double count. Reuse takes all blowdown back, with no brine stream for the dissolved solids. The ranges of an estimate add the model's and staff water's ends together, so p10 and p90 of withdrawn, consumed and returned do not add up, though each run does.
+
+## Nov 1, 2026: model 1.6, from an independent review of model 1.5
+
+An independent read of the 1.5 code found errors the balance tests could not see, because they close either way. Andrew approved all the fixes. His rule for the judgment calls: "when in doubt reasonable, accurate, reality based."
+
+**The middle estimate.** Returned's middle was withdrawn p50 + condensate p50 - consumed p50. Medians do not add, and blowdown's skew from the cycles range makes that remainder 13% (towers, assist) to 23% (hybrid) above returned's own median. Withdrawn and returned now stay at their medians, and consumed is the remainder, `max(0, w + condensate - r)`, so the books close on the middle estimate. Consumed's middle now sits up to about 3% above its own median for towers. Its range is the model's own. Andrew chose which flow takes the remainder.
+
+**Tower fans.** They ran at design L/G in every hour with evaporation, which overstated towers against closed loop. Now:
+
+    design water = load / (cp x range); design potential = h_sat(25.6 C + approach + range) - h_sat(25.6 C)
+    design air = design water / min(L/G, design potential / (cp x range))
+    air share = (tower water / design water) x design potential / (h_sat(hot water) - h_sat(wet-bulb))
+    tower fan = fan power at design air x clip(air share, 0.1, 1)^3 x (wet > 0)
+
+The design point is the 78 F wet-bulb of the standard tower rating, 95/85/78 F [A]; a site's own differs by a few degrees. The air needed goes with the water's heat over Merkel's driving potential, saturated air at the hot water less saturated air at the wet-bulb, holding the design point's effectiveness. Fans follow the affinity law with a 10% floor, like the dry cooler fans. The hot water stays near the loop's return in cool weather, not at the wet-bulb. The review's trial, saturated air at the hot water, was an upper bound on the saving; this one takes the same air flow form with the effectiveness kept. Peak-hour power hardly moves, since a tower's fans are near design then.
+
+**Losses to room air.** `q x (1 - air)` put a share of UPS, distribution and lighting losses on the liquid loop. That heat reaches the room's air whatever cools the computers: room = q - (1 - air), air load = room + air handler fans + outside air, liquid load = 1 - air. In rare bitter hours outside air can cool more than the air loop carries, and the rest comes off the liquid loop. Energy closes as before.
+
+**Lake-source homes on the peak day** came from withdrawn, the water passing through. They now come from what the lake loses, like the average day.
+
+**Septic.** Michigan's rules (Part 22: R 323.2210, 2211, 2216) are for sanitary sewage, and from model 1.5 the rule received condensate. That moved the rule's wording at 250, 400 and 500 MW for clean water that would not reasonably go to a drainfield. A septic estimate's flow now leaves it out, and it is assumed to go to a site drain or stormwater [A]. It stays in returned, so the books close. Closed loop to septic, Michigan's 8 regions, gallons a day as the page rounds them:
+
+| MW | 1.4 | 1.5 | 1.6 |
+|---|---|---|---|
+| 25 | 2,000 | 2,200 | 2,000 |
+| 50 | 2,400 | 2,500-2,700 | 2,400-2,500 |
+| 100 | 3,200 | 3,500-3,800 | 3,200-3,300 |
+| 200 | 4,700 | 5,300-5,900 | 4,700-4,800 |
+| 250 | 5,500 | 6,200-6,900 | 5,500-5,600 |
+| 300 | 6,200 | 7,100-7,900 | 6,200-6,300 |
+| 400 | 7,800 | 8,900-10,000 | 7,700-7,800 |
+| 500 | 9,000 | 11,000-13,000 | 9,000-10,000 |
+| 600 | 11,000 | 13,000-14,000 | 10,000-11,000 |
+| 1,000 | 17,000 | 20,000-24,000 | 17,000-18,000 |
+| 1,500 | 25,000 | 29,000-33,000 | 25,000-26,000 |
+
+The rule thresholds, 6,000 and 10,000 gallons a day, fall where they did in 1.4, except that one region reaches the permit at 500 MW after rounding.
+
+**Upper case on the peak day.** The peak day is at each run's average utilization, 50-80% [A]. Hottest-hour electricity is at full capacity, so the two peaks describe different conditions. Andrew kept average utilization as the main number. The upper case, every computer at capacity all day, is `est.water.withdrawn_peak_full_capacity`: West Michigan, 300 MW, towers 2.36 to 3.60 MGD (+53%), hybrid 1.53 to 2.38 (+56%), assist 1.07 to 1.65 (+54%), closed loop unchanged. No page layout changes.
+
+**Assessed or not assessed.** "No listing" read the same for a clean water and one the state never assessed. The snapshot's downstream path and site data now carry `a`, and `Reach.assessed` reaches the package, in every state.
+
+**The water system a place is compared with.** The largest by population won at any overlap: Westerville, Ohio (its own system at 99.7% of the place) was set against Columbus at 0.8%. New rule [A]: a system covering at least half of the place (largest share if more than one); otherwise the largest by population among those covering at least 5%; otherwise the largest by population. Plain largest share was tested and rejected: it picks Four Way SUD over Lufkin for Angelina County, Texas, and small systems in many places. `comparisons.main_system` and `WQ.mainSystem` are held together by `engine.check_parity`, which compares the system chosen in every place in every state. Known limits: shares come from mapped boundaries, which overlap. Holland, Michigan goes to Holland Township Consolidated at 52% over Holland Board of Public Works at 44%, and Miami Township, Ohio to Cleves at 51% over Cincinnati at 46%. In sparsely served counties a small system over 5% can beat a city system under it: Wilbarger County, Texas goes to RRA Lockett over Vernon, and Greene County, Virginia to Mountain Lakes over the county's own system.
+
+**Utility peaks.** EIA-861 has Duke Energy Ohio at a 914 MW summer peak against 2,252 MW of average load from its sales, which is impossible. A peak below the average load now counts as missing, in every state, and that comparison is left out (`waterledger_data.power.usable_peak`).
+
+**Stated, not changed.**
+
+- Assist control. The model runs pads at full effectiveness above the switch temperature. Holding the air only at the switch temperature would evaporate, on central parameters over ERA5 1995-2024: West Michigan 41% less on average and 8% less on the peak day; Columbus 33 and 4; Ashburn 26 and 2; Austin 13 and 4; Houston 12 and 3. The review's trial gave 42 and 19. The average agrees and the peak does not; its peak-day figure was not reproduced here. Controls are not published, so the higher estimate stands [A].
+- Cycles of concentration, 3-7, against DOE FEMP BMP #10's two to four typical and six or more possible. No figure for large campuses is published. Withdrawn is evaporation x cycles / (cycles - 1), so at the middle of each range FEMP's typical range would take 1.5 / 1.25 = 20% more water, all of it blowdown. It is the second driver of tower water in the sensitivity analysis.
+- Line losses at EIA's national 5% in every state. A campus on the transmission system may lose less [A].
+
+**Checks rerun on 1.6.** Cooling towers, air-cooled computers, 300 draws, station weather 2005-2024, 5-95% PUE against Lei and Masanet's case 2: Houston 1.108-1.243 (1.099-1.250), McAllen 1.112-1.260, Fort Worth 1.099-1.224 (1.087-1.215), Lubbock 1.086-1.198 (1.080-1.192), Richmond 1.092-1.209 (1.084-1.202), Dulles 1.089-1.202, Columbus 1.087-1.198 (1.083-1.196), Cleveland 1.086-1.196, Las Vegas 1.082-1.192, Phoenix 1.089-1.204 (2B, 1.084-1.201). Closed loop over towers, medians: Cleveland +1.6%, Columbus +1.9%, Dulles +2.2%, Richmond +2.6%, Lubbock +4.1%, Houston +4.5%, Fort Worth +4.7%, McAllen +6.0%, Las Vegas +7.2%, Phoenix +8.4%. The methods pages' statements stand.
+
+**Tests.** `tests/test_hand_values.py` has values worked by hand with their numbers written out, including a lake case. HFG halved, LATENT_KJ halved, KG_GAL = 1, the evaporative ratio coefficient x10, outside air flow x10 and lake latent heat /10 had passed everything but the golden files, and now fail. `test_water_balance` passed only because its weather was January, with no condensate, and now runs on weather that condenses.
+
+**Data release.** 2026-11-01 was published twice, first with model 1.4 and then 1.5, against design 0003's rule. Snapshots now never change: see the design note. Packages before 3.8.1 read `latest`, frozen on model 1.5. A run of 3.7.1 on the 1.5 data reports model 1.5, with its wastewater middle leaving out condensate while its range includes it (Houston closed loop 0.0062 MGD, range 0.0062-0.0244); it still closes on what it reports. Michigan's manifest had `checks: null` because its writer hard-coded it: its three tests ran and passed, while the statewide `check-snapshot` never ran for Michigan. It now does.
