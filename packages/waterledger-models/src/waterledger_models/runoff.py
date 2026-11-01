@@ -96,7 +96,7 @@ def loads(acres, rain_in, before="farm", imp=None, roof_share=None):
         if before == "farm":
             fs = P["farm_soil"]
             if k == "tss":
-                now = [acres * (1 - i0) * fs["t_per_ac_yr"][i] for i in range(3)]
+                now = [LB * acres * i0 * r_imp * _w(now_imp, i) / div + acres * (1 - i0) * fs["t_per_ac_yr"][i] for i in range(3)]
             elif k == "tp":
                 now = [now[i] + acres * (1 - i0) * fs["t_per_ac_yr"][i] * 2000 * fs["p_share"][i] for i in range(3)]
         after = [LB * acres * (imp * r_imp * (roof * E["roof"][k][i] + (1 - roof) * E["paved"][k][i]) + (1 - imp) * r_perv * E["turf"][k][i]) / div for i in range(3)]
