@@ -141,9 +141,10 @@ def daily(times, temps, rhs, design, mw, p=None):
 
 def run_locations(weather, n=200, seed=7, mw=100.0, workers=None):
     """run_location for several places at once, one process each: {name: (times, temps, rhs)} to {name: results}. Each place's results are the same as
-    running it alone. workers defaults to WATERLEDGER_WORKERS, else the machine's cores. A script calling this needs the usual `if __name__ == "__main__"` guard."""
+    running it alone. workers defaults to WATERLEDGER_WORKERS, else one, because a process pool needs the caller's script to have the usual `if __name__ == "__main__"`
+    guard (on macOS it breaks without it) and a library can't know that. `waterledger build-state` and `build` turn on every core."""
     names = list(weather)
-    workers = workers or int(os.environ.get("WATERLEDGER_WORKERS", 0)) or os.cpu_count() or 1
+    workers = workers or int(os.environ.get("WATERLEDGER_WORKERS") or 1)
     if workers == 1 or len(names) == 1:
         return {k: run_location(*weather[k], n=n, seed=seed, mw=mw) for k in names}
     with ProcessPoolExecutor(min(workers, len(names))) as pool:

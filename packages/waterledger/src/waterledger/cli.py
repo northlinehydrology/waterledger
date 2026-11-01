@@ -1,5 +1,6 @@
 """waterledger build-state <ST>: build a state's data. waterledger build <state> [all|estimates|waters|power]: Michigan's site
 data, part by part (paths from waterledger_data.config); kept for scripts, build-state MI runs the same build."""
+import os
 import argparse, sys
 
 from waterledger.states import STATES, builder
@@ -34,8 +35,10 @@ def main(argv=None):
     sn.add_argument("--out", required=True)
     sn.add_argument("--date", default=None)
     a = ap.parse_args(argv)
+    if a.cmd in ("build-state", "build"):
+        os.environ.setdefault("WATERLEDGER_WORKERS", str(os.cpu_count() or 1))    # a command, so safe for a process pool (cooling.run_locations)
     if a.cmd == "latest-json":
-        import json, os
+        import json
         from waterledger.national.snapshot import pointer
         from waterledger_models import MODEL_VERSION
         print(json.dumps(pointer(json.load(open(a.old)) if a.old and os.path.exists(a.old) else None, a.state.upper(), a.snapshot_id, MODEL_VERSION)))
