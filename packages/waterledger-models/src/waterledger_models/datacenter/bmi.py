@@ -306,7 +306,7 @@ class LakeCoolingBmi(_ScalarPointBmi):
         end_time: 31536000
         forcing: path/to/temps.csv               (optional; one water temperature per line, one per step)
         wind_speed: 4.5                          (m s-1; used when no wind is set; default the middle of the range)
-        parameters: {utilization: 0.75, heat_factor: 1.14, rise_c: 8}
+        parameters: {utilization: 0.75, heat_factor: 1.11, rise_c: 8}
     """
 
     INPUTS = LAKE_INPUTS

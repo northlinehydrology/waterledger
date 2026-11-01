@@ -22,10 +22,12 @@ MPH_PER_MS = 2.23694
 GLERL = "https://apps.glerl.noaa.gov/erddap/tabledap/glerlLTAvgTemp.csv?lake,dayOfYear,temperature"
 GLERL_CODES = {"Lake Superior": "s", "Lake Michigan": "m", "Lake Huron": "h", "Lake Erie": "e", "Lake Ontario": "o"}
 
-# Ranges: utilization and heat factor reuse the cooling-water model; rise and wind are estimates (see methods page).
+# Ranges: utilization reuses the cooling-water model; rise and wind are estimates (see methods page). All the campus's electricity leaves in the
+# lake water, so the heat factor is also its PUE: IT, power losses, lighting, air handler fans and pumps from the cooling model's heat balance over
+# its POWER ranges (5th to 95th percentile about 1.06-1.16), with no chillers or heat rejection fans because the lake water is colder than the loops.
 RANGES = {
     "utilization": cw.RANGES["utilization"],
-    "heat_factor": (1.03, 1.25),      # heat over IT energy, the range the cooling water model used through model 1.3 [estimate]
+    "heat_factor": (1.05, 1.17),      # model 1.5, was 1.03-1.25
     "rise_c": (6.0, 10.0),
     "wind_mph": (5.0, 15.0),
 }
@@ -48,10 +50,11 @@ def evaporation_ratio(t, wind_mph):
 
 def run_lake(water_temps, n=200, seed=11, mw=100.0):
     """Monte Carlo over the parameter ranges for one lake. water_temps: 366 daily long-term average surface temperatures (deg C).
-    Returns MGD per `mw` of IT capacity: withdrawn and returned (steady), forced evaporation average and its highest month."""
+    Returns MGD per `mw` of IT capacity: withdrawn and returned (steady), forced evaporation average and its highest month, and the
+    electricity from the same heat."""
     rng = np.random.default_rng(seed)
     t = np.asarray(water_temps, dtype=float)
-    out = {"withdrawn": [], "evap_avg": [], "evap_peak_month": [], "er_avg": []}
+    out = {"withdrawn": [], "evap_avg": [], "evap_peak_month": [], "er_avg": [], "power_mw_avg": [], "power_mw_peak_1in10": [], "pue_avg": [], "pue_peak_1in10": []}
     for _ in range(n):
         p = {k: rng.uniform(*v) for k, v in RANGES.items()}
         heat_w = mw * 1e6 * p["utilization"] * p["heat_factor"]
@@ -63,6 +66,10 @@ def run_lake(water_temps, n=200, seed=11, mw=100.0):
         out["evap_avg"].append(float(evap.mean()))
         out["evap_peak_month"].append(float(month.max()))
         out["er_avg"].append(float(er.mean()))
+        out["power_mw_avg"].append(heat_w / 1e6)                  # all of it becomes the heat in the lake water
+        out["power_mw_peak_1in10"].append(mw * p["heat_factor"])  # every computer at capacity
+        out["pue_avg"].append(p["heat_factor"])
+        out["pue_peak_1in10"].append(p["heat_factor"])
     stat = lambda a: {"p10": float(np.percentile(a, 10)), "p50": float(np.percentile(a, 50)), "p90": float(np.percentile(a, 90))}
     return {k: stat(v) for k, v in out.items()}
 

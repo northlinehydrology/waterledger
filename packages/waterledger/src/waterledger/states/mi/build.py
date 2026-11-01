@@ -166,7 +166,7 @@ SHORT = {"lbnl2024": "LBNL 2024", "lei2021": "Lei & Masanet 2021", "wa_energy_co
 PARAM_SOURCES = {
     "utilization": ["epri2026", "iea2025", "lbnl2024", "lbnl2025"], 
     "er_adj": ["usgs2013"], "coc": ["femp_bmp10"], "range_f": ["usgs2013", "lei2021"], "drift": ["epa_wsaw"], "fill_gal_per_mw": ["lowell_firstlook"], "topup": ["nih_closedloop"],
-    **{k: ["lei2021"] for k in ("ups", "dist_loss", "light", "shr", "supply_air", "air_rise", "coil_eff", "water_rise", "crah_pa", "fan_eff", "tower_fan_pa", "lg", "tower_approach", "hx_approach", "pump_chw_kpa", "pump_tower_kpa", "pump_econ_kpa", "pump_eff")},
+    **{k: ["lei2021"] for k in ("ups", "dist_loss", "light", "supply_air", "air_rise", "coil_eff", "water_rise", "crah_pa", "fan_eff", "tower_fan_pa", "lg", "tower_approach", "hx_approach", "pump_chw_kpa", "pump_tower_kpa", "pump_econ_kpa", "pump_eff")},
     "carnot_water": ["wa_energy_code", "lei2021"], "carnot_air": ["wa_energy_code"], "dc_approach": ["thermokey_sheet"], "dc_fan_pa": ["lei2021"],
     "liquid_water": ["ashrae_tc99", "lbnl2024"], "liquid_air_share": ["hpe_nvl72", "schneider_wp210"], "liquid_share": [],
     "staff_core": ["jlarc2024", "gilroy2022"], "staff_per_mw": ["meta_richland", "meta_elpaso", "oracle_saline2026", "gilroy2022"],
@@ -555,6 +555,8 @@ def main(n=200):
         lake_src[name] = lc.run_lake(t, n=n)
     lake_src["note"] = "Lake St. Clair is not in the GLERL series; Lake Erie temperatures stand in for it."
     lake_src["ranges"] = {k: list(v) for k, v in lc.RANGES.items()}
+    lake_src["power"] = {k: lake_src["Lake Michigan"][k] for k in ("power_mw_avg", "power_mw_peak_1in10", "pue_avg", "pue_peak_1in10")}   # the same draws at every lake
+    pue_design = pue_by_design(regions, lake_src["power"])
     data = {
         "model_version": MODEL_VERSION,
         "generated": datetime.date.today().isoformat(),

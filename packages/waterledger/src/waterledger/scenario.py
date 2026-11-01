@@ -83,21 +83,24 @@ def flow(D, region, cool, key, mw):
 
 def electricity(D, region, cool, mw):
     """Facility electricity at `mw` MW of IT capacity at a region's weather, lo/mid/hi: {"mw", "peak_mw", "pue", "peak_pue"}, or None for data from
-    before model 1.4. Lake-source cooling is not in the hourly model; the region's cooling towers stand in [estimate]. Same as WQ.elec on the page."""
-    r = D["regions"][region]["per_100mw"]["towers" if cool == "lake" else cool]
+    before model 1.4. Lake-source cooling has its own heat balance (lake.run_lake), the same at every region. Same as WQ.elec on the page."""
+    per_100mw = D["regions"][region]["per_100mw"]
+    r = (D["lake_source"].get("power") or per_100mw["towers"]) if cool == "lake" else per_100mw[cool]      # data from before model 1.5: towers stood in
     if "power_mw_avg" not in r:
         return None
     return {"mw": band(r["power_mw_avg"], mw / 100), "peak_mw": band(r["power_mw_peak_1in10"], mw / 100), "pue": band(r["pue_avg"], 1.0), "peak_pue": band(r["pue_peak_1in10"], 1.0)}
 
 
-def pue_by_design(regions):
+def pue_by_design(regions, lake=None):
     """One PUE per design across a state's regions, for what cannot wait for a place (turning a utility contract's MW into computing capacity, at
-    the hottest-hour value): {design: {"lo", "mid", "hi", "basis"}}. Lake-source: the cooling towers stand in [estimate]."""
+    the hottest-hour value): {design: {"lo", "mid", "hi", "basis"}}. `lake`: the lake-source results' power block, where a state has them."""
     mean = lambda d, k, q: sum(x["per_100mw"][d][k][q] for x in regions.values()) / len(regions)
     out = {d: {"lo": round(mean(d, "pue_avg", "p10"), 3), "mid": round(mean(d, "pue_avg", "p50"), 3), "hi": round(mean(d, "pue_peak_1in10", "p50"), 3),
                "basis": "Hourly heat balance at this state's weather (model 1.4): annual PUE, 10th and 50th percentiles, and the 1-in-10-year hottest hour; averaged over its regions"}
            for d in next(iter(regions.values()))["per_100mw"]}
-    out["lake"] = {**out["towers"], "basis": "Not modeled; the cooling towers stand in [estimate]"}
+    if lake:
+        out["lake"] = {"lo": round(lake["pue_avg"]["p10"], 3), "mid": round(lake["pue_avg"]["p50"], 3), "hi": round(lake["pue_peak_1in10"]["p50"], 3),
+                       "basis": "Heat balance with the lake water colder than the loops: no chillers or heat rejection fans"}
     return out
 
 
@@ -109,7 +112,7 @@ def estimate(p, mw, cool, dest, region=None):
     if cool == "lake":
         L = D["lake_source"][p["gl"]["lake"]]
         w = band(L["withdrawn"], x)
-        return {"lake": True, "wAvg": w, "wPeak": w, "wAnn": {k: v * 365 for k, v in w.items()}, "cAvg": band(L["evap_avg"], x),
+        return {"lake": True, "wAvg": w, "wPeak": w, "wAnn": {k: v * 365.25 for k, v in w.items()}, "cAvg": band(L["evap_avg"], x),
                 "cPeak": band(L["evap_peak_month"], x), "rAvg": w, "rPeak": w, "sewer": flow(D, region, "dry", "returned_avg", mw), "reuse": False}
     return cooling_estimate(D, region, cool, mw, dest)
 
@@ -132,7 +135,7 @@ def cooling_estimate(D, region, cool, mw, dest):
         E["full"] = {"wAvg": E["wAvg"], "rAvg": E["rAvg"]}
         E["wAvg"] = E["cAvg"]
         E["wPeak"] = {k: E["wPeak"][k] - E["rPeak"][k] for k in ("lo", "mid", "hi")}
-        E["wAnn"] = {k: v * 365 for k, v in E["cAvg"].items()}
+        E["wAnn"] = {k: v * 365.25 for k, v in E["cAvg"].items()}
         E["rAvg"] = E["rPeak"] = E["sewer"] = {"lo": 0, "mid": 0, "hi": 0}
         E["reuse"] = True
     return E
