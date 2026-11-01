@@ -275,10 +275,15 @@ def _get(url, timeout=30):
 
 
 def snapshot_for_model(pointer):
-    """Which snapshot this package reads: the newest for its own model version (a snapshot of another model's numbers is not read silently), else the pointer's
-    `latest`. `latest` is what packages before 3.8.1 read, so it stays on the last model they understand."""
+    """Which snapshot this package reads: the newest for its own model version. If the state has none, its newest snapshot of any model, with a note saying so, and the
+    estimate reports that model. `latest` is what packages before 3.8.1 read, so it stays on the last model they understand."""
     from waterledger_models import MODEL_VERSION
-    return pointer.get("by_model", {}).get(MODEL_VERSION) or pointer.get("current") or pointer["latest"]
+    own = pointer.get("by_model", {}).get(MODEL_VERSION)
+    if own:
+        return own
+    date = pointer.get("current") or pointer["latest"]
+    print(f"Water Ledger: {pointer.get('state', 'this state')} has no snapshot for model {MODEL_VERSION}; reading {date}, built on another model", file=sys.stderr)
+    return date
 
 
 def fetch_snapshot(state, date=None, url=None):

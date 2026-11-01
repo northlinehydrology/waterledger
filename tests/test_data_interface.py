@@ -33,3 +33,11 @@ def test_an_estimate_reports_the_model_of_the_data_it_read():
     assert snap.model_version() == "1.5"
     source = open(data.__file__.replace("data.py", "provider.py")).read()
     assert "model_version=sd.model_version()" in source
+
+
+def test_reading_another_models_snapshot_is_not_silent(capsys):
+    from waterledger.national.data import snapshot_for_model
+    from waterledger_models import MODEL_VERSION
+    assert snapshot_for_model({"state": "OH", "latest": "a", "by_model": {MODEL_VERSION: "b"}}) == "b" and capsys.readouterr().err == ""
+    assert snapshot_for_model({"state": "OH", "latest": "a", "current": "c", "by_model": {"0.1": "c"}}) == "c"
+    assert "OH" in capsys.readouterr().err
