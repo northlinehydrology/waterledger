@@ -2,8 +2,9 @@
 road salt, generator fuel, runoff heat and what cooling-water blowdown carries to a sewer plant.
 
 Screening level, for a review or a public estimate, not a calibrated model:
-  runoff   EPA Simple Method, split by surface: R = P x 0.9 x Rv with Rv 0.95 on roofs and paving and 0.05 on turf or fields
-           (Rv = 0.05 + 0.9 x impervious share, Schueler 1987)
+  runoff   Simple Method (Schueler 1987), split by surface: R = P x 0.9 x Rv, with Rv by land cover from the Runoff Reduction technical memo
+           (Hirschman, Collins and Schueler 2008, Table 4): 0.95 impervious, 0.20 turf and 0.03 forest on hydrologic soil group B (by soil group later).
+           Cropland has no value there: 0.20 [A], as turf, since row crop curve numbers on soil group B (78-81, TR-55) are above lawn's (61-69)
   loads    L (lb/yr) = 0.226 x R (in) x C (mg/L) x A (ac), with event mean concentrations C by surface
   controls Michigan's post-construction standard (treat the first inch or 90% of storms, 80% TSS removal; EGLE MS4 permits,
            Kent County Drain Commissioner rules), applied to the captured share of runoff with wet-pond removal rates;
@@ -27,7 +28,8 @@ PARAMS = {
     "units": {"lb_per_ac_in_mg_l": LB, "gal_per_ac_in": GAL_PER_AC_IN, "runoff_event_share": PJ},
     # A single storm by curve number (hydrology.composite_runoff_in), hydrologic soil group B: lawn after, pavement [estimate]
     "curve_numbers": {"pervious_after": hydrology.CN_POST_PERV, "impervious": hydrology.CN_IMP, "sources": ["nrcs_tr55"]},
-    "rv": {"imp": 0.95, "perv": 0.05, "sources": ["simple_method"]},
+    # Runoff coefficients by land cover: Runoff Reduction memo Table 4, soil group B. farm [A]: no cropland value there; not below turf (see above)
+    "rv": {"imp": 0.95, "turf": 0.20, "farm": 0.20, "woods": 0.03, "sources": ["simple_method", "runoff_reduction2008"]},
     "emc": {
         # Marquette, Michigan source areas (USGS WRIR 97-4242, Table 4, geometric means); TN = TKN + NO2+NO3
         "roof": {"tss": [20, 24, 24], "tp": [0.03, 0.09, 0.09], "tn": [1.5, 2.3, 2.3], "sources": ["usgs_marquette", "mpca_emc"]},
@@ -70,10 +72,14 @@ def _w(lst, i):
     return lst[i] if isinstance(lst, list) else lst
 
 
-def runoff_in(rain_in, imp):
-    """Annual runoff depth (in) from the whole site."""
-    rv = PARAMS["rv"]
-    return rain_in * PJ * (rv["imp"] * imp + rv["perv"] * (1 - imp))
+def _rv_pervious(cover):
+    """Runoff coefficient of a land use's pervious part: built land's is turf."""
+    return PARAMS["rv"]["turf" if cover == "built" else cover]
+
+
+def runoff_in(rain_in, imp, cover="turf"):
+    """Annual runoff depth (in) from the whole site, with `cover` ("turf", "farm", "woods" or "built") on what isn't impervious."""
+    return rain_in * PJ * (PARAMS["rv"]["imp"] * imp + _rv_pervious(cover) * (1 - imp))
 
 
 def loads(acres, rain_in, before="farm", imp=None, roof_share=None):
@@ -83,23 +89,23 @@ def loads(acres, rain_in, before="farm", imp=None, roof_share=None):
     imp = P["after"]["imp"] if imp is None else imp
     roof = P["after"]["roof_share"] if roof_share is None else roof_share
     rv = P["rv"]
-    r_imp, r_perv = rain_in * PJ * rv["imp"], rain_in * PJ * rv["perv"]
+    r_imp, r_turf, r_before = rain_in * PJ * rv["imp"], rain_in * PJ * rv["turf"], rain_in * PJ * _rv_pervious(before)
     i0 = P["before_imp"][before]
     out = {"runoff_gal": {}, "tss_t": {}, "tp_lb": {}, "tn_lb": {}}
-    out["runoff_gal"]["now"] = [acres * (i0 * r_imp + (1 - i0) * r_perv) * GAL_PER_AC_IN] * 3
-    out["runoff_gal"]["after"] = [acres * (imp * r_imp + (1 - imp) * r_perv) * GAL_PER_AC_IN] * 3
+    out["runoff_gal"]["now"] = [acres * (i0 * r_imp + (1 - i0) * r_before) * GAL_PER_AC_IN] * 3
+    out["runoff_gal"]["after"] = [acres * (imp * r_imp + (1 - imp) * r_turf) * GAL_PER_AC_IN] * 3
     for k, unit in (("tss", "tss_t"), ("tp", "tp_lb"), ("tn", "tn_lb")):
         div = 2000 if k == "tss" else 1
         now_perv = E[before][k] if before != "built" else E["turf"][k]
         now_imp = E["built"][k]
-        now = [LB * acres * (i0 * r_imp * _w(now_imp, i) + (1 - i0) * r_perv * _w(now_perv, i)) / div for i in range(3)]
+        now = [LB * acres * (i0 * r_imp * _w(now_imp, i) + (1 - i0) * r_before * _w(now_perv, i)) / div for i in range(3)]
         if before == "farm":
             fs = P["farm_soil"]
             if k == "tss":
                 now = [LB * acres * i0 * r_imp * _w(now_imp, i) / div + acres * (1 - i0) * fs["t_per_ac_yr"][i] for i in range(3)]
             elif k == "tp":
                 now = [now[i] + acres * (1 - i0) * fs["t_per_ac_yr"][i] * 2000 * fs["p_share"][i] for i in range(3)]
-        after = [LB * acres * (imp * r_imp * (roof * E["roof"][k][i] + (1 - roof) * E["paved"][k][i]) + (1 - imp) * r_perv * E["turf"][k][i]) / div for i in range(3)]
+        after = [LB * acres * (imp * r_imp * (roof * E["roof"][k][i] + (1 - roof) * E["paved"][k][i]) + (1 - imp) * r_turf * E["turf"][k][i]) / div for i in range(3)]
         cap = P["controls"]["captured"]
         # lo pairs with the most capture, hi with the least
         pond = [after[i] * (1 - cap[2 - i] * P["controls"]["pond"][k]) for i in range(3)]
