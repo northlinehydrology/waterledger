@@ -32,6 +32,9 @@ RANGES = {
     # site and 57% at co-location sites; IEA 2025 puts hyperscale at 53-56%; LBNL's server parameters give about 40% (AI inference) to 60%
     # (AI training). Load over a site's own peak (EPRI: 88-94%) is a different ratio and does not bound this one.
     "utilization": (0.50, 0.80),
+    # Load factor, a site's average load over its own peak load (model 1.7): EPRI 2026 measured 94% at a large hyperscale site and 88% at co-location sites. The peak day
+    # runs at utilization / load factor (peak_utilization): EPRI's own pairs give 0.75 / 0.94 = 0.80 and 0.57 / 0.88 = 0.65. Every computer at capacity all day is the upper case.
+    "load_factor": (0.88, 0.94),
     # Evaporative ratio adjustment (model 1.3, was +/-0.05): asymmetric because Rutberg et al.'s fit (Poppe runs at 40 °C inlet water,
     # RH 60%) is applied hourly to cooler data center tower water and cold hours, where it likely runs high; USGS SIR 2013-5188 (Diehl
     # et al.) puts tower evaporation error at +/-5-15% (p. 24) and +/-18% overall (pp. 28-29).
@@ -120,6 +123,7 @@ _LM = "Lei and Masanet (preprint rs-769999/v1), Table 3, case 2"
 _STAFF_WATER = "Applicant projections, none measured: Hermantown, MN and Crusoe's 200 MW building, checked against Tyrone, GA, Saline Township and Mount Pleasant, WI [A]"
 SOURCES = {
     "utilization": "EPRI 2026; IEA 2025; LBNL 2024 server parameters",
+    "load_factor": "EPRI 2026 (94% hyperscale, 88% co-location)",
     "er_adj": "USGS SIR 2013-5188 (Diehl et al.), pp. 24, 28-29; asymmetric for Rutberg et al.'s fit at cooler water [A]",
     "coc": "DOE FEMP BMP #10",
     "range_f": "Lei and Masanet (preprint rs-769999/v1), Table 3; 10 F rating",
@@ -165,6 +169,11 @@ def evaporative_ratio(t_c, adj=0.0):
     """Share of heat rejected by evaporation (Rutberg et al. 2011 dry-bulb relation, as in USGS SIR 2013-5188)."""
     er = 1 - (-0.000279 * t_c ** 3 + 0.00109 * t_c ** 2 - 0.345 * t_c + 26.7) / 100
     return np.clip(er + adj, 0.55, 1.0)
+
+
+def peak_utilization(p):
+    """IT load on the peak day as a share of capacity: average load over the load factor, at most every computer at capacity."""
+    return np.minimum(p["utilization"] / p["load_factor"], 1.0)
 
 
 def _ramp(x, lo, hi):
@@ -342,8 +351,8 @@ LINKED = {
               "pump_econ_kpa": -1, "coil_eff": 1, "tower_approach": -1, "hx_approach": -1, "dc_approach": -1, "carnot_water": 1, "carnot_air": 1},
     # one temperature design: warm supply air goes with wide temperature rises across the coil, the loop and, through the plate exchanger, the tower
     "loop": {"supply_air": 1, "air_rise": 1, "water_rise": 1, "range_f": 1},
-    # AI campuses: higher utilization, more liquid cooling, warmer liquid loops
-    "load": {"utilization": 1, "liquid_share": 1, "liquid_water": 1},
+    # AI campuses: higher utilization and steadier load (EPRI's hyperscale pair against its co-location pair), more liquid cooling, warmer liquid loops
+    "load": {"utilization": 1, "load_factor": 1, "liquid_share": 1, "liquid_water": 1},
 }
 
 

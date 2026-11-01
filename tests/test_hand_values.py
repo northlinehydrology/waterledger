@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from waterledger_models.datacenter import lake, physics as ph
+from waterledger_models.datacenter import cooling, lake, physics as ph
 
 C = ph.central_parameters()
 # one kW of heat, with no losses, fans, pumps or outside air, in free cooling at 10 C
@@ -55,3 +55,21 @@ def test_lake_by_hand():
     assert lake.withdrawal_m3s(100, 0.65, 1.11, 8.0) == pytest.approx(2.1545, rel=1e-3)
     assert lake.evaporation_ratio(10.0, 10.0) == pytest.approx(0.46154, rel=2e-3)
     assert lake.forced_evaporation_m3s(100, 0.65, 1.11, 10.0, 10.0) == pytest.approx(0.013592, rel=2e-3)
+
+
+def test_peak_day_by_hand():
+    # Average load 0.75 of capacity, load factor 0.94: 0.75 / 0.94 = 0.79787 of capacity on the peak day. EPRI's co-location pair: 0.57 / 0.88 = 0.64773.
+    assert ph.peak_utilization({"utilization": 0.75, "load_factor": 0.94}) == pytest.approx(0.79787, rel=1e-4)
+    assert ph.peak_utilization({"utilization": 0.57, "load_factor": 0.88}) == pytest.approx(0.64773, rel=1e-4)
+    assert ph.peak_utilization({"utilization": 0.95, "load_factor": 0.90}) == 1.0     # never above capacity
+
+
+def test_peak_day_in_the_model():
+    """One steady day of weather, towers. The peak day's evaporation scales with its load: at the middle, 0.65 / 0.91 = 0.71429 of capacity against 0.65 on average,
+    a factor of 1 / 0.91 = 1.0989. Loop top-ups and outside air go with capacity, not load, so towers come in a little under that and closed loop stays put."""
+    t = [f"2023-07-{d:02d}T{h:02d}:00" for d in range(1, 4) for h in range(24)]
+    r = cooling.run_location(t, [25.0] * 72, [60.0] * 72, n=8, mw=100.0)
+    tw = r["towers"]
+    assert tw["withdrawn_peak_1in10"]["central"] / tw["withdrawn_avg"]["central"] == pytest.approx(1 / 0.91, rel=2e-3)
+    assert tw["withdrawn_peak_full_capacity"]["central"] / tw["withdrawn_avg"]["central"] == pytest.approx(1 / 0.65, rel=4e-3)
+    assert r["dry"]["withdrawn_peak_1in10"]["central"] == pytest.approx(r["dry"]["withdrawn_avg"]["central"], rel=1e-9)

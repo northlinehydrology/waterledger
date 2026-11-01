@@ -32,7 +32,7 @@ from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 
 from waterledger_models.datacenter.physics import (ADIABATIC, DESIGNS as _DESIGNS, HFG, KWH_BTU, LB_GAL, OUTSIDE, POWER, RANGES, STAFF, TOPUP, _ramp,  # noqa: F401
-                                                   evaporative_ratio, hourly_heat_power, hourly_rates, hourly_water_with_air, sample_parameters, wet_bulb)
+                                                   evaporative_ratio, hourly_heat_power, hourly_rates, hourly_water_with_air, peak_utilization, sample_parameters, wet_bulb)
 
 DESIGNS = list(_DESIGNS)
 LABELS = {
@@ -112,7 +112,7 @@ def summarize(days, mgd):
 
 def daily(times, temps, rhs, design, mw, p=None):
     """One run's daily series at `mw` MW of IT capacity (central parameters by default), staff water at its central values included:
-    (days, withdrawn MGD, returned MGD). For seasonal figures and record days; the pages and reviews use the Monte Carlo percentiles."""
+    (days, withdrawn MGD, returned MGD), at the average load. For seasonal figures and record days; the pages and reviews use the Monte Carlo percentiles."""
     p = p or central()
     tdb, rh = np.array(temps, dtype=float), np.array(rhs, dtype=float)
     w, c, r = hourly(tdb, wet_bulb(tdb, rh), design, p, rh)
@@ -141,7 +141,8 @@ def run_location(times, temps, rhs, n=200, seed=7, mw=100.0):
     """Monte Carlo for every design at one location, per `mw` MW of IT capacity.
 
     Returns {design: {stat: {"p10","p50","p90"}}} for withdrawn/consumed/returned average, peak and annual, and electricity,
-    plus the central-parameter run. Peak = 1-in-10-year peak day (90th percentile of annual maxima). Electricity: pue_avg (energy over IT
+    plus the central-parameter run. Peak = 1-in-10-year peak day (90th percentile of annual maxima) at the peak load, average load over the load factor; the record
+    day is at the same load, and averages, months and years at the average load. withdrawn_peak_full_capacity is the upper case, every computer at capacity all day. Electricity: pue_avg (energy over IT
     energy), power_mw_avg (at the run's utilization), pue_peak_1in10 and power_mw_peak_1in10 (the 1-in-10-year hottest hour, every computer
     running at capacity).
     """
@@ -166,7 +167,14 @@ def run_location(times, temps, rhs, n=200, seed=7, mw=100.0):
                 s = daily_stats(day_index, len(uniq), years, arr, kw, months if name == "withdrawn" else None)
                 for stat, v in s.items():
                     acc.setdefault(f"{name}_{stat}", []).append(v)
-            # the upper case: every computer at capacity all day, instead of at the run's average utilization (the middle estimates' basis)
+            # the peak day and the record day: the same weather at the peak load, average load over the load factor (model 1.7)
+            at_peak = {**p, "utilization": float(peak_utilization(p))}
+            kw_peak = mw * 1000 * at_peak["utilization"]
+            wp, cp, rp = hourly(tdb, twb, design, at_peak, rh)
+            for name, arr in (("withdrawn", wp), ("consumed", cp), ("returned", rp), ("condensate", hourly_water_with_air(tdb, twb, at_peak, rh)[1])):
+                s = daily_stats(day_index, len(uniq), years, arr, kw_peak)
+                acc[f"{name}_peak_1in10"][-1], acc[f"{name}_record"][-1] = s["peak_1in10"], s["record"]
+            # the upper case: every computer at capacity all day
             at_capacity = hourly(tdb, twb, design, {**p, "utilization": 1.0}, rh)[0]
             acc.setdefault("withdrawn_peak_full_capacity", []).append(daily_stats(day_index, len(uniq), years, at_capacity, mw * 1000.0)["peak_1in10"])
             # water use effectiveness: liters consumed per IT kWh (annual average), for comparison with LBNL/operators

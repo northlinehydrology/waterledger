@@ -34,33 +34,43 @@ def _day_layout(time):
     return starts, labels, years, months
 
 
-def _stats(daily, years, months):
-    """Per-run statistics from daily volumes (runs, days) in million gallons: average day, 1-in-10-year peak day
-    (90th percentile of annual maxima), record day, average year, highest month's average day and highest
-    calendar year."""
+def _peak_stats(daily, years):
+    """Per-run (1-in-10-year peak day, the 90th percentile of annual maxima; record day) from daily volumes (runs, days)."""
+    ann_max = np.stack([daily[:, years == y].max(axis=1) for y in np.unique(years)], axis=1)
+    return np.quantile(ann_max, 0.9, axis=1), daily.max(axis=1)
+
+
+def _stats(daily, peak_daily, years, months):
+    """Per-run statistics from daily volumes (runs, days) in million gallons: average day, 1-in-10-year peak day, record day, average
+    year, highest month's average day and highest calendar year. Peak and record come from peak_daily, the volumes at the peak load."""
     uyears = np.unique(years)
-    ann_max = np.stack([daily[:, years == y].max(axis=1) for y in uyears], axis=1)
     worst_year = np.stack([daily[:, years == y].sum(axis=1) for y in uyears], axis=1).max(axis=1)
     max_month = np.stack([daily[:, months == m].mean(axis=1) for m in np.unique(months)], axis=1).max(axis=1)
     avg = daily.mean(axis=1)
-    return np.stack([avg, np.quantile(ann_max, 0.9, axis=1), daily.max(axis=1), avg * 365.25, max_month, worst_year], axis=1)
+    peak, record = _peak_stats(peak_daily, years)
+    return np.stack([avg, peak, record, avg * 365.25, max_month, worst_year], axis=1)
 
 
 def _evaluate(tdb, twb, rh, starts, years, months, hour_years, design, params, mw):
     """Stats (runs, flows, stats), water use effectiveness (runs, 2), electricity (runs, 4: pue_avg, power_mw_avg, pue_peak_1in10,
-    power_mw_peak_1in10; as in cooling.run_location) and daily volumes (runs, flows, days)."""
+    power_mw_peak_1in10; as in cooling.run_location), daily volumes (runs, flows, days) at the average load and the upper case peak day (runs,): withdrawn
+    with every computer at capacity all day."""
     p = {k: np.asarray(v, dtype=float).reshape(-1, 1) for k, v in params.items()}
     kw = mw * 1000.0 * p["utilization"]
     rates = (*model.hourly_rates(tdb, twb, design, p, rh), model.hourly_water_with_air(tdb, twb, p, rh)[1])
     daily = [np.add.reduceat(r * kw, starts, axis=1) / 1e6 for r in rates]
-    stats = np.stack([_stats(d, years, months) for d in daily], axis=1)
+    at_peak = {**p, "utilization": model.peak_utilization(p)}             # the peak day and the record day run at the peak load (model 1.7)
+    peak_rates = (*model.hourly_rates(tdb, twb, design, at_peak, rh), model.hourly_water_with_air(tdb, twb, at_peak, rh)[1])
+    peak_daily = [np.add.reduceat(r * mw * 1000.0 * at_peak["utilization"], starts, axis=1) / 1e6 for r in peak_rates]
+    stats = np.stack([_stats(d, pd, years, months) for d, pd in zip(daily, peak_daily)], axis=1)
+    full = np.add.reduceat(model.hourly_rates(tdb, twb, design, {**p, "utilization": np.ones_like(p["utilization"])}, rh)[0] * mw * 1000.0, starts, axis=1) / 1e6
     wue = np.stack([rates[1].mean(axis=1), rates[0].mean(axis=1)], axis=1) * L_PER_GAL
     pue = model.hourly_heat_power(tdb, twb, design, p, rh)[0]
     ends = np.r_[np.flatnonzero(hour_years[1:] != hour_years[:-1]) + 1, hour_years.size]
     peak = np.quantile(np.stack([part.max(axis=1) for part in np.split(pue, ends[:-1], axis=1)], axis=1), 0.9, axis=1)
     avg = pue.mean(axis=1)
     power = np.stack([avg, avg * mw * p["utilization"][:, 0], peak, peak * mw], axis=1)
-    return stats, wue, power, np.stack(daily, axis=1)
+    return stats, wue, power, np.stack(daily, axis=1), _peak_stats(full, years)[0]
 
 
 def run_ensemble(time, air_temperature, relative_humidity, mw=100.0, n=200, seed=7, designs=model.DESIGNS,
@@ -68,8 +78,8 @@ def run_ensemble(time, air_temperature, relative_humidity, mw=100.0, n=200, seed
     """Run the Monte Carlo ensemble for one location.
 
     time: hourly timestamps (local), air_temperature in C, relative_humidity in percent. mw is IT capacity in MW.
-    Returns an xarray Dataset with per-run statistics (design, run, stat) for each flow, the central (mid-range)
-    run, water use effectiveness, the sampled parameters, and optionally daily volumes (design, run, day). These are
+    Returns an xarray Dataset with per-run statistics (design, run, stat) for each flow, where the peak and record days are at the peak load (average load
+    over the load factor) and the rest at the average load, the upper case peak day, the central (mid-range) run, water use effectiveness, the sampled parameters, and optionally daily volumes (design, run, day). These are
     cooling water only (with the closed loop's top-ups); summarize() adds staff water at the campus's size.
     """
     tdb = np.asarray(air_temperature, dtype=float)
@@ -83,13 +93,14 @@ def run_ensemble(time, air_temperature, relative_humidity, mw=100.0, n=200, seed
     st = np.empty((len(designs), n, len(FLOWS), len(STATS)))
     wue = np.empty((len(designs), n, 2))
     power = np.empty((len(designs), n, len(POWER_VARS)))
+    upper = np.empty((len(designs), n))
     cst = np.empty((len(designs), len(FLOWS), len(STATS)))
     daily = np.empty((len(designs), n, len(FLOWS), len(labels)), dtype=np.float32) if keep_daily else None
     for d, design in enumerate(designs):
         for i in range(0, n, chunk):
             sl = slice(i, min(i + chunk, n))
-            s, w, e, dd = _evaluate(tdb, twb, rh, starts, years, months, hour_years, design, {k: v[sl] for k, v in params.items()}, mw)
-            st[d, sl], wue[d, sl], power[d, sl] = s, w, e
+            s, w, e, dd, u = _evaluate(tdb, twb, rh, starts, years, months, hour_years, design, {k: v[sl] for k, v in params.items()}, mw)
+            st[d, sl], wue[d, sl], power[d, sl], upper[d, sl] = s, w, e, u
             if keep_daily:
                 daily[d, sl] = dd
         cst[d] = _evaluate(tdb, twb, rh, starts, years, months, hour_years, design, central, mw)[0][0]
@@ -105,6 +116,7 @@ def run_ensemble(time, air_temperature, relative_humidity, mw=100.0, n=200, seed
     ds["wue_makeup"] = (("design", "run"), wue[:, :, 1], {"units": "L per IT kWh", "basis": "withdrawn (makeup)"})
     for i, name in enumerate(POWER_VARS):
         ds[name] = (("design", "run"), power[:, :, i], {"units": "MW" if name.startswith("power") else "kWh per IT kWh"})
+    ds["withdrawn_peak_full_capacity"] = (("design", "run"), upper, {"units": "million gallons per day", "basis": "the upper case: 1-in-10-year peak day, every computer at capacity all day"})
     for k, v in params.items():
         ds[f"param_{k}"] = (("run",), v)
     if keep_daily:
