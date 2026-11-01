@@ -41,13 +41,14 @@ def test_row_crops_shed_more_than_lawn_in_a_storm():
 
 def test_farmland_sediment_is_runoff_times_concentration():
     L = runoff.loads(200, 36)["tss_t"]["now"][1]
-    # fields 196 ac x 6.48 in x farm 100 mg/L, paved part 4 ac x 30.78 in x built 75 mg/L: at 0.226 lb per ac-in-mg/L and 2,000 lb a ton
-    assert L == pytest.approx(0.226 * (196 * 6.48 * 100 + 4 * 30.78 * 75) / 2000)     # 15.4 tons, 0.077 tons an acre
+    # fields 196 ac x 6.48 in x farm 100 mg/L, paved part 4 ac x 30.78 in x built 113.17 mg/L: at 0.226 lb per ac-in-mg/L and 2,000 lb a ton
+    assert L == pytest.approx(0.226 * (196 * 6.48 * 100 + 4 * 30.78 * 113.17) / 2000, rel=1e-3)     # 16.1 tons, 0.08 tons an acre
 
 
 def test_farmland_phosphorus_is_runoff_times_concentration_alone():
     L = runoff.loads(200, 36)["tp_lb"]["now"][1]
-    assert L == pytest.approx(0.226 * (196 * 6.48 * 0.3 + 4 * 30.78 * 0.2))           # 91.7 lb: no soil phosphorus on top of the concentration, which already holds it
+    # 0.533 mg/L on the fields, 0.314 on the paved part: 0.40 x 0.1406 + 0.60 x 0.430. 163 lb: no soil phosphorus on top of the concentration, which already holds it
+    assert L == pytest.approx(0.226 * (196 * 6.48 * 0.533 + 4 * 30.78 * 0.3144), rel=1e-3)
 
 
 def test_construction_on_the_same_basis_as_today_at_epas_ratio():
@@ -83,3 +84,29 @@ def test_both_stormwater_cases_are_in_the_rows():
     assert rows["p"].after == pytest.approx(L["tp_lb"]["pond"][1]) and rows["p_no_controls"].after == pytest.approx(L["tp_lb"]["after"][1])
     assert rows["mud"].today == rows["mud_no_controls"].today == rows["build"].today
     assert rows["soil_moved"].today is None
+
+
+def test_a_mean_from_a_median_and_cov():
+    # lognormal: mean / median = sqrt(1 + COV^2). NSQD commercial TSS: 43 x sqrt(1 + 2.0^2) = 43 x 2.2361
+    assert runoff._mean(43, 2.0) == pytest.approx(96.15, abs=0.01)
+    E = runoff.PARAMS["emc"]
+    assert [round(x, 1) for x in E["paved"]["tss"]] == [96.2, 152.8, 275.8]      # commercial 43, COV 2.0; industrial 81, 1.6; freeways 99, 2.6
+    assert [round(x, 3) for x in E["paved"]["tp"]] == [0.344, 0.430, 0.515]      # 0.22, 1.2; 0.25, 1.4; 0.25, 1.8
+    assert E["paved"]["tn"][0] == pytest.approx(1.5 * 1.3454 + 0.6 * 1.4866, abs=0.001)    # TKN + NO2+NO3, each a mean: 2.91
+    assert E["roof"]["tss"][1] == pytest.approx(53.67, abs=0.01)                 # Marquette 24 at COV 2.0
+    assert E["turf"]["tss"][1] == pytest.approx(87.43, abs=0.01)                 # open space 48.5, COV 1.5
+
+
+def test_the_finished_site_reads_like_a_commercial_or_industrial_outfall():
+    # Load-weighted concentration with no controls, checked against NSQD's outfalls, which the surfaces were not fitted to as a whole: between commercial's 96 and industrial's 153
+    L = runoff.loads(200, 36)
+    c = L["tss_t"]["after"][1] * 2000 / (0.226 * 200 * 18.63)
+    assert 96 < c < 153
+    # and 0.2-0.3 tons and 1-2 lb of phosphorus an acre a year, the usual range for commercial land
+    assert 0.2 < L["tss_t"]["after"][1] / 200 < 0.3 and 1 < L["tp_lb"]["after"][1] / 200 < 2
+
+
+def test_after_with_means_by_hand():
+    L = runoff.loads(200, 36)["tss_t"]["after"][1]
+    # 100 ac x 30.78 in x (0.4 x 53.67 + 0.6 x 152.83 = 113.17) + 100 ac x 6.48 in x 87.43
+    assert L == pytest.approx(0.226 * (100 * 30.78 * 113.17 + 100 * 6.48 * 87.43) / 2000, rel=1e-3)      # 45.7 tons

@@ -5,7 +5,7 @@ Screening level, for a review or a public estimate, not a calibrated model:
   runoff   Simple Method (Schueler 1987), split by surface: R = P x 0.9 x Rv, with Rv by land cover from the Runoff Reduction technical memo
            (Hirschman, Collins and Schueler 2008, Table 4): 0.95 impervious, 0.20 turf and 0.03 forest on hydrologic soil group B (by soil group later).
            Cropland has no value there: 0.20 [A], as turf, since row crop curve numbers on soil group B (78-81, TR-55) are above lawn's (61-69)
-  loads    L (lb/yr) = 0.226 x R (in) x C (mg/L) x A (ac), with event mean concentrations C by surface
+  loads    L (lb/yr) = 0.226 x R (in) x C (mg/L) x A (ac), with mean concentrations C by surface
   controls two cases, everywhere: no controls, and typical wet pond performance on the captured share of runoff (removal from the Center for Watershed
            Protection's national database, 2000, as printed in SEMCOG 2008 Table 9.5). 80% TSS is what wet ponds typically do, in any state, and also the
            level Michigan's post-construction standard asks for (EGLE MS4 permits, Kent County Drain Commissioner rules). Infiltration is the stronger option
@@ -22,7 +22,47 @@ LB = 0.226          # lb per (ac x in x mg/L)
 GAL_PER_AC_IN = 27154.0
 PJ = 0.9            # share of rain events that produce runoff (Simple Method)
 
-# Event mean concentrations, mg/L: [lo, mid, hi]. Mid is the Michigan source where one exists.
+# Loads need the mean concentration, not the geometric mean or median: for a lognormal, mean = median x sqrt(1 + COV^2).
+def _mean(median, cov):
+    return median * (1 + cov * cov) ** 0.5
+
+
+# NSQD v1.1 (Maestre and Pitt 2005), Table 3: [median, COV] at outfalls, across U.S. municipalities. TN is TKN + NO2+NO3, each its own mean.
+_NSQD = {"commercial": {"tss": (43, 2.0), "tp": (0.22, 1.2), "tkn": (1.5, 0.9), "no": (0.6, 1.1)},
+         "industrial": {"tss": (81, 1.6), "tp": (0.25, 1.4), "tkn": (1.4, 1.1), "no": (0.69, 0.92)},
+         "freeways": {"tss": (99, 2.6), "tp": (0.25, 1.8), "tkn": (2.0, 1.4), "no": (0.28, 1.2)},
+         # Open space's TP COV (3.5, on 68 events) reflects a few extreme values, so mixed open space's 1.1 is used with open space's median [A]
+         "open_space": {"tss": (48.5, 1.5), "tp": (0.31, 1.1), "tkn": (0.74, 0.9), "no": (0.59, 0.9)},
+         "mixed_open": {"tss": (78, 1.6), "tp": (0.25, 1.1), "tkn": (1.1, 0.9), "no": (0.7, 0.8)}}
+
+
+def _nsqd(use, k):
+    u = _NSQD[use]
+    return _mean(*u[k]) if k != "tn" else _mean(*u["tkn"]) + _mean(*u["no"])
+
+
+def _nsqd3(k, uses):
+    return [_nsqd(u, k) for u in uses]
+
+
+# Event mean concentrations, mg/L: [lo, mid, hi], means. A national source where one has the surface (NSQD); the choices are in the methods log.
+# NSQD has outfalls, not surfaces: pavement takes commercial, industrial and freeway outfalls as its range. Marquette's parking lots (USGS WRIR 97-4242 Table 4: 110 clean,
+# 138 with data the authors mark unreliable, geometric means) and MPCA's commercial 75 are not used; Marquette's clean figure as a mean, about 208, falls inside the range.
+# Roofs have no national source: Marquette's commercial roofs (geometric means 24, 0.09, TKN 1.7 + NO 0.57) as means at NSQD commercial's COVs, MPCA's values as the low end.
+# Turf: MPCA open space low, NSQD open space mid, mixed open space high. Marquette's lawns (TSS 262, TP 2.33) and Madison's (TP 2.67) are not used: a few fertilized lawns, source-area samples.
+ROOF_MEAN = {"tss": _mean(24, 2.0), "tp": _mean(0.09, 1.2), "tn": _mean(1.7, 0.9) + _mean(0.57, 1.1)}
+_PAVED, _ROOF_SHARE = ("commercial", "industrial", "freeways"), 0.40
+_EMC = {
+    "roof": {"tss": [20, ROOF_MEAN["tss"], ROOF_MEAN["tss"]], "tp": [0.03, ROOF_MEAN["tp"], ROOF_MEAN["tp"]], "tn": [1.5, ROOF_MEAN["tn"], ROOF_MEAN["tn"]], "sources": ["usgs_marquette", "mpca_emc", "nsqd11"]},
+    "paved": {k: _nsqd3(k, _PAVED) for k in ("tss", "tp", "tn")} | {"sources": ["nsqd11"]},
+    "turf": {"tss": [21, _nsqd("open_space", "tss"), _nsqd("mixed_open", "tss")], "tp": [0.19, _nsqd("open_space", "tp"), _mean(0.31, 3.5)], "tn": [1.5, _nsqd("open_space", "tn"), _nsqd("mixed_open", "tn")], "sources": ["mpca_emc", "stepl", "nsqd11"]},
+    # Row crops have no national mean: MPCA recommends no TSS EMC (range 50-160, its middle 100 [A]). TP: MPCA's review median 0.533 mid, as a mean at COV 1 high [A], STEPL's 0.3 low. TN 1.9 (STEPL)
+    "farm": {"tss": [50, 100, 160], "tp": [0.3, 0.533, _mean(0.533, 1.0)], "tn": [1.9, 1.9, 1.9], "sources": ["mpca_emc", "stepl"], "assumed": True},
+    "woods": {"tss": [26, 72, 140], "tp": [0.03, 0.09, 0.45], "tn": [0.2, 0.2, 0.2], "sources": ["mpca_emc", "stepl"]},
+}
+# Land already built: its roofs and paving as the campus's are, at the campus's roof share
+_EMC["built"] = {k: [_ROOF_SHARE * _EMC["roof"][k][i] + (1 - _ROOF_SHARE) * _EMC["paved"][k][i] for i in range(3)] for k in ("tss", "tp", "tn")} | {"sources": ["nsqd11", "usgs_marquette"]}
+
 PARAMS = {
     # the impairments a site's runoff can add to, of the groups ATTAINS listings fall in (waterledger_data.waters.ORDER): not bacteria or mercury in fish
     "listed_groups": ["sed", "nut", "temp", "salt", "do", "bio", "flow", "oil", "metal"],
@@ -31,18 +71,9 @@ PARAMS = {
     "curve_numbers": {"pervious_after": hydrology.CN_POST_PERV, "impervious": hydrology.CN_IMP, "sources": ["nrcs_tr55"]},
     # Runoff coefficients by land cover: Runoff Reduction memo Table 4, soil group B. farm [A]: no cropland value there; not below turf (see above)
     "rv": {"imp": 0.95, "turf": 0.20, "farm": 0.20, "woods": 0.03, "sources": ["simple_method", "runoff_reduction2008"]},
-    "emc": {
-        # Marquette, Michigan source areas (USGS WRIR 97-4242, Table 4, geometric means); TN = TKN + NO2+NO3
-        "roof": {"tss": [20, 24, 24], "tp": [0.03, 0.09, 0.09], "tn": [1.5, 2.3, 2.3], "sources": ["usgs_marquette", "mpca_emc"]},
-        "paved": {"tss": [75, 138, 201], "tp": [0.2, 0.21, 0.25], "tn": [1.5, 1.8, 2.5], "sources": ["usgs_marquette", "mpca_emc", "nsqd", "stepl"]},
-        "turf": {"tss": [11, 21, 70], "tp": [0.15, 0.19, 0.19], "tn": [1.5, 1.5, 1.5], "sources": ["mpca_emc", "stepl"]},
-        # Row crops: MPCA recommends no TSS EMC (range 50-160); TP 0.3 (STEPL) to 0.53 (MPCA review median); TN 1.9 (STEPL)
-        "farm": {"tss": [50, 100, 160], "tp": [0.3, 0.3, 0.53], "tn": [1.9, 1.9, 1.9], "sources": ["mpca_emc", "stepl"], "assumed": True},
-        "woods": {"tss": [26, 72, 140], "tp": [0.03, 0.09, 0.45], "tn": [0.2, 0.2, 0.2], "sources": ["mpca_emc", "stepl"]},
-        "built": {"tss": [75, 75, 201], "tp": [0.2, 0.2, 0.25], "tn": [2.0, 2.0, 2.5], "sources": ["mpca_emc", "stepl", "nsqd"]},
-    },
+    "emc": _EMC,
     "before_imp": {"farm": 0.02, "woods": 0.01, "built": 0.60},     # [A] impervious share of the land as it is now
-    "after": {"imp": 0.50, "imp_range": [0.40, 0.60], "roof_share": 0.40},   # [A] roofs and paving; roofs as a share of that
+    "after": {"imp": 0.50, "imp_range": [0.40, 0.60], "roof_share": _ROOF_SHARE},   # [A] roofs and paving; roofs as a share of that
     # Removal by practice (share removed): the national database's medians, SEMCOG Table 9.5. Captured share of annual runoff [A]. "standard" is Michigan's rule, for its pages.
     "controls": {
         "captured": [0.75, 0.85, 0.95],
