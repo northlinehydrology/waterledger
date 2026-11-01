@@ -208,7 +208,7 @@ def dest_for(p, cool, sew_mgd):
     return {"dest": ("water" if evap else "septic") if why else "sewer", "q": q, "sys": bool(p["w"]), "room": room, "why": why}
 
 
-def scenario(gid, mw=None, cool="dry", src=None, dest=None, acres=None, before=None, imp=0.5, power="mi_mix", h12=0, name=None):
+def scenario(gid, mw=None, cool="dry", src=None, dest=None, acres=None, before=None, imp=0.5, power="state_mix", h12=0, name=None):
     p = place(gid)
     # the page's starting settings for a place [A]: cities a smaller campus on a smaller, built-up site; townships 300 MW on farmland
     city = p["k"] == "city"

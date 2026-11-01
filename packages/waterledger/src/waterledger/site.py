@@ -10,6 +10,24 @@ from waterledger.facility import DataCenter
 from waterledger.place import Place
 
 
+POWER_ALIASES = {"mi_mix": "state_mix"}     # Michigan's name for the state's own mix before 3.9.0; it still works
+
+
+class _PowerPlants(dict):
+    """est.power_plants: {option: water at power plants}, which also answers to an option's old name."""
+
+    def __missing__(self, key):
+        if key in POWER_ALIASES:
+            return self[POWER_ALIASES[key]]
+        raise KeyError(key)
+
+    def __contains__(self, key):
+        return super().__contains__(POWER_ALIASES.get(key, key))
+
+    def get(self, key, default=None):
+        return super().get(POWER_ALIASES.get(key, key), default)
+
+
 def local_weather(est):
     """The estimate with its water and electricity from the model run at the place's own ERA5 grid cell, the way a state's builder runs a region."""
     from waterledger_data.climate import hourly_weather
@@ -46,17 +64,17 @@ class Site(BaseModel):
         if weather == "local":
             est = local_weather(est)
         ref = states.provider(self.place.state).reference(self.place)
-        power = self.power or ref["power"]
+        power = POWER_ALIASES.get(self.power, self.power) or ref["power"]
         if power not in ref["power_options"]:
             raise ValueError(f"power must be one of {sorted(ref['power_options'])}, not {power!r}")
         est = est.model_copy(update={"site": est.site.model_copy(update={"power": power}), "comparisons": comparisons.comparisons(est, ref), "equivalents": comparisons.equivalents(est, ref), "before_after": comparisons.site_before_after(est, ref), "household_wells": comparisons.wells_summary(self.place.context().supply.household_wells),
-                                      "power_plants": comparisons.plant_waters(est.electricity, ref["power_options"]) if est.electricity else {}})
+                                      "power_plants": _PowerPlants(comparisons.plant_waters(est.electricity, ref["power_options"])) if est.electricity else {}})
         return est.model_copy(update={"levels": levels.site_levels(est, ref)})
 
     def by_design(self, designs=("dry", "hybrid", "towers")):
         """The same campus with each cooling design, on this site's power option: water evaporated at the campus and at power plants, electricity, and which evaporates least."""
         ref = states.provider(self.place.state).reference(self.place)
-        power = self.power or ref["power"]
+        power = POWER_ALIASES.get(self.power, self.power) or ref["power"]
         results = {}
         for k in designs:
             e = self.model_copy(update={"facility": self.facility.model_copy(update={"cooling": k})}).estimate()

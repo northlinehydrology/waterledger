@@ -197,7 +197,7 @@ POWER = {
 # MWh. Macknick et al. 2012 medians and ranges (Table 2 consumption, Table 3 withdrawal; wind and PV withdrawal equals consumption, p. 6)
 # unless noted; blends are weighted by Michigan's 2024 generation (EIA).
 POWER_SUPPLY = {
-    "mi_mix": {"label": "Michigan's current mix", "gal_mwh": round(_MI["consumed"] * L_KWH_TO_GAL_MWH), "lo": round(_MI["consumed_lo"] * L_KWH_TO_GAL_MWH),
+    "state_mix": {"label": "Michigan's current mix", "gal_mwh": round(_MI["consumed"] * L_KWH_TO_GAL_MWH), "lo": round(_MI["consumed_lo"] * L_KWH_TO_GAL_MWH),
                "hi": round(_MI["consumed_hi"] * L_KWH_TO_GAL_MWH), "wd_gal_mwh": round(_MI["withdrawn"] * L_KWH_TO_GAL_MWH),
                "wd_lo": round(_MI["withdrawn_lo"] * L_KWH_TO_GAL_MWH), "wd_hi": round(_MI["withdrawn_hi"] * L_KWH_TO_GAL_MWH),
                "sources": ["eia923_2024", "eia_mi", "macknick2012"],
