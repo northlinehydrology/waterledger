@@ -13,7 +13,9 @@ Method
   cooled gen       = sum over unique (plant, generator ID, month) of steam + single-shaft CC + CC gas turbine net generation;
                      if zero while water is reported, the plant's total 2024 net generation (facility-fuel API) is used
   cooling class    = cooling type carrying most of the plant's withdrawal (ON/OC -> once-through, RC -> pond,
-                     RI/RN/RF -> tower, DC -> dry, HRI -> hybrid)
+                     RI/RN/RF -> tower, DC -> dry, HRI -> hybrid); then by water body: a fresh-water plant that draws from and returns to
+                     a built reservoir is pond class whatever its EIA code (cooling_water_bodies.csv, the same rule in every state)
+  salinity         = EIA water type by cooling system; Saline and Brackish count as saline, everything else as fresh
   flags            = cons > withdrawal; cons > 1,500 gal/MWh; cons == 0 for once-through or pond with withdrawal > 0;
                      withdrawal > 25,000 gal/MWh for tower or pond (recirculation reported as withdrawal);
                      water reported with no generation anywhere
@@ -39,7 +41,7 @@ MK = {
     ('coal', 'once'): (250, 36350), ('coal', 'tower'): (687, 1005), ('coal', 'pond'): (545, 12225),
     ('ngcc', 'once'): (100, 11380), ('ngcc', 'tower'): (205, 255), ('ngcc', 'pond'): (240, 5950), ('ngcc', 'dry'): (2, 2),
     ('gas_steam', 'once'): (240, 35000), ('gas_steam', 'tower'): (826, 1203), ('gas_steam', 'pond'): (545, 12225),  # pond [A] coal pond
-    ('bio', 'once'): (300, 35000), ('bio', 'tower'): (553, 878), ('bio', 'pond'): (390, 450), ('bio', 'dry'): (35, 35),
+    ('bio', 'once'): (300, 35000), ('bio', 'tower'): (553, 878), ('bio', 'pond'): (390, 450), ('bio', 'dry'): (35, 35),  # dry [A]: Macknick's 35 is biogas, not steam biopower
     ('coal', 'dry'): (2, 2), ('gas_steam', 'dry'): (2, 2), ('nuclear', 'dry'): (2, 2),   # [A] dry ~ NGCC dry
 }
 TECH = {'Natural Gas Fired Combined Cycle': 'ngcc', 'Conventional Steam Coal': 'coal', 'Natural Gas Steam Turbine': 'gas_steam',
@@ -47,7 +49,24 @@ TECH = {'Natural Gas Fired Combined Cycle': 'ngcc', 'Conventional Steam Coal': '
         'Other Waste Biomass': 'bio', 'Petroleum Coke': 'coal', 'Municipal Solid Waste': 'bio',
         'Coal Integrated Gasification Combined Cycle': 'coal', 'Natural Gas Fired Combustion Turbine': 'ngcc', 'All Other': 'gas_steam',
         'Solar Thermal without Energy Storage': 'csp', 'Solar Thermal with Energy Storage': 'csp'}
+# Macknick et al. 2012, Table 2 consumption and Table 3 withdrawal, (min, max) gal/MWh, for the coal and nuclear options
+MK_RANGE = {
+    ('nuclear', 'once'): ((100, 400), (25000, 60000)), ('nuclear', 'tower'): ((581, 845), (800, 2600)), ('nuclear', 'pond'): ((560, 720), (500, 13000)),
+    ('coal', 'once'): ((100, 317), (20000, 50000)), ('coal', 'tower'): ((480, 1100), (500, 1200)), ('coal', 'pond'): ((300, 700), (300, 24000)),
+    ('coal', 'dry'): ((2, 2), (2, 2)), ('nuclear', 'dry'): ((2, 2), (2, 2)),
+}
 COOL = {'ON': 'once', 'OC': 'once', 'RC': 'pond', 'RI': 'tower', 'RN': 'tower', 'RF': 'tower', 'DC': 'dry', 'HR': 'tower', 'OT': 'tower'}
+
+
+def water_bodies():
+    return pd.read_csv(os.path.join(H, 'cooling_water_bodies.csv'))
+
+
+def by_water_body(codes, cool):
+    """A plant's cooling class after the review of its water body: built reservoirs it draws from and returns to count as pond."""
+    w = water_bodies()
+    built = set(w[w['class'] == 'reservoir'].plant_code)
+    return [('pond' if c in built else k) for c, k in zip(codes, cool)]
 
 
 def factor(tech, cool):
@@ -80,9 +99,11 @@ def main():
     gen = d.drop_duplicates(['Plant Code', 'Generator ID', 'Month'])
     wt = d[d['Water Type'].notna()].drop_duplicates('Plant Code').set_index('Plant Code')['Water Type']
     wtr = wtr.assign(**{'Water Type': wtr['Water Type'].fillna(wtr['Plant Code'].map(wt))})
+    w_saline = set(water_bodies().query("salinity == 'saline'").plant_code)
+    wtr = wtr.assign(wd_saline=np.where(wtr['Water Type'].astype(str).isin(['Saline', 'Brackish']) | wtr['Plant Code'].isin(w_saline), wtr[W], 0.0))
     wtr = wtr.assign(wd_fresh=np.where(wtr['Water Type'].astype(str).eq('Fresh'), wtr[W], 0.0),
                      cons_fresh=np.where(wtr['Water Type'].astype(str).eq('Fresh'), wtr[C], 0.0))
-    pw = wtr.groupby(['State', 'Plant Code', 'Plant Name']).agg(wd=(W, 'sum'), cons=(C, 'sum'), wd_fresh=('wd_fresh', 'sum'),
+    pw = wtr.groupby(['State', 'Plant Code', 'Plant Name']).agg(wd=(W, 'sum'), cons=(C, 'sum'), wd_fresh=('wd_fresh', 'sum'), wd_saline=('wd_saline', 'sum'),
                                                                 cons_fresh=('cons_fresh', 'sum'),
                                                                 water_type=('Water Type', lambda v: '/'.join(sorted(set(map(str, v)))))).reset_index()
     pg = gen.groupby('Plant Code').agg(cooled_gen=('net', 'sum')).reset_index()
@@ -92,6 +113,8 @@ def main():
     tg = gen.groupby(['Plant Code', 'tech']).agg(g=('net', 'sum'), n=('tech', 'size')).reset_index()
     tg = tg.sort_values(['Plant Code', 'g', 'n'], ascending=[True, False, False]).drop_duplicates('Plant Code')[['Plant Code', 'tech']]
     p = pw.merge(pg, on='Plant Code', how='left').merge(ct, on='Plant Code', how='left').merge(tg, on='Plant Code', how='left')
+
+    p['cool'] = by_water_body(p['Plant Code'], p['cool'])
 
     fac = pd.DataFrame(json.load(open(os.path.join(D, 'dl', 'api', 'facility_gen_2024.json'))))
     fac['generation'] = pd.to_numeric(fac['generation'], errors='coerce')
@@ -127,6 +150,9 @@ def main():
         cons_bu.append(mc * g / 1e6)
         wd_bu.append(mw * g / 1e6)
     p['flag'], p['cons_adj'], p['wd_adj'], p['cons_bu'], p['wd_bu'] = flags, cons_adj, wd_adj, cons_bu, wd_bu
+    p['saline_share'] = np.where(p.wd > 0, p.wd_saline / p.wd.where(p.wd > 0), 0.0)
+    p['wd_saline_adj'] = p.wd_adj * p.saline_share
+    p['wd_saline_bu'] = p.wd_bu * p.saline_share
 
     sg = pd.DataFrame(json.load(open(os.path.join(D, 'dl', 'api', 'state_gen_2024.json'))))
     sg['generation'] = pd.to_numeric(sg['generation'], errors='coerce') * 1000.0     # thousand MWh -> MWh
@@ -149,6 +175,7 @@ def main():
             'wd_gal_mwh_rep': round(gpm(g.wd.sum())), 'cons_gal_mwh_rep': round(gpm(g.cons.sum()), 1),
             'wd_l_kwh_rep': round(lk(g.wd.sum()), 2), 'cons_l_kwh_rep': round(lk(g.cons.sum()), 3),
             'wd_fresh_l_kwh_rep': round(lk(g.wd_fresh.sum()), 2), 'cons_fresh_l_kwh_rep': round(lk(g.cons_fresh.sum()), 3),
+            'wd_saline_l_kwh_adj': round(lk(g.wd_saline_adj.sum()), 3),
             'wd_l_kwh_adj': round(lk(g.wd_adj.sum()), 2), 'cons_l_kwh_adj': round(lk(g.cons_adj.sum()), 3),
             'wd_l_kwh_macknick_bu': round(lk(g.wd_bu.sum()), 2), 'cons_l_kwh_macknick_bu': round(lk(g.cons_bu.sum()), 3),
             'consumed_frac_adj': round(g.cons_adj.sum() / g.wd_adj.sum(), 4) if g.wd_adj.sum() > 0 else np.nan,
@@ -169,6 +196,7 @@ def main():
     os.makedirs(os.path.join(D, 'out'), exist_ok=True)
     out.to_csv(os.path.join(D, 'out', 'states_2024.csv'), index=False)
     p.to_csv(os.path.join(D, 'out', 'plants_2024.csv'), index=False)
+    p[p.flag != ''].to_csv(os.path.join(H, 'flagged_plants_2024.csv'), index=False)
     pd.set_option('display.width', 250, 'display.max_rows', 80)
     print(out.drop(columns=['flagged']).to_string())
 

@@ -1,7 +1,7 @@
 # Reconciling plant-based and Siddik et al. power-plant water intensities
 
 Scripts: `reconcile.py` (balancing-authority comparison, `recon_ba_2022_2024.csv`) and `combine.py` (state table,
-`state_power_water_combined_2024.csv`). Status: adopted Oct 30, 2026; `tables/state_power_water_2024.csv` holds these central values and ranges.
+`state_power_water_combined_2024.csv`). Status: adopted Oct 30, 2026; `tables/state_power_water_2024.csv` holds these central values and ranges, since Nov 1, 2026 with plants classified by water body (methods log). The numbers below are from before that change; the r values are not affected.
 
 ## Summary
 

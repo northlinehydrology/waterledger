@@ -8,8 +8,9 @@ For each state and water type (L/kWh):
   variances: plant-by-plant 2024-2022 differences, split into reporting noise and real change with the 2023 data; (ln r)^2 on E2;
              shared error from the literature and from Macknick-filled plants, added to the interval only
 
-Run reconcile.py first. Inputs in $WL_POWER_WORK as there, plus dl2023/, out/ba_compare_2024.csv, out/states_2024.csv, dl/eia860/x/2___Plant_Y2024.xlsx,
-dl/api/facility_gen_2024.json. Output: state_power_water_combined_2024.csv beside this script.
+Run states.py, ba_compare.py and imports.py first; reconcile.py only when its r values need rebuilding (they compare Siddik et al. with raw reports, so
+the cooling class doesn't move them). Inputs in $WL_POWER_WORK as there, plus dl2023/, out/ba_compare_2024.csv, out/states_2024.csv, dl/eia860/x/2___Plant_Y2024.xlsx,
+dl/api/facility_gen_2024.json. Output: state_power_water_combined_2024.csv beside this script, and the package's state table.
 """
 import json, os
 import numpy as np
@@ -20,7 +21,9 @@ import states as S
 H, D, L = X.H, X.D, X.L
 TAB = os.environ.get('WL_STATE_TABLE', os.path.join(H, '..', '..', '..', 'packages', 'waterledger-data', 'src', 'waterledger_data', 'tables', 'state_power_water_2024.csv'))
 SIG_LIT = {'c': np.log(1.08), 'w': np.log(1.24)}   # Diehl and Harris (2014): EIA-reported total consumption 8% below, withdrawal 24% above, the model estimates
-SIG_MACKNICK = 0.35                                # [A] Macknick Table 2 nuclear once-through 100-400 gal/MWh: ln(400/100)/4, about a 95% range
+# [A] Macknick medians standing in for reports. Consumed: Table 2 nuclear once-through 100-400 gal/MWh, ln(400/100)/4, about a 95% range. Withdrawn: nearly all such plants
+# are reservoirs after the water body review, Table 3 nuclear pond 500-13,000 gal/MWh, ln(13000/500)/4
+SIG_MACKNICK = {'c': 0.35, 'w': 0.81}
 SIG_FILL = 0.5                                     # [A] non-reporting plants' cooling is unknown (dry to tower), so half the fill is one standard deviation
 SIG_FLOOR = 0.02                                   # [A] smallest relative year-to-year error, for states where few plants change
 BIO = {'WWW', 'MLG', 'ORW', 'OBS', 'OBG', 'AB', 'BLQ', 'LFG', 'MSW', 'OBL', 'SLW', 'WDL', 'WDS'}
@@ -69,6 +72,8 @@ def main():
     tab = pd.read_csv(TAB)
     bc = pd.read_csv(os.path.join(D, 'out', 'ba_compare_2024.csv'), index_col=0)
     st = pd.read_csv(os.path.join(D, 'out', 'states_2024.csv')).set_index('state')
+    for col, src in [('consumed_state_l_per_kwh', 'cons_l_kwh_adj'), ('withdrawn_state_l_per_kwh', 'wd_l_kwh_adj'), ('n_plants', 'n_plants'), ('n_flagged', 'n_flagged')]:
+        tab[col] = tab.state.map(st[src])      # this run's plant totals, under the water body review
     rec = pd.read_csv(os.path.join(H, 'recon_ba_2022_2024.csv'), index_col=0)
     pl = pd.read_excel(os.path.join(D, 'dl/eia860/x/2___Plant_Y2024.xlsx'), header=1)
     ba860 = pl.set_index('Plant Code')['Balancing Authority Code']
@@ -135,7 +140,7 @@ def main():
             mu_nor = np.exp((1 - w2) * np.log(e1) + w2 * np.log(max(e2p, 1e-6)))
             fshare = wt(ss.flag, bb.flag) / e1
             fillv = wt(ss.fill, bb.fill)
-            shared = np.sqrt(SIG_LIT[k] ** 2 + (fshare * SIG_MACKNICK) ** 2 + (fillv / e1 * SIG_FILL) ** 2)
+            shared = np.sqrt(SIG_LIT[k] ** 2 + (fshare * SIG_MACKNICK[k]) ** 2 + (fillv / e1 * SIG_FILL) ** 2)
             sp = np.sqrt(1 / (1 / s1 ** 2 + 1 / s2 ** 2) + shared ** 2)
             bu_s = st[bu].get(r.state, np.nan)
             bu_b = bc.loc[r.main_ba, bubcol] if has_b and r.main_ba in bc.index else np.nan
@@ -143,6 +148,11 @@ def main():
             sid_v = st[sid].get(r.state, np.nan)
             lo_s, hi_s = mu * np.exp(-1.96 * sp), mu * np.exp(1.96 * sp)
             env = [x for x in (lo_s, hi_s, e1, e2, bu_v) if x == x]
+            if k == 'w':        # saline share of the plant-based withdrawal; reported saline plants stay saline, fill plants are towers on fresh water
+                sal_s = st['wd_saline_l_kwh_adj'].get(r.state, np.nan)
+                sal_s = 0.0 if not sal_s == sal_s else sal_s
+                sal_b = bc.loc[r.main_ba, 'wd_saline_adj_l_kwh'] if has_b and r.main_ba in bc.index else sal_s
+                row['saline_share'] = float(np.clip(wt(sal_s, sal_b) / e1, 0, 1))
             row.update({f'{nm}_proposed': round(mu, 3), f'{nm}_lo': round(min(env), 3), f'{nm}_hi': round(max(env), 3),
                         f'{nm}_lo_stat': round(lo_s, 3), f'{nm}_hi_stat': round(hi_s, 3),
                         f'{nm}_E1_2024_plants': round(e1, 3), f'{nm}_E2_2022_on_same_basis': round(e2, 3), f'{nm}_E2_before_r': round(e2p, 3),
@@ -153,6 +163,14 @@ def main():
         out.append(row)
     o = pd.DataFrame(out)
     o.to_csv(os.path.join(H, 'state_power_water_combined_2024.csv'), index=False)
+    # the package's table: central values and ranges from this run; withdrawn splits into fresh and saline by the plant-based share, and adds back to withdrawn
+    x = o.set_index('state')
+    for nm in ('consumed', 'withdrawn'):
+        tab[f'{nm}_l_per_kwh'] = tab.state.map(x[f'{nm}_proposed'])
+        tab[f'{nm}_lo'], tab[f'{nm}_hi'] = tab.state.map(x[f'{nm}_lo']), tab.state.map(x[f'{nm}_hi'])
+    tab['withdrawn_saline_l_per_kwh'] = (tab.withdrawn_l_per_kwh * tab.state.map(x.saline_share)).round(3)
+    tab['withdrawn_fresh_l_per_kwh'] = (tab.withdrawn_l_per_kwh - tab.withdrawn_saline_l_per_kwh).round(3)
+    tab.to_csv(TAB, index=False)
     pd.set_option('display.width', 250, 'display.max_columns', 40)
     for nm in ['consumed', 'withdrawn']:
         c = o.dropna(subset=[f'{nm}_proposed'])

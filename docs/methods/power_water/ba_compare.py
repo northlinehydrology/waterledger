@@ -9,8 +9,8 @@ fg=fac.groupby('plantCode').generation.sum()
 gen_ba=fg.groupby(fg.index.map(ba)).sum()
 p=pd.read_csv(os.path.join(D,'out/plants_2024.csv')); p['ba']=p['Plant Code'].map(ba)
 L=3.78541/1000
-agg=p.groupby('ba')[['wd','cons','wd_adj','cons_adj','cons_bu','wd_bu']].sum()
-t=pd.read_csv('/Users/andrew/repos/waterledger/packages/waterledger-data/src/waterledger_data/tables/grid_water_2022.csv').set_index('ba')
+agg=p.groupby('ba')[['wd','cons','wd_adj','cons_adj','cons_bu','wd_bu','wd_saline_adj']].sum()
+t=pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','..','packages','waterledger-data','src','waterledger_data','tables','grid_water_2022.csv')).set_index('ba')
 o=pd.DataFrame({'gen_twh_2024':gen_ba/1e6})
 for c in agg: o[c+'_l_kwh']=agg[c]*1e6/gen_ba*L
 o=o.join(t,how='inner')

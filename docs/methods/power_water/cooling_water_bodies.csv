@@ -1,0 +1,70 @@
+plant_code,state,plant,eia_source,eia_discharge,class,salinity,reason,evidence
+170,AR,Lake Catherine,Lake Catherine,Lake Catherine/nan,once,,on the Ouachita River: the river far exceeds the plant,EIA-860 6_2 Cooling source and discharge
+203,AR,McClellan (AR),Ouachita River,Ouachita River,once,,river source,EIA-860 6_2 Cooling source and discharge
+8055,AR,Arkansas Nuclear One,Lake Dardanelle/Lake Dardenelle,Lake Dardanelle/Lake Dardenelle,once,,"built, but on the Arkansas River main stem: the river far exceeds the plant",EIA-860 6_2 Cooling source and discharge
+400,CA,Haynes,Pacific Ocean,San Gabriel River,once,saline,Pacific Ocean; EIA water type Other,EIA-860 6_2 Cooling source
+404,CA,Scattergood,Pacific Ocean/nan,Pacific Ocean/nan,once,saline,Pacific Ocean; EIA water type Other,EIA-860 6_2 Cooling source
+619,FL,Riviera,Lake Worth,Lake Worth/nan,once,,saline lagoon,EIA-860 6_2 Cooling source and discharge
+7380,FL,Midulla Generating Station,Storm Water Run Off,Payne Creek,reservoir,,"built reservoir, drawn from and returned to",EIA-860 6_2 Cooling source and discharge; built status not checked against a further source
+869,IL,Dresden Generating Station,Kankakee River,Kankakee River,once,,"river source and discharge, though EIA also reports a pond",EIA-860 6_2 Cooling source and discharge
+876,IL,Kincaid Generation LLC,Sangchris Lake,Sangchris Lake,reservoir,,"built reservoir, drawn from and returned to",EIA-860 6_2 Cooling source and discharge; built status not checked against a further source
+976,IL,Marion,Lake Egypt,Lake of Egypt,reservoir,,"built reservoir, drawn from and returned to",EIA-860 6_2 Cooling source and discharge; built status not checked against a further source
+6017,IL,Newton,"Laws Creek, Sandy Creek",Newton Cooling Lake,reservoir,,"built reservoir, drawn from and returned to",EIA-860 6_2 Cooling source and discharge; built status not checked against a further source
+10245,IN,ArcelorMittal Burns Harbor,Lake Michigan,Lake Michigan,once,,Great Lake,EIA-860 6_2 Cooling source and discharge
+50733,IN,Gary Works,Lake Michigan,Lake Michigan,once,,Great Lake,EIA-860 6_2 Cooling source and discharge
+1241,KS,La Cygne,La Cygne Lake,La Cygne Lake,reservoir,,"built reservoir, drawn from and returned to",EIA-860 6_2 Cooling source and discharge; built status not checked against a further source
+1384,KY,Cooper,Lake Cumberland,Lake Cumberland,once,,"built, but on the Cumberland River main stem",EIA-860 6_2 Cooling source and discharge
+1396,LA,Coughlin Power Station,Bayou Cocodrie,Mountain Bayou/Dossman Lake,reservoir,,"built reservoir, drawn from and returned to",EIA-860 6_2 Cooling source and discharge; built status not checked against a further source
+1400,LA,Teche,Charenton Canal,Charenton Canal/nan,once,,saline canal,EIA-860 6_2 Cooling source and discharge
+6190,LA,Brame Energy Center,Lake Rodemacher/Rodemacher Lake,Lake Rodemacher/Rodemacher Lake,reservoir,,"built reservoir, drawn from and returned to",EIA-860 6_2 Cooling source and discharge; built status not checked against a further source
+1599,MA,Canal,Cape Cod Canal,Cape Cod Canal,once,,saline canal,EIA-860 6_2 Cooling source and discharge
+1710,MI,J H Campbell,Lake Michigan/Pigeon Lake,Lake Michigan,once,,Great Lake,EIA-860 6_2 Cooling source and discharge
+6000,MI,Donald C Cook,Lake Michigan,Lake Michigan,once,,Great Lake,EIA-860 6_2 Cooling source and discharge
+1891,MN,Syl Laskin,Colby Lake,Colby Lake,once,,natural lake,EIA-860 6_2 Cooling source and discharge
+1904,MN,Black Dog,Minnesota River,Minnesota River,once,,river source,EIA-860 6_2 Cooling source and discharge
+1915,MN,Allen S King,Lake St. Croix,Lake St. Croix,once,,natural widening of the St. Croix,EIA-860 6_2 Cooling source and discharge
+2168,MO,Thomas Hill,Thomas Hill Lake,Thomas Hill Lake,reservoir,,"built reservoir, drawn from and returned to",EIA-860 6_2 Cooling source and discharge; built status not checked against a further source
+8054,MS,Gerald Andrus,Lake Ferguson,Mississippi River,once,,oxbow of the Mississippi,EIA-860 6_2 Cooling source and discharge
+2712,NC,Roxboro,Hyco Lake (Hyco River),Hyco Lake (Hyco River),reservoir,,"built reservoir, drawn from and returned to",EIA-860 6_2 Cooling source and discharge; built status not checked against a further source
+2718,NC,G G Allen,Lake Wylie,Lake Wylie,once,,"built, but on the Catawba main stem, and the plant is small against it",EIA-860 6_2 Cooling source and discharge
+2727,NC,Marshall (NC),Lake Norman,Lake Norman,reservoir,,"built reservoir, drawn from and returned to",EIA-860 6_2 Cooling source and discharge; built status not checked against a further source
+6038,NC,McGuire,Lake Norman,Lake Norman,reservoir,,"built reservoir, drawn from and returned to",EIA-860 6_2 Cooling source and discharge; built status not checked against a further source
+8042,NC,Belews Creek,Belews Lake,Belews Lake,reservoir,,"built reservoir, drawn from and returned to",EIA-860 6_2 Cooling source and discharge; built status not checked against a further source
+2823,ND,Milton R Young,Nelson Lake,Nelson Lake,reservoir,,"built reservoir, drawn from and returned to",EIA-860 6_2 Cooling source and discharge; built status not checked against a further source
+2226,NE,Canaday,Tri-County Supply Canal,Tri-County Supply Canal,once,,irrigation canal from a river,EIA-860 6_2 Cooling source and discharge
+6077,NE,Gerald Gentleman,Sutherland Supply Canal,Sutherland Reservoir,reservoir,,"built reservoir, drawn from and returned to",EIA-860 6_2 Cooling source and discharge; built status not checked against a further source
+2527,NY,Greenidge Generation LLC,Seneca Lake,Keuka Outlet to Seneca Lake/nan,once,,natural lake,EIA-860 6_2 Cooling source and discharge
+2589,NY,Nine Mile Point Nuclear Station,Lake Ontario,Lake Ontario,once,,Great Lake,EIA-860 6_2 Cooling source and discharge
+2594,NY,Oswego Harbor Power,Lake Ontario,Lake Ontario,once,,Great Lake,EIA-860 6_2 Cooling source and discharge
+6110,NY,James A Fitzpatrick,LAKE ONTARIO,LAKE ONTARIO,once,,Great Lake,EIA-860 6_2 Cooling source and discharge
+6122,NY,R E Ginna Nuclear Power Plant,LAKE ONTARIO,LAKE ONTARIO,once,,Great Lake,EIA-860 6_2 Cooling source and discharge
+2878,OH,FirstEnergy Bay Shore,Lake Erie,Lake Erie,once,,Great Lake,EIA-860 6_2 Cooling source and discharge
+3166,PA,Peach Bottom,Conowingo Pond,Conowingo Pond,once,,"built, but on the Susquehanna main stem",EIA-860 6_2 Cooling source and discharge
+50397,PA,Pixelle Specialty Solutions LLC - Spring,North Codorus Creek,North Codorus Creek,once,,creek source; small,EIA-860 6_2 Cooling source and discharge
+3265,SC,Oconee,Lake Keowee,Lake Keowee,reservoir,,"built reservoir, drawn from and returned to",EIA-860 6_2 Cooling source and discharge; built status not checked against a further source
+3287,SC,McMeekin,Lake Murray,Saluda River,once,,"discharges to the Saluda River, not back to the reservoir",EIA-860 6_2 Cooling source and discharge
+3298,SC,Williams,Back River Reservoir,Cooper River,once,,"discharges to the Cooper River, not back to the reservoir",EIA-860 6_2 Cooling source and discharge
+6152,TN,Sequoyah,Chickamauga Lake on Tennessee River,Chickamauga Lake on Tennessee River,once,,"built, but on the Tennessee River main stem",EIA-860 6_2 Cooling source and discharge
+3453,TX,Mountain Creek,Mountain Creek Lake,Mountain Creek Lake,reservoir,,"built reservoir, drawn from and returned to",TWDB Mountain Creek Lake: owned for cooling a generating plant; https://www.twdb.texas.gov/surfacewater/rivers/reservoirs/mountain_creek/
+3459,TX,Sabine,Sabine Lake/Sabine River,Neches River,once,,brackish estuary and river,EIA-860 6_2 Cooling source and discharge
+3460,TX,Cedar Bayou,Upper Galveston Bay,Upper Galveston Bay/nan,once,,brackish bay,EIA-860 6_2 Cooling source and discharge
+3470,TX,W A Parish,Smithers Lake,Smithers Lake,reservoir,,"built reservoir, drawn from and returned to",TWDB Smithers Lake plate: built by Houston Lighting and Power; https://www.twdb.texas.gov/surfacewater/rivers/reservoirs/smithers/
+3476,TX,Knox Lee,LAKE CHEROKEE,LAKE CHEROKEE,reservoir,,"built reservoir, drawn from and returned to",TWDB Lake Cherokee: lake water circulated to cool Knox Lee; https://www.twdb.texas.gov/surfacewater/rivers/reservoirs/cherokee/
+3491,TX,Handley,Lake Arlington,Lake Arlington,reservoir,,"built reservoir, drawn from and returned to","TWDB Lake Arlington: city water supply on Village Creek, no cooling named; EIA-860 reports code OC and 2,200 acres; https://www.twdb.texas.gov/surfacewater/rivers/reservoirs/arlington/"
+3576,TX,Ray Olinger,LAKE LAVON,LAKE LAVON,reservoir,,"built reservoir, drawn from and returned to","TWDB Lake Lavon: Corps reservoir on the East Fork Trinity, no cooling named; EIA-860 source and discharge; https://www.twdb.texas.gov/surfacewater/rivers/reservoirs/lavon/"
+3601,TX,Sim Gideon,Lake Bastrop,Lake Bastrop,reservoir,,"built reservoir, drawn from and returned to",TWDB Lake Bastrop: cooling water for Sim Gideon; https://www.twdb.texas.gov/surfacewater/rivers/reservoirs/bastrop/
+3628,TX,R W Miller,Lake Palo Pinto,Lake Palo Pinto,reservoir,,"built reservoir, drawn from and returned to","TWDB Lake Palo Pinto: water district reservoir on Palo Pinto Creek, no cooling named; EIA-860 source and discharge; https://www.twdb.texas.gov/surfacewater/rivers/reservoirs/palo_pinto/"
+4937,TX,Thomas C Ferguson,Lake Fayette,Lake Fayette,reservoir,,"built reservoir, drawn from and returned to","EIA-860 names Lake Fayette; LCRA and TWDB's 2020 survey place the plant on Lake LBJ, a built reservoir. Class is the same either way"
+4939,TX,Barney M Davis,Laguna Madre,Oso Bay,once,,"saline: draws from Laguna Madre, discharges to Oso Bay",EIA-860 6_2 Cooling source and discharge
+6243,TX,Dansby,Lake Bryan,Lake Bryan,reservoir,,"built reservoir, drawn from and returned to",TWDB Bryan Utilities Lake: steam-electric cooling; EIA-860 reports 850 acres
+55154,TX,Lost Pines 1 Power Project,Lake Bastrop,Lake Bastrop,reservoir,,"built reservoir, drawn from and returned to",TWDB Lake Bastrop: cooling water; https://www.twdb.texas.gov/surfacewater/rivers/reservoirs/bastrop/
+56806,TX,Cedar Bayou 4,Upper Galveston Bay,Upper Galveston Bay,once,,brackish bay,EIA-860 6_2 Cooling source and discharge
+6168,VA,North Anna,Lake Anna,Lake Anna,reservoir,,"built reservoir, drawn from and returned to","NRC NUREG-1437 Supp. 7 (2002), ch. 2: Lake Anna made in 1971 by damming the North Anna River as the cooling source; EIA-860 6_2 Cooling"
+3992,WI,Blount Street,Lake Monona,Lake Monona,once,,natural lake,EIA-860 6_2 Cooling source and discharge
+4040,WI,Port Washington Generating Station,Lake Michigan,Lake Michigan,once,,Great Lake,EIA-860 6_2 Cooling source and discharge
+4041,WI,South Oak Creek,Lake Michigan,Lake Michigan,once,,Great Lake,EIA-860 6_2 Cooling source and discharge
+4046,WI,Point Beach Nuclear Plant,Lake Michigan,Lake Michigan,once,,Great Lake,EIA-860 6_2 Cooling source and discharge
+4050,WI,Edgewater,Lake Michigan,Lake Michigan,once,,Great Lake,EIA-860 6_2 Cooling source and discharge
+4125,WI,Manitowoc,Lake Michigan,LAKE MICHIGAN,once,,Great Lake,EIA-860 6_2 Cooling source and discharge
+56068,WI,Elm Road Generating Station,Lake Michigan,Lake Michigan,once,,Great Lake,EIA-860 6_2 Cooling source and discharge
+3954,WV,Mt Storm,Mt Storm Lake,Mt Storm Lake,reservoir,,"built reservoir, drawn from and returned to",EIA-860 6_2 Cooling source and discharge; built status not checked against a further source
