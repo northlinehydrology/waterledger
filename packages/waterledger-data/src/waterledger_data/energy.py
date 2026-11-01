@@ -62,16 +62,23 @@ def wind_solar(pv_share):
             "sources": ["macknick2012", "eia_sep2024"], "note": f"Wind 0 and utility solar about 1 (0 to 5) for panel washing, weighted by the state's 2024 wind and solar generation (PV {round(100 * pv_share)}%)"}
 
 
+def withdrawal_split(wd_gal_mwh, saline_gal_mwh):
+    """A power option's withdrawal split into whole gallons of fresh and saline water that add back to it."""
+    saline = min(round(saline_gal_mwh), wd_gal_mwh)
+    return {"wd_fresh_gal_mwh": wd_gal_mwh - saline, "wd_saline_gal_mwh": saline}
+
+
 def state_power_water(state):
     """Water at power plants per kWh of electricity used in a state, 2024, from plant-reported data (EIA-923 cooling water and
     EIA-860, flagged reports replaced by Macknick et al. 2012 medians, blended with the main balancing authority by the state's
     net import share, then updated with the 2022 plant reports and Siddik et al. 2024 on the same basis; docs/methods/power_water): {"consumed", "consumed_lo", "consumed_hi", "withdrawn", "withdrawn_lo",
-    "withdrawn_hi" (L/kWh), "main_ba", "import_share", "wind_share", "solar_share", "pv_share_of_wind_solar", "year"}, or None."""
+    "withdrawn_hi" (L/kWh), "withdrawn_fresh", "withdrawn_saline" (L/kWh, adding to "withdrawn"; saline includes brackish), "main_ba", "import_share", "wind_share", "solar_share", "pv_share_of_wind_solar", "year"}, or None."""
     num = lambda v: float(v) if v not in ("", None) else None
     for r in csv.DictReader(open(STATE_TABLE)):
         if r["state"] == state and r["consumed_l_per_kwh"]:
             return {"consumed": num(r["consumed_l_per_kwh"]), "consumed_lo": num(r["consumed_lo"]), "consumed_hi": num(r["consumed_hi"]),
                     "withdrawn": num(r["withdrawn_l_per_kwh"]), "withdrawn_lo": num(r["withdrawn_lo"]), "withdrawn_hi": num(r["withdrawn_hi"]),
+                    "withdrawn_fresh": num(r["withdrawn_fresh_l_per_kwh"]), "withdrawn_saline": num(r["withdrawn_saline_l_per_kwh"]),
                     "main_ba": r["main_ba"], "import_share": num(r["import_share"]), "wind_share": num(r["wind_share"]),
                     "solar_share": num(r["solar_share"]), "pv_share_of_wind_solar": num(r["pv_share_of_wind_solar"]), "year": 2024}
     return None

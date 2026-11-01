@@ -22,6 +22,7 @@ def options(state, grid_water, order=None):
     if SW:
         out["state_mix"] = {"label": f"{name}'s current mix", "gal_mwh": g_(SW["consumed"]), "lo": g_(SW["consumed_lo"]), "hi": g_(SW["consumed_hi"]),
                             "wd_gal_mwh": g_(SW["withdrawn"]), "wd_lo": g_(SW["withdrawn_lo"]), "wd_hi": g_(SW["withdrawn_hi"]),
+                            **en.withdrawal_split(g_(SW["withdrawn"]), SW["withdrawn_saline"] * en.L_KWH_TO_GAL_MWH),
                             "sources": ["eia923_2024", "eia_sep2024", "macknick2012", "siddik2024"],
                             "note": f"{SW['consumed']:.2f} L/kWh consumed ({SW['consumed_lo']:.2f} to {SW['consumed_hi']:.2f}) and {SW['withdrawn']:.0f} withdrawn "
                                     f"({SW['withdrawn_lo']:.0f} to {SW['withdrawn_hi']:.0f}): {name}'s plants' 2024 reports to EIA, flagged and missing reports filled with "

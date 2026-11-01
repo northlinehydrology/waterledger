@@ -200,6 +200,7 @@ POWER_SUPPLY = {
     "mi_mix": {"label": "Michigan's current mix", "gal_mwh": round(_MI["consumed"] * L_KWH_TO_GAL_MWH), "lo": round(_MI["consumed_lo"] * L_KWH_TO_GAL_MWH),
                "hi": round(_MI["consumed_hi"] * L_KWH_TO_GAL_MWH), "wd_gal_mwh": round(_MI["withdrawn"] * L_KWH_TO_GAL_MWH),
                "wd_lo": round(_MI["withdrawn_lo"] * L_KWH_TO_GAL_MWH), "wd_hi": round(_MI["withdrawn_hi"] * L_KWH_TO_GAL_MWH),
+               **energy.withdrawal_split(round(_MI["withdrawn"] * L_KWH_TO_GAL_MWH), _MI["withdrawn_saline"] * L_KWH_TO_GAL_MWH),
                "sources": ["eia923_2024", "eia_mi", "macknick2012"],
                "note": f"{_MI['consumed']:.2f} L/kWh consumed ({_MI['consumed_lo']:.2f} to {_MI['consumed_hi']:.2f}) and {_MI['withdrawn']:.0f} L/kWh withdrawn ({_MI['withdrawn_lo']:.0f} to {_MI['withdrawn_hi']:.0f}): EIA's 2024 plant-reported cooling water over Michigan's 2024 generation, flagged and missing reports filled with Macknick factors, updated with 2022 reports (docs/methods/power_water)"},
     "new_gas": energy.NEW_GAS,

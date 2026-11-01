@@ -129,6 +129,8 @@ class PowerPlantWater(BaseModel):
     consumed_range: tuple[float, float]
     withdrawn_l_per_kwh: float
     withdrawn_range: tuple[float, float]
+    withdrawn_fresh_l_per_kwh: float | None = None      # the two add to withdrawn_l_per_kwh; saline includes brackish
+    withdrawn_saline_l_per_kwh: float | None = None
     main_balancing_authority: str | None = None
     import_share: float | None = None              # net interstate imports / in-state use; their water at the main BA's rate
     year: int = 2024

@@ -46,12 +46,14 @@ def _range(fn, r):
 
 def plant_waters(power, options):
     """Water at power plants for each power option, consumed and withdrawn, MGD. Each end of a range pairs the campus's electricity at that end
-    with the factor's at that end. Returned is what is withdrawn less what is consumed, on the middle estimates."""
+    with the factor's at that end. Returned is what is withdrawn less what is consumed, on the middle estimates. Fresh and saline withdrawal split the middle
+    estimate, for options whose plants are known (a state's mix, its coal and nuclear)."""
     out = {}
     for k, o in options.items():
         band = lambda lo, mid, hi: Range(p10=plant_water(power.avg_mw.p10, lo), p50=plant_water(power.avg_mw.p50, mid), p90=plant_water(power.avg_mw.p90, hi))
         c, w = band(o["lo"], o["gal_mwh"], o["hi"]), band(o["wd_lo"], o["wd_gal_mwh"], o["wd_hi"])
-        out[k] = PlantWater(option=k, label=o["label"], consumed=c, withdrawn=w, returned=max(w.p50 - c.p50, 0.0), sources=o["sources"])
+        split = {f"withdrawn_{s}": plant_water(power.avg_mw.p50, o[f"wd_{s}_gal_mwh"]) for s in ("fresh", "saline") if f"wd_{s}_gal_mwh" in o}
+        out[k] = PlantWater(option=k, label=o["label"], consumed=c, withdrawn=w, returned=max(w.p50 - c.p50, 0.0), sources=o["sources"], **split)
     return out
 
 
