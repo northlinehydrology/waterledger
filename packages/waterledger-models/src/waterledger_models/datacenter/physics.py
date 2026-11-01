@@ -36,8 +36,9 @@ RANGES = {
     # runs at utilization / load factor (peak_utilization): EPRI's own pairs give 0.75 / 0.94 = 0.80 and 0.57 / 0.88 = 0.65. Every computer at capacity all day is the upper case.
     "load_factor": (0.88, 0.94),
     # Evaporative ratio adjustment (model 1.3, was +/-0.05): asymmetric because Rutberg et al.'s fit (Poppe runs at 40 °C inlet water,
-    # RH 60%) is applied hourly to cooler data center tower water and cold hours, where it likely runs high; USGS SIR 2013-5188 (Diehl
-    # et al.) puts tower evaporation error at +/-5-15% (p. 24) and +/-18% overall (pp. 28-29).
+    # RH 60%) is applied hourly to cooler data center tower water and cold hours, where it likely runs high. USGS SIR 2013-5188 (Diehl et al.): +/-5-15% for the
+    # Leung and Moore method (p. 24); 15% added to the modeled tower suite (p. 28); +/-18% for towers is consumption with the error in heat included (p. 29), and
+    # USGS's 18% for the evaporative ratio itself is for water surfaces. LBNL and Lei and Masanet evaporate all the heat; this ratio is the model's stated departure.
     "er_adj": (-0.10, 0.05),
     # Cycles of concentration, about 3-6 (model 1.7, was 3-7). Lei and Masanet's Table 3, case 2, allows 3-15; the consumptive ratios Han et al. (2026, Table 2) report
     # for operators, 0.72-0.91, are about 3.6-11 cycles, median about 4.5; ICPRB's 75% is 4. DOE FEMP BMP #10's typical range is lower, two to four, with six or more
@@ -47,9 +48,10 @@ RANGES = {
     # Drift as a share of circulating flow (model 1.3, was 0.005-0.05%): modern eliminators under 0.005% (EPA WaterSense at Work 2012,
     # section 6.3, p. 6-9) to EPA AP-42 13.4's induced-draft 0.020% (Table 13.4-1).
     "drift": (0.000005, 0.0002),
-    # Closed loop volume, gal per MW of IT capacity (model 1.3, was 2,000-6,000): Crusoe (2026) 1.7 million gal for a 200 MW building
-    # (8,500); Vantage Port Washington about 11.8 million gal for about 1 GW (about 12,000); chilled-water loops of 3-10 gal per ton
-    # (850-2,840 per MW of heat) at the low end.
+    # Closed loop volume, gal per MW of IT capacity (model 1.3, was 2,000-6,000): Crusoe (2026) about 1.7 million gal for a typical system, which is 8,500 if that is
+    # its 200 MW building, as its figure suggests; chilled-water loops of 3-10 gal per ton (850-2,840 per MW of heat), not read directly, at the low end. The top is
+    # that 8,500 and a margin, for lack of a filing that states a volume and a capacity together [A]. Vantage's 11.8 million gal, used until model 1.7, is out: it was a
+    # TV tour of its Sterling, Virginia site, not Port Washington, with no capacity given.
     "fill_gal_per_mw": (2000.0, 12000.0),
     # When a dry cooler goes wet is an operator's setting, not a property of the equipment (EVAPCO 2019, p. 2: a selection and control output; Trane DC-WPR004A: the
     # customer chooses; US 12,426,214 B1: customer-set). It is tied to the loop (model 1.7): the setting sits at the dry-bulb where the dry coil can no longer hold loop
@@ -132,11 +134,11 @@ _STAFF_WATER = "Applicant projections, none measured: Hermantown, MN and Crusoe'
 SOURCES = {
     "utilization": "EPRI 2026; IEA 2025; LBNL 2024 server parameters",
     "load_factor": "EPRI 2026 (94% hyperscale, 88% co-location)",
-    "er_adj": "USGS SIR 2013-5188 (Diehl et al.), pp. 24, 28-29; asymmetric for Rutberg et al.'s fit at cooler water [A]",
+    "er_adj": "USGS SIR 2013-5188 (Diehl et al.), pp. 24, 28 (5-15% for tower evaporative ratios); asymmetric for Rutberg et al.'s fit at cooler water [A]",
     "coc": "Lei and Masanet (preprint rs-769999/v1), Table 3, case 2; Han et al. 2026, Table 2; DOE FEMP BMP #10's typical range is lower (2-4; 6 or more possible)",
     "range_f": "Lei and Masanet (preprint rs-769999/v1), Table 3; 10 F rating",
     "drift": "EPA WaterSense at Work 2012, section 6.3, p. 6-9; EPA AP-42 13.4, Table 13.4-1",
-    "fill_gal_per_mw": "Crusoe 2026; Vantage Port Washington; chilled-water loops of 3-10 gal per ton",
+    "fill_gal_per_mw": "Crusoe 2026; chilled-water loops of 3-10 gal per ton; top 12,000 [A]",
     "switch_margin": "Operator's setting around the loop's limit [A]: Trane DC-WPR004A and US 12,426,214 B1 (customer-set); EVAPCO 2019, p. 2",
     "assist_eff": "EVAPCO 2019 (presented at CTI, Feb 2019), p. 2; ASHRAE 2016, ch. 41",
     "hybrid_full_offset": "Around the location's own 0.4% design dry-bulb [A], no published value",

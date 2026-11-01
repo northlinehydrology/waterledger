@@ -1,12 +1,11 @@
 """Cooling water model v2 for Water Ledger: weather-driven, literature-aligned, with uncertainty.
 
-Hour by hour over 30 years of weather:
+Hour by hour over the weather record it is given (30 years for the published results):
   facility power and heat rejected, from one heat balance (physics.hourly_heat_power; model 1.5): facility power less the heat rejection
       fans, with the economizer carrying what the weather allows. Facility power over IT power is the hour's PUE.
   evaporation = heat × evaporative ratio ÷ latent heat, with the evaporative ratio from Rutberg et al. 2011
       (the dry-bulb relation USGS SIR 2013-5188 uses for cooling towers).
-  drift = a small fraction of circulating flow (EPA WaterSense at Work §6.3: 0.05–0.2%, <0.005% with
-      modern eliminators); circulating flow from heat ÷ (500 × range °F).
+  drift = a small fraction of circulating flow (physics.RANGES: 0.005-0.02%); circulating flow from heat ÷ (500 × range °F).
   blowdown + drift = evaporation ÷ (cycles of concentration − 1)  (the dissolved solids balance; Lei and Masanet Eq. 7; DOE FEMP BMP #10).
 Designs differ in when they evaporate:
   dry       air-cooled / dry closed loop, designed to use no water for cooling: loop top-ups only, plus the staff water every design has
