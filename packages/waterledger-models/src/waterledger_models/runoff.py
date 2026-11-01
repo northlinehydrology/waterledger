@@ -6,9 +6,9 @@ Screening level, for a review or a public estimate, not a calibrated model:
            (Hirschman, Collins and Schueler 2008, Table 4): 0.95 impervious, 0.20 turf and 0.03 forest on hydrologic soil group B (by soil group later).
            Cropland has no value there: 0.20 [A], as turf, since row crop curve numbers on soil group B (78-81, TR-55) are above lawn's (61-69)
   loads    L (lb/yr) = 0.226 x R (in) x C (mg/L) x A (ac), with event mean concentrations C by surface
-  controls Michigan's post-construction standard (treat the first inch or 90% of storms, 80% TSS removal; EGLE MS4 permits,
-           Kent County Drain Commissioner rules), applied to the captured share of runoff with wet-pond removal rates;
-           infiltration as the stronger option
+  controls two cases, everywhere: no controls, and typical wet pond performance on the captured share of runoff (removal from the Center for Watershed
+           Protection's national database, 2000, as printed in SEMCOG 2008 Table 9.5). 80% TSS is what wet ponds typically do, in any state, and also the
+           level Michigan's post-construction standard asks for (EGLE MS4 permits, Kent County Drain Commissioner rules). Infiltration is the stronger option
   sediment before and after is on one basis: what runoff carries, runoff x concentration. Farmland too, including its phosphorus; tile-drain nitrate is
            not counted, so farmland nitrogen here is low. The construction years: bare ground at turf's coefficient [A], at the farmland concentration
            times EPA's 10-20 (construction sites shed 10 to 20 times what farmland does). Gross erosion off bare ground (soil_moved) is a different
@@ -43,11 +43,12 @@ PARAMS = {
     },
     "before_imp": {"farm": 0.02, "woods": 0.01, "built": 0.60},     # [A] impervious share of the land as it is now
     "after": {"imp": 0.50, "imp_range": [0.40, 0.60], "roof_share": 0.40},   # [A] roofs and paving; roofs as a share of that
-    # Michigan post-construction standard and removal by practice (share removed). Captured share of annual runoff [A].
+    # Removal by practice (share removed): the national database's medians, SEMCOG Table 9.5. Captured share of annual runoff [A]. "standard" is Michigan's rule, for its pages.
     "controls": {
         "captured": [0.75, 0.85, 0.95],
-        "pond": {"tss": 0.80, "tp": 0.51, "tn": 0.26, "sources": ["egle_ms4", "kcdc_rules", "bmpdb2020"]},
-        "infiltration": {"tss": 0.95, "tp": 0.70, "tn": 0.51, "volume": 0.5, "sources": ["semcog_lid", "kcdc_rules"]},
+        "pond": {"tss": 0.80, "tp": 0.51, "tn": 0.33, "sources": ["semcog_lid"]},
+        "infiltration": {"tss": 0.95, "tp": 0.70, "tn": 0.51, "volume": 0.5, "sources": ["semcog_lid"]},
+        "standard_sources": ["egle_ms4", "kcdc_rules"],
         "standard": "Treat the first inch of runoff or 90% of runoff-producing storms with at least 80% TSS removal (or 80 mg/L), and hold peak rate and volume to pre-development for storms up to the 2-year, 24-hour event",
     },
     # Construction. emc_tss: farmland's concentration x EPA's ratio of construction to farmland, end for end (50 x 10, 100 x 15, 160 x 20), on bare ground at rv_bare [A].
@@ -83,8 +84,8 @@ def runoff_in(rain_in, imp, cover="turf"):
 
 
 def loads(acres, rain_in, before="farm", imp=None, roof_share=None):
-    """Annual runoff (gallons) and loads (TSS tons, TP lb, TN lb) now, after with no controls, after with Michigan's standard
-    (wet ponds) and after with infiltration. Each value is [lo, mid, hi]."""
+    """Annual runoff (gallons) and loads (TSS tons, TP lb, TN lb) now, after with no controls, after with typical wet ponds
+    and after with infiltration. Each value is [lo, mid, hi]."""
     P, E = PARAMS, PARAMS["emc"]
     imp = P["after"]["imp"] if imp is None else imp
     roof = P["after"]["roof_share"] if roof_share is None else roof_share

@@ -62,3 +62,24 @@ def test_construction_on_the_same_basis_as_today_at_epas_ratio():
 def test_sediment_water_and_soil_stay_in_proportion_with_rain():
     assert runoff.construction(200, 18)[1] == pytest.approx(runoff.construction(200, 36)[1] / 2)
     assert runoff.loads(200, 18)["tss_t"]["now"][1] == pytest.approx(runoff.loads(200, 36)["tss_t"]["now"][1] / 2)
+
+
+def test_wet_ponds_remove_the_databases_share_of_the_captured_runoff():
+    L = runoff.loads(200, 36)
+    # mid capture 85%; removal 80% TSS, 51% TP, 33% TN (CWP 2000, SEMCOG Table 9.5)
+    assert L["tss_t"]["pond"][1] == pytest.approx(L["tss_t"]["after"][1] * (1 - 0.85 * 0.80))
+    assert L["tp_lb"]["pond"][1] == pytest.approx(L["tp_lb"]["after"][1] * (1 - 0.85 * 0.51))
+    assert L["tn_lb"]["pond"][1] == pytest.approx(L["tn_lb"]["after"][1] * (1 - 0.85 * 0.33))
+
+
+def test_both_stormwater_cases_are_in_the_rows():
+    from waterledger.comparisons import before_after
+    from waterledger.estimate import Range
+    W = Range(p10=1, p50=1, p90=1)
+    rows = {r.key: r for r in before_after("wells", "water", W, W, W, W, 200, 36, "farm", 0.5, 300)}
+    L = runoff.loads(200, 36, "farm", 0.5)
+    assert rows["mud"].controls == "typical_wet_pond" and rows["mud"].after == pytest.approx(L["tss_t"]["pond"][1])
+    assert rows["mud_no_controls"].controls == "none" and rows["mud_no_controls"].after == pytest.approx(L["tss_t"]["after"][1])
+    assert rows["p"].after == pytest.approx(L["tp_lb"]["pond"][1]) and rows["p_no_controls"].after == pytest.approx(L["tp_lb"]["after"][1])
+    assert rows["mud"].today == rows["mud_no_controls"].today == rows["build"].today
+    assert rows["soil_moved"].today is None

@@ -116,6 +116,7 @@ class BeforeAfterRow(BaseModel):
     today_low: float | None = None
     today_high: float | None = None
     percent: float | None = None
+    controls: str | None = None     # for a load: "typical_wet_pond" or "none"
     unit: str
 
 

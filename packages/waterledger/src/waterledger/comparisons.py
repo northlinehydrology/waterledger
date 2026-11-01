@@ -215,7 +215,7 @@ def sewer_shares(water, plant):
 
 def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, imp, mw, power_mw=None, county_public=None, plant=None, lake=False, reuse=False, salt_events=None):
     """What changes at a place with the campus, as numbers; a display words them. Water, MGD: `w_avg` and `w_peak` taken, `used` evaporated, `sewer` to the sewer, each a
-    Range. Runoff and loads from runoff.loads with ponds, Michigan's standard. Rows for water and wastewater follow the source and destination."""
+    Range. Runoff and loads from runoff.loads, in two rows each: "mud" and "p" with typical wet ponds, "mud_no_controls" and "p_no_controls" with none. Rows for water and wastewater follow the source and destination."""
     Row, rows = BeforeAfterRow, []
     today = county_public if src == "muni" else None
     rows.append(Row(key="water", today=today, after=w_avg.p50, after_low=w_avg.p10, after_high=w_avg.p90, percent=percent_of(w_avg.p50, today) if today else None, unit="MGD"))
@@ -228,11 +228,14 @@ def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, 
     L, C, S, F = rq.loads(acres, rain_in, before, imp), rq.construction(acres, rain_in), rq.salt(acres, imp, salt_events), rq.fuel(mw)
     rows.append(Row(key="runoff", today=L["runoff_gal"]["now"][1], after=L["runoff_gal"]["after"][1], unit="gallons a year"))
     for key, load, unit in (("mud", "tss_t", "tons a year"), ("p", "tp_lb", "pounds a year")):
-        now, pond = L[load]["now"], L[load]["pond"]
-        rows.append(Row(key=key, today=now[1], today_low=now[0], today_high=now[2], after=pond[1], after_low=pond[0], after_high=pond[2], unit=unit))
-    G = rq.soil_moved(acres)
-    rows.insert(-1, Row(key="build", today=L["tss_t"]["now"][1], after=C[1], after_low=C[0], after_high=C[2], unit="tons a year"))    # what runoff carries, as "mud"
-    rows.insert(-1, Row(key="soil_moved", after=G[1], after_low=G[0], after_high=G[2], unit="tons a year"))                          # gross erosion, not comparable with today
+        now = L[load]["now"]
+        for suffix, case, controls in (("", "pond", "typical_wet_pond"), ("_no_controls", "after", "none")):
+            a = L[load][case]
+            rows.append(Row(key=key + suffix, today=now[1], today_low=now[0], today_high=now[2], after=a[1], after_low=a[0], after_high=a[2], controls=controls, unit=unit))
+        if key == "mud":
+            G = rq.soil_moved(acres)
+            rows.append(Row(key="build", today=now[1], after=C[1], after_low=C[0], after_high=C[2], unit="tons a year"))    # what runoff carries, as "mud"
+            rows.append(Row(key="soil_moved", after=G[1], after_low=G[0], after_high=G[2], unit="tons a year"))              # gross erosion, not comparable with today
     if S["salt_t"][1] > 0:
         rows.append(Row(key="salt", after=S["salt_t"][1], after_low=S["salt_t"][0], after_high=S["salt_t"][2], unit="tons a winter"))
     rows.append(Row(key="fuel", after=F["gal"][1], after_low=F["gal"][0], after_high=F["gal"][2], unit="gallons"))
