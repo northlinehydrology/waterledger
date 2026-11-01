@@ -69,14 +69,28 @@ def equivalents(est, ref):
                        share_of_home_customers=_range(lambda v: share_of_customers(v, cust), homes_e) if homes_e and cust else None)
 
 
-def water_system_share(withdrawn, systems):
-    """The campus's water (a Flow) as homes, as a percent of the connections of the largest public water system mapped in the place.
-    Not a percent of the system's water use: connections include businesses, and the system's own gallons are not in the public data.
-    None with no system mapped or no connection count."""
+MAIN_SYSTEM_SHARE, MIN_SYSTEM_SHARE = 0.5, 0.05     # shares of the place's mapped area [A]; see main_system
+
+
+def main_system(systems):
+    """The public water system a campus in the place would most likely buy from [A]: one covering at least half of the place (the largest share if more than one);
+    otherwise the largest by population among those covering at least 5%; otherwise the largest by population. Population alone picks a big neighbor that barely
+    overlaps the place (Westerville, OH: Columbus at 0.8%), and share alone picks a small system over the one serving most people (Angelina County, TX: Four Way SUD over Lufkin)."""
     if not systems:
         return None
-    s = max(systems, key=lambda x: x.population or 0)
-    if not s.connections:
+    share = lambda x: x.share_of_place or 0
+    most = [x for x in systems if share(x) >= MAIN_SYSTEM_SHARE]
+    if most:
+        return max(most, key=share)
+    return max([x for x in systems if share(x) >= MIN_SYSTEM_SHARE] or systems, key=lambda x: x.population or 0)
+
+
+def water_system_share(withdrawn, systems):
+    """The campus's water (a Flow) as homes, as a percent of the connections of the place's main public water system (main_system).
+    Not a percent of the system's water use: connections include businesses, and the system's own gallons are not in the public data.
+    None with no system mapped or no connection count."""
+    s = main_system(systems)
+    if not s or not s.connections:
         return None
     pct = lambda r: Range(**{q: 100 * (getattr(r, q) * 1e6 / HOUSEHOLD_GPD) / s.connections for q in ("p10", "p50", "p90")})
     return Comparison(against="water_system", name=s.name, measure="homes_vs_connections", existing=s.connections, unit="connections",

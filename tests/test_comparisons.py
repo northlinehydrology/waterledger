@@ -15,9 +15,30 @@ def test_share_is_homes_against_connections():
     assert (c.against, c.measure, c.existing, c.unit) == ("water_system", "homes_vs_connections", 2000, "connections")
 
 
-def test_largest_system_by_population_first_on_a_tie():
-    a, b, d = (WaterSystem(pwsid=x, name=x, population=p, connections=10) for x, p in (("a", 5), ("b", 9), ("d", 9)))
-    assert cm.water_system_share(R, [a, b, d]).name == "b"
+def _sys(n, pop, share):
+    return WaterSystem(pwsid=n, name=n, population=pop, connections=100, share_of_place=share)
+
+
+def test_main_system_covers_most_of_the_place_even_if_a_neighbor_is_bigger():
+    assert cm.water_system_share(R, [_sys("Columbus", 900000, 0.008), _sys("Westerville", 40000, 0.997)]).name == "Westerville"
+
+
+def test_main_system_largest_share_when_two_cover_half():       # service areas can overlap
+    assert cm.main_system([_sys("a", 10, 0.6), _sys("b", 1000, 0.5), _sys("c", 5000, 0.2)]).name == "a"
+
+
+def test_main_system_by_population_among_those_covering_5_percent():
+    assert cm.main_system([_sys("Four Way", 5000, 0.3), _sys("Lufkin", 35000, 0.06), _sys("Far", 900000, 0.04)]).name == "Lufkin"
+
+
+def test_main_system_by_population_when_none_covers_5_percent():
+    assert cm.main_system([_sys("a", 500, 0.04), _sys("b", 90, 0.049), _sys("c", 900, None)]).name == "c"
+
+
+def test_main_system_first_on_a_tie_and_none_with_none():
+    assert cm.main_system([_sys("a", 500, 0.2), _sys("b", 500, 0.3)]).name == "a"
+    assert cm.main_system([_sys("a", 500, 0.7), _sys("b", 900, 0.7)]).name == "a"
+    assert cm.main_system([]) is None
 
 
 def test_left_out_with_no_system_or_no_connections():
