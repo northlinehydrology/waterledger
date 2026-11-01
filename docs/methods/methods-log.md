@@ -580,3 +580,57 @@ division, so the national tier does not need NOAA's station files at estimate ti
 
 `energy.ranked` orders a place's utilities by EIA customers in the state. Utilities reporting the same number, usually delivery-only ones reporting none, kept whatever order the territory data arrived in, and two builds a day apart swapped them at 158 places in Texas and one in Virginia, with the same utilities and shares. Ties now go to the larger share of the place, then the name. Share is the better first tie-break because it is the only other measure of how much of the place a utility covers, though HIFLD's whole-county territories overstate it; the name only makes the order repeatable.
 
+
+## Nov 1, 2026: model 1.5, mass and energy balances
+
+Working one hybrid hour by hand from the written equations matched the code, and showed the code's own books did not always balance. Andrew asked that the calculations follow a mass and energy balance, so each flow of water, heat and dissolved solids was audited, then held to closure by tests (`tests/test_balances.py`), for every design, at 100 parameter draws, from -25 to 40 C.
+
+**Energy.** Before, heat rejected was load / SHR + chillers and facility power also counted pumps and fans, so the two could not be reconciled. Now, per kW of IT:
+
+    heat rejected = q + air handler fans + chillers + pumps                         through the water or coil
+    facility power = heat rejected + heat rejection fans                            whose heat goes straight to the exhaust air
+    air loop load = q x air + air handler fans; liquid loop load = q x (1 - air)
+    chiller = load x (1 - free) x (wet / COP_water + (1 - wet) / COP_air)
+    tower flow m: m x cp x range = wet x (load + chiller + pumps + m x dP / eff)
+    L/G <= (h_sat(hot water) - h_sat(wet-bulb)) / (cp x range), hot water = max(wet-bulb + approach + range, return - heat exchanger approach)
+
+The sensible heat ratio is removed. It is in Lei and Masanet's Eq. 2, but it adds latent heat, which needs a moisture source, and this model has none: it recirculates indoor air, with no humidification or outside air. Their table's range was 0.95-0.99, so it added 1-5% to the heat with no energy input. Its slot in the random stream is still drawn so the other parameters keep their draws, and the comparison below is not muddied by reshuffling.
+
+Pump heat is added: pump work ends up in the water (about 2% of IT load at a tower in full use). The air handler fans' heat all goes to the air loop. CP_WATER is 4.1868 kJ/kg/K, the 1 BTU/lb/F the water terms use, so tower flow is one quantity in both equations.
+
+The L/G cap comes from the air side of the tower's energy balance. Lei and Masanet's Table 3 gives L/G 0.2-4, but at hot, humid hours the air could not carry the tower's heat at the top of that range, leaving hotter than saturated at the hot water. The cap sets air flow where the sampled ratio is impossible. Only fan power changes. In cool weather the tower's water is held near the loop's return, not at the wet-bulb plus approach, so the cap does not bind there.
+
+**Hybrid chillers.** They were always water-cooled, with the water's condenser temperature and COP, even at a wet share of zero, where the model evaporates nothing. About 1,340 hours a year in West Michigan (central parameters) ran a chiller that way. They now split by wet share. At a wet share of 0 a hybrid's heat and chiller are those of a dry design; at 1, those of towers.
+
+**Water.** Three changes:
+
+    drift = heat x wet / (8.34 x range) x drift share                               was all the heat in any hour with wet > 0
+    blowdown + drift = evaporation / (cycles - 1)                                   solids in = solids out; was blowdown = evaporation / (cycles - 1), with drift on top
+
+DOE FEMP's blowdown relation neglects drift. With it, makeup x solids = (blowdown + drift) x cycles x solids, so drift comes off blowdown, and withdrawn is evaporation x cycles / (cycles - 1) plus top-ups. Assist pads are unchanged: their evaporation already follows the air's energy balance and their bleed is a share of it.
+
+**Lake-source.** Heat factor 1.05-1.17 (was 1.03-1.25, an estimate carried from model 1.3). It is IT, losses, lighting, air handler fans and pumps from the POWER ranges (5th to 95th percentile about 1.06-1.16), with no chillers or heat rejection fans because the lake water is colder than the loops [A]. All the electricity leaves in the water, so PUE equals the heat factor, and the estimates now report that instead of the region's cooling towers. Withdrawn equals returned at the pipe; the forced evaporation happens on the lake afterward, so the control volume for that balance is the lake. A lake-source campus's staff water comes from a water system, not the lake, and is not in the lake's withdrawal.
+
+**Power plants.** Plant water factors are plant water over net generation (`power_water/README.md`). The plants generate what the campus uses plus what the lines lose, so water at power plants is now electricity / (1 - 0.05) x factor. EIA FAQ 105: U.S. T&D losses "averaged about 5%", 2018-2022. A campus on the transmission system may lose less [A]; the national figure is used because no campus-level one is published. A campus's share of a utility's load stays on sales, which are delivered electricity.
+
+**Smaller.** Farmland sediment replaced the whole site's runoff load with field erosion, dropping the paved 2%. It now keeps that part. Reuse and lake annual totals used 365 days a year and the rest 365.25.
+
+**Checked, nothing to change.** Withdrawn = consumed + returned in every hour and run. Staff water closes. Assist evaporation is the air-side energy balance. Lake flow x rho x cp x rise = heat. Runoff is a part of the rain, and the unit constants (0.226, 27,154 gal/ac-in, 8.34) agree. Chloride is 35.45/58.44 of salt. Blowdown solids are makeup x cycles.
+
+**Measured** (per 100 MW of IT, 200 runs, 30 years of ERA5, p50, 1.4 to 1.5):
+
+| | West Michigan | Austin, TX |
+|---|---|---|
+| Hybrid withdrawn, average day | 0.0240 to 0.0238 (-0.8%) | 0.1655 to 0.1636 (-1.2%) |
+| Hybrid withdrawn, peak day | 0.5120 to 0.5002 (-2.3%) | 0.7562 to 0.7403 (-2.1%) |
+| Hybrid annual PUE | 1.1148 to 1.1216 (+0.6%) | 1.1412 to 1.1487 (+0.7%) |
+| Hybrid hottest-hour PUE | 1.2039 to 1.2147 (+0.9%) | 1.2083 to 1.2181 (+0.8%) |
+| Towers withdrawn, average day | 0.6466 to 0.6357 (-1.7%) | 0.7146 to 0.6997 (-2.1%) |
+| Towers returned, average day | 0.1205 to 0.1125 (-6.6%) | 0.1316 to 0.1236 (-6.1%) |
+| Towers annual PUE | 1.1289 to 1.1289 | 1.1427 to 1.1420 (-0.1%) |
+| Assist withdrawn, peak day | 0.3594 to 0.3516 (-2.2%) | 0.6989 to 0.6802 (-2.7%) |
+| Closed loop hottest-hour PUE | 1.2906 to 1.2849 (-0.4%) | 1.3254 to 1.3179 (-0.6%) |
+
+Water at power plants rises 5.3% from line losses, on top of any change in electricity.
+
+**Still open, not balance errors.** The peak-day water is at the run's average utilization while the hottest-hour electricity is at full capacity, so the two peaks describe different conditions. Farmland phosphorus adds soil-attached phosphorus to a runoff concentration that may already include some, which could double count. Reuse takes all blowdown back, with no brine stream for the dissolved solids. The ranges of an estimate add the model's and staff water's ends together, so p10 and p90 of withdrawn, consumed and returned do not add up, though each run does.

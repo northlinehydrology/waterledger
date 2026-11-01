@@ -4,6 +4,16 @@ Package changes (code). Changes to the numbers are listed by model version on th
 
 ## Unreleased
 
+Model version 1.5: the cooling model's energy and mass now close, hour by hour, in every design. Tests in `tests/test_balances.py` hold them to it. Water and electricity estimates change by a few percent; `docs/methods/methods-log.md` has the measured differences.
+
+- **All the electricity leaves as heat.** Heat rejected through the water or coil is facility power less the heat rejection fans. Pump heat now counts, and the sensible heat ratio, which added heat with no energy behind it, is gone.
+- **A hybrid's chiller rejects heat through the same split as everything else**: to evaporating water in the wet share and to air in the rest. It was water-cooled even in hours with no evaporation.
+- **Drift follows the water through the wet part of a hybrid**, not all the heat.
+- **Blowdown comes from the dissolved solids balance**: blowdown + drift = evaporation / (cycles - 1). It left drift out, which counted that water twice.
+- **A tower's air flow is capped by what air can carry**, so its fans are not undercounted at high water-to-air ratios.
+- **Lake-source cooling has its own electricity and heat from one balance.** The heat factor is its PUE, 1.05-1.17 (was 1.03-1.25), and cooling towers no longer stand in for its electricity.
+- **Power plants generate the campus's electricity plus line losses** (`comparisons.LINE_LOSS`, 5%, EIA). Plant water factors are per MWh generated.
+- **Farmland sediment keeps the small paved part of the land**, and lake and reuse annual totals use 365.25 days a year like the others.
 - **Utilities tied on customers keep one order between builds** (`energy.ranked`): the larger share, then the name. Their order had depended on how the source returned them.
 
 ## 3.7.1 (Oct 31, 2026)
