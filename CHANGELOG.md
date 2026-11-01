@@ -2,6 +2,25 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.8.1 (Nov 1, 2026)
+
+Model version 1.6, from an independent review of model 1.5. Water taken moves by under 1%. Towers use about 1.5% less electricity on average. The wastewater shown moves by up to about 17% and the water evaporated by up to about 7%, because the middle estimate is now worked out differently. `docs/methods/methods-log.md` has the measured differences.
+
+- **The middle estimate keeps wastewater at the model's median, and evaporated is what's left.** Withdrawn and returned are at their medians and consumed is withdrawn + condensate - returned, so the books close. Wastewater was the remainder, which ran 13 to 23% above its own median in the evaporating designs.
+- **A tower's fans slow to the air the hour's heat needs**, by the fan laws with a 10% floor, as the dry cooler fans do. They ran at design air flow in every hour with evaporation.
+- **Power losses and lighting are heat in the room's air.** Part of them was on the liquid loop.
+- **A lake-source campus's peak-day homes count what the lake loses**, like its average day. They counted the water passing through.
+- **A septic estimate leaves out condensate.** It is clean water and is assumed to go to a site drain or stormwater [A]. `to_sewer` and the septic rule take the flow without it; it stays in the returned water, so the books close.
+- **The water system a place is compared with** is one covering at least half of the place (the largest share if more than one); otherwise the largest by population among those covering at least 5%; otherwise the largest by population [A] (`comparisons.main_system`). It was the largest by population, even at 0.8% overlap: Westerville, Ohio was set against Columbus, not its own system.
+- **A utility peak below its average load counts as missing**, in every state (`waterledger_data.power.usable_peak`). EIA's file has Duke Energy Ohio at a 914 MW summer peak against 2,252 MW on average.
+- **`est.water.withdrawn_peak_full_capacity`**: the peak day with every computer at capacity all day, as an upper case. The main peak day stays at the run's average utilization.
+- **A reach's `assessed`** on `ctx.receiving.downstream` says whether the state assessed that watershed, in every state, so no listing and not assessed can be told apart.
+- **Published snapshots never change.** A second build on one day is `YYYY-MM-DD.2`, and the upload refuses a name in use. `latest.json` has `by_model`, and a package reads the newest snapshot for its own model, so a new model's numbers don't reach an older package. Packages before 3.8.1 stay on model 1.5's snapshots.
+- **Michigan's snapshot job runs the statewide checks** and records them in its manifest, like the other states.
+- **BMI: a condensate output**, `data_center_cooling_water__condensate_volume_flux`, and the descriptions of withdrawal, consumption and return now say what those hold.
+- **Tests with values worked by hand**, including a lake case, catch a wrong constant that the balance tests can't; the water balance test now runs on weather that condenses.
+- **Faster builds.** Each draw's heat balance runs once for its water and PUE, a state's places run at once, one process each, and `build-state` keeps NOAA's records for the month. The numbers don't change (Virginia, byte for byte in every data file but one, whose only difference is key order).
+
 ## 3.8.0 (Nov 1, 2026)
 
 Model version 1.5: the cooling model's energy and mass now close, hour by hour, in every design. Tests in `tests/test_balances.py` hold them to it. Water and electricity estimates change by a few percent; `docs/methods/methods-log.md` has the measured differences.
