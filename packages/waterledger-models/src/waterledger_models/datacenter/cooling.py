@@ -40,9 +40,9 @@ LABELS = {
 }
 
 
-def hourly(tdb, twb, design, p, rh=None):
+def hourly(tdb, twb, design, p, rh=None, heat=None):
     """Gallons per IT kWh, by hour: (withdrawn, consumed, returned). See physics.hourly_rates."""
-    return hourly_rates(tdb, twb, design, p, rh)
+    return hourly_rates(tdb, twb, design, p, rh, heat)
 
 
 def sample(rng, n):
@@ -160,7 +160,8 @@ def run_location(times, temps, rhs, n=200, seed=7, mw=100.0):
         acc = {}
         for p in runs + [central()]:
             kw = mw * 1000 * p["utilization"]
-            w, c, r = hourly(tdb, twb, design, p, rh)
+            pue, heat = hourly_heat_power(tdb, twb, design, p, rh)      # the slow part: once for the run's water and PUE
+            w, c, r = hourly(tdb, twb, design, p, rh, heat)
             for name, arr in (("withdrawn", w), ("consumed", c), ("returned", r), ("condensate", hourly_water_with_air(tdb, twb, p, rh)[1])):
                 s = daily_stats(day_index, len(uniq), years, arr, kw, months if name == "withdrawn" else None)
                 for stat, v in s.items():
@@ -172,7 +173,6 @@ def run_location(times, temps, rhs, n=200, seed=7, mw=100.0):
             acc.setdefault("wue_l_per_kwh", []).append(float(np.average(c)) * 3.78541)          # consumed basis
             acc.setdefault("wue_makeup_l_per_kwh", []).append(float(np.average(w)) * 3.78541)   # LBNL/Lei basis (evaporation + drift + blowdown)
             acc.setdefault("utilization", []).append(p["utilization"])
-            pue = hourly_heat_power(tdb, twb, design, p, rh)[0]
             peak = float(np.quantile([part.max() for part in np.split(pue, year_ends[:-1])], 0.9))
             acc.setdefault("pue_avg", []).append(float(pue.mean()))
             acc.setdefault("power_mw_avg", []).append(float(pue.mean()) * mw * p["utilization"])

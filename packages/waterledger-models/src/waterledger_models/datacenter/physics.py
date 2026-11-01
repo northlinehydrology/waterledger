@@ -298,16 +298,16 @@ def hourly_heat_power(tdb, twb, design, p, rh=None):
     return power, heat
 
 
-def hourly_rates(tdb, twb, design, p, rh=None):
+def hourly_rates(tdb, twb, design, p, rh=None, heat=None):
     """Gallons per IT kWh for each hour: (withdrawn, consumed, returned).
 
     tdb, twb, rh: dry- and wet-bulb temperature (C) and relative humidity (%), shape (hours,). p: parameter dict whose values are scalars or arrays
-    shaped (runs, 1). Mass closes: withdrawn + condensate = consumed + returned. Condensate comes out of the outside air, not the water system, and
-    goes back with the blowdown (hourly_water_with_air).
+    shaped (runs, 1). heat: hourly_heat_power's heat for these inputs, if already worked out. Mass closes: withdrawn + condensate = consumed + returned.
+    Condensate comes out of the outside air, not the water system, and goes back with the blowdown (hourly_water_with_air).
     """
     if design not in DESIGNS:
         raise ValueError(f"design must be one of {DESIGNS}, not {design!r}")
-    btu = KWH_BTU * hourly_heat_power(tdb, twb, design, p, rh)[1]
+    btu = KWH_BTU * (hourly_heat_power(tdb, twb, design, p, rh)[1] if heat is None else heat)
     evap_full = btu * evaporative_ratio(tdb, p["er_adj"]) / HFG / LB_GAL
     w = _wet_share(tdb, design, p) * np.ones_like(evap_full)
     circ = btu * w / (LB_GAL * p["range_f"])                # gal circulated through the wet part per kWh
