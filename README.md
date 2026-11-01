@@ -132,7 +132,7 @@ More in [examples/](examples/): a BMI coupling loop, eight Michigan locations in
 Three version numbers, each with one meaning:
 
 - **Package versions** (semver) change with the code: a major version for breaking changes.
-- **`waterledger_models.MODEL_VERSION`** (now 1.4) changes when the numbers change; the golden test fails until that is
+- **`waterledger_models.MODEL_VERSION`** (now 1.5) changes when the numbers change; the golden test fails until that is
   done deliberately. Every published estimate names the model version that produced it.
 - **The snapshot format version** (now 2, in each snapshot's manifest) changes when the structure of a state's data
   files does.

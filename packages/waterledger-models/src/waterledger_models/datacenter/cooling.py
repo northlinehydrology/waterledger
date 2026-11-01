@@ -1,13 +1,13 @@
 """Cooling water model v2 for Water Ledger: weather-driven, literature-aligned, with uncertainty.
 
 Hour by hour over 30 years of weather:
-  facility power and heat rejected, from one heat balance (physics.hourly_heat_power; model 1.4): the load plus chiller power, with the
-      economizer carrying what the weather allows. Facility power over IT power is the hour's PUE.
+  facility power and heat rejected, from one heat balance (physics.hourly_heat_power; model 1.5): facility power less the heat rejection
+      fans, with the economizer carrying what the weather allows. Facility power over IT power is the hour's PUE.
   evaporation = heat × evaporative ratio ÷ latent heat, with the evaporative ratio from Rutberg et al. 2011
       (the dry-bulb relation USGS SIR 2013-5188 uses for cooling towers).
   drift = a small fraction of circulating flow (EPA WaterSense at Work §6.3: 0.05–0.2%, <0.005% with
       modern eliminators); circulating flow from heat ÷ (500 × range °F).
-  blowdown = evaporation ÷ (cycles of concentration − 1)  (DOE FEMP BMP #10 water balance).
+  blowdown + drift = evaporation ÷ (cycles of concentration − 1)  (the dissolved solids balance; DOE FEMP BMP #10).
 Designs differ in when they evaporate:
   dry       air-cooled / dry closed loop, designed to use no water for cooling: loop top-ups only, plus the staff water every design has
   assist    dry coolers with adiabatic pre-cooling above a dry-bulb switch point: water evaporates into the air ahead of the
@@ -27,7 +27,7 @@ Parameter ranges and their sources are in RANGES and documented on the Water Led
 """
 import numpy as np
 
-from waterledger_models.datacenter.physics import (ADIABATIC, DESIGNS as _DESIGNS, HFG, KWH_BTU, LB_GAL, POWER, RANGES, STAFF, TOPUP, _ramp,  # noqa: F401
+from waterledger_models.datacenter.physics import (ADIABATIC, DESIGNS as _DESIGNS, HFG, KWH_BTU, LB_GAL, POWER, RANGES, STAFF, TOPUP, _POWER_RETIRED_SLOT, _ramp,  # noqa: F401
                                                    evaporative_ratio, hourly_heat_power, hourly_rates, wet_bulb)
 
 DESIGNS = list(_DESIGNS)
@@ -54,7 +54,10 @@ def sample(rng, n):
         r.update({k: extra.uniform(*v) for k, v in ADIABATIC.items()})
     extra = np.random.default_rng(23)
     for r in runs:
-        r.update({k: extra.uniform(*v) for k, v in POWER.items()})
+        for i, (k, v) in enumerate(POWER.items()):
+            if i == _POWER_RETIRED_SLOT:
+                extra.random()
+            r[k] = extra.uniform(*v)
     return runs
 
 
