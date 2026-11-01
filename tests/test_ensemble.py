@@ -16,7 +16,7 @@ def loop_reference(time, t, rh, design, n, seed, mw):
     out = []
     for i in range(n):
         p = {k: v[i] for k, v in params.items()}
-        w = model.hourly_rates(t, twb, design, p)[0]
+        w = model.hourly_rates(t, twb, design, p, rh)[0]
         daily = np.bincount(idx, weights=w * mw * 1000 * p["utilization"]) / 1e6
         ann = [daily[years == y].max() for y in np.unique(years)]
         out.append([daily.mean(), np.quantile(ann, 0.9), daily.max(), daily.mean() * 365.25,
@@ -39,7 +39,7 @@ def test_dataset_layout_and_summary():
     assert ds.sizes["day"] == 400 and ds["withdrawn_daily"].dtype == np.float32
     # averages and annual totals add up; peak and record days need not (each flow peaks on its own day)
     add = ["avg", "annual_mg"]
-    np.testing.assert_allclose(ds["withdrawn"].sel(stat=add), (ds["consumed"] + ds["returned"]).sel(stat=add), rtol=1e-9)
+    np.testing.assert_allclose(ds["withdrawn"].sel(stat=add), (ds["consumed"] + ds["returned"] - ds["condensate"]).sel(stat=add), rtol=1e-9)
     s = ensemble.summarize(ds)
     assert list(s["withdrawn"].coords["quantile"].values) == ["p10", "p50", "p90", "central"]
     q = s["withdrawn"].sel(stat="avg")

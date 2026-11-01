@@ -40,7 +40,7 @@ def test_water_balance(design):
 
 def test_dry_design_uses_loop_topups_only():
     _, t, rh = synthetic_weather(30)
-    p = model.central_parameters()
+    p = {**model.central_parameters(), "oa_cfm_per_mw": 0.0}
     w, c, r = model.hourly_rates(t, model.wet_bulb(t, rh), "dry", p)
     # 7,000 gal per MW, 3% a year, spread over the IT energy at 65% utilization
     topup = 7000 * 0.03 / 365 / (24 * 1000 * 0.65)

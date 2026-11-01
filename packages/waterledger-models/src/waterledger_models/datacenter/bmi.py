@@ -262,7 +262,7 @@ class CoolingWaterBmi(_ScalarPointBmi):
         tdb = self._values["atmosphere_bottom_air__temperature"]
         rh = self._values["atmosphere_bottom_air_water_vapor__relative_saturation"]
         twb = model.wet_bulb(tdb, rh)
-        w, c, r = model.hourly_rates(tdb, twb, self._design, self._params)
+        w, c, r = model.hourly_rates(tdb, twb, self._design, self._params, rh)
         kwh_per_s = self._mw * 1000.0 * self._params["utilization"] / 3600.0     # IT energy per second of model time
         to_m3s = kwh_per_s / GAL_PER_M3
         mgd_to_m3s = 1e6 / 86400.0 / GAL_PER_M3
@@ -271,7 +271,7 @@ class CoolingWaterBmi(_ScalarPointBmi):
         self._values["data_center_cooling_water__consumption_volume_flux"][0] = c[0] * to_m3s + sc * mgd_to_m3s
         self._values["data_center_cooling_water__return_volume_flux"][0] = r[0] * to_m3s + sr * mgd_to_m3s
         self._values["atmosphere_bottom_air__wet_bulb_temperature"][0] = twb[0]
-        self._values["data_center__electric_power"][0] = model.hourly_heat_power(tdb, twb, self._design, self._params)[0][0] * self._mw * self._params["utilization"]
+        self._values["data_center__electric_power"][0] = model.hourly_heat_power(tdb, twb, self._design, self._params, rh)[0][0] * self._mw * self._params["utilization"]
 
     def _advance(self):
         if self._forcing is not None:

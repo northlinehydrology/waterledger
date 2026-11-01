@@ -122,20 +122,22 @@ def cooling_estimate(D, region, cool, mw, dest):
     ({"regions": {region: {"per_100mw": ...}}, "staff": {"runs": ...}}): the page's est() for every design but lake-source.
     The national tier uses it with climate divisions as the regions."""
     F = lambda key: flow(D, region, cool, key, mw)
+    per_100mw = D["regions"][region]["per_100mw"][cool]
+    C = lambda key: band(per_100mw[key], mw / 100) if key in per_100mw else {"lo": 0.0, "mid": 0.0, "hi": 0.0}    # data from before model 1.5 has none
     E = {"lake": False, "wAvg": F("withdrawn_avg"), "wPeak": F("withdrawn_peak_1in10"), "wAnn": F("withdrawn_annual_mg"),
          "cAvg": F("consumed_avg"), "cPeak": F("consumed_peak_1in10"), "rAvg": F("returned_avg"),
-         "rPeak": F("returned_peak_1in10"), "reuse": False}
-    # no rounding here (the site rounds what it shows): on the middle estimate, returned is withdrawn less consumed, so the three add up; the
-    # ranges stay the model's own, widened only if that difference falls outside them
-    for k_r, k_w, k_c in (("rAvg", "wAvg", "cAvg"), ("rPeak", "wPeak", "cPeak")):
-        m = max(0.0, E[k_w]["mid"] - E[k_c]["mid"])
+         "rPeak": F("returned_peak_1in10"), "condAvg": C("condensate_avg"), "condPeak": C("condensate_peak_1in10"), "reuse": False}
+    # no rounding here (the site rounds what it shows): on the middle estimate, returned is withdrawn plus condensate less consumed, so the books close;
+    # the ranges stay the model's own, widened only if that difference falls outside them
+    for k_r, k_w, k_c, k_n in (("rAvg", "wAvg", "cAvg", "condAvg"), ("rPeak", "wPeak", "cPeak", "condPeak")):
+        m = max(0.0, E[k_w]["mid"] + E[k_n]["mid"] - E[k_c]["mid"])
         E[k_r] = {"lo": min(E[k_r]["lo"], m), "mid": m, "hi": max(E[k_r]["hi"], m)}
     E["sewer"] = E["rAvg"]
     if dest == "reuse":
         E["full"] = {"wAvg": E["wAvg"], "rAvg": E["rAvg"]}
-        E["wAvg"] = E["cAvg"]
+        E["wAvg"] = {k: max(E["cAvg"][k] - E["condAvg"][k], 0.0) for k in ("lo", "mid", "hi")}     # the condensate is reused too
         E["wPeak"] = {k: E["wPeak"][k] - E["rPeak"][k] for k in ("lo", "mid", "hi")}
-        E["wAnn"] = {k: v * 365.25 for k, v in E["cAvg"].items()}
+        E["wAnn"] = {k: v * 365.25 for k, v in E["wAvg"].items()}
         E["rAvg"] = E["rPeak"] = E["sewer"] = {"lo": 0, "mid": 0, "hi": 0}
         E["reuse"] = True
     return E

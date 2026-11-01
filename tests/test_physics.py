@@ -36,5 +36,5 @@ def test_hourly_rates_vectorized_equal_per_run():
 
 def test_every_parameter_has_a_source():
     from waterledger_models.datacenter import physics
-    names = {*physics.RANGES, "topup", *physics.ADIABATIC, *physics.POWER, *physics.STAFF}
+    names = {*physics.RANGES, "topup", *physics.ADIABATIC, *physics.POWER, *physics.OUTSIDE, *physics.STAFF}
     assert set(physics.SOURCES) == names and all(physics.SOURCES.values())

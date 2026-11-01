@@ -55,7 +55,7 @@ def test_set_value_drives_the_model(tmp_path):
     assert w == pytest.approx(c + r, rel=1e-12)
     # matches the model directly: gal per kWh x kWh per second / gal per m3, plus staff water at 100 MW
     p = model.central_parameters()
-    gal = model.hourly_rates(np.array([0.0]), model.wet_bulb(np.array([0.0]), 50.0), "towers", p)[0][0]
+    gal = model.hourly_rates(np.array([0.0]), model.wet_bulb(np.array([0.0]), 50.0), "towers", p, 50.0)[0][0]
     staff = model.staff_water(model.central_staff(), 100)[0] * 1e6 / 86400 / model.GAL_M3
     assert w == pytest.approx(gal * 100 * 1000 * p["utilization"] / 3600 / model.GAL_M3 + staff, rel=1e-12)
     ptr = m.get_value_ptr(WITHDRAWN)
@@ -82,7 +82,7 @@ def test_forcing_file_and_update_until(tmp_path):
         total += m.get_value(WITHDRAWN, np.empty(1))[0] * 3600
         m.update()
     p = {**model.central_parameters(), "coc": 4.0}
-    gal = model.hourly_rates(t, model.wet_bulb(t, rh), "hybrid", p)[0]
+    gal = model.hourly_rates(t, model.wet_bulb(t, rh), "hybrid", p, rh)[0]
     staff = model.staff_water(model.central_staff(), 50)[0] * 1e6 / 24     # gallons an hour
     expected = (gal * 50 * 1000 * p["utilization"] + staff).sum() / model.GAL_M3
     assert total == pytest.approx(expected, rel=1e-9)

@@ -14,21 +14,22 @@ Designs differ in when they evaporate:
             coil, in proportion to the wet-bulb depression; no tower drift
   hybrid    dry coolers most of the year, evaporative in warm weather (ramp between two dry-bulb setpoints)
   towers    open cooling towers, evaporative all year (upper bound for typical practice)
-Outputs per run: withdrawn (makeup), consumed (evaporation + drift + loop top-up), returned to sewer (blowdown).
+Outputs per run: withdrawn (makeup), consumed (evaporation + drift + loop top-up + humidifiers), returned to sewer (blowdown + condensate),
+condensate (from the outside air, not withdrawn, so withdrawn + condensate = consumed + returned).
 Monte Carlo over parameter ranges gives percentiles, per 100 MW of IT capacity.
 
 Staff water (restrooms, kitchens, cleaning) is not per kWh: it follows the people on site, which grow slowly with size, so it
-is a separate term, staff_runs() and staff_q(), added to the per-100 MW results at the campus's size (model 1.2). No humidification
-is counted: the designs modeled cool with liquid loops, chillers or towers and recirculate indoor air, so outside air comes in only
-for ventilation [estimate]; a direct outside-air design would need some in Michigan's dry winters and is not modeled.
+is a separate term, staff_runs() and staff_q(), added to the per-100 MW results at the campus's size (model 1.2). The designs modeled
+recirculate indoor air, so outside air comes in only to pressurize and ventilate (model 1.5, physics.OUTSIDE): humidifiers may use a little
+water in dry winters and a coil condenses some in humid summers. A direct outside-air design would use far more air and is not modeled.
 
 Parameter ranges and their sources are in RANGES and documented on the Water Ledger methods page
 (docs/research/water-ledger-methods-alignment.md).
 """
 import numpy as np
 
-from waterledger_models.datacenter.physics import (ADIABATIC, DESIGNS as _DESIGNS, HFG, KWH_BTU, LB_GAL, POWER, RANGES, STAFF, TOPUP, _POWER_RETIRED_SLOT, _ramp,  # noqa: F401
-                                                   evaporative_ratio, hourly_heat_power, hourly_rates, wet_bulb)
+from waterledger_models.datacenter.physics import (ADIABATIC, DESIGNS as _DESIGNS, HFG, KWH_BTU, LB_GAL, OUTSIDE, POWER, RANGES, STAFF, TOPUP, _POWER_RETIRED_SLOT, _ramp,  # noqa: F401
+                                                   evaporative_ratio, hourly_heat_power, hourly_rates, hourly_water_with_air, wet_bulb)
 
 DESIGNS = list(_DESIGNS)
 LABELS = {
@@ -39,9 +40,9 @@ LABELS = {
 }
 
 
-def hourly(tdb, twb, design, p):
+def hourly(tdb, twb, design, p, rh=None):
     """Gallons per IT kWh, by hour: (withdrawn, consumed, returned). See physics.hourly_rates."""
-    return hourly_rates(tdb, twb, design, p)
+    return hourly_rates(tdb, twb, design, p, rh)
 
 
 def sample(rng, n):
@@ -58,11 +59,14 @@ def sample(rng, n):
             if i == _POWER_RETIRED_SLOT:
                 extra.random()
             r[k] = extra.uniform(*v)
+    extra = np.random.default_rng(29)
+    for r in runs:
+        r.update({k: extra.uniform(*v) for k, v in OUTSIDE.items()})
     return runs
 
 
 def central():
-    return {**{k: (a + b) / 2 for k, (a, b) in {**RANGES, **ADIABATIC, **POWER}.items()}, "topup": sum(TOPUP) / 2}
+    return {**{k: (a + b) / 2 for k, (a, b) in {**RANGES, **ADIABATIC, **POWER, **OUTSIDE}.items()}, "topup": sum(TOPUP) / 2}
 
 
 STAFF_KEYS = ("core", "per_mw", "gpcd", "used", "maint_base", "maint_per_mw", "maint_used")
@@ -122,7 +126,7 @@ def daily(times, temps, rhs, design, mw, p=None):
     (days, withdrawn MGD, returned MGD). For seasonal figures and record days; the pages and reviews use the Monte Carlo percentiles."""
     p = p or central()
     tdb, rh = np.array(temps, dtype=float), np.array(rhs, dtype=float)
-    w, c, r = hourly(tdb, wet_bulb(tdb, rh), design, p)
+    w, c, r = hourly(tdb, wet_bulb(tdb, rh), design, p, rh)
     days = np.array([t[:10] for t in times])
     uniq, idx = np.unique(days, return_inverse=True)
     kw = mw * 1000 * p["utilization"]
@@ -156,8 +160,8 @@ def run_location(times, temps, rhs, n=200, seed=7, mw=100.0):
         acc = {}
         for p in runs + [central()]:
             kw = mw * 1000 * p["utilization"]
-            w, c, r = hourly(tdb, twb, design, p)
-            for name, arr in (("withdrawn", w), ("consumed", c), ("returned", r)):
+            w, c, r = hourly(tdb, twb, design, p, rh)
+            for name, arr in (("withdrawn", w), ("consumed", c), ("returned", r), ("condensate", hourly_water_with_air(tdb, twb, p, rh)[1])):
                 s = daily_stats(day_index, len(uniq), years, arr, kw, months if name == "withdrawn" else None)
                 for stat, v in s.items():
                     acc.setdefault(f"{name}_{stat}", []).append(v)
@@ -165,7 +169,7 @@ def run_location(times, temps, rhs, n=200, seed=7, mw=100.0):
             acc.setdefault("wue_l_per_kwh", []).append(float(np.average(c)) * 3.78541)          # consumed basis
             acc.setdefault("wue_makeup_l_per_kwh", []).append(float(np.average(w)) * 3.78541)   # LBNL/Lei basis (evaporation + drift + blowdown)
             acc.setdefault("utilization", []).append(p["utilization"])
-            pue = hourly_heat_power(tdb, twb, design, p)[0]
+            pue = hourly_heat_power(tdb, twb, design, p, rh)[0]
             peak = float(np.quantile([part.max() for part in np.split(pue, year_ends[:-1])], 0.9))
             acc.setdefault("pue_avg", []).append(float(pue.mean()))
             acc.setdefault("power_mw_avg", []).append(float(pue.mean()) * mw * p["utilization"])

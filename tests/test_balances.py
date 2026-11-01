@@ -17,36 +17,94 @@ def _rates(design):
 
 
 @pytest.mark.parametrize("design", ph.DESIGNS)
-def test_water_taken_is_water_used_up_and_returned(design):
+def test_water_taken_plus_condensate_is_water_used_up_and_returned(design):
     w, c, r = _rates(design)
-    assert np.allclose(w, c + r)
-    assert (w >= 0).all() and (c >= 0).all() and (r >= -1e-12).all()
+    condensate = ph.hourly_water_with_air(T, W, DRAWS)[1]
+    assert np.allclose(w + condensate, c + r)
+    assert (w >= 0).all() and (c >= 0).all() and (r >= -1e-12).all() and (condensate >= 0).all()
 
 
 @pytest.mark.parametrize("design", ph.DESIGNS)
-def test_all_electricity_leaves_as_heat(design):
-    """Facility power = heat through the water or coil + heat rejection fans, whose heat goes straight to the exhaust air."""
-    power, heat = ph.hourly_heat_power(T, W, design, DRAWS)
-    assert (heat > 1.0).all() and (power >= heat).all()
-    q = 1 / DRAWS["ups"] + 1 / (1 - DRAWS["dist_loss"]) - 1 + DRAWS["light"]
-    air = (1 - DRAWS["liquid_share"]) + DRAWS["liquid_share"] * DRAWS["liquid_air_share"]
-    crah = ph._fan_kw(q * air / (ph.CP_AIR * DRAWS["air_rise"]), DRAWS["crah_pa"], DRAWS["fan_eff"])
-    wet = ph._wet_share(T, design, DRAWS)
-    coil = T - (DRAWS["assist_eff"] * np.maximum(T - W, 0) * (T >= DRAWS["assist_on"]) if design == "assist" else 0.0)
-    water = DRAWS["supply_air"] + DRAWS["air_rise"] - DRAWS["air_rise"] / DRAWS["coil_eff"]
-    in_water, fans = q + crah, 0.0
-    for load, supply in ((q * air + crah, water), (q * (1 - air), DRAWS["liquid_water"])):
-        chiller, pumps, f = ph._loop(load, supply, T, W, coil, wet, design, DRAWS)
-        in_water, fans = in_water + chiller + pumps, fans + f
-    assert np.allclose(heat, in_water) and np.allclose(power, in_water + fans)
+def test_every_kw_is_accounted_for(design):
+    """Facility power + what outside air brings = heat through the water or coil + heat rejection fans, whose heat goes straight to the exhaust air."""
+    p = DRAWS
+    power, heat = ph.hourly_heat_power(T, W, design, p)
+    assert (power >= 1.0).all() and (heat > 0.0).all()
+    q = 1 / p["ups"] + 1 / (1 - p["dist_loss"]) - 1 + p["light"]
+    air = (1 - p["liquid_share"]) + p["liquid_share"] * p["liquid_air_share"]
+    kg_s = ph._outside_air(T, W, p)[0]
+    crah = ph._fan_kw(q * air / (ph.CP_AIR * p["air_rise"]) + kg_s, p["crah_pa"], p["fan_eff"])
+    outside, latent = ph.hourly_outside_air_heat(T, W, p)
+    wet = ph._wet_share(T, design, p)
+    coil = T - (p["assist_eff"] * np.maximum(T - W, 0) * (T >= p["assist_on"]) if design == "assist" else 0.0)
+    water = p["supply_air"] + p["air_rise"] - p["air_rise"] / p["coil_eff"]
+    air_load = q * air + crah + outside
+    electric, fans = q + crah, 0.0
+    for load, supply in ((np.maximum(air_load, 0), water), (q * (1 - air) + np.minimum(air_load, 0), p["liquid_water"]), (latent, ph.DEHUMIDIFY_WATER)):
+        assert (load >= 0).all()
+        chiller, pumps, f = ph._loop(load, supply, T, W, coil, wet, design, p)
+        electric, fans = electric + chiller + pumps, fans + f
+    assert np.allclose(power, electric + fans)
+    assert np.allclose(power + outside + latent, heat + fans)
+
+
+def test_outside_air_heat_is_its_enthalpy_change():
+    p = {**CENTRAL, "oa_cfm_per_mw": 1000.0, "humidify_share": 1.0}
+    kg_s, wo, wi = ph._outside_air(T, W, p)
+    enthalpy = lambda t, w: ph.CP_AIR * t + ph.LATENT_KJ * w
+    a, b = ph.hourly_outside_air_heat(T, W, p)
+    assert np.allclose(a + b, kg_s * (enthalpy(T, wo) - enthalpy(p["supply_air"], wi)))
+
+
+def test_outside_air_humidity():
+    """From relative humidity it is exact at any temperature; from the wet-bulb alone it is close only in warm air."""
+    t = np.array([-25.0, -15.0, 0.0, 15.0, 25.0, 35.0])
+    for rh in (10.0, 30.0, 60.0, 90.0):
+        direct = ph._humidity_ratio(ph._saturation_kpa(t) * rh / 100)
+        wb = ph.wet_bulb(t, np.full_like(t, rh))
+        assert np.allclose(ph._outside_air(t, wb, CENTRAL, np.full_like(t, rh))[1], direct)
+        if rh >= 60:
+            assert np.allclose(ph._outside_air(t, wb, CENTRAL)[1][3:], direct[3:], rtol=0.1)
+
+
+def test_a_run_on_weather_uses_the_hours_humidity():
+    """A bitter, dry day: closed loop's water is its top-ups and what the humidifiers add from the hour's own moisture."""
+    times = [f"2024-01-01T{h:02d}:00" for h in range(24)]
+    t, rh = np.full(24, -20.0), np.full(24, 10.0)
+    p = {**cooling.central(), "humidify_share": 1.0}
+    want = ph.hourly_rates(t, ph.wet_bulb(t, rh), "dry", p, rh)[0][0] * 300 * 1000 * p["utilization"] * 24 / 1e6
+    g = cooling._nc([sum(ph.STAFF[k]) / 2 for k in cooling.STAFF_KEYS], 300)[0]
+    assert cooling.daily(times, t, rh, "dry", 300, p)[1][0] == pytest.approx(want + g)
+    wrong = ph.hourly_rates(t, ph.wet_bulb(t, rh), "dry", p)[0][0] * 300 * 1000 * p["utilization"] * 24 / 1e6
+    assert wrong != pytest.approx(want)
+
+
+def test_outside_air_water_follows_the_dew_point_limits():
+    p = {**CENTRAL, "humidify_share": 1.0}
+    cold, wet = ph.hourly_water_with_air(np.array([-20.0]), np.array([-21.0]), p), ph.hourly_water_with_air(np.array([32.0]), np.array([27.0]), p)
+    mild = ph.hourly_water_with_air(np.array([20.0]), np.array([12.0]), p)
+    assert cold[0] > 0 and cold[1] == 0 and wet[1] > 0 and wet[0] == 0 and mild == (0.0, 0.0)
+    assert ph.hourly_water_with_air(np.array([-20.0]), np.array([-21.0]), {**p, "humidify_share": 0.0})[0] == 0
+    # no humidifiers, no extra water: closed loop's water is top-ups alone in the cold
+    w = ph.hourly_rates(np.array([-20.0]), np.array([-21.0]), "dry", {**p, "humidify_share": 0.0})[0]
+    assert w[0] == pytest.approx(p["fill_gal_per_mw"] * p["topup"] / 365 / (24000 * p["utilization"]))
+
+
+def test_air_loop_coils_are_too_warm_to_condense():
+    lowest = ph.POWER["supply_air"][0] + ph.POWER["air_rise"][1] - ph.POWER["air_rise"][1] / ph.POWER["coil_eff"][0]
+    assert lowest > ph.DEW_HIGH > ph.DEHUMIDIFY_WATER
 
 
 def test_no_chiller_or_fan_power_makes_heat_from_nothing():
-    """In free cooling with towers, heat is the IT load, its losses, the fans in the air stream and the pumps, nothing else."""
-    p = {**CENTRAL, "liquid_share": 0.0}
+    """In free cooling with towers and no outside air, heat is the IT load, its losses, the fans in the air stream and the pumps."""
+    p = {**CENTRAL, "liquid_share": 0.0, "oa_cfm_per_mw": 0.0}
     power, heat = ph.hourly_heat_power(np.array([0.0]), np.array([-2.0]), "towers", p)
     q = 1 / p["ups"] + 1 / (1 - p["dist_loss"]) - 1 + p["light"]
     assert q < heat[0] < q * 1.08 and power[0] > heat[0]
+
+
+def _air_water(p):
+    return ph.hourly_water_with_air(T, W, p)
 
 
 @pytest.mark.parametrize("design", ["hybrid", "towers"])
@@ -57,13 +115,13 @@ def test_evaporation_carries_no_more_heat_than_there_is(design):
     btu = ph.KWH_BTU * ph.hourly_heat_power(T, W, design, p)[1]
     wet = ph._wet_share(T, design, p)
     circ = btu * wet / (ph.LB_GAL * p["range_f"])
-    evap = c - circ * p["drift"] - p["fill_gal_per_mw"] * p["topup"] / 365 / (24000 * p["utilization"])
+    evap = c - circ * p["drift"] - p["fill_gal_per_mw"] * p["topup"] / 365 / (24000 * p["utilization"]) - _air_water(p)[0]
     assert (evap * ph.LB_GAL * ph.HFG <= btu * wet + 1e-9).all()
     assert (evap >= -1e-12).all()
 
 
 def test_assist_evaporation_is_the_air_side_energy_balance():
-    p = CENTRAL
+    p = {**CENTRAL, "oa_cfm_per_mw": 0.0}
     t, wb = np.array([32.0]), np.array([20.0])
     w, c, r = ph.hourly_rates(t, wb, "assist", p)
     top = p["fill_gal_per_mw"] * p["topup"] / 365 / (24000 * p["utilization"])
@@ -75,9 +133,9 @@ def test_assist_evaporation_is_the_air_side_energy_balance():
 
 @pytest.mark.parametrize("design", ["hybrid", "towers"])
 def test_dissolved_solids_leave_as_they_come(design):
-    """Makeup x solids = (blowdown + drift) x cycles x solids, at the tower."""
-    p = DRAWS
-    w, c, r = _rates(design)
+    """At the tower, makeup x solids = (blowdown + drift) x cycles x solids. Top-ups, humidifiers and condensate are outside it."""
+    p = {**DRAWS, "oa_cfm_per_mw": 0.0}
+    w, c, r = ph.hourly_rates(T, W, design, p)
     btu = ph.KWH_BTU * ph.hourly_heat_power(T, W, design, p)[1]
     wet = ph._wet_share(T, design, p)
     drift = btu * wet / (ph.LB_GAL * p["range_f"]) * p["drift"]
@@ -86,18 +144,18 @@ def test_dissolved_solids_leave_as_they_come(design):
 
 
 def test_no_drift_or_blowdown_without_a_wet_tower():
-    for design in ("dry",):
-        w, c, r = ph.hourly_rates(T, W, design, CENTRAL)
-        assert np.allclose(r, 0.0) and np.allclose(w, c)
-    t = np.array([CENTRAL["hybrid_on"] - 1.0])
-    w, c, r = ph.hourly_rates(t, t - 5, "hybrid", CENTRAL)
+    p = {**CENTRAL, "oa_cfm_per_mw": 0.0}
+    w, c, r = ph.hourly_rates(T, W, "dry", p)
+    assert np.allclose(r, 0.0) and np.allclose(w, c)
+    t = np.array([p["hybrid_on"] - 1.0])
+    w, c, r = ph.hourly_rates(t, t - 5, "hybrid", p)
     assert r == pytest.approx(0.0)
-    assert w[0] == pytest.approx(CENTRAL["fill_gal_per_mw"] * CENTRAL["topup"] / 365 / (24000 * CENTRAL["utilization"]))
+    assert w[0] == pytest.approx(p["fill_gal_per_mw"] * p["topup"] / 365 / (24000 * p["utilization"]))
 
 
 def test_tower_flow_in_the_two_equations_is_the_same_water():
     """The tower pumps' flow (kg/s per kW) and the drift's circulating flow (gal per kWh) come from one heat balance."""
-    p = {**CENTRAL, "liquid_share": 0.0}
+    p = {**CENTRAL, "liquid_share": 0.0, "oa_cfm_per_mw": 0.0}
     t, wb = np.array([33.0]), np.array([24.0])
     heat = ph.hourly_heat_power(t, wb, "towers", p)[1]
     gal_kwh = ph.KWH_BTU * heat / (ph.LB_GAL * p["range_f"])
@@ -124,6 +182,17 @@ def test_chiller_rejects_by_the_wet_share():
     assert ph.hourly_heat_power(t, wb, "hybrid", p)[1] == pytest.approx(ph.hourly_heat_power(t, wb, "dry", p)[1])
     t, wb = np.array([p["hybrid_full"] + 1.0]), np.array([24.0])
     assert ph.hourly_heat_power(t, wb, "hybrid", p)[1] == pytest.approx(ph.hourly_heat_power(t, wb, "towers", p)[1])
+
+
+def test_estimate_books_close_on_the_middle_estimate():
+    from waterledger.scenario import cooling_estimate
+    per = {k: {"p10": 0.1, "p50": 0.2, "p90": 0.3} for k in ("withdrawn_avg", "withdrawn_peak_1in10", "withdrawn_annual_mg", "consumed_avg", "consumed_peak_1in10", "returned_avg", "returned_peak_1in10")}
+    per = {**per, "consumed_avg": {"p10": 0.05, "p50": 0.15, "p90": 0.25}, "condensate_avg": {"p10": 0.0, "p50": 0.01, "p90": 0.02}, "condensate_peak_1in10": {"p10": 0.0, "p50": 0.02, "p90": 0.03}}
+    D = {"regions": {"r": {"per_100mw": {"towers": per}}}, "staff": {"runs": cooling.staff_runs(5)}}
+    E = cooling_estimate(D, "r", "towers", 100, "sewer")
+    assert E["wAvg"]["mid"] + E["condAvg"]["mid"] == pytest.approx(E["cAvg"]["mid"] + E["rAvg"]["mid"])
+    R = cooling_estimate(D, "r", "towers", 100, "reuse")
+    assert R["wAvg"]["mid"] + R["condAvg"]["mid"] == pytest.approx(R["cAvg"]["mid"] + R["rAvg"]["mid"])
 
 
 def test_the_per_run_loop_and_the_vector_draws_are_the_same_draws():

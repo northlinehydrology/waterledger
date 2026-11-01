@@ -2,10 +2,10 @@
 
 Hour by hour, electricity and water from one heat balance (model 1.5), after Lei and Masanet (2022; preprint rs-769999/v1, Eqs. 2-4):
 facility power = IT + UPS and distribution losses + lighting + air handler fans + chillers + pumps + heat rejection fans, with the
-economizer carrying as much of the load as the weather allows. Energy closes: all of that power becomes heat, and heat rejected through
-the water or coil = facility power less the heat rejection fans, whose heat goes straight to the exhaust air. Evaporation = heat x the
+economizer carrying as much of the load as the weather allows. Energy closes: that power becomes heat, outside air brings or takes away a
+little more, and heat rejected through the water or coil = the two together less the heat rejection fans, whose heat goes straight to the exhaust air. Evaporation = heat x the
 wet share x the Rutberg et al. (2011) evaporative ratio / latent heat; drift = a share of the flow through the wet part. Mass closes:
-makeup = evaporation + drift + blowdown, and the dissolved solids balance (makeup x solids = (blowdown + drift) x cycles x solids) gives
+makeup = evaporation + drift + blowdown, condensate from the outside air joins what goes back, and the dissolved solids balance (makeup x solids = (blowdown + drift) x cycles x solids) gives
 blowdown + drift = evaporation / (cycles of concentration - 1). Closed loops add small top-ups; staff water follows the people on site. Designs differ in when they evaporate (dry, assist, hybrid, towers); assist evaporates into the air ahead of a dry cooler. The method and sources are
 described in cooling.py and on the Water Ledger methods page.
 
@@ -16,6 +16,9 @@ these functions and ranges, so the two cannot drift apart.
 import numpy as np
 
 KWH_BTU = 3412.14
+LATENT_KJ = 2450.0     # latent heat of water, kJ/kg, near the coil and hall
+CFM_M3S = 0.000471947  # m3/s per cfm
+KG_GAL = 3.78541       # kg of water per gallon
 HFG = 1050.0          # latent heat near tower temperatures, BTU/lb
 LB_GAL = 8.34
 GAL_M3 = 264.172       # gallons per cubic meter
@@ -80,10 +83,20 @@ POWER = {
     # that are liquid-cooled at a campus is not published for any fleet, so all of 0-1 is sampled [A].
     "liquid_water": (32.0, 45.0), "liquid_air_share": (0.10, 0.30), "liquid_share": (0.0, 1.0),
 }
-# Lei and Masanet's sensible heat ratio (0.95-0.99), removed in model 1.5: it added heat with no energy behind it. Its slot in the POWER stream
+# Lei and Masanet's sensible heat ratio (0.95-0.99), removed in model 1.5 for OUTSIDE below: at their ratio the coils would condense moisture no air was
+# bringing in, and these coils are too warm to condense. Its slot in the POWER stream
 # is still drawn, so the other draws are unchanged.
 _POWER_RETIRED_SLOT = 3
-PARAMETERS = tuple(RANGES) + ("topup",) + tuple(ADIABATIC) + tuple(POWER)
+# Outside air (model 1.5), on its own random stream. The building takes a little outside air to stay pressurized and ventilated; it brings heat and
+# moisture in, and leaves at indoor conditions. Flow per MW of IT capacity, a bracket [A]: ASHRAE 62.1's 0.06 cfm/ft2 for computer rooms (2007 table, as
+# quoted secondhand; the area rate, since these rooms are mostly unoccupied) at about 5,000 ft2 per MW [A] is 300; the ends are 100 and 1,500 [A]. No
+# published flow for large campuses was found. Share of the dry-air shortfall made up by humidifiers, not published for any fleet, so all of 0-1 is
+# sampled [A]: some facilities no longer humidify (HVAC.best on ASHRAE TC 9.9). Humidifiers are taken as adiabatic [A].
+OUTSIDE = {"oa_cfm_per_mw": (100.0, 1500.0), "humidify_share": (0.0, 1.0)}
+# Indoor dew point limits, C: ASHRAE TC 9.9's recommended -9 to 15, as secondary sources give them, not read directly. Water to the outside air unit's
+# dehumidifying coil, C [A]: it must be colder than the 15 C dew point, while the air loop's water, at 18.7 C or more, is not, so those coils stay dry.
+DEW_LOW, DEW_HIGH, DEHUMIDIFY_WATER = -9.0, 15.0, 9.0
+PARAMETERS = tuple(RANGES) + ("topup",) + tuple(ADIABATIC) + tuple(POWER) + tuple(OUTSIDE)
 
 # Staff water. People = the campus's permanent headcount (employees and on-site contractors), a fixed core plus a share per MW of IT
 # capacity: JLARC 2024 puts a typical building at about 50 full-time workers; announced campuses run 0.1 to 0.5 jobs per MW (Meta Richland
@@ -118,6 +131,8 @@ SOURCES = {
     "topup": "NIH 2023 Technical Bulletin (under 5% a year); 1% floor [A]",
     "assist_dt_air": "Makers' selection sheets: Thermokey, Kelvion [A]",
     "assist_bleed": "Guentner; Spinazzola 2021; SCE ET13SCE1020, 2015, p. 29; ASHRAE 2016, ch. 41",
+    "oa_cfm_per_mw": "ASHRAE 62.1-2007 computer rooms, quoted secondhand, at about 5,000 ft2 per MW [A]; ends 100 and 1,500 [A], no published campus flow",
+    "humidify_share": "Not published for any fleet; all of 0-1 sampled [A]; HVAC.best on ASHRAE TC 9.9 (many facilities no longer humidify)",
     **dict.fromkeys(("ups", "dist_loss", "light", "supply_air", "air_rise", "coil_eff", "water_rise", "crah_pa", "fan_eff", "tower_fan_pa", "lg",
                      "tower_approach", "hx_approach", "pump_chw_kpa", "pump_tower_kpa", "pump_econ_kpa", "pump_eff"), _LM),
     "carnot_water": "WAC 51-11C-403323 (replica of ASHRAE 90.1 Table 6.8.1-3); +/-11% from Lei and Masanet; fitted with the temperature offsets [A]",
@@ -174,6 +189,41 @@ def _saturated_enthalpy(t_c):
     return 1.006 * t_c + w * (2501.0 + 1.86 * t_c)
 
 
+def _saturation_kpa(t_c):
+    return 0.6112 * np.exp(17.62 * t_c / (243.12 + t_c))
+
+
+def _humidity_ratio(e_kpa):
+    return 0.622 * e_kpa / (101.325 - e_kpa)
+
+
+def _outside_air(tdb, twb, p, rh=None):
+    """Air and moisture through the building, per kW of IT: (kg of air per s, humidity ratio outside, humidity ratio indoors). Indoors holds the outside
+    humidity between the dew point limits; above the high one the air is dehumidified to it, and below the low one humidifiers make up their share.
+    rh is the hour's relative humidity, %. Without it, vapor pressure comes from the psychrometric equation on the wet-bulb (ASHRAE Fundamentals), which on
+    Stull's wet-bulb is good above about 0 C and off by several times in cold, dry air, so everything that runs the model on weather passes rh."""
+    kg_s = p["oa_cfm_per_mw"] / 1000.0 * CFM_M3S * RHO_AIR / p["utilization"]
+    vapor = _saturation_kpa(tdb) * rh / 100.0 if rh is not None else np.maximum(_saturation_kpa(twb) - 0.0674 * (tdb - twb), 1e-4)
+    outside = _humidity_ratio(vapor)
+    low, high = _humidity_ratio(_saturation_kpa(DEW_LOW)), _humidity_ratio(_saturation_kpa(DEW_HIGH))
+    indoors = np.minimum(outside, high) + p["humidify_share"] * np.maximum(low - outside, 0.0)
+    return kg_s, outside, indoors
+
+
+def hourly_outside_air_heat(tdb, twb, p, rh=None):
+    """Heat outside air brings in, kW per IT kW: (through the warm air loop, can be negative when the air is cool or dry; latent heat at the dehumidifying
+    coil). Their sum is the air's flow x (its enthalpy outside - its enthalpy leaving at indoor conditions, at the supply air temperature)."""
+    kg_s, outside, indoors = _outside_air(tdb, twb, p, rh)
+    sensible = kg_s * CP_AIR * (tdb - p["supply_air"])
+    return sensible - kg_s * LATENT_KJ * np.maximum(indoors - outside, 0.0), kg_s * LATENT_KJ * np.maximum(outside - indoors, 0.0)
+
+
+def hourly_water_with_air(tdb, twb, p, rh=None):
+    """Gallons per IT kWh: (humidifier water, condensate drawn out of the outside air)."""
+    kg_s, outside, indoors = _outside_air(tdb, twb, p, rh)
+    return kg_s * np.maximum(indoors - outside, 0.0) * 3600.0 / KG_GAL, kg_s * np.maximum(outside - indoors, 0.0) * 3600.0 / KG_GAL
+
+
 def _wet_share(tdb, design, p):
     """Share of the heat going through evaporation: all of it for towers, none for dry and assist coils, a ramp for hybrid."""
     if design == "towers":
@@ -216,36 +266,40 @@ def _loop(load, supply, tdb, twb, coil_air, wet, design, p):
     return chiller, pumps + tower_pump, tower_fan + (0.0 if design == "towers" else dry)
 
 
-def hourly_heat_power(tdb, twb, design, p):
+def hourly_heat_power(tdb, twb, design, p, rh=None):
     """Each hour, per kW of IT: (facility power, kW; heat rejected through the water or coil, kW). Facility power over IT power is the hour's PUE.
-    Facility power less heat rejected is the heat rejection fans, whose heat goes straight to the exhaust air, so the energy balance closes.
+    Energy closes: facility power + the heat outside air brings in = heat rejected + the heat rejection fans, whose heat goes straight to the exhaust air.
 
-    After Lei and Masanet's Eqs. 2-4, with these departures, each so that it closes: air handler fan and pump heat are counted in the heat; there is no
-    sensible heat ratio, which would add latent heat with no moisture source (no humidification or outside air is modeled); the tower's air flow is capped
-    by what air can carry. Dry cooler and liquid cooling designs are added, which their cases do not have. p as in hourly_rates."""
+    After Lei and Masanet's Eqs. 2-4, with these departures, each so that it closes: air handler fan and pump heat are counted in the heat; their sensible
+    heat ratio is replaced by outside air's own heat and moisture, since the warm air loop's coils run above the indoor dew point and condense nothing; the
+    tower's air flow is capped by what air can carry. Dry cooler and liquid cooling designs are added, which their cases do not have. p as in hourly_rates."""
     q = 1.0 + (1.0 / p["ups"] - 1.0) + (1.0 / (1.0 - p["dist_loss"]) - 1.0) + p["light"]
     air = (1.0 - p["liquid_share"]) + p["liquid_share"] * p["liquid_air_share"]
-    crah = _fan_kw(q * air / (CP_AIR * p["air_rise"]), p["crah_pa"], p["fan_eff"])
+    kg_s = _outside_air(tdb, twb, p, rh)[0]
+    crah = _fan_kw(q * air / (CP_AIR * p["air_rise"]) + kg_s, p["crah_pa"], p["fan_eff"])
+    outside, latent = hourly_outside_air_heat(tdb, twb, p, rh)
     # supply air and the coil set the air loop's water temperature (Lei and Masanet); liquid-cooled heat goes to a warmer loop of its own
     air_water = p["supply_air"] + p["air_rise"] - p["air_rise"] / p["coil_eff"]
     coil_air = tdb - (p["assist_eff"] * np.maximum(tdb - twb, 0.0) * (tdb >= p["assist_on"]) if design == "assist" else 0.0)
     wet = _wet_share(tdb, design, p)
-    power, heat = q + crah + 0.0 * tdb, q + crah + 0.0 * tdb
-    for load, supply in ((q * air + crah, air_water), (q * (1.0 - air), p["liquid_water"])):
+    air_load = q * air + crah + outside                       # in rare, bitter hours outside air could cool more than the air loop carries; the rest comes off the liquid loop
+    power, heat = q + crah + 0.0 * tdb, q + crah + outside + latent
+    for load, supply in ((np.maximum(air_load, 0.0), air_water), (q * (1.0 - air) + np.minimum(air_load, 0.0), p["liquid_water"]), (latent, DEHUMIDIFY_WATER)):
         chiller, pumps, fans = _loop(load, supply, tdb, twb, coil_air, wet, design, p)
         power, heat = power + chiller + pumps + fans, heat + chiller + pumps
     return power, heat
 
 
-def hourly_rates(tdb, twb, design, p):
+def hourly_rates(tdb, twb, design, p, rh=None):
     """Gallons per IT kWh for each hour: (withdrawn, consumed, returned).
 
-    tdb, twb: dry- and wet-bulb temperature (C), shape (hours,). p: parameter dict whose values are scalars or arrays
-    shaped (runs, 1). Withdrawn always equals consumed plus returned.
+    tdb, twb, rh: dry- and wet-bulb temperature (C) and relative humidity (%), shape (hours,). p: parameter dict whose values are scalars or arrays
+    shaped (runs, 1). Mass closes: withdrawn + condensate = consumed + returned. Condensate comes out of the outside air, not the water system, and
+    goes back with the blowdown (hourly_water_with_air).
     """
     if design not in DESIGNS:
         raise ValueError(f"design must be one of {DESIGNS}, not {design!r}")
-    btu = KWH_BTU * hourly_heat_power(tdb, twb, design, p)[1]
+    btu = KWH_BTU * hourly_heat_power(tdb, twb, design, p, rh)[1]
     evap_full = btu * evaporative_ratio(tdb, p["er_adj"]) / HFG / LB_GAL
     w = _wet_share(tdb, design, p) * np.ones_like(evap_full)
     circ = btu * w / (LB_GAL * p["range_f"])                # gal circulated through the wet part per kWh
@@ -263,9 +317,10 @@ def hourly_rates(tdb, twb, design, p):
         blow = evap * p["assist_bleed"]
     # loop top-up, gal/day per MW of capacity, as gal per IT kWh
     topup = p["fill_gal_per_mw"] * p["topup"] / 365.0 / (24 * 1000 * p["utilization"]) * np.ones_like(evap_full)
-    withdrawn = evap + drift + blow + topup
-    consumed = evap + drift + topup
-    returned = blow
+    humidify, condensate = hourly_water_with_air(tdb, twb, p, rh)
+    withdrawn = evap + drift + blow + topup + humidify
+    consumed = evap + drift + topup + humidify
+    returned = blow + condensate
     return withdrawn, consumed, returned
 
 
@@ -281,6 +336,9 @@ def sample_parameters(n=200, seed=7):
     u = np.random.default_rng(17).random((n, len(ADIABATIC)))
     for i, (k, (a, b)) in enumerate(ADIABATIC.items()):
         out[k] = a + (b - a) * u[:, i]
+    u = np.random.default_rng(29).random((n, len(OUTSIDE)))
+    for i, (k, (a, b)) in enumerate(OUTSIDE.items()):
+        out[k] = a + (b - a) * u[:, i]
     u = np.delete(np.random.default_rng(23).random((n, len(POWER) + 1)), _POWER_RETIRED_SLOT, axis=1)
     for i, (k, (a, b)) in enumerate(POWER.items()):
         out[k] = a + (b - a) * u[:, i]
@@ -289,7 +347,7 @@ def sample_parameters(n=200, seed=7):
 
 def central_parameters():
     """Every parameter at the middle of its range."""
-    return {**{k: (a + b) / 2 for k, (a, b) in {**RANGES, **ADIABATIC, **POWER}.items()}, "topup": sum(TOPUP) / 2}
+    return {**{k: (a + b) / 2 for k, (a, b) in {**RANGES, **ADIABATIC, **POWER, **OUTSIDE}.items()}, "topup": sum(TOPUP) / 2}
 
 
 def sample_staff(n=200, seed=13):

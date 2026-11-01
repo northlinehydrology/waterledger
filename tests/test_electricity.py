@@ -42,7 +42,7 @@ def test_liquid_cooling_lowers_power():
 
 
 def test_chillers_add_heat_only_when_they_run():
-    p = {**C, "liquid_share": 0.0}
+    p = {**C, "liquid_share": 0.0, "oa_cfm_per_mw": 0.0}
     power, heat = ph.hourly_heat_power(TDB, TWB, "towers", p)
     q = 1.0 + (1.0 / p["ups"] - 1.0) + (1.0 / (1.0 - p["dist_loss"]) - 1.0) + p["light"]
     assert heat[0] > q and heat[0] == pytest.approx(heat[1])     # free cooling: the load alone

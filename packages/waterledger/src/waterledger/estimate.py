@@ -29,7 +29,7 @@ class Flow(BaseModel):
 
 class WaterUse(BaseModel):
     """Water a site takes (withdrawn), uses up (consumed: evaporation, drift, top-ups, staff use) and sends back (returned).
-    Withdrawn equals consumed plus returned on the middle estimate. Flows in million gallons a day; annual in million gallons."""
+    On the middle estimate withdrawn + condensate = consumed + returned; condensate comes out of the outside air, not a water system. Flows in million gallons a day; annual in million gallons."""
     model_config = ConfigDict(frozen=True)
     withdrawn: Flow
     withdrawn_annual_mg: Range
@@ -38,6 +38,7 @@ class WaterUse(BaseModel):
     to_sewer: Range
     lake_source: bool = False
     reuse: bool = False
+    condensate: Flow | None = None       # also in returned and to_sewer; none for lake-source's lake water or data from before model 1.5
 
 
 def water_use(E):
@@ -45,7 +46,8 @@ def water_use(E):
     R = Range.from_band
     return WaterUse(withdrawn=Flow(avg=R(E["wAvg"]), peak_day=R(E["wPeak"])), withdrawn_annual_mg=R(E["wAnn"]),
                     consumed=Flow(avg=R(E["cAvg"]), peak_day=R(E["cPeak"])), returned=Flow(avg=R(E["rAvg"]), peak_day=R(E["rPeak"])),
-                    to_sewer=R(E["sewer"]), lake_source=E["lake"], reuse=E["reuse"])
+                    to_sewer=R(E["sewer"]), lake_source=E["lake"], reuse=E["reuse"],
+                    condensate=Flow(avg=R(E["condAvg"]), peak_day=R(E["condPeak"])) if "condAvg" in E else None)
 
 
 def electricity(e):

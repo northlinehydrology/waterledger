@@ -29,7 +29,7 @@ def test_marked_and_differs_from_the_region(gaines):
 
 def test_adds_up_and_carries_comparisons(gaines):
     w = gaines.estimate(weather="local")
-    assert w.water.consumed.avg.p50 + w.water.returned.avg.p50 == pytest.approx(w.water.withdrawn.avg.p50)
+    assert w.water.consumed.avg.p50 + w.water.returned.avg.p50 == pytest.approx(w.water.withdrawn.avg.p50 + w.water.condensate.avg.p50)
     c = w.comparisons[0]
     assert c.percent.avg.p50 == pytest.approx(100 * (w.water.withdrawn.avg.p50 * 1e6 / 300) / c.existing)
 

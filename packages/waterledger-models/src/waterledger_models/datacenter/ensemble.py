@@ -17,7 +17,7 @@ from waterledger_models.datacenter import physics as model
 
 STATS = ("avg", "peak_1in10", "record", "annual_mg", "max_month", "worst_year_mg")
 ANNUAL = ("annual_mg", "worst_year_mg")       # million gallons a year; the rest are million gallons a day
-FLOWS = ("withdrawn", "consumed", "returned")
+FLOWS = ("withdrawn", "consumed", "returned", "condensate")
 L_PER_GAL = 3.78541
 POWER_VARS = ("pue_avg", "power_mw_avg", "pue_peak_1in10", "power_mw_peak_1in10")
 
@@ -46,16 +46,16 @@ def _stats(daily, years, months):
     return np.stack([avg, np.quantile(ann_max, 0.9, axis=1), daily.max(axis=1), avg * 365.25, max_month, worst_year], axis=1)
 
 
-def _evaluate(tdb, twb, starts, years, months, hour_years, design, params, mw):
+def _evaluate(tdb, twb, rh, starts, years, months, hour_years, design, params, mw):
     """Stats (runs, flows, stats), water use effectiveness (runs, 2), electricity (runs, 4: pue_avg, power_mw_avg, pue_peak_1in10,
     power_mw_peak_1in10; as in cooling.run_location) and daily volumes (runs, flows, days)."""
     p = {k: np.asarray(v, dtype=float).reshape(-1, 1) for k, v in params.items()}
     kw = mw * 1000.0 * p["utilization"]
-    rates = model.hourly_rates(tdb, twb, design, p)
+    rates = (*model.hourly_rates(tdb, twb, design, p, rh), model.hourly_water_with_air(tdb, twb, p, rh)[1])
     daily = [np.add.reduceat(r * kw, starts, axis=1) / 1e6 for r in rates]
     stats = np.stack([_stats(d, years, months) for d in daily], axis=1)
     wue = np.stack([rates[1].mean(axis=1), rates[0].mean(axis=1)], axis=1) * L_PER_GAL
-    pue = model.hourly_heat_power(tdb, twb, design, p)[0]
+    pue = model.hourly_heat_power(tdb, twb, design, p, rh)[0]
     ends = np.r_[np.flatnonzero(hour_years[1:] != hour_years[:-1]) + 1, hour_years.size]
     peak = np.quantile(np.stack([part.max(axis=1) for part in np.split(pue, ends[:-1], axis=1)], axis=1), 0.9, axis=1)
     avg = pue.mean(axis=1)
@@ -88,11 +88,11 @@ def run_ensemble(time, air_temperature, relative_humidity, mw=100.0, n=200, seed
     for d, design in enumerate(designs):
         for i in range(0, n, chunk):
             sl = slice(i, min(i + chunk, n))
-            s, w, e, dd = _evaluate(tdb, twb, starts, years, months, hour_years, design, {k: v[sl] for k, v in params.items()}, mw)
+            s, w, e, dd = _evaluate(tdb, twb, rh, starts, years, months, hour_years, design, {k: v[sl] for k, v in params.items()}, mw)
             st[d, sl], wue[d, sl], power[d, sl] = s, w, e
             if keep_daily:
                 daily[d, sl] = dd
-        cst[d] = _evaluate(tdb, twb, starts, years, months, hour_years, design, central, mw)[0][0]
+        cst[d] = _evaluate(tdb, twb, rh, starts, years, months, hour_years, design, central, mw)[0][0]
 
     coords = {"design": list(designs), "run": np.arange(n), "stat": list(STATS)}
     ds = xr.Dataset(coords=coords, attrs={"it_capacity_mw": mw, "n_runs": n, "seed": seed,
@@ -131,7 +131,7 @@ def summarize(ds, quantiles=(0.1, 0.5, 0.9), staff=True, staff_n=200, staff_seed
     for f, flow in enumerate(FLOWS):
         q = ds[flow].quantile(list(quantiles), dim="run").assign_coords(quantile=names[:-1])
         q = xr.concat([q, ds[f"{flow}_central"].expand_dims(quantile=["central"])], dim="quantile")
-        if staff:
+        if staff and flow != "condensate":
             add = xr.DataArray([*np.quantile(runs[f], list(quantiles)), central[f]], dims="quantile", coords={"quantile": names})
             q = q + add * per_year.sel(stat=q["stat"])
         out[flow] = q.transpose("design", "stat", "quantile")

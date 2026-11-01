@@ -94,7 +94,7 @@ def cooling_outputs(wx, design, X, space):
     for i in range(0, len(X), BATCH):
         xb = X[i:i + BATCH]
         p = {k: xb[:, j:j + 1] for j, k in enumerate(names)}
-        w, c, _ = ph.hourly_rates(wx["tdb"], wx["twb"], design, p)
+        w, c, _ = ph.hourly_rates(wx["tdb"], wx["twb"], design, p, wx["rh"])
         kw = MW * 1000.0 * p["utilization"]
         wd = (w * kw).reshape(len(xb), nd, 24).sum(-1)      # gal per day
         cd = (c * kw).reshape(len(xb), nd, 24).sum(-1)
@@ -102,7 +102,7 @@ def cooling_outputs(wx, design, X, space):
         out["consumed_avg"][i:i + BATCH] = cd.mean(1)
         out["withdrawn_avg"][i:i + BATCH] = wd.mean(1)
         out["withdrawn_peak_1in10"][i:i + BATCH] = np.quantile(ann_max, 0.9, axis=1)
-        pue = ph.hourly_heat_power(wx["tdb"], wx["twb"], design, p)[0]
+        pue = ph.hourly_heat_power(wx["tdb"], wx["twb"], design, p, wx["rh"])[0]
         out["pue_avg"][i:i + BATCH] = pue.mean(1)
         out["pue_hottest_hour"][i:i + BATCH] = np.quantile(np.stack([pue[:, np.repeat(wx["years"], 24) == y].max(1) for y in ys], axis=1), 0.9, axis=1)
     return out
@@ -123,7 +123,7 @@ def check_against_package(wx, space, rng):
         mine = cooling_outputs(wx, design, X, space)
         for r in range(len(X)):
             p = dict(zip(names, X[r]))
-            w, c, _ = cw.hourly(wx["tdb"], wx["twb"], design, p)
+            w, c, _ = cw.hourly(wx["tdb"], wx["twb"], design, p, wx["rh"])
             kw = MW * 1000 * p["utilization"]
             sw = cw.daily_stats(day_index, len(wx["days"]), wx["years"], w, kw)
             sc = cw.daily_stats(day_index, len(wx["days"]), wx["years"], c, kw)
