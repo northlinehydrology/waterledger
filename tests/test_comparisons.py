@@ -61,3 +61,10 @@ def test_on_an_estimate_and_through_json():
 def test_none_when_the_campus_takes_nothing_from_the_system():
     p = wl.place("Gaines charter township, MI")
     assert wl.Site(place=p, facility=wl.DataCenter(it_mw=300, cooling="hybrid"), source="wells").estimate().comparisons[0].against != "water_system"
+
+
+def test_a_peak_below_the_average_load_counts_as_missing():
+    from waterledger_data.power import usable_peak
+    assert usable_peak(914.0, 2252 * 8760) is None
+    assert usable_peak(2252.0, 2252 * 8760) == 2252.0
+    assert usable_peak(None, 2252 * 8760) is None

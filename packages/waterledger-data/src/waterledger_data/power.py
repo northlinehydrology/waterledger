@@ -88,10 +88,16 @@ def fetch_eia861(year):
     return d
 
 
+def usable_peak(peak_mw, mwh):
+    """A reported peak, or None if it is below the average load that year's sales imply."""
+    return None if peak_mw is not None and peak_mw < mwh / 8760 else peak_mw
+
+
 def utility_loads(year=None, state="MI"):
     """{EIA id: {"mwh", "customers", "summer_mw", "winter_mw"}} for one state (Michigan by default). Sales are bundled plus delivery-only
     customers (everyone on the utility's wires); short-form filers report sales only. Peaks are as reported for the state (a multistate
-    utility's peak in another state is absent)."""
+    utility's peak in another state is absent). A peak below the average load can't be right, whatever the file says (Duke Energy Ohio's 914 MW summer peak against
+    2,252 MW on average), so it counts as missing."""
     import pandas as pd
     year = year or eia_year()
     d = os.path.join(RAW, f"eia861_{year}")
@@ -115,7 +121,7 @@ def utility_loads(year=None, state="MI"):
             continue
         pk = o.loc[uid] if uid in o.index else None
         out[int(uid)] = {"mwh": float(r.mwh), "customers": int(r.cust) if r.cust == r.cust else None,
-                         "summer_mw": val(pk.summer) if pk is not None else None, "winter_mw": val(pk.winter) if pk is not None else None}
+                         "summer_mw": usable_peak(val(pk.summer), r.mwh) if pk is not None else None, "winter_mw": usable_peak(val(pk.winter), r.mwh) if pk is not None else None}
     return out
 
 
