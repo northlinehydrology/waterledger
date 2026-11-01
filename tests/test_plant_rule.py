@@ -40,22 +40,37 @@ def test_michigan_distance_is_true_not_map_units():
         del sc._cache["waters"]
 
 
-def test_which_plants_count(monkeypatch):
-    """The same rule in every state: ECHO has a permit it hasn't terminated, whether on its list of public plants or looked up by number, or the survey gives a state permit."""
+def test_a_plant_stays_without_positive_evidence_it_closed(monkeypatch):
+    """The same rule in every state. City "C" has a live plant of 2 MGD; city "T" has none."""
     tables = {"FACILITIES": [], "FLOW": [], "PHYSICAL_LOCATION": [], "FACILITY_PERMIT": []}
-    plants = (("ok", ["XX1"]), ("expired", ["XX2"]), ("terminated", ["XX3"]), ("no_permit", []), ("state", ["GW99  "]), ("one_terminated", ["XX3", "XX1"]),
-              ("off_the_list", ["XX4"]), ("off_the_list_terminated", ["XX5"]), ("gone_from_echo", ["XX6"]))
-    for cid, permits in plants:
+    plants = (("ok", ["XX1"], "C", "2.0"), ("expired", ["XX2"], "E", "2.0"), ("state", ["GW99  "], "T", "2.0"), ("no_permit", [], "T", "2.0"), ("Austin 5 Year CIP", [], "C", "152"), ("East China REG CS", ["XX3"], "T", "2.0"),
+              ("off_the_list", ["XX4"], "L", "2.0"), ("alone_terminated", ["XX3"], "T", "1.0"), ("alone_gone", ["XX6"], "T", "1.0"), ("small_lagoon", ["XX3"], "C", "0.05"), ("Hamburg Twp WWTP", ["XX3"], "C", "1.6"),
+              ("renumbered", ["XX3"], "R", "9.0"), ("replaced_terminated", ["XX3"], "C", "1.5"), ("replaced_gone", ["XX6"], "C", "2.0"), ("larger_than_the_live_one", ["XX3"], "C", "3.0"))
+    for cid, permits, city, mgd in plants:
         tables["FACILITIES"].append({"CWNS_ID": cid, "STATE_CODE": "XX", "INFRASTRUCTURE_TYPE": "Wastewater", "FACILITY_NAME": cid})
-        tables["FLOW"].append({"CWNS_ID": cid, "STATE_CODE": "XX", "FLOW_TYPE": "Total Flow", "CURRENT_DESIGN_FLOW": "2.0"})
-        tables["PHYSICAL_LOCATION"].append({"CWNS_ID": cid, "STATE_CODE": "XX", "LATITUDE": "40.0", "LONGITUDE": "-90.0", "CITY": "C"})
+        tables["FLOW"].append({"CWNS_ID": cid, "STATE_CODE": "XX", "FLOW_TYPE": "Total Flow", "CURRENT_DESIGN_FLOW": mgd})
+        tables["PHYSICAL_LOCATION"].append({"CWNS_ID": cid, "STATE_CODE": "XX", "LATITUDE": "40.0", "LONGITUDE": "-90.0", "CITY": city})
         tables["FACILITY_PERMIT"] += [{"CWNS_ID": cid, "STATE_CODE": "XX", "PERMIT_NUMBER": pm, "PERMIT_TYPE": "State" if pm.startswith("GW") else "Individual Permit"} for pm in permits]
-    row = lambda k, v: {"SourceID": k, "CWPPermitStatusDesc": v, "PastCalYrAverageFlow": "1.0", "CWPMajorMinorStatusFlag": "M", "CWPCsoFlag": "N", "CWPStateWaterBodyName": "R", "RadWBDHuc12": "1"}
-    asked = {}
+    row = lambda k, v, name="": {"SourceID": k, "CWPName": name, "CWPPermitStatusDesc": v, "PastCalYrAverageFlow": "1.0", "CWPMajorMinorStatusFlag": "M", "CWPCsoFlag": "N", "CWPStateWaterBodyName": "R", "RadWBDHuc12": "1"}
     monkeypatch.setattr(ww, "_cwns", lambda t: tables[t])
     monkeypatch.setattr(ww, "_echo", lambda st: [row("XX1", "Effective"), row("XX2", "Expired"), row("XX3", "Terminated")])
-    monkeypatch.setattr(ww, "_echo_by_permit", lambda st, ids: asked.setdefault("ids", set(ids)) and [row("XX4", "Admin Continued"), row("XX5", "Terminated")])
+    monkeypatch.setattr(ww, "_echo_by_permit", lambda st, ids: [row("XX4", "Admin Continued")])
+    monkeypatch.setattr(ww, "_echo_near", lambda st, where: {"renumbered": [row("XX7", "Effective", "RENUMBERED WWTP"), row("XX8", "Effective", "RENUMBERED MS4")]})
     got = {q["name"].lower(): q for q in ww.plants("XX")}
-    assert set(got) == {"ok", "expired", "state", "one_terminated", "off_the_list"}
-    assert asked["ids"] == {"XX4", "XX5", "XX6"}                    # only what the list of public plants doesn't have, and no state permit
-    assert got["expired"]["flow_mgd"] == 1.0 and got["off_the_list"]["flow_mgd"] == 1.0 and got["state"]["flow_mgd"] is None and got["state"]["id"] == "GW99" and got["one_terminated"]["id"] == "XX1"
+    assert set(got) == {"ok", "expired", "state", "no_permit", "off_the_list", "alone_terminated", "alone_gone", "renumbered", "larger_than_the_live_one", "small_lagoon", "hamburg twp wwtp"}
+    assert got["renumbered"]["id"] == "XX7" and got["renumbered"]["flow_mgd"] == 1.0                # the live permit takes over
+    assert got["alone_terminated"]["id"] == "XX3" and got["alone_terminated"]["flow_mgd"] is None and got["state"]["id"] == "GW99"
+
+
+def test_live_permit_needs_the_sewer_and_the_town():
+    rows = [{"CWPName": "AU GRES MS4 WWTP", "CWPPermitStatusDesc": "Effective"}, {"CWPName": "BOPP-BUSCH MFG CO-AU GRES", "CWPPermitStatusDesc": "Effective"},
+            {"CWPName": "AU GRES WWTP", "CWPPermitStatusDesc": "Terminated"}, {"CWPName": "PINE ACRES WWTP", "CWPPermitStatusDesc": "Effective"},
+            {"CWPName": "AU GRES WASTEWATER STORM SITE", "SourceID": "MIR051234", "CWPPermitStatusDesc": "Effective"}, {"CWPName": "AU GRES WWTP-YARD", "SourceID": "MIS310287", "CWPPermitStatusDesc": "Effective"}]
+    assert ww.live_permit_at(rows, "AU GRES WWSL", "Au Gres") is None
+    rows.append({"CWPName": "AU GRES WWTP", "CWPPermitStatusDesc": "Effective", "SourceID": "MI0058794"})
+    assert ww.live_permit_at(rows, "AU GRES WWSL", "Au Gres")["SourceID"] == "MI0058794"
+
+
+def test_project_records():
+    assert ww.is_project("Austin 5 Year CIP - Citywide Waste") and ww.is_project("EAST CHINA REG CS")
+    assert not ww.is_project("LUNA PIER STP-CS") and not ww.is_project("LEBANON WWTP & Coll. System") and not ww.is_project("KALKASKA STP")
