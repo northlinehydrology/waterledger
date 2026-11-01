@@ -49,6 +49,7 @@ est = site.estimate()
 
 est.water.withdrawn.avg          # Range(p10=..., p50=..., p90=...), million gallons a day
 est.water.withdrawn.peak_day     # on a 1-in-10-year peak day
+est.water.withdrawn_peak_full_capacity   # the same day with every computer at capacity all day: an upper case, not the main number
 est.water.condensate.avg         # water a coil takes out of outside air; withdrawn + condensate = consumed + returned on the middle estimate
 est.electricity.avg_mw           # average power, MW, from the hourly heat balance at this place's weather
 est.electricity.peak_mw          # the 1-in-10-year hottest hour, every computer at capacity
@@ -66,7 +67,7 @@ est.model_dump_json()            # the whole estimate as JSON
 ctx = place.context()            # the public water facts around the place, by category
 ctx.supply.systems               # public water systems
 ctx.wastewater.plants            # sewer plants, nearest first
-ctx.receiving.downstream         # the path the water takes, with impaired waters and cleanup plans
+ctx.receiving.downstream         # the path the water takes, with impaired waters and cleanup plans; a reach's .assessed says whether the state assessed it
 ctx.climate.design_storms_in     # NOAA Atlas 14 design storms
 ctx.energy.utilities             # electric utilities and their loads
 ```
@@ -90,7 +91,8 @@ and matches [waterledger.org/mi](https://waterledger.org/mi/) exactly. The other
 ### Data
 
 Each state's data is a dated snapshot at [data.waterledger.org](https://data.waterledger.org), checked against its
-manifest and cached on first use ([design 0003](docs/design/0003-data-releases.md)). Offline, the newest cached snapshot is
+manifest and cached on first use ([design 0003](docs/design/0003-data-releases.md)). A published snapshot never changes, and a
+package reads the newest one for its own model version, so a new model's numbers don't reach an older package. Offline, the newest cached snapshot is
 used. If no snapshot can be had, the package can build the state from the public sources instead (15 to 30 minutes the
 first time, resumable):
 
