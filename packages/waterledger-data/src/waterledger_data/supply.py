@@ -12,6 +12,7 @@ from waterledger_data.places import EPA_SA, _get
 RAW = os.path.join(CACHE, "supply")
 ALBERS = 5070                   # NAD83 / Conus Albers: equal-area, for shares of a place's area
 MIN_SHARE = 0.005               # systems covering less than half a percent of a place are left out
+SYS_POP = 3300                  # [A] a "sizable" public water system serves more than this many people (EPA's medium size and up)
 
 
 def water_systems(state):
@@ -58,3 +59,17 @@ def systems_by_place(state, places):
     os.makedirs(RAW, exist_ok=True)
     json.dump(out, open(path, "w"))
     return out
+
+
+def nearest_sizable(state, points):
+    """{geoid: ({pwsid, name, population, connections}, km)}, the nearest sizable system to each of `points` (a DataFrame with geoid, lat, lon), in every state: from the place's
+    point to the edge of the system's service area, the length a pipe would have to run from the middle of the place, since where in the place a campus goes isn't known. 0 km where the point
+    is inside a service area. Michigan measured from center to center, to the middle of a neighboring place a quarter or more covered by the system, which ran long beside a large township
+    and missed a system on a place's edge [A]."""
+    sy = water_systems(state)
+    sy = sy[sy.population > SYS_POP].to_crs(ALBERS).reset_index(drop=True)
+    if not len(sy):
+        return {}
+    pts = gpd.GeoDataFrame({"geoid": points.geoid.values}, geometry=gpd.points_from_xy(points.lon, points.lat), crs=4326).to_crs(ALBERS)
+    hit = gpd.sjoin_nearest(pts, sy, how="left", distance_col="m").sort_values(["geoid", "population", "pwsid"], ascending=[True, False, True]).drop_duplicates("geoid")
+    return {r.geoid: ({"pwsid": r.pwsid, "name": r.name, "population": int(r.population), "connections": int(r.connections or 0)}, round(float(r.m) / 1000, 1)) for r in hit.itertuples()}

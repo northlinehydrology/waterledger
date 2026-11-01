@@ -58,7 +58,7 @@ def write(out, date=None):
         if r["w"]:
             by_place[r["g"]] = [[w["pwsid"], w.get("share")] for w in r["w"]]
         else:
-            n = sc.near_system(r)                      # Michigan's rule: center to center
+            n = sc.near_system(r)                      # the nearest sizable one (scenario.near_system)
             if n:
                 systems.setdefault(n["w"]["pwsid"], {"name": n["w"]["name"], "population": int(n["w"].get("pop") or 0),
                                                       "connections": int(n["w"].get("connections") or 0)})

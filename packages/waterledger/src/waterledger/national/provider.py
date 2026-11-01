@@ -3,7 +3,6 @@ its hosted snapshot, or a local build as the fallback (waterledger.national.data
 
 from waterledger.national.data import state_data
 
-SYS_POP = 3300          # a "sizable" public water system serves more than this many people (as waterledger.scenario)
 SEWER_KM = 10           # with no water system mapped, a large plant this close is assumed reachable (as waterledger.scenario)
 PLANTS_KM, PLANTS_MAX = 40, 10
 

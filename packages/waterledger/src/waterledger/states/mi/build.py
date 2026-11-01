@@ -297,8 +297,15 @@ def great_lake_near(bounds):
     return greatlakes.near(gpd.GeoDataFrame([{"geoid": g, "geometry": _polygon(rings)} for g, rings in bounds.items()], geometry="geometry", crs=4326))
 
 
-def build_places(counties, munis, enrich, cmap, shore=None):
-    shore = shore or {}
+def near_systems(munis, enrich):
+    """For each place with no water system mapped, the nearest sizable one, by the rule every state has (waterledger_data.supply.nearest_sizable), in the places file's form."""
+    from waterledger_data import supply
+    empty = pd.DataFrame([{"geoid": m["geoid"], "lat": m["lat"], "lon": m["lon"]} for m in munis if not enrich.get(m["geoid"], {}).get("water")])
+    return {g: {"pwsid": w["pwsid"], "name": w["name"], "pop": w["population"], "connections": w["connections"], "km": km} for g, (w, km) in supply.nearest_sizable("MI", empty).items()}
+
+
+def build_places(counties, munis, enrich, cmap, shore=None, near=None):
+    shore, near = shore or {}, near or {}
     cname = {c["geoid"]: c["name"] for c in counties}
     out = []
     for m in munis:
@@ -307,7 +314,7 @@ def build_places(counties, munis, enrich, cmap, shore=None):
         ws = e.get("watershed", {})
         out.append({"g": m["geoid"], "n": m["name"], "k": m["kind"], "c": cname.get(m["county_fips"], ""), "cf": m["county_fips"],
                     "r": cmap["counties"].get(m["county_fips"], {}).get("region") or nearest_region(m["lat"], m["lon"]), "x": x, "y": y,
-                    "w": e.get("water", []), "h12": ws.get("huc12"), "h8": ws.get("huc8"), "gl": shore.get(m["geoid"])})
+                    "w": e.get("water", []), "h12": ws.get("huc12"), "h8": ws.get("huc8"), "gl": shore.get(m["geoid"]), "near": near.get(m["geoid"])})
     out.sort(key=lambda p: (p["n"].lower(), p["c"]))
     return out
 
@@ -505,7 +512,7 @@ def main(n=200):
     bounds = pl.boundaries(cnt)
     enr = pl.enrich(munis, bounds)
     cmap = build_map(cnt)
-    places = build_places(cnt, munis, enr, cmap, great_lake_near(bounds))
+    places = build_places(cnt, munis, enr, cmap, great_lake_near(bounds), near_systems(munis, enr))
     storms = pl.county_design_storms(cnt)
     tracker_muni = {}
     for tid, (name, county) in TRACKER_MUNI.items():

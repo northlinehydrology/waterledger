@@ -18,7 +18,6 @@ from waterledger import states
 
 DATA_URL = "https://data.waterledger.org"
 BUILD_MINUTES = "15 to 30"
-SYS_POP = 3300            # a "sizable" public water system serves more than this many people (as waterledger.scenario)
 FILES = ("places.json", "places.parquet", "supply.json", "wastewater.json", "receiving.json", "climate.json", "energy.json", "wateruse.json")
 
 
@@ -156,25 +155,10 @@ class LiveData:
         from waterledger_data import supply
         return supply.systems_by_place(self.state, self._pl).get(geoid, [])
 
-    @functools.cached_property
-    def _sizable(self):
-        from waterledger_data import supply
-        sy = supply.water_systems(self.state)
-        return sy[sy.population > SYS_POP].to_crs(supply.ALBERS).reset_index(drop=True)
-
     def nearest_systems(self, geoids):
-        """{geoid: (system, km)} for many places at once: the nearest sizable system to each place's point, edge to edge."""
-        import geopandas as gpd
-
+        """{geoid: (system, km)} for many places at once: the nearest sizable system to each place's point (supply.nearest_sizable)."""
         from waterledger_data import supply
-        sy = self._sizable
-        if not len(sy):
-            return {}
-        pl = self._pl[self._pl.geoid.isin(list(geoids))]
-        pts = gpd.GeoDataFrame({"geoid": pl.geoid.values}, geometry=gpd.points_from_xy(pl.lon, pl.lat), crs=4326).to_crs(supply.ALBERS)
-        hit = gpd.sjoin_nearest(pts, sy, how="left", distance_col="m").drop_duplicates("geoid")
-        return {r.geoid: ({"pwsid": r.pwsid, "name": r.name, "population": int(r.population), "connections": int(r.connections or 0)},
-                          round(float(r.m) / 1000, 1)) for r in hit.itertuples()}
+        return supply.nearest_sizable(self.state, self._pl[self._pl.geoid.isin(list(geoids))])
 
     def nearest_system(self, geoid):
         return self.nearest_systems([geoid]).get(geoid, (None, None))

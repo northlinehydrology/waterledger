@@ -13,7 +13,7 @@ PUBLISHED = "https://waterledger.org/mi/data/{name}.json"     # the same files, 
 DESIGNS = {"dry": "Closed loop (designed to use no water for cooling)", "hybrid": "Hybrid", "towers": "Cooling towers", "lake": "Lake-source (once-through)"}
 SOURCE_LABEL = {"muni": "a public water system", "wells": "new wells in the aquifer", "lake": "lake surface water"}
 DEST_LABEL = {"sewer": "the public sewer", "septic": "a septic system on site", "water": "a river or lake (its own discharge)", "reuse": "treatment and reuse on site"}
-SYS_POP = 3300    # [A] a "sizable" public water system serves more than this many people (EPA's medium size and up)
+SYS_POP = 3300    # [A] a "sizable" public water system serves more than this many people (EPA's medium size and up; as waterledger_data.supply)
 SEWER_KM = 10     # [A] with no public water system mapped, a large sewer plant this close is assumed reachable by an extension
 LAND_LABEL = {"farm": "farm fields", "woods": "woods or meadow", "built": "existing development"}
 _cache = {}
@@ -181,8 +181,11 @@ def _plants_near(p, km=40):
 
 
 def near_system(p):
-    """The nearest sizable public water system to a place, as on the page (WQ.nearSystem): serving more than SYS_POP people and
-    covering at least a quarter of a city or township, measured center to center (map coordinates, 1/60 degree = 1.852 km)."""
+    """The nearest sizable public water system to a place, by the rule every state has (waterledger_data.supply.nearest_sizable): from the place's point to the edge of the system's service
+    area. Michigan's builder stores it as the place's "near" (WQ.nearSystem reads the same). Data from before 3.9.0 has none, and the rule then was center to center: serving more
+    than SYS_POP people and covering at least a quarter of a city or township (map coordinates, 1/60 degree = 1.852 km)."""
+    if "near" in p:
+        return {"w": p["near"], "place": None, "km": p["near"]["km"]} if p["near"] else None
     best = None
     for q in data("places")["places"]:
         if q["g"] == p["g"] or not q["w"]:
