@@ -4,7 +4,7 @@
     datacenter.lake      lake-source (once-through) cooling
     runoff               runoff, sediment, nutrients, salt and fuel from a developed site
     hydrology            screening hydrology: curve-number storm runoff, Theis drawdown, Glover stream depletion
-    weather              hourly ERA5 weather from Open-Meteo, as xarray, for the ensembles and BMI components
+    weather              hourly weather from Open-Meteo's best match (ERA5, ERA5-Land, IFS HRES), as xarray, for the ensembles and BMI components
 
 MODEL_VERSION is Water Ledger's model version (the numbers); __version__ is the package version (the code, semver).
 They change independently. Every published estimate names the model version that produced it.
