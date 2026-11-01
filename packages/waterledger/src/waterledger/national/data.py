@@ -80,6 +80,14 @@ class SnapshotData:
         return [{"code": c, "name": R["reaches"][c]["n"], "listings": R["reaches"][c]["i"], "assessed": bool(R["reaches"][c]["a"]) if "a" in R["reaches"][c] else None}
                 for c in R["downstream"].get(huc12, []) if c in R["reaches"]]
 
+    def great_lake(self, geoid):
+        """{"lake", "km"} where a place is within about 5 km of a Great Lake; None in a snapshot from before 3.9.0, whichever the place."""
+        return self._json("receiving").get("great_lakes", {}).get(geoid)
+
+    def lake_source(self):
+        """Lake-source cooling results for the Great Lakes on the state's shore, as Michigan's estimates carry them; empty in a snapshot from before 3.9.0."""
+        return self._json("climate").get("lake_source", {})
+
     def division_runs(self):
         return self._json("climate")["divisions"]
 
@@ -184,6 +192,18 @@ class LiveData:
         from waterledger.national.snapshot import _downstream
         paths, reaches = _downstream(self.state, [huc12])
         return [{"code": c, "name": reaches[c]["n"], "listings": reaches[c]["i"], "assessed": bool(reaches[c]["a"])} for c in paths[huc12] if c in reaches]
+
+    @functools.cached_property
+    def great_lakes(self):
+        from waterledger_data import greatlakes
+        return greatlakes.near(self._pl)
+
+    def great_lake(self, geoid):
+        return self.great_lakes.get(geoid)
+
+    def lake_source(self):
+        from waterledger.national import climate as nc
+        return nc.lake_source(sorted({v["lake"] for v in self.great_lakes.values()}))
 
     def division_runs(self):
         from waterledger.national import climate as nc

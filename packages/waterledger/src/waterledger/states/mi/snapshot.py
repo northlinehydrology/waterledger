@@ -85,13 +85,13 @@ def write(out, date=None):
             paths[v["h12"][0]["code"]] = path
     used = {c for p in paths.values() for c in p}
     _write(os.path.join(folder, "receiving.json"), {"by_place": sheds, "reaches": {c: {"n": H[c]["n"], "i": H[c].get("i", [])} for c in used},
-                                                     "downstream": paths, "attains": {"organization": "21MICH", "cycle": W.get("cycle")}})
+                                                     "downstream": paths, "great_lakes": {r["g"]: r["gl"] for r in P["places"] if r.get("gl")}, "attains": {"organization": "21MICH", "cycle": W.get("cycle")}})
 
     divisions = {k: {"name": v["name"], "station": v["station"], "station_id": None, "lat": v["lat"], "lon": v["lon"], "share_observed": None,
                      "per_100mw": v["per_100mw"]} for k, v in E["regions"].items()}
     _write(os.path.join(folder, "climate.json"), {"divisions": divisions, "staff_runs": E["staff"]["runs"],
                                                    "design_storms_in": {k: {str(a): b for a, b in v.items()} for k, v in E["county_storms_in"].items()},
-                                                   "rain_in": W["rain_in"]})
+                                                   "rain_in": W["rain_in"], "lake_source": E["lake_source"]})
 
     U = PW["utilities"]
     ba = lambda n: "PJM" if n in PJM else "MISO"

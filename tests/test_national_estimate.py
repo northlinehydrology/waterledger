@@ -29,5 +29,5 @@ def test_hotter_climate_uses_more_water_with_towers():
 
 
 def test_lake_source_is_great_lakes_only():
-    with pytest.raises(ValueError, match="Great Lakes"):
+    with pytest.raises(ValueError, match="Great Lake"):
         wl.Site(place=wl.place("Austin city, TX"), facility=wl.DataCenter(it_mw=100, cooling="lake")).estimate()

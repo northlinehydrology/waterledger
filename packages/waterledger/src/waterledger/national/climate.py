@@ -43,6 +43,36 @@ def division_runs(state, n=200):
     return out
 
 
+# NOAA GLERL's daily long-term average surface temperatures have the five lakes; Lake St. Clair isn't in the series, and Lake Erie's stand in, as they do in Michigan's build.
+LAKE_TEMPERATURES = {"Lake Michigan": "m", "Lake Superior": "s", "Lake Huron": "h", "Lake Erie": "e", "Lake Ontario": "o", "Lake St. Clair": "e"}
+
+
+def lake_results(lakes, temperatures, n=200):
+    """Lake-source cooling results by lake, with the note, ranges and power block a reader needs: lake.run_lake on each lake's temperatures. `temperatures`: GLERL's table (lake, dayOfYear, temperature)."""
+    from waterledger_models.datacenter import lake as lc
+    out = {}
+    for name in lakes:
+        out[name] = lc.run_lake(temperatures[temperatures["lake"] == LAKE_TEMPERATURES[name]].sort_values("dayOfYear")["temperature"].values, n=n)
+    if "Lake St. Clair" in out:
+        out["note"] = "Lake St. Clair is not in the GLERL series; Lake Erie temperatures stand in for it."
+    out["ranges"] = {k: list(v) for k, v in lc.RANGES.items()}
+    if lakes:
+        out["power"] = {k: out[lakes[0]][k] for k in ("power_mw_avg", "power_mw_peak_1in10", "pue_avg", "pue_peak_1in10")}   # the same draws at every lake
+    return out
+
+
+def lake_source(lakes, n=200):
+    """lake_results for the lakes on a state's shore, from GLERL's table (fetched once). Empty for a state with no shoreline."""
+    if not lakes:
+        return {}
+    import pandas as pd
+
+    from waterledger_data import climate
+    from waterledger_data.config import CACHE
+    from waterledger_models.datacenter import lake as lc
+    return lake_results(lakes, pd.read_csv(climate._fetch(lc.GLERL, os.path.join(CACHE, "climate", "glerl_lt_avg_temp.csv")), skiprows=[1]), n)
+
+
 def surrounding_county(pl, fips):
     """The county that surrounds an independent city: the one covering most of a narrow ring around it."""
     m = pl.to_crs(5070)                 # CONUS Albers, so areas and the 1 km ring are in meters

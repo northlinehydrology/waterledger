@@ -62,10 +62,12 @@ def context(state, place):
                             own=q["own"], receiving_water=q["receiving"] or None, combined_sewer=q["cso"], lagoon=q["lagoon"])
               for q in ww.nearest(sd.plants(), place.lat, place.lon, base, km=PLANTS_KM)[:PLANTS_MAX]]
     sheds = sd.sheds_for(place.geoid)
+    shore = sd.great_lake(place.geoid)
     path = sd.downstream(sheds["h12"][0]["code"]) if sheds["h12"] else []
     receiving = cx.Receiving(provider="national", not_covered=["coldwater_streams"], sources=["usgs_wbd", "attains"],
                              watersheds=[cx.Watershed(huc12=w["code"], name=w["name"], share_of_place=w["share"]) for w in sheds["h12"]],
                              basin=cx.Watershed(huc12=sheds["h8"]["code"], name=sheds["h8"]["name"]) if sheds["h8"] else None,
+                             great_lake=shore["lake"] if shore else None, great_lakes_basin=sheds["h12"][0]["code"].startswith("04") if sheds["h12"] else None,
                              downstream=[cx.Reach(huc12=p["code"], name=p["name"], impairments=[LABELS[g] for g, _, _ in p["listings"]],
                                                   tmdl=[LABELS[g] for g, t, _ in p["listings"] if t], assessed=p.get("assessed")) for p in path])
     jur = cx.Jurisdiction(provider="national", not_covered=["rules"], sources=["census_tiger"], name=place.name, kind=place.kind, county=place.county, state=state)
@@ -160,7 +162,7 @@ def _climate(state, place):
 
 
 def estimate(state, site):
-    """Water use for a site anywhere: the cooling model at the place's climate division station, plus staff water, with the
+    """Water use for a site anywhere: the cooling model at the place's climate division station, plus staff water, or lake-source cooling on a Great Lake within about 5 km, with the
     page's rules for the water source and wastewater (waterledger.scenario), on national data."""
     import datetime
 
@@ -168,26 +170,29 @@ def estimate(state, site):
     from waterledger.estimate import Estimate, electricity, water_use
     from waterledger_models import MODEL_VERSION
     f, place = site.facility, site.place
-    if f.cooling == "lake":
-        raise ValueError("lake-source cooling is modeled for the Great Lakes only (Michigan); choose another design")
     sd = state_data(state)
     d, runs = _division(state, place)
-    D = {"regions": runs, "staff": {"runs": sd.staff_runs()}}
+    D = {"regions": runs, "staff": {"runs": sd.staff_runs()}, "lake_source": sd.lake_source()}
     ctx = place.context()
+    lake = ctx.receiving.great_lake
     src = site.source
+    sc.check_lake(place.name, lake, f.cooling, src)
+    if f.cooling == "lake" and lake not in D["lake_source"]:
+        raise ValueError(f"{state}'s data has no lake-source results for {lake} (a snapshot from before 3.9.0)")
+    flows = lambda dest: sc.lake_estimate(D, lake, d, f.it_mw, dest) if f.cooling == "lake" else sc.cooling_estimate(D, d, f.cooling, f.it_mw, dest)
     if src is None:
         reach = ctx.supply.nearest_system_km is not None and ctx.supply.nearest_system_km <= SEWER_KM
         src = "muni" if ctx.supply.systems or (reach and f.cooling not in ("towers", "hybrid")) else "wells"
     dest = site.wastewater
     if dest is None:
-        sew = sc.cooling_estimate(D, d, f.cooling, f.it_mw, "sewer")["sewer"]["mid"]
+        sew = flows("sewer")["sewer"]["mid"]
         q = ctx.wastewater.plants[0] if ctx.wastewater.plants else None
         reach = q is not None and (bool(ctx.supply.systems) or q.km <= SEWER_KM)
         room = (q.design_mgd - q.flow_mgd) if q and q.design_mgd and q.flow_mgd else None
         evap = f.cooling in ("towers", "hybrid")
         why = "far" if not reach else "full" if evap and room is not None and sew > room else ""
         dest = ("water" if evap else "septic") if why else "sewer"
-    water = water_use(sc.cooling_estimate(D, d, f.cooling, f.it_mw, dest))
+    water = water_use(flows(dest))
     acres, before = sc.land_default(place.kind)
     resolved = site.model_copy(update={"source": src, "wastewater": dest, "acres": site.acres or acres, "land_before": site.land_before or before})
     power = electricity(sc.electricity(D, d, f.cooling, f.it_mw))

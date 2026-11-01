@@ -99,7 +99,8 @@ class Receiving(_Category):
     """What is downstream."""
     watersheds: list[Watershed] = []
     basin: Watershed | None = None                  # the HUC8
-    great_lake: str | None = None                   # within about 5 km of a Great Lake
+    great_lake: str | None = None                   # within about 5 km of a Great Lake (waterledger_data.greatlakes), in any state
+    great_lakes_basin: bool | None = None           # the place's main watershed drains to the Great Lakes (HUC region 04), which is what the Great Lakes Compact covers, shore or not
     downstream: list[Reach] = []                    # from the place's main watershed, following the water
 
 

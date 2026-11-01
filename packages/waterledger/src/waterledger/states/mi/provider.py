@@ -68,7 +68,7 @@ def context(place):
     receiving = cx.Receiving(provider="MI", sources=["usgs_wbd", "attains2026", "mdnr_trout"],
                              watersheds=[cx.Watershed(huc12=w["code"], name=w["name"], share_of_place=w.get("share")) for w in r["h12"]],
                              basin=cx.Watershed(huc12=r["h8"]["code"], name=r["h8"]["name"]) if r.get("h8") else None,
-                             great_lake=(r.get("gl") or {}).get("lake"), downstream=path)
+                             great_lake=(r.get("gl") or {}).get("lake"), great_lakes_basin=r["h12"][0]["code"].startswith("04") if r["h12"] else None, downstream=path)
     meta = E["region_meta"][r["r"]]
     climate = cx.Climate(provider="MI", sources=["era5", "noaa_cag", "noaa_atlas14"], region=r["r"], region_name=meta["name"], station=meta["station"],
                          rain_in=Wd["rain_in"].get(r["cf"]), design_storms_in=E["county_storms_in"].get(r["cf"], {}))

@@ -107,14 +107,27 @@ def pue_by_design(regions, lake=None):
 def estimate(p, mw, cool, dest, region=None):
     """Water taken, evaporated or lost, and sent out (MGD, lo/mid/hi), as on the page."""
     D = data("estimates")
-    x = mw / 100
     region = region or p["r"]
     if cool == "lake":
-        L = D["lake_source"][p["gl"]["lake"]]
-        w = band(L["withdrawn"], x)
-        return {"lake": True, "wAvg": w, "wPeak": w, "wAnn": {k: v * 365.25 for k, v in w.items()}, "cAvg": band(L["evap_avg"], x),
-                "cPeak": band(L["evap_peak_month"], x), "rAvg": w, "rPeak": w, "sewer": cooling_estimate(D, region, "dry", mw, "septic" if dest == "septic" else "sewer")["sewer"], "reuse": False}
+        return lake_estimate(D, p["gl"]["lake"], region, mw, dest)
     return cooling_estimate(D, region, cool, mw, dest)
+
+
+def lake_estimate(D, lake, region, mw, dest):
+    """Lake-source cooling on one of the Great Lakes, from D["lake_source"]. What goes to the sewer or septic is a closed-loop campus's, which is the region's."""
+    L = D["lake_source"][lake]
+    x = mw / 100
+    w = band(L["withdrawn"], x)
+    return {"lake": True, "wAvg": w, "wPeak": w, "wAnn": {k: v * 365.25 for k, v in w.items()}, "cAvg": band(L["evap_avg"], x),
+            "cPeak": band(L["evap_peak_month"], x), "rAvg": w, "rPeak": w, "sewer": cooling_estimate(D, region, "dry", mw, "septic" if dest == "septic" else "sewer")["sewer"], "reuse": False}
+
+
+def check_lake(place_name, great_lake, cool, src):
+    """Lake surface water and lake-source cooling need a Great Lake within about 5 km, and lake-source cooling needs the lake as its source, in every state."""
+    if (src == "lake" or cool == "lake") and not great_lake:
+        raise ValueError(f"{place_name} is not within about 5 km of a Great Lake; lake surface water and lake-source cooling are not options there")
+    if cool == "lake" and src != "lake":
+        raise ValueError("Lake-source cooling needs lake surface water as the source")
 
 
 def cooling_estimate(D, region, cool, mw, dest):
@@ -219,10 +232,7 @@ def scenario(gid, mw=None, cool="dry", src=None, dest=None, acres=None, before=N
     city = p["k"] == "city"
     mw = mw or (100 if city else 300)
     src = src or src_for(p, cool)["src"]   # the page's starting water source for the place and cooling design
-    if src == "lake" and not p.get("gl"):
-        raise ValueError(f"{p['base']} is not within about 5 km of a Great Lake; lake surface water is not an option")
-    if cool == "lake" and src != "lake":
-        raise ValueError("Lake-source cooling needs lake surface water as the source")
+    check_lake(p["base"], p.get("gl"), cool, src)
     if not dest:
         dest = dest_for(p, cool, estimate(p, mw, cool, "sewer")["sewer"]["mid"])["dest"]
     start_acres, start_land = land_default(p["k"])
