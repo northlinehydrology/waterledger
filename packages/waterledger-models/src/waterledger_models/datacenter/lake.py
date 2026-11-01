@@ -10,6 +10,7 @@ wind function and radiation does not. Natural surface temperatures are NOAA GLER
 import numpy as np
 
 from waterledger_models.datacenter import cooling as cw
+from waterledger_models.datacenter.physics import latin_hypercube
 
 RHO, CP, LV = 1000.0, 4186.0, 2.45e6  # kg/m3, J/(kg K), J/kg
 GAL_M3 = 264.172
@@ -52,11 +53,11 @@ def run_lake(water_temps, n=200, seed=11, mw=100.0):
     """Monte Carlo over the parameter ranges for one lake. water_temps: 366 daily long-term average surface temperatures (deg C).
     Returns MGD per `mw` of IT capacity: withdrawn and returned (steady), forced evaporation average and its highest month, and the
     electricity from the same heat."""
-    rng = np.random.default_rng(seed)
+    draws = sample_parameters(n, seed)
     t = np.asarray(water_temps, dtype=float)
     out = {"withdrawn": [], "evap_avg": [], "evap_peak_month": [], "er_avg": [], "power_mw_avg": [], "power_mw_peak_1in10": [], "pue_avg": [], "pue_peak_1in10": []}
-    for _ in range(n):
-        p = {k: rng.uniform(*v) for k, v in RANGES.items()}
+    for i in range(n):
+        p = {k: float(v[i]) for k, v in draws.items()}
         heat_w = mw * 1e6 * p["utilization"] * p["heat_factor"]
         m3s = heat_w / (RHO * CP * p["rise_c"])
         out["withdrawn"].append(m3s * 86400 * GAL_M3 / 1e6)
@@ -86,11 +87,8 @@ def forced_evaporation_m3s(it_mw, utilization, heat_factor, water_temp_c, wind_m
 
 
 def sample_parameters(n=200, seed=11):
-    """The run_lake draws, vectorized: {name: array (n,)}."""
-    lo = np.array([v[0] for v in RANGES.values()])
-    hi = np.array([v[1] for v in RANGES.values()])
-    draws = lo + (hi - lo) * np.random.default_rng(seed).random((n, len(RANGES)))
-    return {k: draws[:, i] for i, k in enumerate(RANGES)}
+    """The Monte Carlo draws for run_lake and run_lake_ensemble, a Latin hypercube like the cooling model's: {name: array (n,)}."""
+    return latin_hypercube(RANGES, n, seed)
 
 
 def run_lake_ensemble(water_temps, n=200, seed=11, mw=100.0):

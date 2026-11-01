@@ -222,7 +222,7 @@ def test_a_septic_system_does_not_take_condensate():
 
 
 def test_the_per_run_loop_and_the_vector_draws_are_the_same_draws():
-    runs = cooling.sample(np.random.default_rng(7), 5)
+    runs = cooling.sample(5)
     v = ph.sample_parameters(5)
     for k in v:
         assert [r[k] for r in runs] == pytest.approx(list(v[k]))
@@ -271,8 +271,7 @@ def test_lake_electricity_is_the_heat_in_the_water():
     assert lake.RANGES["heat_factor"][0] <= r["pue_avg"]["p10"] <= r["pue_avg"]["p90"] <= lake.RANGES["heat_factor"][1]
     assert r["power_mw_peak_1in10"]["p50"] == pytest.approx(100 * r["pue_avg"]["p50"])
     # the withdrawn water warmed by its rise carries all of the electricity: flow x rho x cp x rise = power, run by run
-    rng = np.random.default_rng(11)
-    p = {k: rng.uniform(*v) for k, v in lake.RANGES.items()}
+    p = {k: v[0] for k, v in lake.sample_parameters(1).items()}
     assert lake.withdrawal_m3s(100, p["utilization"], p["heat_factor"], p["rise_c"]) * lake.RHO * lake.CP * p["rise_c"] == pytest.approx(100e6 * p["utilization"] * p["heat_factor"])
 
 

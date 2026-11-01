@@ -7,7 +7,7 @@ from waterledger_models.datacenter import cooling as cw, physics as ph
 
 
 def test_vectorized_draws_match_the_loop():
-    loop = cw.sample(np.random.default_rng(7), 50)
+    loop = cw.sample(50, seed=7)
     vec = ph.sample_parameters(50, seed=7)
     for k in ph.PARAMETERS:
         np.testing.assert_allclose(vec[k], [r[k] for r in loop], rtol=1e-14)
@@ -24,7 +24,7 @@ def test_hourly_rates_vectorized_equal_per_run():
     tdb = 18 + 10 * np.sin(2 * np.pi * h / 24)
     twb = ph.wet_bulb(tdb, 60.0)
     vec = {k: v[:, None] for k, v in ph.sample_parameters(12).items()}
-    runs = cw.sample(np.random.default_rng(7), 12)
+    runs = cw.sample(12)
     for design in ph.DESIGNS:
         W, C, R = ph.hourly_rates(tdb, twb, design, vec)
         for i, p in enumerate(runs):

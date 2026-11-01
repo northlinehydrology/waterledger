@@ -16,7 +16,7 @@ Designs differ in when they evaporate:
   towers    open cooling towers, evaporative all year (upper bound for typical practice)
 Outputs per run: withdrawn (makeup), consumed (evaporation + drift + loop top-up + humidifiers), returned to sewer (blowdown + condensate),
 condensate (from the outside air, not withdrawn, so withdrawn + condensate = consumed + returned).
-Monte Carlo over parameter ranges gives percentiles, per 100 MW of IT capacity.
+Monte Carlo over parameter ranges (Latin hypercube, linked parameters grouped: physics.sample_parameters) gives percentiles, per 100 MW of IT capacity.
 
 Staff water (restrooms, kitchens, cleaning) is not per kWh: it follows the people on site, which grow slowly with size, so it
 is a separate term, staff_runs() and staff_q(), added to the per-100 MW results at the campus's size (model 1.2). The designs modeled
@@ -31,8 +31,8 @@ from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
 
-from waterledger_models.datacenter.physics import (ADIABATIC, DESIGNS as _DESIGNS, HFG, KWH_BTU, LB_GAL, OUTSIDE, POWER, RANGES, STAFF, TOPUP, _POWER_RETIRED_SLOT, _ramp,  # noqa: F401
-                                                   evaporative_ratio, hourly_heat_power, hourly_rates, hourly_water_with_air, wet_bulb)
+from waterledger_models.datacenter.physics import (ADIABATIC, DESIGNS as _DESIGNS, HFG, KWH_BTU, LB_GAL, OUTSIDE, POWER, RANGES, STAFF, TOPUP, _ramp,  # noqa: F401
+                                                   evaporative_ratio, hourly_heat_power, hourly_rates, hourly_water_with_air, sample_parameters, wet_bulb)
 
 DESIGNS = list(_DESIGNS)
 LABELS = {
@@ -48,24 +48,10 @@ def hourly(tdb, twb, design, p, rh=None, heat=None):
     return hourly_rates(tdb, twb, design, p, rh, heat)
 
 
-def sample(rng, n):
-    runs = [{k: rng.uniform(*v) for k, v in RANGES.items()} for _ in range(n)]
-    extra = np.random.default_rng(11)
-    for r in runs:
-        r["topup"] = extra.uniform(*TOPUP)
-    extra = np.random.default_rng(17)
-    for r in runs:
-        r.update({k: extra.uniform(*v) for k, v in ADIABATIC.items()})
-    extra = np.random.default_rng(23)
-    for r in runs:
-        for i, (k, v) in enumerate(POWER.items()):
-            if i == _POWER_RETIRED_SLOT:
-                extra.random()
-            r[k] = extra.uniform(*v)
-    extra = np.random.default_rng(29)
-    for r in runs:
-        r.update({k: extra.uniform(*v) for k, v in OUTSIDE.items()})
-    return runs
+def sample(n=200, seed=7):
+    """The Monte Carlo draws, run by run: physics.sample_parameters as a list of {name: value}."""
+    v = sample_parameters(n, seed)
+    return [{k: float(a[i]) for k, a in v.items()} for i in range(n)]
 
 
 def central():
@@ -168,8 +154,7 @@ def run_location(times, temps, rhs, n=200, seed=7, mw=100.0):
     months = np.array([d[:7] for d in uniq])
     hour_years = np.array([t[:4] for t in times])
     year_ends = np.r_[np.flatnonzero(hour_years[1:] != hour_years[:-1]) + 1, len(hour_years)]
-    rng = np.random.default_rng(seed)
-    runs = sample(rng, n)
+    runs = sample(n, seed)
     out = {}
     for design in DESIGNS:
         acc = {}

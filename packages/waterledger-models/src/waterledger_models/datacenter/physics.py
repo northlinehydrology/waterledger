@@ -13,6 +13,8 @@ Every function takes parameters as scalars or as arrays shaped (runs, 1) against
 (runs, hours). cooling.py (the per-run loop Water Ledger's builders use) and ensemble.py (xarray ensembles) both use
 these functions and ranges, so the two cannot drift apart.
 """
+import zlib
+
 import numpy as np
 
 KWH_BTU = 3412.14
@@ -24,7 +26,7 @@ LB_GAL = 8.34
 GAL_M3 = 264.172       # gallons per cubic meter
 DESIGNS = ("dry", "assist", "hybrid", "towers")
 
-# (low, high) uniform ranges sampled in the Monte Carlo; central values are the midpoints.
+# (low, high) ranges sampled in the Monte Carlo (sample_parameters: Latin hypercube, uniform in each range); central values are the midpoints.
 RANGES = {
     # average IT draw ÷ IT capacity at full build-out (model 1.3; was 0.60-0.90). EPRI 2026 measured 75% of nameplate at a large hyperscale
     # site and 57% at co-location sites; IEA 2025 puts hyperscale at 53-56%; LBNL's server parameters give about 40% (AI inference) to 60%
@@ -56,13 +58,13 @@ RANGES = {
 }
 # Share of the loop volume lost to small leaks and topped up each year (NIH 2023 Technical Bulletin: "typically less than 5% of the
 # system's total volume in a year"; the 1% floor is an assumption), all of it counted as lost. Poorly kept loops can lose far more (NIH:
-# 25% a month "is not uncommon"), which the range does not cover. Sampled on its own random stream (where model 1.1 drew its base-use share), so the other draws are unchanged.
+# 25% a month "is not uncommon"), which the range does not cover.
 TOPUP = (0.01, 0.05)
-# Adiabatic pre-cooling, on their own random stream so the other draws are unchanged. Air temperature rise across the dry cooler coil at
+# Adiabatic pre-cooling. Air temperature rise across the dry cooler coil at
 # design, K: 9-13 from makers' selection sheets (Thermokey 11.2, Kelvion 12.8) [estimate]. Bleed as a share of evaporation: none for once-through
 # pads (Guentner; Spinazzola 2021), up to 0.5 for recirculating pads (SCE ET13SCE1020, 2015, p. 29: 10-50%; ASHRAE 2016 ch. 41 allows 5-100%).
 ADIABATIC = {"assist_dt_air": (9.0, 13.0), "assist_bleed": (0.0, 0.5)}
-# Electricity and heat (model 1.4), on their own random stream. Large-scale values are Lei and Masanet's Table 3, case 2 (preprint rs-769999/v1;
+# Electricity and heat (model 1.4). Large-scale values are Lei and Masanet's Table 3, case 2 (preprint rs-769999/v1;
 # waterside economizer, 2.8-6.7 C tower approach, and so on), which LBNL 2024 also draws on, unless noted.
 POWER = {
     "ups": (0.90, 0.99), "dist_loss": (0.0, 0.02), "light": (0.0, 0.002),
@@ -83,11 +85,9 @@ POWER = {
     # that are liquid-cooled at a campus is not published for any fleet, so all of 0-1 is sampled [A].
     "liquid_water": (32.0, 45.0), "liquid_air_share": (0.10, 0.30), "liquid_share": (0.0, 1.0),
 }
-# Lei and Masanet's sensible heat ratio (0.95-0.99), removed in model 1.5 for OUTSIDE below: at their ratio the coils would condense moisture no air was
-# bringing in, and these coils are too warm to condense. Its slot in the POWER stream
-# is still drawn, so the other draws are unchanged.
-_POWER_RETIRED_SLOT = 3
-# Outside air (model 1.5), on its own random stream. The building takes a little outside air to stay pressurized and ventilated; it brings heat and
+# Lei and Masanet's sensible heat ratio (0.95-0.99) was removed in model 1.5 for OUTSIDE below: at their ratio the coils would condense moisture no air was
+# bringing in, and these coils are too warm to condense.
+# Outside air (model 1.5). The building takes a little outside air to stay pressurized and ventilated; it brings heat and
 # moisture in, and leaves at indoor conditions. Flow per MW of IT capacity, a bracket [A]: ASHRAE 62.1's 0.06 cfm/ft2 for computer rooms (2007 table, as
 # quoted secondhand; the area rate, since these rooms are mostly unoccupied) at about 5,000 ft2 per MW [A] is 300; the ends are 100 and 1,500 [A]. No
 # published flow for large campuses was found. Share of the dry-air shortfall made up by humidifiers, not published for any fleet, so all of 0-1 is
@@ -332,25 +332,43 @@ def hourly_rates(tdb, twb, design, p, rh=None, heat=None):
     return withdrawn, consumed, returned
 
 
+# Parameters that describe one plant move together in the draws; drawn independently, a site could pair a 99% UPS with the worst fans, or a 45 C liquid loop
+# with no liquid cooling. Each group has one shared score, and +1 or -1 says which way each member goes with it. No published correlation exists, so the
+# strength is an assumption [A]: shared score + member's own score, equal weights, which gives two members a rank correlation of about 0.5, midway between
+# independent and moving as one. Cycles of concentration stays out: it follows source water, which is a matter of place. Methods log, Nov 1, 2026.
+LINKED = {
+    # a well-built plant: efficient power equipment, low pressure drops, tight approaches and good chillers together
+    "plant": {"ups": 1, "dist_loss": -1, "fan_eff": 1, "pump_eff": 1, "crah_pa": -1, "tower_fan_pa": -1, "dc_fan_pa": -1, "pump_chw_kpa": -1, "pump_tower_kpa": -1,
+              "pump_econ_kpa": -1, "coil_eff": 1, "tower_approach": -1, "hx_approach": -1, "dc_approach": -1, "carnot_water": 1, "carnot_air": 1},
+    # one temperature design: warm supply air goes with wide temperature rises across the coil, the loop and, through the plate exchanger, the tower
+    "loop": {"supply_air": 1, "air_rise": 1, "water_rise": 1, "range_f": 1},
+    # AI campuses: higher utilization, more liquid cooling, warmer liquid loops
+    "load": {"utilization": 1, "liquid_share": 1, "liquid_water": 1},
+}
+
+
+def _strata(n, seed, name):
+    """n values in 0-1, one from each of n equal strata, in random order, on a stream of its own: adding or removing a parameter leaves the others' draws alone."""
+    rng = np.random.default_rng([seed, zlib.crc32(name.encode())])
+    return (rng.permutation(n) + rng.random(n)) / n
+
+
+def latin_hypercube(ranges, n, seed, linked=None):
+    """Latin hypercube draws over {name: (low, high)}: {name: array (n,)}. Every parameter keeps one value in each of its n strata, however the groups in
+    `linked` reorder them (rank reordering, after Iman and Conover 1982). The same n and seed always give the same draws."""
+    u = {k: _strata(n, seed, k) for k in ranges}
+    for group, members in (linked or {}).items():
+        shared = _strata(n, seed, f"group {group}")
+        for k, sign in members.items():
+            if k in u:
+                score = (shared if sign > 0 else 1.0 - shared) + _strata(n, seed, f"own {k}")
+                u[k] = np.sort(u[k])[np.argsort(np.argsort(score))]
+    return {k: a + (b - a) * u[k] for k, (a, b) in ranges.items()}
+
+
 def sample_parameters(n=200, seed=7):
-    """Monte Carlo draws: independent uniforms over RANGES (run-major, so the draws match a per-run loop of
-    rng.uniform calls) and topup from its own stream. Returns {name: array (n,)}."""
-    lo = np.array([v[0] for v in RANGES.values()])
-    hi = np.array([v[1] for v in RANGES.values()])
-    u = np.random.default_rng(seed).random((n, len(RANGES)))
-    draws = lo + (hi - lo) * u
-    out = {k: draws[:, i] for i, k in enumerate(RANGES)}
-    out["topup"] = TOPUP[0] + (TOPUP[1] - TOPUP[0]) * np.random.default_rng(11).random(n)
-    u = np.random.default_rng(17).random((n, len(ADIABATIC)))
-    for i, (k, (a, b)) in enumerate(ADIABATIC.items()):
-        out[k] = a + (b - a) * u[:, i]
-    u = np.random.default_rng(29).random((n, len(OUTSIDE)))
-    for i, (k, (a, b)) in enumerate(OUTSIDE.items()):
-        out[k] = a + (b - a) * u[:, i]
-    u = np.delete(np.random.default_rng(23).random((n, len(POWER) + 1)), _POWER_RETIRED_SLOT, axis=1)
-    for i, (k, (a, b)) in enumerate(POWER.items()):
-        out[k] = a + (b - a) * u[:, i]
-    return out
+    """Monte Carlo draws of the cooling parameters: {name: array (n,)}. cooling.py's per-run loop and ensemble.py both use these draws."""
+    return latin_hypercube({**RANGES, "topup": TOPUP, **ADIABATIC, **POWER, **OUTSIDE}, n, seed, LINKED)
 
 
 def central_parameters():

@@ -74,16 +74,38 @@ def test_designs_order_by_water_use():
     assert use["dry"] < min(use["assist"], use["hybrid"]) and max(use["assist"], use["hybrid"]) < use["towers"]    # assist and hybrid overlap
 
 
-def test_sampling_matches_per_run_loop():
-    """Vectorized draws equal, to floating-point rounding, the per-run loop of rng.uniform calls the original model used."""
-    n, seed = 50, 7
-    rng = np.random.default_rng(seed)
-    loop = [{k: rng.uniform(*v) for k, v in model.RANGES.items()} for _ in range(n)]
-    vec = model.sample_parameters(n, seed)
-    for k in model.RANGES:
-        np.testing.assert_allclose(vec[k], [r[k] for r in loop], rtol=1e-14)
-    for k, (lo, hi) in [*model.RANGES.items(), ("topup", model.TOPUP)]:
-        assert vec[k].min() >= lo and vec[k].max() <= hi
+def test_each_parameter_has_one_draw_in_each_stratum():
+    """Latin hypercube, by hand: with n = 50, each parameter's draws fall one each in 50 equal slices of its range, groups or not."""
+    n = 50
+    v = model.sample_parameters(n, 7)
+    for k, (lo, hi) in [*model.RANGES.items(), ("topup", model.TOPUP), *model.ADIABATIC.items(), *model.POWER.items(), *model.OUTSIDE.items()]:
+        assert sorted(np.floor((v[k] - lo) / (hi - lo) * n).astype(int)) == list(range(n)), k
+
+
+def test_draws_are_reproducible_and_stable():
+    a, b = model.sample_parameters(30, 7), model.sample_parameters(30, 7)
+    for k in a:
+        np.testing.assert_array_equal(a[k], b[k])
+    assert not np.array_equal(a["coc"], model.sample_parameters(30, 8)["coc"])
+    # one parameter's draws do not depend on what else is sampled
+    one = model.latin_hypercube({"coc": model.RANGES["coc"]}, 30, 7)
+    two = model.latin_hypercube({"coc": model.RANGES["coc"], "other": (0.0, 1.0)}, 30, 7)
+    np.testing.assert_array_equal(one["coc"], two["coc"])
+
+
+def _rank_corr(x, y):
+    rank = lambda a: np.argsort(np.argsort(a))
+    return np.corrcoef(rank(x), rank(y))[0, 1]
+
+
+def test_linked_parameters_move_together():
+    """Two members of a group: score = shared + own, equal weights, so covariance 1/12 over variance 2/12, correlation 0.5. Rank correlation is close to it."""
+    v = model.sample_parameters(2000, 7)
+    assert _rank_corr(v["supply_air"], v["water_rise"]) == pytest.approx(0.5, abs=0.06)
+    assert _rank_corr(v["ups"], v["fan_eff"]) == pytest.approx(0.5, abs=0.06)
+    assert _rank_corr(v["ups"], v["crah_pa"]) == pytest.approx(-0.5, abs=0.06)       # a good UPS goes with low pressure drops
+    assert _rank_corr(v["ups"], v["supply_air"]) == pytest.approx(0.0, abs=0.06)     # different groups
+    assert _rank_corr(v["coc"], v["ups"]) == pytest.approx(0.0, abs=0.06)            # not linked
 
 
 def test_unknown_design():
