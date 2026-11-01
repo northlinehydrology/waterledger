@@ -7,7 +7,7 @@ Hour by hour over 30 years of weather:
       (the dry-bulb relation USGS SIR 2013-5188 uses for cooling towers).
   drift = a small fraction of circulating flow (EPA WaterSense at Work §6.3: 0.05–0.2%, <0.005% with
       modern eliminators); circulating flow from heat ÷ (500 × range °F).
-  blowdown + drift = evaporation ÷ (cycles of concentration − 1)  (the dissolved solids balance; DOE FEMP BMP #10).
+  blowdown + drift = evaporation ÷ (cycles of concentration − 1)  (the dissolved solids balance; Lei and Masanet Eq. 7; DOE FEMP BMP #10).
 Designs differ in when they evaporate:
   dry       air-cooled / dry closed loop, designed to use no water for cooling: loop top-ups only, plus the staff water every design has
   assist    dry coolers with adiabatic pre-cooling above a dry-bulb switch point: water evaporates into the air ahead of the

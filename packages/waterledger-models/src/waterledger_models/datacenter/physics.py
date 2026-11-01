@@ -39,7 +39,10 @@ RANGES = {
     # RH 60%) is applied hourly to cooler data center tower water and cold hours, where it likely runs high; USGS SIR 2013-5188 (Diehl
     # et al.) puts tower evaporation error at +/-5-15% (p. 24) and +/-18% overall (pp. 28-29).
     "er_adj": (-0.10, 0.05),
-    "coc": (3.0, 7.0),                 # cycles of concentration: DOE FEMP BMP #10, two to four typical, six or more possible
+    # Cycles of concentration, about 3-6 (model 1.7, was 3-7). Lei and Masanet's Table 3, case 2, allows 3-15; the consumptive ratios Han et al. (2026, Table 2) report
+    # for operators, 0.72-0.91, are about 3.6-11 cycles, median about 4.5; ICPRB's 75% is 4. DOE FEMP BMP #10's typical range is lower, two to four, with six or more
+    # possible. Nothing is published for large campuses, and source water sets the real limit, so 3-6 is the part of the operators' values that is common practice [A].
+    "coc": (3.0, 6.0),
     "range_f": (7.0, 15.0),            # tower range, °F (model 1.3, was 8-15): Lei and Masanet preprint, Table 3, 4-6 °C (7.2-10.8 °F); 10 °F rating
     # Drift as a share of circulating flow (model 1.3, was 0.005-0.05%): modern eliminators under 0.005% (EPA WaterSense at Work 2012,
     # section 6.3, p. 6-9) to EPA AP-42 13.4's induced-draft 0.020% (Table 13.4-1).
@@ -125,7 +128,7 @@ SOURCES = {
     "utilization": "EPRI 2026; IEA 2025; LBNL 2024 server parameters",
     "load_factor": "EPRI 2026 (94% hyperscale, 88% co-location)",
     "er_adj": "USGS SIR 2013-5188 (Diehl et al.), pp. 24, 28-29; asymmetric for Rutberg et al.'s fit at cooler water [A]",
-    "coc": "DOE FEMP BMP #10",
+    "coc": "Lei and Masanet (preprint rs-769999/v1), Table 3, case 2; Han et al. 2026, Table 2; DOE FEMP BMP #10's typical range is lower (2-4; 6 or more possible)",
     "range_f": "Lei and Masanet (preprint rs-769999/v1), Table 3; 10 F rating",
     "drift": "EPA WaterSense at Work 2012, section 6.3, p. 6-9; EPA AP-42 13.4, Table 13.4-1",
     "fill_gal_per_mw": "Crusoe 2026; Vantage Port Washington; chilled-water loops of 3-10 gal per ton",
