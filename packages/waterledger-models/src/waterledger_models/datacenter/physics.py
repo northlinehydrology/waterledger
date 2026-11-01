@@ -13,6 +13,8 @@ Every function takes parameters as scalars or as arrays shaped (runs, 1) against
 (runs, hours). cooling.py (the per-run loop Water Ledger's builders use) and ensemble.py (xarray ensembles) both use
 these functions and ranges, so the two cannot drift apart.
 """
+import zlib
+
 import numpy as np
 
 KWH_BTU = 3412.14
@@ -24,45 +26,55 @@ LB_GAL = 8.34
 GAL_M3 = 264.172       # gallons per cubic meter
 DESIGNS = ("dry", "assist", "hybrid", "towers")
 
-# (low, high) uniform ranges sampled in the Monte Carlo; central values are the midpoints.
+# (low, high) ranges sampled in the Monte Carlo (sample_parameters: Latin hypercube, uniform in each range); central values are the midpoints.
 RANGES = {
     # average IT draw ÷ IT capacity at full build-out (model 1.3; was 0.60-0.90). EPRI 2026 measured 75% of nameplate at a large hyperscale
     # site and 57% at co-location sites; IEA 2025 puts hyperscale at 53-56%; LBNL's server parameters give about 40% (AI inference) to 60%
     # (AI training). Load over a site's own peak (EPRI: 88-94%) is a different ratio and does not bound this one.
     "utilization": (0.50, 0.80),
+    # Load factor, a site's average load over its own peak load (model 1.7): EPRI 2026 measured 94% at a large hyperscale site and 88% at co-location sites. The peak day
+    # runs at utilization / load factor (peak_utilization): EPRI's own pairs give 0.75 / 0.94 = 0.80 and 0.57 / 0.88 = 0.65. Every computer at capacity all day is the upper case.
+    "load_factor": (0.88, 0.94),
     # Evaporative ratio adjustment (model 1.3, was +/-0.05): asymmetric because Rutberg et al.'s fit (Poppe runs at 40 °C inlet water,
-    # RH 60%) is applied hourly to cooler data center tower water and cold hours, where it likely runs high; USGS SIR 2013-5188 (Diehl
-    # et al.) puts tower evaporation error at +/-5-15% (p. 24) and +/-18% overall (pp. 28-29).
+    # RH 60%) is applied hourly to cooler data center tower water and cold hours, where it likely runs high. USGS SIR 2013-5188 (Diehl et al.): +/-5-15% for the
+    # Leung and Moore method (p. 24); 15% added to the modeled tower suite (p. 28); +/-18% for towers is consumption with the error in heat included (p. 29), and
+    # USGS's 18% for the evaporative ratio itself is for water surfaces. LBNL and Lei and Masanet evaporate all the heat; this ratio is the model's stated departure.
     "er_adj": (-0.10, 0.05),
-    "coc": (3.0, 7.0),                 # cycles of concentration: DOE FEMP BMP #10, two to four typical, six or more possible
-    "range_f": (7.0, 15.0),            # tower range, °F (model 1.3, was 8-15): Lei and Masanet preprint, Table 3, 4-6 °C (7.2-10.8 °F); 10 °F rating
-    # Drift as a share of circulating flow (model 1.3, was 0.005-0.05%): modern eliminators under 0.005% (EPA WaterSense at Work 2012,
-    # section 6.3, p. 6-9) to EPA AP-42 13.4's induced-draft 0.020% (Table 13.4-1).
-    "drift": (0.000005, 0.0002),
-    # Closed loop volume, gal per MW of IT capacity (model 1.3, was 2,000-6,000): Crusoe (2026) 1.7 million gal for a 200 MW building
-    # (8,500); Vantage Port Washington about 11.8 million gal for about 1 GW (about 12,000); chilled-water loops of 3-10 gal per ton
-    # (850-2,840 per MW of heat) at the low end.
+    # Cycles of concentration, about 3-6 (model 1.7, was 3-7). Lei and Masanet's Table 3, case 2, allows 3-15; the consumptive ratios Han et al. (2026, Table 2) report
+    # for operators, 0.72-0.91, are about 3.6-11 cycles, median about 4.5; ICPRB's 75% is 4. DOE FEMP BMP #10's typical range is lower, two to four, with six or more
+    # possible. Nothing is published for large campuses, and source water sets the real limit, so 3-6 is the part of the operators' values that is common practice [A].
+    "coc": (3.0, 6.0),
+    "range_f": (7.2, 10.8),            # tower range, °F (model 1.7, was 7-15, whose top had no source): Lei and Masanet preprint, Table 3, 4-6 °C; the 10 °F rating sits inside it
+    # Drift as a share of circulating flow (model 1.7, was 0.0005-0.02%, whose low end was ten times under the source): modern eliminators at 0.005% (EPA WaterSense at
+    # Work 2012, section 6.3, p. 6-9: less than 0.005%; the end of Lei and Masanet's Table 3) to EPA AP-42 13.4's induced-draft 0.020% (Table 13.4-1).
+    "drift": (0.00005, 0.0002),
+    # Closed loop volume, gal per MW of IT capacity (model 1.3, was 2,000-6,000): Crusoe (2026) about 1.7 million gal for a typical system, which is 8,500 if that is
+    # its 200 MW building, as its figure suggests; chilled-water loops of 3-10 gal per ton (850-2,840 per MW of heat), not read directly, at the low end. The top is
+    # that 8,500 and a margin, for lack of a filing that states a volume and a capacity together [A]. Vantage's 11.8 million gal, used until model 1.7, is out: it was a
+    # TV tour of its Sterling, Virginia site, not Port Washington, with no capacity given.
     "fill_gal_per_mw": (2000.0, 12000.0),
-    # Dry coolers with adiabatic pre-cooling (model 1.3; on Michigan's detailed calculator only). Turns on at a switch point no maker publishes, since it is a
-    # selection and control output (EVAPCO 2018, p. 2): Uptime Institute (2025) reports 20 °C or higher; 30 °C is the top [A]. Microsoft's
-    # 85 °F is for its direct-air evaporative design, a different system, and is no longer used here. Pad saturation effectiveness: EVAPCO
-    # (2018, p. 2) measured 72-78% at 400-700 fpm across 10 pads; ASHRAE (2016, ch. 41) gives 70 to over 95% for rigid media.
-    "assist_on": (20.0, 30.0),
+    # When a dry cooler goes wet is an operator's setting, not a property of the equipment (EVAPCO 2019, p. 2: a selection and control output; Trane DC-WPR004A: the
+    # customer chooses; US 12,426,214 B1: customer-set). It is tied to the loop (model 1.7): the setting sits at the dry-bulb where the dry coil can no longer hold loop
+    # supply, loop_limit below, give or take this margin in K for operators who go wet early or trim with chillers a while longer [A]. Same for assist and hybrid.
+    "switch_margin": (-2.0, 2.0),
+    # Dry coolers with adiabatic pre-cooling (model 1.3; on Michigan's detailed calculator only). Microsoft's 85 °F is for its direct-air evaporative design, a
+    # different system, and is not used here. Pad saturation effectiveness: EVAPCO (presented at CTI, Feb 2019, p. 2) measured 72-78% at 400-700 fpm across 10
+    # pads, a maker's own test; ASHRAE (2016, ch. 41) gives 70 to over 95% for rigid media.
     "assist_eff": (0.70, 0.80),
-    # Hybrid dry coolers: wet mode from a customer-set switch point, 70-95 °F (21-35 °C) in US 12,426,214 B1 (2025), 82 °F (27.8 °C)
-    # in its example (model 1.3, was 21-27); fully evaporative near the site's design dry-bulb [estimate, no published value].
-    "hybrid_on": (21.0, 28.0),
-    "hybrid_full": (30.0, 33.0),
+    # Hybrid dry coolers: wet mode from the switch point up (above). Fully evaporative at each location's own 0.4% design dry-bulb (design_dry_bulb; model 1.7, was 30-33 °C everywhere,
+    # which is West Michigan's), give or take this many K [A]: the source gives no such point, so this says the dry section is sized to carry part of the load
+    # up to the hottest weather the plant is designed for.
+    "hybrid_full_offset": (-1.5, 1.5),
 }
 # Share of the loop volume lost to small leaks and topped up each year (NIH 2023 Technical Bulletin: "typically less than 5% of the
 # system's total volume in a year"; the 1% floor is an assumption), all of it counted as lost. Poorly kept loops can lose far more (NIH:
-# 25% a month "is not uncommon"), which the range does not cover. Sampled on its own random stream (where model 1.1 drew its base-use share), so the other draws are unchanged.
+# 25% a month "is not uncommon"), which the range does not cover.
 TOPUP = (0.01, 0.05)
-# Adiabatic pre-cooling, on their own random stream so the other draws are unchanged. Air temperature rise across the dry cooler coil at
+# Adiabatic pre-cooling. Air temperature rise across the dry cooler coil at
 # design, K: 9-13 from makers' selection sheets (Thermokey 11.2, Kelvion 12.8) [estimate]. Bleed as a share of evaporation: none for once-through
 # pads (Guentner; Spinazzola 2021), up to 0.5 for recirculating pads (SCE ET13SCE1020, 2015, p. 29: 10-50%; ASHRAE 2016 ch. 41 allows 5-100%).
 ADIABATIC = {"assist_dt_air": (9.0, 13.0), "assist_bleed": (0.0, 0.5)}
-# Electricity and heat (model 1.4), on their own random stream. Large-scale values are Lei and Masanet's Table 3, case 2 (preprint rs-769999/v1;
+# Electricity and heat (model 1.4). Large-scale values are Lei and Masanet's Table 3, case 2 (preprint rs-769999/v1;
 # waterside economizer, 2.8-6.7 C tower approach, and so on), which LBNL 2024 also draws on, unless noted.
 POWER = {
     "ups": (0.90, 0.99), "dist_loss": (0.0, 0.02), "light": (0.0, 0.002),
@@ -83,11 +95,9 @@ POWER = {
     # that are liquid-cooled at a campus is not published for any fleet, so all of 0-1 is sampled [A].
     "liquid_water": (32.0, 45.0), "liquid_air_share": (0.10, 0.30), "liquid_share": (0.0, 1.0),
 }
-# Lei and Masanet's sensible heat ratio (0.95-0.99), removed in model 1.5 for OUTSIDE below: at their ratio the coils would condense moisture no air was
-# bringing in, and these coils are too warm to condense. Its slot in the POWER stream
-# is still drawn, so the other draws are unchanged.
-_POWER_RETIRED_SLOT = 3
-# Outside air (model 1.5), on its own random stream. The building takes a little outside air to stay pressurized and ventilated; it brings heat and
+# Lei and Masanet's sensible heat ratio (0.95-0.99) was removed in model 1.5 for OUTSIDE below: at their ratio the coils would condense moisture no air was
+# bringing in, and these coils are too warm to condense.
+# Outside air (model 1.5). The building takes a little outside air to stay pressurized and ventilated; it brings heat and
 # moisture in, and leaves at indoor conditions. Flow per MW of IT capacity, a bracket [A]: ASHRAE 62.1's 0.06 cfm/ft2 for computer rooms (2007 table, as
 # quoted secondhand; the area rate, since these rooms are mostly unoccupied) at about 5,000 ft2 per MW [A] is 300; the ends are 100 and 1,500 [A]. No
 # published flow for large campuses was found. Share of the dry-air shortfall made up by humidifiers, not published for any fleet, so all of 0-1 is
@@ -97,6 +107,9 @@ OUTSIDE = {"oa_cfm_per_mw": (100.0, 1500.0), "humidify_share": (0.0, 1.0)}
 # dehumidifying coil, C [A]: it must be colder than the 15 C dew point, while the air loop's water, at 18.7 C or more, is not, so those coils stay dry.
 DEW_LOW, DEW_HIGH, DEHUMIDIFY_WATER = -9.0, 15.0, 9.0
 TOWER_DESIGN_WB = 25.6     # C, the 78 F wet-bulb of the standard cooling tower rating (95/85/78 F) [A]; a site's own design wet-bulb differs by a few degrees
+# Switch settings stay within the 70-95 °F (21.1-35.1 °C) that US 12,426,214 B1 (2025) gives for customer settings (example: 82 °F, 27.8 °C); applied to assist by analogy [A].
+SWITCH_SETTINGS = (21.1, 35.1)
+HYBRID_MIN_RAMP = 1.0      # K [A]: where a location's design dry-bulb is at or below the switch point, wet mode still comes on over this span, in its hottest hours only
 PARAMETERS = tuple(RANGES) + ("topup",) + tuple(ADIABATIC) + tuple(POWER) + tuple(OUTSIDE)
 
 # Staff water. People = the campus's permanent headcount (employees and on-site contractors), a fixed core plus a share per MW of IT
@@ -120,15 +133,15 @@ _LM = "Lei and Masanet (preprint rs-769999/v1), Table 3, case 2"
 _STAFF_WATER = "Applicant projections, none measured: Hermantown, MN and Crusoe's 200 MW building, checked against Tyrone, GA, Saline Township and Mount Pleasant, WI [A]"
 SOURCES = {
     "utilization": "EPRI 2026; IEA 2025; LBNL 2024 server parameters",
-    "er_adj": "USGS SIR 2013-5188 (Diehl et al.), pp. 24, 28-29; asymmetric for Rutberg et al.'s fit at cooler water [A]",
-    "coc": "DOE FEMP BMP #10",
+    "load_factor": "EPRI 2026 (94% hyperscale, 88% co-location)",
+    "er_adj": "USGS SIR 2013-5188 (Diehl et al.), pp. 24, 28 (5-15% for tower evaporative ratios); asymmetric for Rutberg et al.'s fit at cooler water [A]",
+    "coc": "Lei and Masanet (preprint rs-769999/v1), Table 3, case 2; Han et al. 2026, Table 2; DOE FEMP BMP #10's typical range is lower (2-4; 6 or more possible)",
     "range_f": "Lei and Masanet (preprint rs-769999/v1), Table 3; 10 F rating",
     "drift": "EPA WaterSense at Work 2012, section 6.3, p. 6-9; EPA AP-42 13.4, Table 13.4-1",
-    "fill_gal_per_mw": "Crusoe 2026; Vantage Port Washington; chilled-water loops of 3-10 gal per ton",
-    "assist_on": "Uptime Institute 2025 (20 C or higher); 30 C top [A]",
-    "assist_eff": "EVAPCO 2018, p. 2; ASHRAE 2016, ch. 41",
-    "hybrid_on": "US 12,426,214 B1 (2025)",
-    "hybrid_full": "Near the site's design dry-bulb [A], no published value",
+    "fill_gal_per_mw": "Crusoe 2026; chilled-water loops of 3-10 gal per ton; top 12,000 [A]",
+    "switch_margin": "Operator's setting around the loop's limit [A]: Trane DC-WPR004A and US 12,426,214 B1 (customer-set); EVAPCO 2019, p. 2",
+    "assist_eff": "EVAPCO 2019 (presented at CTI, Feb 2019), p. 2; ASHRAE 2016, ch. 41",
+    "hybrid_full_offset": "Around the location's own 0.4% design dry-bulb [A], no published value",
     "topup": "NIH 2023 Technical Bulletin (under 5% a year); 1% floor [A]",
     "assist_dt_air": "Makers' selection sheets: Thermokey, Kelvion [A]",
     "assist_bleed": "Guentner; Spinazzola 2021; SCE ET13SCE1020, 2015, p. 29; ASHRAE 2016, ch. 41",
@@ -165,6 +178,42 @@ def evaporative_ratio(t_c, adj=0.0):
     """Share of heat rejected by evaporation (Rutberg et al. 2011 dry-bulb relation, as in USGS SIR 2013-5188)."""
     er = 1 - (-0.000279 * t_c ** 3 + 0.00109 * t_c ** 2 - 0.345 * t_c + 26.7) / 100
     return np.clip(er + adj, 0.55, 1.0)
+
+
+def peak_utilization(p):
+    """IT load on the peak day as a share of capacity: average load over the load factor, at most every computer at capacity."""
+    return np.minimum(p["utilization"] / p["load_factor"], 1.0)
+
+
+def design_dry_bulb(tdb):
+    """The 0.4% design dry-bulb of an hourly record, C: the temperature exceeded in 0.4% of its hours, the way ASHRAE defines it. Any hourly record works, station or grid cell."""
+    return float(np.quantile(np.asarray(tdb, dtype=float), 0.996))
+
+
+def for_location(p, tdb):
+    """Parameters with the location's design dry-bulb from its whole hourly record. Every run at a location goes through this; hybrid needs it."""
+    return {**p, "design_db": design_dry_bulb(tdb)}
+
+
+def loop_limit(p):
+    """Dry-bulb where a dry coil can no longer hold the loops' supply temperature, C: supply less the coil's approach, with the air and liquid loops weighted by their
+    shares of the heat (Lei and Masanet's air loop water; a liquid loop of its own). Above it, a dry plant needs chillers or evaporation."""
+    air = (1.0 - p["liquid_share"]) + p["liquid_share"] * p["liquid_air_share"]
+    air_water = p["supply_air"] + p["air_rise"] - p["air_rise"] / p["coil_eff"]
+    return air * air_water + (1.0 - air) * p["liquid_water"] - p["dc_approach"]
+
+
+def switch_point(p):
+    """Dry-bulb at which assist or hybrid goes wet, C: the operator's setting. Set "switch_on" to fix it, for example as a scenario; otherwise the loop's limit plus the
+    run's margin, within SWITCH_SETTINGS."""
+    return p["switch_on"] if "switch_on" in p else np.clip(loop_limit(p) + p["switch_margin"], *SWITCH_SETTINGS)
+
+
+def hybrid_full(p):
+    """Dry-bulb at which a hybrid is fully evaporative, C: the location's design dry-bulb plus the run's offset, and at least HYBRID_MIN_RAMP above the switch point."""
+    if "design_db" not in p:
+        raise ValueError("the hybrid design needs the location's design dry-bulb: pass parameters through for_location(p, tdb), or set design_db (in a BMI configuration, under parameters, unless a forcing file supplies it)")
+    return np.maximum(p["design_db"] + p["hybrid_full_offset"], switch_point(p) + HYBRID_MIN_RAMP)
 
 
 def _ramp(x, lo, hi):
@@ -230,7 +279,7 @@ def _wet_share(tdb, design, p):
     if design == "towers":
         return np.ones_like(tdb)
     if design == "hybrid":
-        return _ramp(tdb, p["hybrid_on"], p["hybrid_full"]) * np.ones_like(tdb)
+        return _ramp(tdb, switch_point(p), hybrid_full(p)) * np.ones_like(tdb)
     return np.zeros_like(tdb)
 
 
@@ -288,7 +337,7 @@ def hourly_heat_power(tdb, twb, design, p, rh=None):
     outside, latent = hourly_outside_air_heat(tdb, twb, p, rh)
     # supply air and the coil set the air loop's water temperature (Lei and Masanet); liquid-cooled heat goes to a warmer loop of its own
     air_water = p["supply_air"] + p["air_rise"] - p["air_rise"] / p["coil_eff"]
-    coil_air = tdb - (p["assist_eff"] * np.maximum(tdb - twb, 0.0) * (tdb >= p["assist_on"]) if design == "assist" else 0.0)
+    coil_air = tdb - (p["assist_eff"] * np.maximum(tdb - twb, 0.0) * (tdb >= switch_point(p)) if design == "assist" else 0.0)
     wet = _wet_share(tdb, design, p)
     air_load = room + crah + outside                          # in rare, bitter hours outside air could cool more than the air loop carries; the rest comes off the liquid loop
     power, heat = q + crah + 0.0 * tdb, q + crah + outside + latent
@@ -319,8 +368,9 @@ def hourly_rates(tdb, twb, design, p, rh=None, heat=None):
         # it leaves the coil where it would at the switch point (on + rise), so air flow = heat / (cp x (on + rise - tdb + depr)), and
         # evaporation as a share of all the heat is depr over that same difference, at most 1. Pads have no tower drift.
         depr = p["assist_eff"] * np.maximum(tdb - twb, 0.0)
-        share = np.clip(depr / np.maximum(p["assist_on"] + p["assist_dt_air"] - tdb + depr, 1e-6), 0.0, 1.0)
-        evap = btu * share / HFG / LB_GAL * (tdb >= p["assist_on"])
+        on = switch_point(p)
+        share = np.clip(depr / np.maximum(on + p["assist_dt_air"] - tdb + depr, 1e-6), 0.0, 1.0)
+        evap = btu * share / HFG / LB_GAL * (tdb >= on)
         drift = np.zeros_like(evap)
         blow = evap * p["assist_bleed"]
     # loop top-up, gal/day per MW of capacity, as gal per IT kWh
@@ -332,25 +382,43 @@ def hourly_rates(tdb, twb, design, p, rh=None, heat=None):
     return withdrawn, consumed, returned
 
 
+# Parameters that describe one plant move together in the draws; drawn independently, a site could pair a 99% UPS with the worst fans, or a 45 C liquid loop
+# with no liquid cooling. Each group has one shared score, and +1 or -1 says which way each member goes with it. No published correlation exists, so the
+# strength is an assumption [A]: shared score + member's own score, equal weights, which gives two members a rank correlation of about 0.5, midway between
+# independent and moving as one. Cycles of concentration stays out: it follows source water, which is a matter of place. Methods log, Nov 1, 2026.
+LINKED = {
+    # a well-built plant: efficient power equipment, low pressure drops, tight approaches and good chillers together
+    "plant": {"ups": 1, "dist_loss": -1, "fan_eff": 1, "pump_eff": 1, "crah_pa": -1, "tower_fan_pa": -1, "dc_fan_pa": -1, "pump_chw_kpa": -1, "pump_tower_kpa": -1,
+              "pump_econ_kpa": -1, "coil_eff": 1, "tower_approach": -1, "hx_approach": -1, "dc_approach": -1, "carnot_water": 1, "carnot_air": 1},
+    # one temperature design: warm supply air goes with wide temperature rises across the coil, the loop and, through the plate exchanger, the tower
+    "loop": {"supply_air": 1, "air_rise": 1, "water_rise": 1, "range_f": 1},
+    # AI campuses: higher utilization and steadier load (EPRI's hyperscale pair against its co-location pair), more liquid cooling, warmer liquid loops
+    "load": {"utilization": 1, "load_factor": 1, "liquid_share": 1, "liquid_water": 1},
+}
+
+
+def _strata(n, seed, name):
+    """n values in 0-1, one from each of n equal strata, in random order, on a stream of its own: adding or removing a parameter leaves the others' draws alone."""
+    rng = np.random.default_rng([seed, zlib.crc32(name.encode())])
+    return (rng.permutation(n) + rng.random(n)) / n
+
+
+def latin_hypercube(ranges, n, seed, linked=None):
+    """Latin hypercube draws over {name: (low, high)}: {name: array (n,)}. Every parameter keeps one value in each of its n strata, however the groups in
+    `linked` reorder them (rank reordering, after Iman and Conover 1982). The same n and seed always give the same draws."""
+    u = {k: _strata(n, seed, k) for k in ranges}
+    for group, members in (linked or {}).items():
+        shared = _strata(n, seed, f"group {group}")
+        for k, sign in members.items():
+            if k in u:
+                score = (shared if sign > 0 else 1.0 - shared) + _strata(n, seed, f"own {k}")
+                u[k] = np.sort(u[k])[np.argsort(np.argsort(score))]
+    return {k: a + (b - a) * u[k] for k, (a, b) in ranges.items()}
+
+
 def sample_parameters(n=200, seed=7):
-    """Monte Carlo draws: independent uniforms over RANGES (run-major, so the draws match a per-run loop of
-    rng.uniform calls) and topup from its own stream. Returns {name: array (n,)}."""
-    lo = np.array([v[0] for v in RANGES.values()])
-    hi = np.array([v[1] for v in RANGES.values()])
-    u = np.random.default_rng(seed).random((n, len(RANGES)))
-    draws = lo + (hi - lo) * u
-    out = {k: draws[:, i] for i, k in enumerate(RANGES)}
-    out["topup"] = TOPUP[0] + (TOPUP[1] - TOPUP[0]) * np.random.default_rng(11).random(n)
-    u = np.random.default_rng(17).random((n, len(ADIABATIC)))
-    for i, (k, (a, b)) in enumerate(ADIABATIC.items()):
-        out[k] = a + (b - a) * u[:, i]
-    u = np.random.default_rng(29).random((n, len(OUTSIDE)))
-    for i, (k, (a, b)) in enumerate(OUTSIDE.items()):
-        out[k] = a + (b - a) * u[:, i]
-    u = np.delete(np.random.default_rng(23).random((n, len(POWER) + 1)), _POWER_RETIRED_SLOT, axis=1)
-    for i, (k, (a, b)) in enumerate(POWER.items()):
-        out[k] = a + (b - a) * u[:, i]
-    return out
+    """Monte Carlo draws of the cooling parameters: {name: array (n,)}. cooling.py's per-run loop and ensemble.py both use these draws."""
+    return latin_hypercube({**RANGES, "topup": TOPUP, **ADIABATIC, **POWER, **OUTSIDE}, n, seed, LINKED)
 
 
 def central_parameters():

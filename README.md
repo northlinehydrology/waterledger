@@ -114,7 +114,7 @@ s = summarize(ds)                                    # (design, stat, quantile),
 s["withdrawn"].sel(design="towers", stat="peak_1in10")      # million gallons on a 1-in-10-year peak day
 
 from waterledger_models.datacenter import physics
-physics.RANGES["hybrid_on"], physics.SOURCES["hybrid_on"]    # a parameter's range and where it comes from
+physics.RANGES["switch_margin"], physics.SOURCES["switch_margin"]    # a parameter's range and where it comes from
 ```
 
 ### Step by step through BMI

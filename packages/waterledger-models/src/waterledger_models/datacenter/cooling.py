@@ -1,22 +1,21 @@
 """Cooling water model v2 for Water Ledger: weather-driven, literature-aligned, with uncertainty.
 
-Hour by hour over 30 years of weather:
+Hour by hour over the weather record it is given (30 years for the published results):
   facility power and heat rejected, from one heat balance (physics.hourly_heat_power; model 1.5): facility power less the heat rejection
       fans, with the economizer carrying what the weather allows. Facility power over IT power is the hour's PUE.
   evaporation = heat × evaporative ratio ÷ latent heat, with the evaporative ratio from Rutberg et al. 2011
       (the dry-bulb relation USGS SIR 2013-5188 uses for cooling towers).
-  drift = a small fraction of circulating flow (EPA WaterSense at Work §6.3: 0.05–0.2%, <0.005% with
-      modern eliminators); circulating flow from heat ÷ (500 × range °F).
-  blowdown + drift = evaporation ÷ (cycles of concentration − 1)  (the dissolved solids balance; DOE FEMP BMP #10).
+  drift = a small fraction of circulating flow (physics.RANGES: 0.005-0.02%); circulating flow from heat ÷ (500 × range °F).
+  blowdown + drift = evaporation ÷ (cycles of concentration − 1)  (the dissolved solids balance; Lei and Masanet Eq. 7; DOE FEMP BMP #10).
 Designs differ in when they evaporate:
   dry       air-cooled / dry closed loop, designed to use no water for cooling: loop top-ups only, plus the staff water every design has
-  assist    dry coolers with adiabatic pre-cooling above a dry-bulb switch point: water evaporates into the air ahead of the
+  assist    dry coolers with adiabatic pre-cooling above a dry-bulb switch point tied to the loop's temperature, an operator's setting: water evaporates into the air ahead of the
             coil, in proportion to the wet-bulb depression; no tower drift
-  hybrid    dry coolers most of the year, evaporative in warm weather (ramp between two dry-bulb setpoints)
+  hybrid    dry coolers most of the year, evaporative in warm weather (ramp from the same switch point; the top at the location's own 0.4% design dry-bulb)
   towers    open cooling towers, evaporative all year (upper bound for typical practice)
 Outputs per run: withdrawn (makeup), consumed (evaporation + drift + loop top-up + humidifiers), returned to sewer (blowdown + condensate),
 condensate (from the outside air, not withdrawn, so withdrawn + condensate = consumed + returned).
-Monte Carlo over parameter ranges gives percentiles, per 100 MW of IT capacity.
+Monte Carlo over parameter ranges (Latin hypercube, linked parameters grouped: physics.sample_parameters) gives percentiles, per 100 MW of IT capacity.
 
 Staff water (restrooms, kitchens, cleaning) is not per kWh: it follows the people on site, which grow slowly with size, so it
 is a separate term, staff_runs() and staff_q(), added to the per-100 MW results at the campus's size (model 1.2). The designs modeled
@@ -31,8 +30,8 @@ from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
 
-from waterledger_models.datacenter.physics import (ADIABATIC, DESIGNS as _DESIGNS, HFG, KWH_BTU, LB_GAL, OUTSIDE, POWER, RANGES, STAFF, TOPUP, _POWER_RETIRED_SLOT, _ramp,  # noqa: F401
-                                                   evaporative_ratio, hourly_heat_power, hourly_rates, hourly_water_with_air, wet_bulb)
+from waterledger_models.datacenter.physics import (ADIABATIC, DESIGNS as _DESIGNS, HFG, KWH_BTU, LB_GAL, OUTSIDE, POWER, RANGES, STAFF, TOPUP, _ramp,  # noqa: F401
+                                                   evaporative_ratio, hourly_heat_power, hourly_rates, for_location, hourly_water_with_air, peak_utilization, sample_parameters, wet_bulb)
 
 DESIGNS = list(_DESIGNS)
 LABELS = {
@@ -48,24 +47,10 @@ def hourly(tdb, twb, design, p, rh=None, heat=None):
     return hourly_rates(tdb, twb, design, p, rh, heat)
 
 
-def sample(rng, n):
-    runs = [{k: rng.uniform(*v) for k, v in RANGES.items()} for _ in range(n)]
-    extra = np.random.default_rng(11)
-    for r in runs:
-        r["topup"] = extra.uniform(*TOPUP)
-    extra = np.random.default_rng(17)
-    for r in runs:
-        r.update({k: extra.uniform(*v) for k, v in ADIABATIC.items()})
-    extra = np.random.default_rng(23)
-    for r in runs:
-        for i, (k, v) in enumerate(POWER.items()):
-            if i == _POWER_RETIRED_SLOT:
-                extra.random()
-            r[k] = extra.uniform(*v)
-    extra = np.random.default_rng(29)
-    for r in runs:
-        r.update({k: extra.uniform(*v) for k, v in OUTSIDE.items()})
-    return runs
+def sample(n=200, seed=7):
+    """The Monte Carlo draws, run by run: physics.sample_parameters as a list of {name: value}."""
+    v = sample_parameters(n, seed)
+    return [{k: float(a[i]) for k, a in v.items()} for i in range(n)]
 
 
 def central():
@@ -126,9 +111,9 @@ def summarize(days, mgd):
 
 def daily(times, temps, rhs, design, mw, p=None):
     """One run's daily series at `mw` MW of IT capacity (central parameters by default), staff water at its central values included:
-    (days, withdrawn MGD, returned MGD). For seasonal figures and record days; the pages and reviews use the Monte Carlo percentiles."""
-    p = p or central()
+    (days, withdrawn MGD, returned MGD), at the average load. For seasonal figures and record days; the pages and reviews use the Monte Carlo percentiles."""
     tdb, rh = np.array(temps, dtype=float), np.array(rhs, dtype=float)
+    p = {**for_location(central(), tdb), **(p or {})}
     w, c, r = hourly(tdb, wet_bulb(tdb, rh), design, p, rh)
     days = np.array([t[:10] for t in times])
     uniq, idx = np.unique(days, return_inverse=True)
@@ -155,7 +140,8 @@ def run_location(times, temps, rhs, n=200, seed=7, mw=100.0):
     """Monte Carlo for every design at one location, per `mw` MW of IT capacity.
 
     Returns {design: {stat: {"p10","p50","p90"}}} for withdrawn/consumed/returned average, peak and annual, and electricity,
-    plus the central-parameter run. Peak = 1-in-10-year peak day (90th percentile of annual maxima). Electricity: pue_avg (energy over IT
+    plus the central-parameter run. Peak = 1-in-10-year peak day (90th percentile of annual maxima) at the peak load, average load over the load factor; the record
+    day is at the same load, and averages, months and years at the average load. withdrawn_peak_full_capacity is the upper case, every computer at capacity all day. Electricity: pue_avg (energy over IT
     energy), power_mw_avg (at the run's utilization), pue_peak_1in10 and power_mw_peak_1in10 (the 1-in-10-year hottest hour, every computer
     running at capacity).
     """
@@ -168,12 +154,12 @@ def run_location(times, temps, rhs, n=200, seed=7, mw=100.0):
     months = np.array([d[:7] for d in uniq])
     hour_years = np.array([t[:4] for t in times])
     year_ends = np.r_[np.flatnonzero(hour_years[1:] != hour_years[:-1]) + 1, len(hour_years)]
-    rng = np.random.default_rng(seed)
-    runs = sample(rng, n)
+    runs = sample(n, seed)
     out = {}
     for design in DESIGNS:
         acc = {}
         for p in runs + [central()]:
+            p = for_location(p, tdb)
             kw = mw * 1000 * p["utilization"]
             pue, heat = hourly_heat_power(tdb, twb, design, p, rh)      # the slow part: once for the run's water and PUE
             w, c, r = hourly(tdb, twb, design, p, rh, heat)
@@ -181,7 +167,14 @@ def run_location(times, temps, rhs, n=200, seed=7, mw=100.0):
                 s = daily_stats(day_index, len(uniq), years, arr, kw, months if name == "withdrawn" else None)
                 for stat, v in s.items():
                     acc.setdefault(f"{name}_{stat}", []).append(v)
-            # the upper case: every computer at capacity all day, instead of at the run's average utilization (the middle estimates' basis)
+            # the peak day and the record day: the same weather at the peak load, average load over the load factor (model 1.7)
+            at_peak = {**p, "utilization": float(peak_utilization(p))}
+            kw_peak = mw * 1000 * at_peak["utilization"]
+            wp, cp, rp = hourly(tdb, twb, design, at_peak, rh)
+            for name, arr in (("withdrawn", wp), ("consumed", cp), ("returned", rp), ("condensate", hourly_water_with_air(tdb, twb, at_peak, rh)[1])):
+                s = daily_stats(day_index, len(uniq), years, arr, kw_peak)
+                acc[f"{name}_peak_1in10"][-1], acc[f"{name}_record"][-1] = s["peak_1in10"], s["record"]
+            # the upper case: every computer at capacity all day
             at_capacity = hourly(tdb, twb, design, {**p, "utilization": 1.0}, rh)[0]
             acc.setdefault("withdrawn_peak_full_capacity", []).append(daily_stats(day_index, len(uniq), years, at_capacity, mw * 1000.0)["peak_1in10"])
             # water use effectiveness: liters consumed per IT kWh (annual average), for comparison with LBNL/operators

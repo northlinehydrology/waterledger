@@ -5,7 +5,7 @@ import pytest
 from waterledger_models.datacenter import cooling as cw
 from waterledger_models.datacenter import physics as ph
 
-C = ph.central_parameters()
+C = {**ph.central_parameters(), "design_db": 33.0}
 TDB = np.array([-10.0, 5.0, 15.0, 25.0, 35.0])
 TWB = np.array([-11.0, 3.0, 11.0, 19.0, 24.0])
 

@@ -702,3 +702,89 @@ The rule thresholds, 6,000 and 10,000 gallons a day, fall where they did in 1.4,
 **Tests.** `tests/test_hand_values.py` has values worked by hand with their numbers written out, including a lake case. HFG halved, LATENT_KJ halved, KG_GAL = 1, the evaporative ratio coefficient x10, outside air flow x10 and lake latent heat /10 had passed everything but the golden files, and now fail. `test_water_balance` passed only because its weather was January, with no condensate, and now runs on weather that condenses.
 
 **Data release.** 2026-11-01 was published twice, first with model 1.4 and then 1.5, against design 0003's rule. Snapshots now never change: see the design note. Packages before 3.8.1 read `latest`, frozen on model 1.5. A run of 3.7.1 on the 1.5 data reports model 1.5, with its wastewater middle leaving out condensate while its range includes it (Houston closed loop 0.0062 MGD, range 0.0062-0.0244); it still closes on what it reports. Michigan's manifest had `checks: null` because its writer hard-coded it: its three tests ran and passed, while the statewide `check-snapshot` never ran for Michigan. It now does.
+
+## Nov 1, 2026: toward model 1.7, the cooling model's parameters and peak day
+
+From the parameter audit of model 1.6 (Northline's `docs/research/parameter-ledger-cooling.md`) and the decisions Andrew approved for 3.9 (his rule: reasonable, accurate, reality based). The version moves when the groups are integrated. Measured below at 300 MW with staff water, 1995-2024 weather, 200 draws, seed 7, medians in MGD: West Michigan's Gaines cell on the Open-Meteo record; Cleveland, Dulles, Houston and Lubbock on stations. Each change was run on the one before it, in the order given here.
+
+**Sampling.** Independent uniform draws are replaced by a Latin hypercube, seeded, with one sampler (`physics.sample_parameters`) behind the per-run loop, the ensembles and, with its own ranges, the lake. Lei and Masanet used 50 Latin hypercube samples. Each parameter has its own random stream keyed by name, so adding one leaves the rest alone, which is what made the later comparisons here paired. The old streams, kept so that earlier draws would not change, are gone.
+
+Parameters describing one plant now move together: a well-built plant (UPS, distribution, fans, pumps, pressure drops, approaches, coil and chiller quality); one temperature design (supply air, air rise, water rise, tower range, which a plate exchanger ties together); and AI campuses (utilization, load factor, liquid share, liquid water temperature). Cycles of concentration is left out because it follows source water, a matter of place. Each group has a shared score; a member's rank order follows shared score + its own score with equal weights, which gives two members a rank correlation of about 0.5, and every parameter keeps one draw in each stratum (rank reordering, after Iman and Conover 1982). No published correlation exists, so 0.5 is an assumption [A], midway between independence and the comonotone bound the audit ran.
+
+Staff water stays on its own uniform draws, as before.
+
+Effect, almost entirely on bands and on noise from the old draws: towers withdrawn +0.5 to +1.6%; towers consumed +2.5%; returned +6%; annual PUE -0.1 to -1.0%, its band wider (Houston towers 1.088-1.196 to 1.073-1.228).
+
+Convergence at n = 200, on the final parameters, 12 seeds, Gaines and Houston, cooling water alone at 300 MW; 95% half-width of each percentile as 2 standard deviations across seeds, Latin hypercube against independent draws of the same ranges:
+
+| Output | p10 | p50 | p90 |
+|---|---|---|---|
+| Towers withdrawn, average | 1.7-2.8% (3.3-3.6%) | 1.9-2.1% (2.5-2.8%) | 2.3-2.6% (2.6-2.8%) |
+| Towers withdrawn, peak day | 2.7-2.9% (3.8-4.1%) | 1.9-2.1% (2.8-2.9%) | 2.3-2.7% (3.3-3.6%) |
+| Annual PUE, all three wet designs | 0.2-0.5% (0.6-0.8%) | 0.4-0.7% (0.6-1.1%) | 0.4-0.7% (0.7-1.2%) |
+| Hybrid withdrawn, average | 21-60% (32-57%) | 5.8-11% (12-18%) | 3.8-4.6% (6.4-6.9%) |
+| Hybrid withdrawn, peak day | 2.2-16% (9.9-18%) | 1.7-3.1% (5.0-5.5%) | 3.2% (4.1-5.2%) |
+| Assist withdrawn, average | 25-66% (32-64%) | 7.7-16% (9.4-18%) | 6.5% (6.6-7.6%) |
+| Assist withdrawn, peak day | 10-19% (13-24%) | 3.0-8.2% (5.8-7.9%) | 5.1-6.6% (5.7-6.6%) |
+
+Towers and PUE have converged. Medians and upper ends of hybrid and assist are usable, at the widths shown. The low end of hybrid and assist averages has not converged: those are small numbers from a long tail of plants that hardly go wet, and the mean of 12 seeds sits +8% (hybrid) and +17% (assist) above a single 1,000-draw run in Gaines, against -3% and +3% in Houston. In Gaines they amount to about 0.01 MGD at 300 MW. The hypercube gains little there, since one tail is set by a few interacting parameters. It should be read as "near zero", or the published builds should use more draws. The count stays at 200 here; run time scales with it.
+
+**Peak day (decision 1).** The headline peak day and the record day now run at average load / load factor, with the load factor 0.88-0.94 from EPRI (2026): 94% at a large hyperscale site, 88% at co-location sites. EPRI's pairs give 0.75 / 0.94 = 0.80 and 0.57 / 0.88 = 0.65 of capacity, against its measured peak utilization of 62-80%. Load factor is linked to utilization for that reason. The upper case stays: every computer at capacity all day, `withdrawn_peak_full_capacity`, now in the ensembles as well as the loop. Averages, months and years stay at average load. Loop top-ups and outside air go with capacity, so closed loop does not move. Hottest-hour electricity stays at full capacity, so the water and electricity peaks still describe different conditions, as stated in model 1.6. The lake has no peak day; its highest 30 days stay at average load. Effect on the peak day: towers +9.5 to +10.1%, hybrid +9.3 to +10.4%, assist +8.4 to +11.4%. Han et al.'s measured tower ratio of peak day to average, 2.21 at one zone, is still about 1.6 times the model's roughly 1.3-1.4. The model's towers remain flatter day to day than that zone.
+
+**Cycles of concentration (decision 2).** 3-6, was 3-7. Lei and Masanet's Table 3, case 2, allows 3-15. The consumptive ratios in Han et al. (2026, Table 2), 0.72-0.91, are about 3.6-11 cycles, median about 4.5; ICPRB's 75% is 4. DOE FEMP BMP #10, cited for 3-7 until now, says two to four is typical and six or more possible, so it is lower than this range and is stated as such. Nothing is published for large campuses. The real limit is source water, which a later site input could carry. Effect: towers withdrawn +2.6 to +2.9%, returned +15%, consumed unchanged; hybrid withdrawn about +2.5%.
+
+**Hybrid full-evaporation point.** Was 30-33 C in every state, which is West Michigan's design temperature, though its comment said the site's. Now each location's 0.4% design dry-bulb from its own hourly record, whatever that record is (`physics.design_dry_bulb`, so a station or a grid cell), +/-1.5 K [A]. The source patent has no such point, so the top of the ramp remains an assumption, tied now to something that differs by place: Gaines 31.0 C, Cleveland 32.2, Dulles 33.9, Houston 36.7, Lubbock 37.8. A run with a location's design temperature at or below its switch point still ramps over 1 K above the switch [A]. The value cannot be defaulted: hybrid raises an error without it, because a fixed default is how this error came about. Models that receive weather one hour at a time set `design_db`. Effect on hybrid withdrawn: Gaines +2.5%, Cleveland -9%, Dulles -22%, Houston -34%, Lubbock -36%; peak day +3.7%, -4.6%, -11%, -24%, -22%.
+
+**Switch points (decision 3).** When a dry cooler goes wet is an operator's setting, not a property of the equipment: the patent has the customer set it, Trane's DC-WPR004A says the customer chooses, and EVAPCO calls it a selection and control output. Drawn on its own, a site with 45 C liquid water could go wet at 21 C while one with 19 C air-loop water stayed dry to 28 C, running air-cooled chillers. So the setting is now tied to the loop:
+
+    loop limit = air share x air loop water + (1 - air share) x liquid water - dry cooler approach
+    air loop water = supply air + air rise - air rise / coil effectiveness
+    switch point = loop limit + margin (-2 to +2 K [A]), held within 21.1-35.1 C
+
+The limit is the dry-bulb where the dry coil can no longer hold loop supply. The margin covers operators who go wet early or trim with chillers longer. The bounds are the 70-95 F the patent gives for customer settings; applying them to assist is by analogy [A]. Assist and hybrid share one setting. The Uptime Institute 20 C citation is dropped: the audit could not find it in anything readable. A site can fix the setting with `switch_on`. Across the draws the limit runs 18.5 / 24.2 / 30.4 C (p10, p50, p90), the setting 21.1 / 24.2 / 30.6, with a quarter of draws at the 21.1 floor and under 1% at the top. Balances close as before, and the assist's air-side balance uses the new setting. Effect on withdrawn: hybrid +2 to +9%, assist +3 to +25% (largest in the coolest climates); peak day within -4.7 to +5.2%. Bands widen a lot: Gaines hybrid average 0.040-0.150 to 0.013-0.170, since a warm liquid loop may hardly go wet in Michigan and a cold air loop goes wet often.
+
+**Hybrid peak by place.** With the two changes above a hybrid's median peak day is about the same everywhere, 1.7-1.8 MGD at 300 MW, because each location reaches full evaporation near its own hottest weather. That follows from the assumption that plants are sized to their climate. It should be stated when peak days are compared between climates.
+
+**Evaporative ratio (decision 4).** Kept. LBNL (2024) and Lei and Masanet evaporate all the heat (Lei Eq. 5); this model uses the Rutberg et al. (2011) ratio as USGS SIR 2013-5188 does, so a share of the heat leaves as sensible heat in the air. Towers come out below those two sources: makeup, median, 1.58 L per IT kWh in Gaines, 1.60 Cleveland, 1.63 Dulles, 1.76 Houston, 1.67 Lubbock, against about 2.2 (Lei case 2, read off a figure, about +/-0.1; LBNL Fig. 4.4), which is 20-28% lower. Reasons: the air's own heat balance says not all the heat goes to evaporation, except in hot dry hours; USGS uses the same relation as an upper limit in cool months and models towers with evaporative ratios below 1; and no disclosed fleet reaches 2.2 (Han Table 2, 2024: consumed 1.13-1.36 against the model's 1.25-1.38 for all-tower sites, and those fleets are mixed). That is an argument, not a measurement: no site-level metered tower check exists. A known limit in the other direction: Rutberg has no humidity term and the ratio is capped at 1, so west Texas towers may run about 6% low annually and 10-14% low in hot dry hours, from a simple air-side bracket.
+
+**Citations corrected.**
+
+- Tower evaporative ratio: USGS's 5-15% (p. 24, Leung and Moore) and 15% added to the tower suite (p. 28). Its +/-18% for towers is consumption with heat error included (p. 29), and its 18% for the ratio itself is for water surfaces. The range, -0.10 to +0.05, stands.
+- Loop volume: Vantage's 11.8 million gallons is out. It came from a TV tour of Sterling, Virginia, not Port Washington, and no capacity was given. Crusoe's text gives about 1.7 million gal for a typical system, without tying it to 200 MW in the text. The top of 12,000 gal/MW is marked [A]. A search found a Lake County, Illinois document said to give 3.2 million gal of flush and fill for a 200 MW building, about 16,000 gal/MW, but it refused automated reads, so it is not used and is worth reading by hand. No numbers change.
+- EVAPCO's pad test is dated as presented, CTI, Feb 2019, and is a maker's own.
+- Open-Meteo: the request sets no `models`, so best match applies, which combines IFS HRES (from 2017), ERA5 and ERA5-Land. It is now described that way in the models package. The source itself changes in the next release. The default time zone is the point's own rather than Detroit.
+
+**Lake source.** The heat balance uses Ward's wind function, which USGS prints as an example (Eq. 14). USGS's own lake estimates used Webster and Sherman (1995), and it did not use functions that reach zero at no wind (p. 27). This is now stated as a departure. It is kept because winds are sampled at 5-15 mph, where USGS puts the spread between wind functions at about 12% (p. 28, at 4.5 mph). Webster and Sherman's coefficients are not in the USGS report and were not read. USGS's error for this ratio is now carried: 21% on the Great Lakes (p. 29), `evap_error` 0.79-1.21, so 1.0 at the center. Effect at 100 MW on Lake Michigan: forced evaporation 0.232 / 0.293 / 0.359 to 0.229 / 0.294 / 0.375 MGD, withdrawal 38.2 / 48.4 / 63.7 to 37.6 / 48.7 / 65.3 (the Latin hypercube only).
+
+**Smaller.** Tower range 7.2-10.8 F, was 7-15, whose top had no source. Drift 0.005-0.02% of flow, was 0.0005-0.02%, whose low end was ten times under its citation. Together: towers withdrawn +0.2 to +0.3%, consumed +0.5 to +0.9%, returned -2.2%, annual PUE up to +0.3%, since a narrower range means more tower flow and warmer chiller condensers.
+
+**UPS, not changed.** The narrowing to 95-99% was considered and not made. Lei and Masanet and LBNL both give 90-99%, ENERGY STAR's page gives 92-95% for new efficient units, and no measured campus figure was found. Fleet PUEs of 1.08-1.16 argue against 90% (it alone would give 1.11), which supports raising the floor, but nothing supports 95% as the number. It would lower annual PUE about 3% (Dulles towers 1.128 to 1.096) and take towers below LBNL's 1.12. It stays in Open, as a question for someone with measured data.
+
+**Total effect, model 1.6 to this group's changes.** Medians, MGD at 300 MW, with staff water.
+
+| Place | Design | Withdrawn | Consumed | Returned | Peak day | Annual PUE |
+|---|---|---|---|---|---|---|
+| MI Gaines | closed loop | 0.007 to 0.007 | 0.001 to 0.001 | 0.008 to 0.008 | 0.009 to 0.009 | 1.126 to 1.117 |
+| | assist | 0.077 to 0.086 | 0.060 to 0.066 | 0.018 to 0.018 | 1.07 to 1.22 | 1.121 to 1.114 |
+| | hybrid | 0.078 to 0.086 | 0.056 to 0.062 | 0.020 to 0.024 | 1.56 to 1.79 | 1.123 to 1.115 |
+| | towers | 1.89 to 1.98 | 1.51 to 1.56 | 0.342 to 0.413 | 2.36 to 2.69 | 1.124 to 1.117 |
+| OH Cleveland | closed loop | 0.007 to 0.007 | 0.001 to 0.001 | 0.008 to 0.008 | 0.009 to 0.009 | 1.130 to 1.120 |
+| | assist | 0.100 to 0.111 | 0.079 to 0.085 | 0.022 to 0.023 | 1.19 to 1.37 | 1.126 to 1.118 |
+| | hybrid | 0.105 to 0.102 | 0.078 to 0.075 | 0.025 to 0.027 | 1.62 to 1.72 | 1.128 to 1.118 |
+| | towers | 1.92 to 2.00 | 1.53 to 1.58 | 0.347 to 0.418 | 2.38 to 2.71 | 1.125 to 1.118 |
+| VA Dulles | closed loop | 0.007 to 0.007 | 0.001 to 0.001 | 0.009 to 0.009 | 0.008 to 0.008 | 1.139 to 1.128 |
+| | assist | 0.163 to 0.175 | 0.130 to 0.137 | 0.033 to 0.033 | 1.56 to 1.72 | 1.130 to 1.124 |
+| | hybrid | 0.183 to 0.155 | 0.141 to 0.120 | 0.042 to 0.038 | 1.85 to 1.84 | 1.131 to 1.124 |
+| | towers | 1.96 to 2.04 | 1.56 to 1.61 | 0.356 to 0.427 | 2.44 to 2.78 | 1.127 to 1.120 |
+| TX Houston | closed loop | 0.007 to 0.007 | 0.001 to 0.001 | 0.016 to 0.016 | 0.008 to 0.008 | 1.177 to 1.167 |
+| | assist | 0.373 to 0.400 | 0.304 to 0.315 | 0.081 to 0.076 | 1.73 to 1.91 | 1.164 to 1.156 |
+| | hybrid | 0.505 to 0.358 | 0.403 to 0.284 | 0.107 to 0.082 | 2.08 to 1.81 | 1.159 to 1.159 |
+| | towers | 2.13 to 2.20 | 1.69 to 1.74 | 0.389 to 0.466 | 2.50 to 2.84 | 1.148 to 1.141 |
+| TX Lubbock | closed loop | 0.007 to 0.007 | 0.001 to 0.001 | 0.007 to 0.007 | 0.008 to 0.008 | 1.152 to 1.144 |
+| | assist | 0.352 to 0.362 | 0.287 to 0.296 | 0.067 to 0.065 | 2.01 to 2.19 | 1.133 to 1.128 |
+| | hybrid | 0.352 to 0.239 | 0.276 to 0.187 | 0.071 to 0.053 | 2.05 to 1.81 | 1.132 to 1.132 |
+| | towers | 2.00 to 2.08 | 1.59 to 1.65 | 0.362 to 0.434 | 2.42 to 2.75 | 1.125 to 1.118 |
+
+**Against disclosed values.** Hybrid consumed, L per IT kWh, median (p10-p90): Dulles 0.093 (0.019-0.167) against Microsoft Virginia's projected 0.14 and Meta's fleet 0.19. Houston 0.219 (0.059-0.367) and Lubbock 0.147 (0.053-0.231) against Microsoft Texas's 0.25, where model 1.6 stood above it. Gaines 0.050 (0.005-0.104) against LBNL's 0.05-0.55. The medians now sit below the operators' figures rather than above them in Texas. Those disclosures are in the bands except Meta's fleet and, narrowly, Microsoft Texas at Lubbock. They are fleet or state figures with unknown design mixes, so this does not contradict the change, but it suggests the assumption of a plant sized to its climate may be on the low side. A metered hybrid or adiabatic site would settle it.
+
+**Tests.** `tests/test_hand_values.py` adds the peak utilization, design dry-bulb, ramp, switch point with its bounds, assist water at a switch point and the lake's error, with numbers written out. `test_physics_properties.py` holds one draw per stratum, reproducibility and the linked rank correlations. Balance tests hold. The ensembles and the loop agree, the upper case included.

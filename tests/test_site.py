@@ -32,7 +32,10 @@ def test_to_bmi_config_runs(tmp_path):
 
     from waterledger_models.datacenter.bmi import CoolingWaterBmi
     site = wl.Site(place=wl.place("Gaines charter township, MI"), facility=wl.DataCenter(it_mw=300, cooling="hybrid"))
-    entry, cfg = site.to_bmi_config(tmp_path / "site.yaml", end_time=7200)
+    with pytest.raises(ValueError, match="design dry-bulb"):     # with no weather file a hybrid does not know its location's design temperature
+        site.to_bmi_config(tmp_path / "no_design.yaml", end_time=7200)
+        CoolingWaterBmi().initialize(str(tmp_path / "no_design.yaml"))
+    entry, cfg = site.to_bmi_config(tmp_path / "site.yaml", end_time=7200, design_db=31.0)
     assert entry.endswith(":CoolingWaterBmi") and cfg["design"] == "hybrid" and cfg["it_capacity_mw"] == 300
     m = CoolingWaterBmi()
     m.initialize(str(tmp_path / "site.yaml"))

@@ -7,8 +7,9 @@ from waterledger_models import runoff
 
 T = np.arange(-25.0, 41.0, 1.0)
 W = ph.wet_bulb(T, np.full_like(T, 55.0))
-DRAWS = {k: v[:, None] for k, v in ph.sample_parameters(100).items()}
-CENTRAL = ph.central_parameters()
+DESIGN_DB = 33.0      # C, a test location's 0.4% design dry-bulb
+DRAWS = {**{k: v[:, None] for k, v in ph.sample_parameters(100).items()}, "design_db": DESIGN_DB}
+CENTRAL = {**ph.central_parameters(), "design_db": DESIGN_DB}
 GAL_KG = 3.78541
 
 
@@ -37,7 +38,7 @@ def test_every_kw_is_accounted_for(design):
     crah = ph._fan_kw(room / (ph.CP_AIR * p["air_rise"]) + kg_s, p["crah_pa"], p["fan_eff"])
     outside, latent = ph.hourly_outside_air_heat(T, W, p)
     wet = ph._wet_share(T, design, p)
-    coil = T - (p["assist_eff"] * np.maximum(T - W, 0) * (T >= p["assist_on"]) if design == "assist" else 0.0)
+    coil = T - (p["assist_eff"] * np.maximum(T - W, 0) * (T >= ph.switch_point(p)) if design == "assist" else 0.0)
     water = p["supply_air"] + p["air_rise"] - p["air_rise"] / p["coil_eff"]
     air_load = room + crah + outside
     electric, fans = q + crah, 0.0
@@ -128,7 +129,7 @@ def test_assist_evaporation_is_the_air_side_energy_balance():
     top = p["fill_gal_per_mw"] * p["topup"] / 365 / (24000 * p["utilization"])
     btu = ph.KWH_BTU * ph.hourly_heat_power(t, wb, "assist", p)[1]
     depr = p["assist_eff"] * 12.0
-    assert (c - top) * ph.LB_GAL * ph.HFG == pytest.approx(btu * depr / (p["assist_on"] + p["assist_dt_air"] - 32.0 + depr))
+    assert (c - top) * ph.LB_GAL * ph.HFG == pytest.approx(btu * depr / (ph.switch_point(p) + p["assist_dt_air"] - 32.0 + depr))
     assert r == pytest.approx((c - top) * p["assist_bleed"])
 
 
@@ -148,7 +149,7 @@ def test_no_drift_or_blowdown_without_a_wet_tower():
     p = {**CENTRAL, "oa_cfm_per_mw": 0.0}
     w, c, r = ph.hourly_rates(T, W, "dry", p)
     assert np.allclose(r, 0.0) and np.allclose(w, c)
-    t = np.array([p["hybrid_on"] - 1.0])
+    t = np.array([ph.switch_point(p) - 1.0])
     w, c, r = ph.hourly_rates(t, t - 5, "hybrid", p)
     assert r == pytest.approx(0.0)
     assert w[0] == pytest.approx(p["fill_gal_per_mw"] * p["topup"] / 365 / (24000 * p["utilization"]))
@@ -184,7 +185,7 @@ def test_tower_fans_slow_in_cool_weather_and_stop_with_no_evaporation():
     """By the cube law, fans use a fraction of their power when cold air takes up more heat per kg; none when a hybrid is dry."""
     hot, cold = _tower_fan(35.0, 27.0), _tower_fan(0.0, -2.0)
     assert 0 < cold < hot / 3
-    t, w = np.array([ph.central_parameters()["hybrid_on"] - 1.0]), np.array([15.0])
+    t, w = np.array([ph.switch_point(CENTRAL) - 1.0]), np.array([15.0])
     p = {**CENTRAL, "oa_cfm_per_mw": 0.0}
     assert ph.hourly_heat_power(t, w, "hybrid", p)[0][0] == pytest.approx(ph.hourly_heat_power(t, w, "hybrid", {**p, "tower_fan_pa": 0.0})[0][0])
 
@@ -192,9 +193,9 @@ def test_tower_fans_slow_in_cool_weather_and_stop_with_no_evaporation():
 def test_chiller_rejects_by_the_wet_share():
     """A hybrid hour with no evaporation has the chiller of a dry design; a fully wet one, the chiller of a tower."""
     p = CENTRAL
-    t, wb = np.array([p["hybrid_on"] - 0.5]), np.array([18.0])
+    t, wb = np.array([ph.switch_point(p) - 0.5]), np.array([18.0])
     assert ph.hourly_heat_power(t, wb, "hybrid", p)[1] == pytest.approx(ph.hourly_heat_power(t, wb, "dry", p)[1])
-    t, wb = np.array([p["hybrid_full"] + 1.0]), np.array([24.0])
+    t, wb = np.array([ph.hybrid_full(p) + 1.0]), np.array([24.0])
     assert ph.hourly_heat_power(t, wb, "hybrid", p)[1] == pytest.approx(ph.hourly_heat_power(t, wb, "towers", p)[1])
 
 
@@ -222,7 +223,7 @@ def test_a_septic_system_does_not_take_condensate():
 
 
 def test_the_per_run_loop_and_the_vector_draws_are_the_same_draws():
-    runs = cooling.sample(np.random.default_rng(7), 5)
+    runs = cooling.sample(5)
     v = ph.sample_parameters(5)
     for k in v:
         assert [r[k] for r in runs] == pytest.approx(list(v[k]))
@@ -271,8 +272,7 @@ def test_lake_electricity_is_the_heat_in_the_water():
     assert lake.RANGES["heat_factor"][0] <= r["pue_avg"]["p10"] <= r["pue_avg"]["p90"] <= lake.RANGES["heat_factor"][1]
     assert r["power_mw_peak_1in10"]["p50"] == pytest.approx(100 * r["pue_avg"]["p50"])
     # the withdrawn water warmed by its rise carries all of the electricity: flow x rho x cp x rise = power, run by run
-    rng = np.random.default_rng(11)
-    p = {k: rng.uniform(*v) for k, v in lake.RANGES.items()}
+    p = {k: v[0] for k, v in lake.sample_parameters(1).items()}
     assert lake.withdrawal_m3s(100, p["utilization"], p["heat_factor"], p["rise_c"]) * lake.RHO * lake.CP * p["rise_c"] == pytest.approx(100e6 * p["utilization"] * p["heat_factor"])
 
 

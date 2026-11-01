@@ -15,11 +15,13 @@ def loop_reference(time, t, rh, design, n, seed, mw):
     params = model.sample_parameters(n, seed)
     out = []
     for i in range(n):
-        p = {k: v[i] for k, v in params.items()}
+        p = model.for_location({k: v[i] for k, v in params.items()}, t)
         w = model.hourly_rates(t, twb, design, p, rh)[0]
         daily = np.bincount(idx, weights=w * mw * 1000 * p["utilization"]) / 1e6
-        ann = [daily[years == y].max() for y in np.unique(years)]
-        out.append([daily.mean(), np.quantile(ann, 0.9), daily.max(), daily.mean() * 365.25,
+        at_peak = {**p, "utilization": p["utilization"] / p["load_factor"]}     # the peak and record days run at the peak load
+        peak = np.bincount(idx, weights=model.hourly_rates(t, twb, design, at_peak, rh)[0] * mw * 1000 * at_peak["utilization"]) / 1e6
+        ann = [peak[years == y].max() for y in np.unique(years)]
+        out.append([daily.mean(), np.quantile(ann, 0.9), peak.max(), daily.mean() * 365.25,
                     max(daily[months == m].mean() for m in np.unique(months)), max(daily[years == y].sum() for y in np.unique(years))])
     return np.array(out)
 
@@ -94,3 +96,6 @@ def test_ensemble_matches_the_per_run_loop():
                     continue
                 for q in ("p10", "p50", "p90", "central"):
                     np.testing.assert_allclose(float(s[flow].sel(design=d, stat=stat, quantile=q)), loop[d][k][q], rtol=1e-12, atol=1e-15)
+    ds = ensemble.run_ensemble(np.array(t, dtype="datetime64[h]"), np.array(T), np.array(RH), mw=100.0, n=20, seed=7)
+    for d in model.DESIGNS:
+        np.testing.assert_allclose(np.quantile(ds["withdrawn_peak_full_capacity"].sel(design=d), 0.5), loop[d]["withdrawn_peak_full_capacity"]["p50"], rtol=1e-12)
