@@ -78,14 +78,14 @@ def compare(ask, ours, at_least=False):
     inside = ours.p10 <= b and ours.p90 >= a
     if at_least:
         return ("Our middle estimate is above the reported minimum." if mid >= a
-                else f"The reported minimum is about {_mult(a / mid)} times our middle estimate" + (", inside our likely range." if inside else ", above our likely range."))
+                else f"The reported minimum is about {_mult(a / mid)} times our middle estimate" + (", inside the range across our assumptions." if inside else ", above the range across our assumptions."))
     if a <= mid <= b:
         return "Our middle estimate is about the same as the reported figure." if a == b else "Our middle estimate is inside the reported range."
     k = mid / b if mid > b else a / mid
     if k < 1.15:
         return "Our middle estimate is about the same as the reported figure."
     return ((f"Our middle estimate is about {_mult(k)} times the reported figure" if mid > b else f"The reported figure is about {_mult(k)} times our middle estimate")
-            + (", which is inside our likely range." if inside else ", outside our likely range."))
+            + (", which is inside the range across our assumptions." if inside else ", outside the range across our assumptions."))
 
 
 def site_levels(est, ref):

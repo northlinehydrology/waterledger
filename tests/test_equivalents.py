@@ -184,11 +184,11 @@ def test_compare_verdicts():
     assert lv.compare([1, 1], O) == "Our middle estimate is about the same as the reported figure."
     assert lv.compare([0.8, 1.2], O) == "Our middle estimate is inside the reported range."
     assert lv.compare([1.1, 1.1], O) == "Our middle estimate is about the same as the reported figure."
-    assert lv.compare([3, 3], O) == "The reported figure is about 3 times our middle estimate, outside our likely range."
-    assert lv.compare([0.4, 0.4], O) == "Our middle estimate is about 2.5 times the reported figure, outside our likely range."
-    assert lv.compare([0.5, 0.5], O) == "Our middle estimate is about 2 times the reported figure, which is inside our likely range."
+    assert lv.compare([3, 3], O) == "The reported figure is about 3 times our middle estimate, outside the range across our assumptions."
+    assert lv.compare([0.4, 0.4], O) == "Our middle estimate is about 2.5 times the reported figure, outside the range across our assumptions."
+    assert lv.compare([0.5, 0.5], O) == "Our middle estimate is about 2 times the reported figure, which is inside the range across our assumptions."
     assert lv.compare([0.5, 2], O, True) == "Our middle estimate is above the reported minimum."
-    assert lv.compare([1.5, 2], O, True) == "The reported minimum is about 1.5 times our middle estimate, inside our likely range."
+    assert lv.compare([1.5, 2], O, True) == "The reported minimum is about 1.5 times our middle estimate, inside the range across our assumptions."
 
 
 def test_ranked_order_does_not_depend_on_the_input_order():

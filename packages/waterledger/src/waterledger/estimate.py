@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 
 class Range(BaseModel):
-    """A likely range: p10 and p90 bracket 80% of the Monte Carlo runs; p50 is the middle estimate. Full values, not rounded for display."""
+    """The range across assumptions: p10 and p90 bracket 80% of the Monte Carlo runs across the parameter ranges, which are not a probability that the real value falls inside; p50 is the middle estimate. Full values, not rounded for display."""
     model_config = ConfigDict(frozen=True)
     p10: float
     p50: float
@@ -109,7 +109,7 @@ class Equivalents(BaseModel):
 
 
 class BeforeAfterRow(BaseModel):
-    """One row of what changes at a place with the campus: today, after (with its likely range where there is one) and the percent added to today's
+    """One row of what changes at a place with the campus: today, after (with its range across assumptions where there is one) and the percent added to today's
     figure where that means something. `unit` says what the numbers are; a row with no `today` is new to the place."""
     model_config = ConfigDict(frozen=True)
     key: str
