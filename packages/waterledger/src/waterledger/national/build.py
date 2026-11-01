@@ -7,7 +7,7 @@ import json, os, time
 
 from waterledger import states
 
-STAGES = ["places", "supply", "wastewater", "receiving", "climate", "energy", "wateruse", "checks"]
+STAGES = ["places", "supply", "wastewater", "receiving", "cooling", "storms_and_rain", "energy", "wateruse", "checks"]
 # The least share of a state's places each layer must cover; a build below these fails (a source may have broken).
 # climate_division: a county NOAA's table leaves out (Poquoson, Virginia) uses the nearest division's station, so a sliver short
 # of 100% is expected; a larger gap would mean the table or the county codes changed.
@@ -91,7 +91,8 @@ def build(state, out=None, n=200, run_checks=True):
     stage("supply", lambda: {"systems": int(len(supply.water_systems(state))), "places_served": len(supply.systems_by_place(state, pl))})
     stage("wastewater", lambda: {"plants": len(wastewater.plants(state))})
     stage("receiving", lambda: {"huc12": len(receiving.by_huc12(state)), "places_with_watersheds": len(receiving.watersheds_by_place(state, pl))})
-    stage("climate", lambda: {"divisions": len(nc.division_runs(state, n)), "counties_with_storms": len(nc.storms_and_rain(state)[0])})
+    stage("cooling", lambda: {"divisions": len(nc.division_runs(state, n))})
+    stage("storms_and_rain", lambda: {"counties_with_storms": len(nc.storms_and_rain(state)[0])})
     stage("energy", lambda: {"places_with_utilities": len(energy.utilities_by_place(state, pl)), "utilities_with_loads": len(energy.loads(state))})
 
     def water_use():
