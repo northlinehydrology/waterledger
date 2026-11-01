@@ -188,26 +188,26 @@ def test_twdb_report_address_comes_from_the_list():
         wu.twdb_report_url(listing, report=99)
 
 
-@pytest.mark.parametrize("state,region,acre_feet,gpd", [("WI", "North Central", 40.5, 36154.0), ("NY", "Northeast", 29.0, 25889.0), ("WA", "Pacific", 68.4, 61064.2),
-                                                         ("GA", "Southeast", 111.1, 99184.2), ("AZ", "Southwest", 375.7, 335402.0), ("TN", "Transition", 38.5, 34371.6),
-                                                         ("CO", "Upper West/Mountain", 163.2, 145711.0)])
+@pytest.mark.parametrize("state,region,acre_feet,gpd", [("WI", "North Central", 40.5, 36156.07), ("NY", "Northeast", 29.0, 25889.53), ("WA", "Pacific", 68.4, 61063.58),
+                                                         ("GA", "Southeast", 111.1, 99183.69), ("AZ", "Southwest", 375.7, 335403.34), ("TN", "Transition", 38.5, 34370.58),
+                                                         ("CO", "Upper West/Mountain", 163.2, 145695.57)])
 def test_golf_regional_default(state, region, acre_feet, gpd):
     """acre-feet x 325,851 gallons / 365 days, worked by hand."""
-    g = wateruse.golf(state)
+    g = wu.golf(state)
     assert g["gpd"] == pytest.approx(gpd, abs=1) and g["basis"] == "regional survey" and region in g["note"] and str(acre_feet) in g["note"]
 
 
 def test_golf_states_with_their_own_row_keep_it():
-    assert wateruse.golf("OH")["gpd"] == 33300 and wateruse.golf("OH")["basis"] == "state reports"
-    assert wateruse.golf("VA")["gpd"] == 34400 and wateruse.golf("VA")["basis"] == "regional survey"        # VA's row is the same survey's Transition median
-    assert wateruse.golf("TX")["by_region"]["4101"] == 335400
+    assert wu.golf("OH")["gpd"] == 33300 and wu.golf("OH")["basis"] == "state reports"
+    assert wu.golf("VA")["gpd"] == 34400 and wu.golf("VA")["basis"] == "regional survey"        # VA's row is the same survey's Transition median
+    assert wu.golf("TX")["by_region"]["4101"] == 335400
 
 
 def test_golf_outside_the_survey_map_is_the_national_median():
-    g = wateruse.golf("HI")
+    g = wu.golf("HI")
     assert g["gpd"] == pytest.approx(66.3 * 325851 / 365) and "country" in g["note"]
 
 
 def test_every_state_has_a_golf_figure():
     from waterledger.states import FIPS
-    assert all(wateruse.golf(s)["gpd"] > 0 and wateruse.golf(s)["note"] for s in FIPS.values())
+    assert all(wu.golf(s)["gpd"] > 0 and wu.golf(s)["note"] for s in FIPS.values())
