@@ -57,3 +57,17 @@ def test_a_published_snapshot_is_refused(tmp_path):
 def test_a_failed_check_is_not_taken_for_absent(tmp_path):
     code, log = _run(tmp_path, MANIFEST="500")
     assert code != 0 and "cp --recursive" not in log
+
+
+def test_first_snapshot_of_a_state_has_no_old_pointer(tmp_path):
+    code, log = _run(tmp_path, LATEST="404")
+    assert code == 0 and "cp latest.json s3://" in log
+
+
+def test_a_failed_read_of_the_pointer_stops_before_anything_is_written(tmp_path):
+    for env in ({"LATEST": "500"}, {"LATEST_CP": "fail"}):
+        (tmp_path / "t").mkdir(exist_ok=True)
+        d = tmp_path / "t" / next(iter(env))
+        d.mkdir()
+        code, log = _run(d, **env)
+        assert code != 0 and "cp --recursive" not in log and "cp latest.json s3://" not in log, env
