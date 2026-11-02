@@ -1,9 +1,9 @@
 {
- "model_version": "1.6",
- "code_commit": "f3738a26c6a6260b9863c4e3e05d7223ab41a75c",
- "numpy": "2.5.4",
+ "model_version": "1.7",
+ "code_commit": "43263e299d2b8f1b6bc865104c8c3e4fa8b0c30c",
+ "numpy": "2.4.6",
  "seed": 20261030,
- "weather": "ERA5 hourly 2 m temperature and relative humidity via the Open-Meteo archive (CC BY 4.0), 42.88 N 85.52 W (West Michigan), 2023-2024",
+ "weather": "Open-Meteo archive, best match (ERA5, ERA5-Land and, from 2017, IFS HRES), hourly 2 m temperature and relative humidity (CC BY 4.0), 42.88 N 85.52 W (West Michigan), 2023-2024",
  "hours": 17544,
  "n_base_cooling": 8192,
  "n_base_noncooling": 32768,
@@ -16,41 +16,41 @@
    0.5,
    0.8
   ],
+  "load_factor": [
+   0.88,
+   0.94
+  ],
   "er_adj": [
    -0.1,
    0.05
   ],
   "coc": [
    3.0,
-   7.0
+   6.0
   ],
   "range_f": [
-   7.0,
-   15.0
+   7.2,
+   10.8
   ],
   "drift": [
-   5e-06,
+   5e-05,
    0.0002
   ],
   "fill_gal_per_mw": [
    2000.0,
    12000.0
   ],
-  "assist_on": [
-   20.0,
-   30.0
+  "switch_margin": [
+   -2.0,
+   2.0
   ],
   "assist_eff": [
    0.7,
    0.8
   ],
-  "hybrid_on": [
-   21.0,
-   28.0
-  ],
-  "hybrid_full": [
-   30.0,
-   33.0
+  "hybrid_full_offset": [
+   -1.5,
+   1.5
   ],
   "topup": [
    0.01,
@@ -199,7 +199,7 @@
    0.15
   ]
  },
- "runtime_s": 12919.7,
+ "runtime_s": 21170.0,
  "quick": false,
  "warnings": []
 }

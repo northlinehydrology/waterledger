@@ -1,10 +1,25 @@
 # Global sensitivity analysis of the data center water model
 
-The script runs on model 1.7: its peak day is at average load over the load factor, with the upper case, every computer at capacity, as its own output. The CSVs and tables below are still model 1.6 until the script is rerun at release.
+The CSVs and `run_info.json` here are the model 1.7 run. Tables for earlier models are kept below for comparison.
+
+## Model 1.7 (Nov 2, 2026): peak day at average load, upper case its own output
+
+39 cooling parameters, N = 8192, West Michigan weather, 2023-2024, from the 3.9.0 code (`code_commit` in `run_info.json`). The peak day is at average load over the load factor; every computer at capacity is its own output, so the water drivers of the two cases can be read apart.
+
+Total-order indices (ST), largest first:
+
+| Design | Water taken, average day | Water taken, 1-in-10 peak day | Water taken, peak day at full capacity | Annual PUE | Hottest-hour PUE |
+|---|---|---|---|---|---|
+| Closed loop | loop volume 0.53, top-up share 0.47, humidifier share 0.04 | humidifier share 0.62, outside air flow 0.50, loop volume 0.00 | humidifier share 0.62, outside air flow 0.50, loop volume 0.00 | UPS 0.66, liquid share 0.17, supply air 0.05 | liquid share 0.40, UPS 0.34, liquid water temperature 0.25 |
+| Assist | liquid share 0.48, liquid water temperature 0.16, supply air 0.15 | liquid share 0.41, liquid water temperature 0.14, supply air 0.12 | liquid share 0.45, liquid water temperature 0.16, supply air 0.13 | UPS 0.71, liquid share 0.11, supply air 0.06 | liquid share 0.50, UPS 0.30, supply air 0.08 |
+| Hybrid | liquid share 0.49, liquid water temperature 0.17, supply air 0.14 | liquid share 0.42, utilization 0.19, liquid water temperature 0.17 | liquid share 0.50, liquid water temperature 0.20, supply air 0.13 | UPS 0.69, liquid share 0.13, supply air 0.06 | liquid share 0.44, UPS 0.37, supply air 0.08 |
+| Towers | utilization 0.69, cycles 0.15, evaporative ratio 0.13 | utilization 0.67, cycles 0.15, evaporative ratio 0.10 | cycles 0.47, evaporative ratio 0.31, UPS 0.09 | UPS 0.77, liquid share 0.09, distribution loss 0.03 | liquid share 0.42, UPS 0.37, supply air 0.08 |
+
+Against model 1.6, the liquid share replaces the switch point as the first driver of assist and hybrid water, and is the largest structural assumption those two designs rest on. At full capacity, utilization no longer varies, so cycles and the evaporative ratio lead for towers.
 
 ## Model 1.6 (Nov 1, 2026): tower fans, losses to room air, middle estimate
 
-The CSVs and `run_info.json` here are the model 1.6 run: 39 cooling parameters, N = 8192, West Michigan weather, 2023-2024. The cooling code is that of 3.8.1; `code_commit` is where the repository stood when the run finished, and only version numbers changed in `waterledger-models` while it ran. The model 1.5 table below is kept for comparison.
+The model 1.6 run: 39 cooling parameters, N = 8192, West Michigan weather, 2023-2024. The cooling code is that of 3.8.1; `code_commit` is where the repository stood when the run finished, and only version numbers changed in `waterledger-models` while it ran.
 
 Total-order indices (ST), largest first:
 
