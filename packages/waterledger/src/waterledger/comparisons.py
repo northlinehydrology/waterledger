@@ -247,7 +247,7 @@ def sewer_shares(water, plant):
 
 def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, imp, mw, power_mw=None, county_public=None, plant=None, lake=False, reuse=False, salt_events=None, state=None):
     """What changes at a place with the campus, as numbers; a display words them. Water, MGD: `w_avg` and `w_peak` taken, `used` evaporated, `sewer` to the sewer, each a
-    Range. Runoff and loads from runoff.loads, in two rows each: "mud", "p" and "n" with typical wet ponds, "mud_no_controls", "p_no_controls" and "n_no_controls" with none. Rows for water and wastewater follow the source and destination."""
+    Range. Runoff from runoff.loads. Sediment, phosphorus and nitrogen are in site_loads, not here: they cover runoff from the finished site alone, not the whole change. Rows for water and wastewater follow the source and destination."""
     Row, rows = BeforeAfterRow, []
     today = county_public if src == "muni" else None
     rows.append(Row(key="water", today=today, after=w_avg.p50, after_low=w_avg.p10, after_high=w_avg.p90, percent=percent_of(w_avg.p50, today) if today else None, unit="MGD"))
@@ -257,24 +257,37 @@ def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, 
             rows.append(Row(key="sewer", today=plant.flow_mgd, after=sewer.p50, after_low=sewer.p10, after_high=sewer.p90, percent=percent_of(sewer.p50, plant.flow_mgd) if plant.flow_mgd else None, unit="MGD"))
         elif dest in ("water", "septic") and not (lake and dest == "water"):
             rows.append(Row(key="wastewater", after=sewer.p50, after_low=sewer.p10, after_high=sewer.p90, unit="MGD"))
-    L, C, S, F = rq.loads(acres, rain_in, before, imp, state=state), rq.construction(acres), rq.salt(acres, imp, salt_events) if salt_events else None, rq.fuel(mw)
+    L, S, F = rq.loads(acres, rain_in, before, imp, state=state), rq.salt(acres, imp, salt_events) if salt_events else None, rq.fuel(mw)
     rows.append(Row(key="runoff", today=L["runoff_gal"]["now"][1], after=L["runoff_gal"]["after"][1], unit="gallons a year"))
-    for key, load, unit in (("mud", "tss_t", "tons a year"), ("p", "tp_lb", "pounds a year"), ("n", "tn_lb", "pounds a year")):
-        now = L[load]["now"]
-        for suffix, case, controls in (("", "pond", "typical_wet_pond"), ("_no_controls", "after", "none")):
-            a = L[load][case]
-            rows.append(Row(key=key + suffix, today=now[1], today_low=now[0], today_high=now[2], after=a[1], after_low=a[0], after_high=a[2], controls=controls, unit=unit))
-        if key == "mud":
-            G = rq.soil_moved(acres)
-            B = rq.construction_with_basin(acres)
-            rows.append(Row(key="build", today=now[1], after=C[1], after_low=C[0], after_high=C[2], controls="none", unit="tons a year"))    # a delivered yield, as today's on soil
-            rows.append(Row(key="build_basin", today=now[1], after=B[1], after_low=B[0], after_high=B[2], controls="sediment_basin", unit="tons a year"))
-            rows.append(Row(key="soil_moved", after=G[1], after_low=G[0], after_high=G[2], unit="tons a year"))              # gross erosion, not comparable with today
     if S and S["salt_t"][1] > 0:      # no events known, or no salt season: no row
         rows.append(Row(key="salt", after=S["salt_t"][1], after_low=S["salt_t"][0], after_high=S["salt_t"][2], unit="tons a winter"))
     rows.append(Row(key="fuel", after=F["gal"][1], after_low=F["gal"][0], after_high=F["gal"][2], unit="gallons"))
     if power_mw:
         rows.append(Row(key="power", after=power_mw.p50, after_low=power_mw.p10, after_high=power_mw.p90, unit="MW"))
+    return rows
+
+
+def site_loads(acres, rain_in, before, imp, state=None, cooling_mgd=None):
+    """Sediment, phosphorus and nitrogen in runoff from the finished site, against the land today: only the change in runoff, and general values a site study can move a lot. "mud", "p" and "n" with typical
+    wet ponds, "mud_no_controls", "p_no_controls" and "n_no_controls" with none. Then what those leave out, as far as it has a number: the construction years ("build", "build_basin", "soil_moved",
+    "build_p" with basins, "build_p_no_controls"), and phosphorus in `cooling_mgd`, wastewater from evaporative cooling ("cooling_p"). Stream bank erosion has no number."""
+    Row, rows, L, C, B = BeforeAfterRow, [], rq.loads(acres, rain_in, before, imp, state=state), rq.construction(acres), rq.construction_with_basin(acres)
+    for key, load, unit in (("mud", "tss_t", "tons a year"), ("p", "tp_lb", "pounds a year"), ("n", "tn_lb", "pounds a year")):
+        now = L[load]["now"]
+        for suffix, case, controls in (("", "pond", "typical_wet_pond"), ("_no_controls", "after", "none")):
+            a = L[load][case]
+            rows.append(Row(key=key + suffix, today=now[1], today_low=now[0], today_high=now[2], after=a[1], after_low=a[0], after_high=a[2], controls=controls, unit=unit))
+    t = L["tss_t"]["now"]
+    rows.append(Row(key="build", today=t[1], after=C[1], after_low=C[0], after_high=C[2], controls="none", unit="tons a year"))    # a delivered yield, as today's on soil
+    rows.append(Row(key="build_basin", today=t[1], after=B[1], after_low=B[0], after_high=B[2], controls="sediment_basin", unit="tons a year"))
+    G = rq.soil_moved(acres)
+    rows.append(Row(key="soil_moved", after=G[1], after_low=G[0], after_high=G[2], unit="tons a year"))              # gross erosion, not comparable with today
+    for key, basin, controls in (("build_p", True, "sediment_basin"), ("build_p_no_controls", False, "none")):
+        P = rq.construction_p(acres, basin)
+        rows.append(Row(key=key, after=P[1], after_low=P[0], after_high=P[2], controls=controls, unit="pounds a year"))
+    if cooling_mgd:
+        P = rq.cooling_p(cooling_mgd)["lb_yr"]
+        rows.append(Row(key="cooling_p", after=P[1], after_low=P[0], after_high=P[2], unit="pounds a year"))
     return rows
 
 
@@ -287,6 +300,16 @@ def site_before_after(est, ref):
     rain = (ctx.climate.rain_in if ctx.climate else None) or ref.get("rain_median_in")
     return before_after(s.source, s.wastewater, w.withdrawn.avg, w.withdrawn.peak_day, w.consumed.avg, w.to_sewer, s.acres or acres, rain, s.land_before or land, s.impervious,
                         s.facility.it_mw, est.electricity.avg_mw if est.electricity else None, county_public_mgd(ctx.supply.county_use_mgd), plants[0] if plants else None, w.lake_source, w.reuse, ref.get("salt_events"), s.place.state)
+
+
+def site_runoff_loads(est, ref):
+    """site_loads for an estimate. Cooling wastewater is what goes back from evaporative cooling; closed loop and lake-source send almost none of it."""
+    from waterledger.scenario import land_default
+    s, w = est.site, est.water
+    ctx, (acres, land) = s.place.context(), land_default(s.place.incorporated)
+    rain = (ctx.climate.rain_in if ctx.climate else None) or ref.get("rain_median_in")
+    evaporative = s.facility.cooling != "dry" and not w.lake_source and not w.reuse
+    return site_loads(s.acres or acres, rain, s.land_before or land, s.impervious, s.place.state, w.to_sewer.p50 if evaporative else None)
 
 
 def comparisons(est, ref=None):

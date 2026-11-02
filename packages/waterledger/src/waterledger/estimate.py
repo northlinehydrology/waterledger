@@ -189,6 +189,7 @@ class Estimate(BaseModel):
     comparisons: list[Comparison] = []
     equivalents: Equivalents | None = None
     before_after: list[BeforeAfterRow] = []
+    site_loads: list[BeforeAfterRow] = []
     household_wells: WellsSummary | None = None
     levels: dict[str, Any] = {}    # what a reader sees, by card (waterledger.levels): words, numbers and flags. Never changes an estimate
     not_covered: dict[str, str] = {}   # what isn't covered yet for this state, in words: labeled, not silently empty

@@ -67,7 +67,7 @@ class Site(BaseModel):
         power = POWER_ALIASES.get(self.power, self.power) or ref["power"]
         if power not in ref["power_options"]:
             raise ValueError(f"power must be one of {sorted(ref['power_options'])}, not {power!r}")
-        est = est.model_copy(update={"site": est.site.model_copy(update={"power": power}), "comparisons": comparisons.comparisons(est, ref), "equivalents": comparisons.equivalents(est, ref), "before_after": comparisons.site_before_after(est, ref), "household_wells": comparisons.wells_summary(self.place.context().supply.household_wells),
+        est = est.model_copy(update={"site": est.site.model_copy(update={"power": power}), "comparisons": comparisons.comparisons(est, ref), "equivalents": comparisons.equivalents(est, ref), "before_after": comparisons.site_before_after(est, ref), "site_loads": comparisons.site_runoff_loads(est, ref), "household_wells": comparisons.wells_summary(self.place.context().supply.household_wells),
                                       "power_plants": _PowerPlants(comparisons.plant_waters(est.electricity, ref["power_options"])) if est.electricity else {}, "not_covered": ref.get("not_covered", {})})
         return est.model_copy(update={"levels": levels.site_levels(est, ref)})
 

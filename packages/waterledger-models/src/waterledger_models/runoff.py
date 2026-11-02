@@ -108,6 +108,8 @@ PARAMS = {
     # Construction, a screening estimate; "permits" is Michigan's, for its pages. t_per_ac_yr: gross erosion (EPA MM8 Table 8.1, Wisconsin's 30-200). delivery [A]: below a field's, because a site isn't all bare all year, and set so the middle, 20 t/ac, sits among yields
     # measured leaving active sites (Helsel 1985, 15-25; Lee and Ziegler 2010, 15-19 with controls; Franklin County, Florida, 30, in Table 8.1). basin_removal: EPA MM8 Table 8.5, sediment basins average 70%, low 42%; perforated risers' 94% as the high end.
     "construction": {"t_per_ac_yr": [30, 100, 200], "delivery": [0.1, 0.2, 0.33], "basin_removal": [0.42, 0.70, 0.94], "years": [1, 2, 3], "sources": ["epa_mm8", "epa_fact26", "helsel1985", "lee_ziegler2010"],
+                     # Phosphorus in the sediment [A], a share by weight: 0.08% is what CEAP implies for sediment leaving North Central fields (1.49 lb on 0.96 tons an acre), a soil already fertilized and enriched by sorting; half that low. An example for the pages, not a measured load
+                     "soil_p": [0.0004, 0.0006, 0.0008],
                      "permits": "Part 91 soil erosion permit for 1 acre or more, or within 500 ft of a lake or stream; construction storm water permit-by-rule (R 323.2190) with a Notice of Coverage above 5 acres and weekly inspection by a certified operator"},
     # Road salt on parking and drives: lb per 1,000 sq ft per event (MPCA targets; practice is often higher) x events per winter [A], in every state: the median winter's days with
     # precipitation at 1 C or below x 0.6, +/-50%. The 0.6 [A]: a salting event is taken to be a day with measurable snow, and 0.6 is NOAA's 1991-2020 normal days with 0.1 in or more of snow over
@@ -203,6 +205,18 @@ def construction_with_basin(acres_disturbed):
     """The same with sediment basins taking the whole site's runoff [A]; the low end pairs with the most removal."""
     r = PARAMS["construction"]["basin_removal"]
     return [x * (1 - r[2 - i]) for i, x in enumerate(construction(acres_disturbed))]
+
+
+def construction_p(acres_disturbed, basin=True):
+    """Phosphorus in the sediment leaving a year of construction, lb, [lo, mid, hi], with sediment basins or without. A rough figure [A]."""
+    sed = construction_with_basin(acres_disturbed) if basin else construction(acres_disturbed)
+    return [x * 2000 * s for x, s in zip(sed, PARAMS["construction"]["soil_p"])]
+
+
+def cooling_p(flow_mgd):
+    """Phosphorus a year in wastewater from cooling, lb, by inhibitor dose [lo, mid, hi], and what a plant at the limit in PARAMS would pass."""
+    B = PARAMS["blowdown"]
+    return {"lb_yr": [p * flow_mgd * 8.34 * 365 for p in B["p_mg_l"]], "at_plant_limit_lb_yr": B["plant_p_limit"] * flow_mgd * 8.34 * 365}
 
 
 def soil_moved(acres_disturbed):

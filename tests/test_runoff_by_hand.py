@@ -84,10 +84,12 @@ def test_infiltration_keeps_runoff_reduction_and_removal_apart_and_its_nitrogen_
 
 
 def test_both_stormwater_cases_are_in_the_rows():
-    from waterledger.comparisons import before_after
-    from waterledger.estimate import Range
-    W = Range(p10=1, p50=1, p90=1)
-    rows = {r.key: r for r in before_after("wells", "water", W, W, W, W, 200, 36, "farm", 0.5, 300)}
+    from waterledger.comparisons import site_loads
+    rows = {r.key: r for r in site_loads(200, 36, "farm", 0.5, cooling_mgd=0.5)}
+    # phosphorus left out of the runoff: 20 t/ac x 200 ac x (1 - 0.70) x 2,000 lb x 0.06%; 0.5 MGD x 3 mg/L x 8.34 x 365
+    assert rows["build_p"].after == pytest.approx(1440, abs=1) and rows["build_p_no_controls"].after == pytest.approx(4800, abs=1)
+    assert rows["cooling_p"].after == pytest.approx(4566, abs=1) and rows["cooling_p"].after_low == 0
+    assert "cooling_p" not in {r.key for r in site_loads(200, 36, "farm", 0.5)}
     L = runoff.loads(200, 36, "farm", 0.5)
     assert rows["mud"].controls == "typical_wet_pond" and rows["mud"].after == pytest.approx(L["tss_t"]["pond"][1])
     assert rows["mud_no_controls"].controls == "none" and rows["mud_no_controls"].after == pytest.approx(L["tss_t"]["after"][1])

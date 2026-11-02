@@ -1057,3 +1057,9 @@ Controls. Wet ponds: CWP 2007 Table 2, TP 0.39, 0.52, 0.76, TN 0.16, 0.31, 0.41 
 Comparison across covers. Field edge, outfall and basin are different scales; below-ground nitrogen on farmland includes deep percolation, some of which never reaches a stream. Against a campus, Lansing's farm nitrogen is 1,145 lb surface and 6,060 in all, on either side of the campus's 2,370, so the package keeps surface apart (`now_surface`) and the detailed page gives both.
 
 Open. Phosphorus carried by construction sediment isn't counted: 4,000 tons at 0.04-0.08% is about 3,200-6,400 lb a year, and it needs a sourced soil fraction. CEAP's Rv implied in the Great Lakes (about 0.15) against farm 0.20 [A], which drives the runoff row only now.
+
+## Nov 2, 2026: pollution out of the before and after
+
+Sediment, phosphorus and nitrogen leave `before_after` for `est.site_loads`. They cover the change in runoff from the finished site, which is not the change the project makes, and a "less" beside water and electricity reads as "less pollution". On farmland, with working ponds, runoff nutrients probably do fall: fertilizer stops. But construction, cooling water and stream bank erosion can outweigh that, and a site study can move all of it.
+
+`site_loads` also has what can be numbered. Phosphorus in construction sediment: `construction_p`, sediment x 0.04, 0.06, 0.08% by weight [A]. The high end is what CEAP implies for sediment leaving North Central fields (1.49 lb on 0.96 tons an acre), fertilized and enriched by sorting, so probably high for graded subsoil. USGS's soil surveys (Shacklette and Boerngen 1984; Smith et al. 2014) should replace the low end; neither could be read yet. Phosphorus in cooling wastewater: `cooling_p`, flow x 0, 3, 6.5 mg/L of inhibitor phosphorus, and what a plant at 1 mg/L passes. Stream bank erosion has no number: one simple figure would be worse than saying it isn't counted.
