@@ -21,7 +21,7 @@ def _fetch(url, path):
 
 
 def hourly_weather(lat, lon, start, end, name):
-    """Hourly 2 m air temperature (C) and relative humidity (%) from the Open-Meteo archive (ERA5 reanalysis), in local standard time at the point, for any place.
+    """Hourly 2 m air temperature (C) and relative humidity (%) from the Open-Meteo archive, its best match (ERA5, ERA5-Land and, from 2017, IFS HRES; a reanalysis-based record, not ERA5 alone), in local standard time at the point, for any place.
 
     Returns (times, temp_c, rh_pct) as lists. Reanalysis smooths local extremes slightly; a full engagement
     cross-checks against NOAA ISD hourly observations at the nearest airport.

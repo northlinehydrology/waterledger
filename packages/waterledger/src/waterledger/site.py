@@ -29,7 +29,7 @@ class _PowerPlants(dict):
 
 
 def local_weather(est):
-    """The estimate with its water and electricity from the model run at the place's own ERA5 grid cell, the way a state's builder runs a region."""
+    """The estimate with its water and electricity from the model run at the place's own point on Open-Meteo's best match, the way a state's builder runs a region."""
     from waterledger_data.climate import hourly_weather
     from waterledger_models.datacenter import cooling
     p, f = est.site.place, est.site.facility
@@ -55,7 +55,7 @@ class Site(BaseModel):
 
     def estimate(self, weather="region") -> Estimate:
         """Water taken, evaporated or lost, and returned, as the state's provider computes it (same numbers as waterledger.org). weather="local" runs the
-        model at the place instead of using its region's stored results: ERA5 reanalysis, the grid cell nearest the place, an 8 MB download once and about 30 seconds
+        model at the place instead of using its region's stored results: Open-Meteo's best match (ERA5, ERA5-Land and, from 2017, IFS HRES), the grid point nearest the place, an 8 MB download once and about 30 seconds
         each run. It is not measured on-site weather. Outside Michigan the stored results use NOAA stations, so
         "local" also changes the kind of weather data, and the brief reports stations giving hybrid and assist estimates 4-50% higher. Not for lake-source cooling."""
         if weather not in ("region", "local"):

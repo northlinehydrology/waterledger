@@ -9,7 +9,7 @@ EGLE_CATS = {"Public water systems": "public_supply", "Industry": "industrial", 
 
 # Median winter's days with precipitation at 1 C or below, by region, from NOAA ISD-Lite 2005-2024 (national.climate._median_cold_precip_days), the same method as every other state: Ann Arbor 725374-94889,
 # Kalamazoo 726357-94815, Grand Rapids 726350-94860, Lansing 725390-14836, Saginaw 726379-14845, Traverse City 726387-14850, Alpena 726390-94849, and Hancock 727440-14858 for the Upper Peninsula:
-# the regions' weather itself is ERA5, and Marquette's airports report no precipitation in ISD-Lite.
+# the regions' weather itself is Open-Meteo's best match, and Marquette's airports report no precipitation in ISD-Lite.
 SALT_DAYS = {"southeast": 59, "southwest": 64, "west": 72, "central": 71, "thumb": 64, "north": 89, "northeast": 88, "up": 119}
 
 

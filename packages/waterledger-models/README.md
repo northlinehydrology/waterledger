@@ -18,7 +18,7 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
 - `datacenter.stac`: ensemble results as zarr with a STAC catalog (`[stac]`).
 - `hydrology`: screening hydrology: SCS curve-number runoff, Theis drawdown and Glover stream depletion.
 - `runoff`: runoff, sediment, nutrients, road salt and fuel from a developed site.
-- `weather`: hourly ERA5 weather from the Open-Meteo archive.
+- `weather`: hourly weather from the Open-Meteo archive, its best match (ERA5, ERA5-Land and, from 2017, IFS HRES).
 
 `MODEL_VERSION` is Water Ledger's model version (1.6), which changes when the numbers do; the package version (semver)
 changes with the code. They are independent.

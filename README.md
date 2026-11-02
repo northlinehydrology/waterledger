@@ -54,7 +54,7 @@ est.water.condensate.avg         # water a coil takes out of outside air; withdr
 est.electricity.avg_mw           # average power, MW, from the hourly heat balance at this place's weather
 est.electricity.peak_mw          # the 1-in-10-year hottest hour, every computer at capacity
 est.site.source, est.site.wastewater     # the choices, with defaults filled in
-site.estimate(weather="local")   # the model run at the place's own ERA5 grid cell instead of its region's results (about 30 seconds)
+site.estimate(weather="local")   # the model run at the place's own point on Open-Meteo's best match instead of its region's results (about 30 seconds)
 est.comparisons                  # against what is already there: the water system's connections, the county's water, the sewer plant and its spare room, the utilities and the state; a very small water system gets no percent
 est.before_after                 # what changes at the place, today and after, as numbers; loads in two rows, typical wet ponds and no controls
 est.levels                       # the levels a reader sees on waterledger.org, by card; waterledger.levels has the bands and levels.compare the verdict against a reported figure
@@ -80,7 +80,7 @@ They are validated, round-trip through JSON, and are described in
 
 | State | Places | Weather | Methods |
 |---|---|---|---|
-| Michigan | 1,541 cities and townships | ERA5 at eight regions | [waterledger.org/methods/mi](https://waterledger.org/methods/mi/), [brief](docs/methods/mi.pdf) |
+| Michigan | 1,541 cities and townships | Open-Meteo best match at eight regions | [waterledger.org/methods/mi](https://waterledger.org/methods/mi/), [brief](docs/methods/mi.pdf) |
 | Ohio | 2,318 cities, villages, townships and counties | NOAA stations, 10 climate divisions | [waterledger.org/methods/oh](https://waterledger.org/methods/oh/), [brief](docs/methods/oh.pdf) |
 | Virginia | 322 cities, towns and counties | NOAA stations, 6 climate divisions | [waterledger.org/methods/va](https://waterledger.org/methods/va/), [brief](docs/methods/va.pdf) |
 | Texas | 1,481 cities, towns and counties | NOAA stations, 10 climate divisions | [waterledger.org/methods/tx](https://waterledger.org/methods/tx/), [brief](docs/methods/tx.pdf) |
@@ -110,7 +110,7 @@ first time, resumable):
 from waterledger_models.datacenter import run_ensemble, summarize
 from waterledger_models.weather import fetch_open_meteo
 
-w = fetch_open_meteo(42.88, -85.52, cache=".cache/grand_rapids.json")     # 30 years of hourly ERA5 weather
+w = fetch_open_meteo(42.88, -85.52, cache=".cache/grand_rapids.json")     # 30 years of hourly weather, best match
 ds = run_ensemble(w.time.values, w.air_temperature.values, w.relative_humidity.values, mw=300, n=400)
 s = summarize(ds)                                    # (design, stat, quantile), staff water included
 s["withdrawn"].sel(design="towers", stat="peak_1in10")      # million gallons on a 1-in-10-year peak day

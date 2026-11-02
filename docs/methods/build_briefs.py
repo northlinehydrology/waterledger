@@ -100,7 +100,7 @@ def brief(state):
              f"{len(plants):,} plants" + (f"; {pct(cov.get('sewer_plant_within_40km'))} of places have one within 40 km" if cov else "")],
             ["Receiving waters", f"USGS Watershed Boundary Dataset; EPA ATTAINS ({agency}, {att.get('cycle', '')} report)",
              f"{len(rec['downstream']):,} watersheds with a downstream path; {len(rec['reaches']):,} watersheds on those paths"],
-            ["Climate", "ERA5 reanalysis (Open-Meteo), 1995-2024, at eight Michigan regions; Atlas 14 design storms; Climate at a Glance rainfall" if mi else
+            ["Climate", "Open-Meteo best match (ERA5, ERA5-Land and, from 2017, IFS HRES), 1995-2024, at eight Michigan regions; Atlas 14 design storms; Climate at a Glance rainfall" if mi else
              "NOAA ISD station records, 1995-2024, one station per NOAA climate division; Atlas 14 design storms; Climate at a Glance rainfall",
              f"{len(divs)} {'regions' if mi else 'climate divisions'}"],
             ["Energy", "MPSC territories; EIA-861 sales and peaks" if mi else
@@ -110,7 +110,7 @@ def brief(state):
 
     S += [Paragraph("Overall method (all states)", H2),
           Paragraph("<b>Weather.</b> Hourly NOAA station records, 1995-2024, one station per NOAA climate division. Hybrid and assist "
-                    "estimates depend on the hottest hours and so on the weather source: in tests against ERA5 reanalysis at eight sites, "
+                    "estimates depend on the hottest hours and so on the weather source: in tests against Open-Meteo best match at eight sites, "
                     "station records gave cooling tower estimates within about 1%, and hybrid and assist estimates 4-50% higher (2-5 times "
                     "higher at the coolest sites).", BODY),
           Paragraph("<b>Cooling water.</b> Hourly temperature and humidity drive the heat rejected by the campus under four "
@@ -140,8 +140,8 @@ def brief(state):
 
     S += [Paragraph(f"What is specific to {name}", H2)]
     if mi:
-        S += [Paragraph("<b>Weather.</b> ERA5 reanalysis at eight Michigan climate regions instead of station records. Michigan stays on "
-                        "ERA5 until a reviewed model update.", BODY),
+        S += [Paragraph("<b>Weather.</b> Open-Meteo best match, a reanalysis-based record, at eight Michigan climate regions instead of station records. Michigan stays on "
+                        "it until a reviewed model update.", BODY),
               Paragraph("<b>Places and electricity.</b> Cities and townships only (county subdivisions); utility territories from the "
                         "Michigan Public Service Commission.", BODY),
               Paragraph("<b>State layers.</b> EGLE reported water use by county and sector, domestic wells (EGLE Wellogic), designated "

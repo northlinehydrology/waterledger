@@ -114,7 +114,7 @@ def write(out, date=None):
         "packages": {"waterledger": waterledger.__version__, "waterledger-data": waterledger_data.__version__, "waterledger-models": waterledger_models.__version__},
         "sources": {"places": "Census TIGERweb county subdivisions (Michigan's 1,541 cities and townships)", "supply": "EPA CWS service areas, SDWIS",
                     "wastewater": "EPA CWNS 2022, ECHO (with state-permitted plants)", "receiving": "USGS WBD, EPA ATTAINS (Michigan 2026 Integrated Report)",
-                    "climate": "ERA5 (Open-Meteo) at eight Michigan regions, Atlas 14, Climate at a Glance", "energy": "MPSC territories, EIA-861",
+                    "climate": "Open-Meteo best match at eight Michigan regions, Atlas 14, Climate at a Glance", "energy": "MPSC territories, EIA-861",
                     "wateruse": wu_source, "michigan": "Water Ledger Michigan's site files, carried as published"},
         "water_use_years": wu_years, "files": files, "inputs": inputs, "checks": None})
     return folder

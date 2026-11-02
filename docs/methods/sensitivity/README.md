@@ -82,8 +82,8 @@ analysis can be rerun unchanged after a range or the physics is revised. This ru
 Oct 30, 2026: dry coolers with adiabatic pre-cooling, whose water share of the heat is d / (on + rise - T + d), with
 d = `assist_eff` x wet-bulb depression, no drift, and bleed as a share of evaporation.
 
-Weather is the repository's stored test weather: ERA5 hourly 2 m temperature and relative humidity at 42.88 N, 85.52 W
-(West Michigan), 2023-2024, 17,544 hours (Hersbach et al., 2020; via the Open-Meteo archive). Wet-bulb temperature is
+Weather is the repository's stored test weather: hourly 2 m temperature and relative humidity at 42.88 N, 85.52 W
+(West Michigan), 2023-2024, 17,544 hours, from the Open-Meteo archive's best match, which combines ERA5 (Hersbach et al., 2020), ERA5-Land and IFS HRES. Wet-bulb temperature is
 the package's Stull (2011) approximation. Dry-bulb temperature reached 20 °C for 1,896 hours a year, 21 °C for about
 1,600, 27 °C for about 375 and 30 °C for 90, with a maximum of 33.9 °C. The repository holds no hotter climate's hourly weather, so the analysis is
 for West Michigan only.

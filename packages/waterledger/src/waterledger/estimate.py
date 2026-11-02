@@ -191,6 +191,6 @@ class Estimate(BaseModel):
     levels: dict[str, Any] = {}    # what a reader sees, by card (waterledger.levels): words, numbers and flags. Never changes an estimate
     not_covered: dict[str, str] = {}   # what isn't covered yet for this state, in words: labeled, not silently empty
     power_plants: dict[str, PlantWater] = {}    # every power option for the state; site.power says which one the site uses
-    weather: str = "region"     # "region": the stored results for the place's weather region or division; "local": the model run at the place (ERA5)
+    weather: str = "region"     # "region": the stored results for the place's weather region or division; "local": the model run at the place (Open-Meteo best match)
     model_version: str
     data_date: str
