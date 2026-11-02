@@ -57,7 +57,7 @@ RANGES = {
     # customer chooses; US 12,426,214 B1: a controller threshold with a range of embodiments). It is tied to the loop (model 1.7): the setting sits at the dry-bulb where the dry coil can no longer hold loop
     # supply, loop_limit below, give or take this margin in K for operators who go wet early or trim with chillers a while longer [A]. Same for assist and hybrid.
     "switch_margin": (-2.0, 2.0),
-    # Dry coolers with adiabatic pre-cooling (model 1.3; on Michigan's detailed calculator only). Microsoft's 85 °F is for its direct-air evaporative design, a
+    # Dry coolers with adiabatic pre-cooling (model 1.3). Microsoft's 85 °F is for its direct-air evaporative design, a
     # different system, and is not used here. Pad saturation effectiveness: EVAPCO (presented at CTI, Feb 2019, p. 2) measured 72-78% at 400-700 fpm across 10
     # pads, a maker's own test; ASHRAE (2016, ch. 41) gives 70 to over 95% for rigid media.
     "assist_eff": (0.70, 0.80),
@@ -159,10 +159,10 @@ SOURCES = {
     "core": "JLARC 2024 (about 50 full-time workers a building) [A]",
     "per_mw": "Announced campuses: Meta Richland Parish, Meta El Paso, Saline Township, Gilroy",
     "gpcd": "EPA 2002 Table 3-4; Michigan septic design criteria; Gilroy applicant",
-    "used": "Shaffer and Runkle 2007, Table 9",
+    "used": "Shaffer and Runkle 2007, Table 9 (Great Lakes Basin and climatically similar areas), used in every state [A]",
     "maint_base": _STAFF_WATER,
     "maint_per_mw": _STAFF_WATER,
-    "maint_used": "USGS commercial coefficients (Shaffer and Runkle 2007)",
+    "maint_used": "USGS commercial coefficients (Shaffer and Runkle 2007, Great Lakes Basin and climatically similar areas), used in every state [A]",
 }
 
 

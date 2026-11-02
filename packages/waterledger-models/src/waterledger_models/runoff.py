@@ -99,19 +99,19 @@ PARAMS = {
         "standard_sources": ["egle_ms4", "kcdc_rules"],
         "standard": "Treat the first inch of runoff or 90% of runoff-producing storms with at least 80% TSS removal (or 80 mg/L), and hold peak rate and volume to pre-development for storms up to the 2-year, 24-hour event",
     },
-    # Construction, a screening estimate. t_per_ac_yr: gross erosion (EPA MM8 Table 8.1, Wisconsin's 30-200). delivery [A]: below a field's, because a site isn't all bare all year, and set so the middle, 20 t/ac, sits among yields
+    # Construction, a screening estimate; "permits" is Michigan's, for its pages. t_per_ac_yr: gross erosion (EPA MM8 Table 8.1, Wisconsin's 30-200). delivery [A]: below a field's, because a site isn't all bare all year, and set so the middle, 20 t/ac, sits among yields
     # measured leaving active sites (Helsel 1985, 15-25; Lee and Ziegler 2010, 15-19 with controls; Franklin County, Florida, 30, in Table 8.1). basin_removal: EPA MM8 Table 8.5, sediment basins average 70%, low 42%; perforated risers' 94% as the high end.
     "construction": {"t_per_ac_yr": [30, 100, 200], "delivery": [0.1, 0.2, 0.33], "basin_removal": [0.42, 0.70, 0.94], "years": [1, 2, 3], "sources": ["epa_mm8", "epa_fact26", "helsel1985", "lee_ziegler2010"],
                      "permits": "Part 91 soil erosion permit for 1 acre or more, or within 500 ft of a lake or stream; construction storm water permit-by-rule (R 323.2190) with a Notice of Coverage above 5 acres and weekly inspection by a certified operator"},
     # Road salt on parking and drives: lb per 1,000 sq ft per event (MPCA targets; practice is often higher) x events per winter [A], in every state: the median winter's days with
     # precipitation at 1 C or below x 0.6, +/-50%. The 0.6 [A]: a salting event is taken to be a day with measurable snow, and 0.6 is NOAA's 1991-2020 normal days with 0.1 in or more of snow over
-    # those days, median 0.62 at 17 stations in Michigan, Ohio, Virginia and Texas (0.39-0.74), and 0.60 without Michigan's. Under 2 such days a winter there is no salt season to speak of.
+    # those days, median 0.62 at 17 stations in Michigan, Ohio, Virginia and Texas (0.39-0.74), and 0.60 without Michigan's. Under 2 such days a winter there is no salt season to speak of. chronic_mg_l is Michigan's Rule 57, for its pages; no calculation reads it.
     "salt": {"lb_per_ksf": [0.75, 1.5, 3.0], "events_per_day": 0.6, "events_range": 0.5, "min_days": 2, "paved_share": 0.60, "chloride_share": 0.607,
              "chronic_mg_l": 150, "sources": ["mpca_salt", "noaa_normals", "egle_rule57"]},
     # Backup generators: diesel at full load (Cat 3516C, 133.6 gal/h at 2,000 ekW) x hours stored on site [A]
     "fuel": {"gal_per_mwh": 66.8, "hours": [12, 48, 72], "gen_mw_per_it_mw": 1.2, "unit_mw": 2.5, "spcc_gal": 1320,
              "sources": ["cat3516c", "uptime2014", "amazon_mo2026", "wyofile2025", "cfr112"]},
-    # Runoff heat: summer runoff from pavement averages about 25 C (77 F) vs a 68 F (20 C) coldwater limit in June-August
+    # Runoff heat: summer runoff from pavement averages about 25 C (77 F) vs a 68 F (20 C) coldwater limit in June-August, which is Michigan's (R 323.1075), for its pages
     "heat": {"paved_c": 24.9, "forest_c": 21.5, "cold_limit_f": 68, "cold_rise_f": 2, "sources": ["herb2007", "rule75", "stefan2010"]},
     # Cooling-tower blowdown: dissolved solids = makeup x cycles, at the cooling model's cycles (physics.RANGES["coc"], its ends and middle); phosphate inhibitors up to ~6.5 mg/L as P. Makeup's
     # dissolved solids are round figures for lake water and groundwater [A], and real water differs by place, more so outside the Great Lakes. The plant limit of 1 mg/L is Michigan's (Rule 60), for its pages.
