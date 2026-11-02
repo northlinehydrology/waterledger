@@ -1,5 +1,7 @@
 """Runoff worked by hand, with the numbers written out here, not read from the code's constants, so a wrong constant in the code fails.
 A 200-acre site, half of it roofs and paving afterward, in 36 inches of rain a year."""
+from pathlib import Path
+
 import pytest
 
 from waterledger_models import hydrology, runoff
@@ -230,6 +232,15 @@ def test_incorporated_places_count_as_built():
     assert not make("cdp", "place").incorporated and not make("township", "township").incorporated and not make("county", "county").incorporated
     assert not make("town", "township").incorporated       # New England's towns are county subdivisions
     assert make("village").incorporated and not make("charter township").incorporated      # data without a level
+
+
+def test_one_land_default_for_every_state():
+    import waterledger as wl
+    from waterledger.scenario import land_default
+    assert land_default(True) == (50, "built") and land_default(False) == (200, "farm")
+    for name in ("comparisons", "national/provider"):      # no copy of its own, and no test on a kind that leaves out villages and towns
+        src = (Path(wl.__file__).parent / f"{name}.py").read_text()
+        assert "land_default(" in src and "place.kind)" not in src and "50 if city" not in src
 
 
 def test_farmland_sediment_is_a_yield_by_state():

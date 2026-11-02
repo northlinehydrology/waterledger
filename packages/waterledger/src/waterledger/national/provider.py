@@ -218,7 +218,7 @@ def estimate(state, site):
         why = "far" if not reach else "full" if evap and room is not None and sew > room else ""
         dest = ("water" if evap else "septic") if why else "sewer"
     water = water_use(flows(dest))
-    acres, before = sc.land_default(place.kind)
+    acres, before = sc.land_default(place.incorporated)
     resolved = site.model_copy(update={"source": src, "wastewater": dest, "acres": site.acres or acres, "land_before": site.land_before or before})
     power = electricity(sc.electricity(D, d, f.cooling, f.it_mw))
     return Estimate(site=resolved, water=water, electricity=power, model_version=sd.model_version(), data_date=sd.date or datetime.date.today().isoformat())

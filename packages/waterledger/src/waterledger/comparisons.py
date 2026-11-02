@@ -268,12 +268,13 @@ def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, 
 
 
 def site_before_after(est, ref):
-    """before_after for an estimate, with land defaults as the page starts: incorporated places (cities, villages, towns) 50 acres already built, others 200 acres of farmland [A]."""
+    """before_after for an estimate, with the land a site starts on where it names none (scenario.land_default)."""
+    from waterledger.scenario import land_default
     s, w = est.site, est.water
-    ctx, city = s.place.context(), s.place.incorporated
+    ctx, (acres, land) = s.place.context(), land_default(s.place.incorporated)
     plants = ctx.wastewater.plants
     rain = (ctx.climate.rain_in if ctx.climate else None) or ref.get("rain_median_in")
-    return before_after(s.source, s.wastewater, w.withdrawn.avg, w.withdrawn.peak_day, w.consumed.avg, w.to_sewer, s.acres or (50 if city else 200), rain, s.land_before or ("built" if city else "farm"), s.impervious,
+    return before_after(s.source, s.wastewater, w.withdrawn.avg, w.withdrawn.peak_day, w.consumed.avg, w.to_sewer, s.acres or acres, rain, s.land_before or land, s.impervious,
                         s.facility.it_mw, est.electricity.avg_mw if est.electricity else None, county_public_mgd(ctx.supply.county_use_mgd), plants[0] if plants else None, w.lake_source, w.reuse, ref.get("salt_events"), s.place.state)
 
 

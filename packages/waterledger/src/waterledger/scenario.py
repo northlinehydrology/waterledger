@@ -237,9 +237,9 @@ def dest_for(p, cool, sew_mgd):
     return {"dest": ("water" if evap else "septic") if why else "sewer", "q": q, "sys": bool(p["w"]), "room": room, "why": why}
 
 
-def land_default(kind):
-    """(acres, what the land is today) a site starts with [A], in every state: cities a smaller, built-up site; others farmland."""
-    return (50, "built") if kind == "city" else (200, "farm")
+def land_default(incorporated):
+    """(acres, what the land is today) a site starts with [A], in every state: incorporated places (Place.incorporated: cities, villages, towns) a smaller, built-up site; others farmland."""
+    return (50, "built") if incorporated else (200, "farm")
 
 
 def scenario(gid, mw=None, cool="dry", src=None, dest=None, acres=None, before=None, imp=0.5, power="state_mix", h12=0, name=None):
@@ -251,7 +251,7 @@ def scenario(gid, mw=None, cool="dry", src=None, dest=None, acres=None, before=N
     check_lake(p["base"], p.get("gl"), cool, src)
     if not dest:
         dest = dest_for(p, cool, estimate(p, mw, cool, "sewer")["sewer"]["mid"])["dest"]
-    start_acres, start_land = land_default(p["k"])
+    start_acres, start_land = land_default(city)
     before = before or start_land
     acres = acres or start_acres
     return {"place": p, "mw": mw, "cool": cool, "src": src, "dest": dest, "acres": acres, "before": before, "imp": imp, "power": power,
