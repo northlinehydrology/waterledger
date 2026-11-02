@@ -64,7 +64,9 @@ def test_staff_water():
     for k, (lo, hi) in model.STAFF.items():
         v = runs[f"staff_{k}"]
         assert v.shape == (50,) and v.min() >= lo and v.max() <= hi
-    np.testing.assert_array_equal(model.sample_staff(50)["staff_gpcd"], model.sample_staff(200)["staff_gpcd"][:50])
+    np.testing.assert_array_equal(model.sample_staff(50)["staff_gpcd"], model.sample_staff(50)["staff_gpcd"])
+    lo, hi = model.STAFF["gpcd"]
+    assert sorted(np.floor((runs["staff_gpcd"] - lo) / (hi - lo) * 50).astype(int)) == list(range(50))     # one draw in each of the 50 strata
 
 
 def test_designs_order_by_water_use():

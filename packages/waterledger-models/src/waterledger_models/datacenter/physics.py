@@ -430,12 +430,9 @@ def central_parameters():
 
 
 def sample_staff(n=DRAWS, seed=13):
-    """Monte Carlo draws of the staff water parameters on their own stream (run-major, as Water Ledger's
-    staff_runs): {"staff_core", "staff_per_mw", "staff_gpcd", "staff_used": array (n,)}."""
-    lo = np.array([v[0] for v in STAFF.values()])
-    hi = np.array([v[1] for v in STAFF.values()])
-    draws = lo + (hi - lo) * np.random.default_rng(seed).random((n, len(STAFF)))
-    return {k: draws[:, i] for i, k in enumerate(STAFF_PARAMETERS)}
+    """Latin hypercube draws of the staff water parameters on their own stream, as the cooling parameters are drawn:
+    {"staff_core", "staff_per_mw", "staff_gpcd", "staff_used", ...: array (n,)}."""
+    return {f"staff_{k}": v for k, v in latin_hypercube(STAFF, n, seed).items()}
 
 
 def central_staff():

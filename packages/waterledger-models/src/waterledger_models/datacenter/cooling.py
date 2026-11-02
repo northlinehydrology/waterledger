@@ -30,6 +30,7 @@ from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
 
+from waterledger_models.datacenter.physics import sample_staff
 from waterledger_models.datacenter.physics import (ADIABATIC, DRAWS, DESIGNS as _DESIGNS, HFG, KWH_BTU, LB_GAL, OUTSIDE, POWER, RANGES, STAFF, TOPUP, _ramp,  # noqa: F401
                                                    evaporative_ratio, hourly_heat_power, hourly_rates, for_location, hourly_water_with_air, peak_utilization, sample_parameters, wet_bulb)
 
@@ -63,8 +64,8 @@ STAFF_KEYS = ("core", "per_mw", "gpcd", "used", "maint_base", "maint_per_mw", "m
 def staff_runs(n=DRAWS, seed=13):
     """Non-cooling water parameters per run, on their own stream: [core people, people per MW, gal per person a day, share used up,
     maintenance gal a day for the campus, maintenance gal a day per MW, maintenance share lost]."""
-    rng = np.random.default_rng(seed)
-    return [[float(rng.uniform(*STAFF[k])) for k in STAFF_KEYS] for _ in range(n)]
+    d = sample_staff(n, seed)
+    return [[float(d[f"staff_{k}"][i]) for k in STAFF_KEYS] for i in range(n)]
 
 
 def _nc(r, mw):
