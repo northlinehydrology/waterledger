@@ -113,8 +113,9 @@ PARAMS = {
              "sources": ["cat3516c", "uptime2014", "amazon_mo2026", "wyofile2025", "cfr112"]},
     # Runoff heat: summer runoff from pavement averages about 25 C (77 F) vs a 68 F (20 C) coldwater limit in June-August
     "heat": {"paved_c": 24.9, "forest_c": 21.5, "cold_limit_f": 68, "cold_rise_f": 2, "sources": ["herb2007", "rule75", "stefan2010"]},
-    # Cooling-tower blowdown: dissolved solids = makeup x cycles; phosphate inhibitors up to ~6.5 mg/L as P; plant limit 1 mg/L
-    "blowdown": {"makeup_tds": {"lake": 170, "ground": 400}, "cycles": [3, 5, 7], "p_mg_l": [0, 3, 6.5], "plant_p_limit": 1.0,
+    # Cooling-tower blowdown: dissolved solids = makeup x cycles, at the cooling model's cycles (physics.RANGES["coc"], its ends and middle); phosphate inhibitors up to ~6.5 mg/L as P. Makeup's
+    # dissolved solids are round figures for lake water and groundwater [A], and real water differs by place, more so outside the Great Lakes. The plant limit of 1 mg/L is Michigan's (Rule 60), for its pages.
+    "blowdown": {"makeup_tds": {"lake": 170, "ground": 400}, "cycles": [3, 4.5, 6], "p_mg_l": [0, 3, 6.5], "plant_p_limit": 1.0,
                  "sources": ["epa_wsaw", "jea2024", "rule60", "egle_dc_faq"]},
 }
 

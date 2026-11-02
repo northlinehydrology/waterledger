@@ -272,7 +272,13 @@ def test_salt_and_blowdown_mass():
     s = runoff.salt(100, 0.5, [20, 40, 60])
     assert s["chloride_t"][1] / s["salt_t"][1] == pytest.approx(35.45 / 58.44, rel=0.002)
     b = runoff.blowdown(1.0, "lake")
-    assert b["tds_lb_day"][1] == pytest.approx(170 * 5 * 8.34)
+    assert b["tds_lb_day"][1] == pytest.approx(170 * 4.5 * 8.34)
+
+
+def test_blowdown_uses_the_cooling_models_cycles():
+    from waterledger_models.datacenter.physics import RANGES
+    lo, hi = RANGES["coc"]
+    assert runoff.PARAMS["blowdown"]["cycles"] == [lo, (lo + hi) / 2, hi]
 
 
 def test_lake_electricity_is_the_heat_in_the_water():
