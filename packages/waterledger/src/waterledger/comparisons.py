@@ -270,7 +270,7 @@ def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, 
 def site_loads(acres, rain_in, before, imp, state=None, cooling_mgd=None):
     """Sediment, phosphorus and nitrogen in runoff from the finished site, against the land today: only the change in runoff, and general values a site study can move a lot. "mud", "p" and "n" with typical
     wet ponds, "mud_no_controls", "p_no_controls" and "n_no_controls" with none. Then what those leave out, as far as it has a number: the construction years ("build", "build_basin", "soil_moved",
-    "build_p" with basins, "build_p_no_controls"), and phosphorus in `cooling_mgd`, wastewater from evaporative cooling ("cooling_p"). Stream bank erosion has no number."""
+    "build_p" with basins, "build_p_no_controls"), and phosphorus in `cooling_mgd`, wastewater from cooling towers ("cooling_p"). Stream bank erosion has no number."""
     Row, rows, L, C, B = BeforeAfterRow, [], rq.loads(acres, rain_in, before, imp, state=state), rq.construction(acres), rq.construction_with_basin(acres)
     for key, load, unit in (("mud", "tss_t", "tons a year"), ("p", "tp_lb", "pounds a year"), ("n", "tn_lb", "pounds a year")):
         now = L[load]["now"]
@@ -303,13 +303,13 @@ def site_before_after(est, ref):
 
 
 def site_runoff_loads(est, ref):
-    """site_loads for an estimate. Cooling wastewater is what goes back from evaporative cooling; closed loop and lake-source send almost none of it."""
+    """site_loads for an estimate. Cooling wastewater only for towers, where blowdown is nearly all of what goes back; not on a septic system, which can't take it."""
     from waterledger.scenario import land_default
     s, w = est.site, est.water
     ctx, (acres, land) = s.place.context(), land_default(s.place.incorporated)
     rain = (ctx.climate.rain_in if ctx.climate else None) or ref.get("rain_median_in")
-    evaporative = s.facility.cooling != "dry" and not w.lake_source and not w.reuse
-    return site_loads(s.acres or acres, rain, s.land_before or land, s.impervious, s.place.state, w.to_sewer.p50 if evaporative else None)
+    towers = s.facility.cooling == "towers" and not w.lake_source and not w.reuse and s.wastewater != "septic"
+    return site_loads(s.acres or acres, rain, s.land_before or land, s.impervious, s.place.state, w.returned.avg.p50 if towers else None)
 
 
 def comparisons(est, ref=None):
