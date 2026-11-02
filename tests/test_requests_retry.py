@@ -1,5 +1,5 @@
 """A busy service or a dropped connection is asked again, and "no such record" is not."""
-import io, json, urllib.error
+import http.client as hc, io, json, urllib.error
 
 import pytest
 
@@ -68,3 +68,23 @@ def test_no_such_record_is_not_asked_again(monkeypatch, tmp_path):
     with pytest.raises(urllib.error.HTTPError):
         fetching.save("https://x", str(tmp_path / "b.json"))
     assert len(calls) == 1
+
+
+def test_an_error_page_with_a_200_is_not_kept(monkeypatch, tmp_path):
+    bodies = [b"<html>busy</html>", b"", b"{not json", json.dumps({"ok": 1}).encode()]
+    monkeypatch.setattr(fetching.urllib.request, "urlopen", lambda *a, **k: io.BytesIO(bodies.pop(0)))
+    monkeypatch.setattr(fetching.time, "sleep", lambda s: None)
+    path = tmp_path / "b.json"
+    fetching.save("https://x", str(path))
+    assert json.load(open(path)) == {"ok": 1} and not bodies
+    text = tmp_path / "pfds.txt"
+    bodies[:] = [b"Error: no data", b"quantiles = [[1]]"]
+    fetching.save("https://x", str(text), check=lambda d: b"quantiles" in d)
+    assert text.read_bytes() == b"quantiles = [[1]]"
+
+
+def test_a_dropped_connection_is_asked_again(monkeypatch, tmp_path):
+    calls = service(monkeypatch, fetching, [hc.IncompleteRead(b"")])
+    fetching.save("https://x", str(tmp_path / "b.json"))
+    assert len(calls) == 2
+

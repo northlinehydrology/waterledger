@@ -14,7 +14,7 @@ on:
         type: boolean
         default: false
       refresh:
-        description: "Download every source again instead of using this month's copies"
+        description: "Download every source again instead of using the copies kept from earlier runs"
         type: boolean
         default: false
       snapshot_id:
@@ -35,7 +35,7 @@ jobs:
           python-version: "3.12"
       - run: uv sync --locked
       # The raw downloads, kept between runs so a rebuild doesn't ask the services for them again. Not the cooling runs or the per-place joins, which the code works out
-      # every time. A failed run keeps what it got, and a change to the code keeps all of it. A download whose request changes needs a new file name, or `refresh`.
+      # every time. A failed run keeps what it got, and a change to the code keeps all of it. So a download whose request changes needs a new file name, or `refresh`, and so does a change to how stations are chosen, since the chosen stations are kept too.
       - uses: actions/cache/restore@v4
         if: ${{ !inputs.refresh }}
         with:
@@ -60,12 +60,6 @@ jobs:
             .wlcache/climate/*_county_rain.json
           key: raw-${{ inputs.state }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: raw-${{ inputs.state }}-
-      # Sources that change are asked for again after a month; weather records, Atlas 14, normals, census vintages and traced paths are not
-      - name: Drop sources older than a month that change over time
-        run: |
-          mkdir -p .wlcache
-          cd .wlcache
-          find supply wastewater receiving energy wateruse power waters -type f -mtime +31 -delete 2>/dev/null || true
       - name: Build the state (Michigan from its own sources, the others from the national tier)
         run: uv run waterledger build-state ${{ inputs.state }} --out build-report --no-checks
       - name: Keep what was downloaded, even if the build failed

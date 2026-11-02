@@ -130,7 +130,7 @@ def _median_cold_precip_days(sid, first=2005, last=2024):
     for y in range(first, last + 1):
         path = os.path.join(climate.RAW, "isd", "lite", f"{sid}-{y}.gz")
         try:
-            climate._fetch(climate.ISD_LITE.format(y=y, usaf=usaf, wban=wban), path)
+            climate._fetch(climate.ISD_LITE.format(y=y, usaf=usaf, wban=wban), path, tries=3, wait=20)
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 continue

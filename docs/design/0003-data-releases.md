@@ -64,10 +64,9 @@ week apart can get different answers).
    - **The build (Oct 30, 2026):** `waterledger build-state MI` downloads Michigan's sources (`states/mi/fetch.py`) and
      builds on GitHub like any other state, so its snapshot no longer depends on a site deploy. `waterledger build mi`
      stays for building from a cache, one part at a time.
-   - **Raw downloads (Nov 2, 2026):** `build-state` keeps each state's raw downloads for the calendar month and works
-     everything else out each time, so a rebuild for a model change doesn't ask the agencies again. A change to the
-     download code starts over, a failed job saves nothing, and the workflow's `refresh` choice downloads everything
-     again. A snapshot's manifest records the oldest download in `inputs_downloaded_since`, because its date is when it
+   - **Raw downloads (Nov 2, 2026):** `build-state` keeps each state's raw downloads between runs and works everything else out
+     each time, so a rebuild for a model change doesn't ask the agencies again. Code changes and failed builds keep what
+     was downloaded, and the workflow's `refresh` choice downloads everything again. A snapshot's manifest records the oldest download in `inputs_downloaded_since`, because its date is when it
      was built, not when its sources were read.
 
 ## Build order

@@ -106,7 +106,7 @@ def _isd_frame(station, years):
     for y in years:
         path = os.path.join(RAW, "isd", "lite", f"{station['id']}-{y}.gz")
         try:
-            _fetch(ISD_LITE.format(y=y, usaf=usaf, wban=wban), path)
+            _fetch(ISD_LITE.format(y=y, usaf=usaf, wban=wban), path, tries=3, wait=20)      # a station's year may be missing: not worth a long wait
         except Exception:
             continue
         with gzip.open(path, "rt") as f:
@@ -219,7 +219,7 @@ def atlas14_depths(lat, lon, name):
     """NOAA Atlas 14 partial-duration precipitation depths (inches) as {duration: {ARI years: depth}}, plus metadata."""
     url = (f"https://hdsc.nws.noaa.gov/cgi-bin/new/cgi_readH5.py?lat={lat:.4f}&lon={lon:.4f}"
            "&type=pf&data=depth&units=english&series=pds")
-    with open(_fetch(url, os.path.join(RAW, f"noaa_pfds_{name}.txt"))) as f:
+    with open(_fetch(url, os.path.join(RAW, f"noaa_pfds_{name}.txt"), check=lambda d: b"quantiles" in d)) as f:
         txt = f.read()
     q = ast.literal_eval(re.search(r"quantiles = (\[.*?\]);", txt, re.S).group(1))
     meta = dict(re.findall(r"^(volume|version|region) = '([^']*)';", txt, re.M))
