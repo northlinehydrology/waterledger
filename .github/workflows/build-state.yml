@@ -73,12 +73,18 @@ jobs:
           ST: ${{ inputs.state }}
         run: |
           DATE=$(ls snapshot/$ST)
-          if aws s3api head-object --bucket waterledger-data --key $ST/$DATE/manifest.json --endpoint-url $R2 >/dev/null 2>&1; then
+          # is this object there? Only a real not-found counts as absent; any other error stops the job
+          exists() {
+            if err=$(aws s3api head-object --bucket waterledger-data --key "$1" --endpoint-url $R2 2>&1); then return 0; fi
+            case "$err" in *"(404)"*) return 1;; esac
+            echo "could not check $1: $err"; exit 1
+          }
+          if exists $ST/$DATE/manifest.json; then
             echo "$ST/$DATE is already published and a published snapshot never changes: run again with snapshot_id=$DATE.2 (or the next free number)"; exit 1
           fi
+          if exists $ST/latest.json; then aws s3 cp s3://waterledger-data/$ST/latest.json old-latest.json --endpoint-url $R2; fi    # before anything is written
           aws s3 cp --recursive snapshot/$ST/$DATE s3://waterledger-data/$ST/$DATE --endpoint-url $R2
           aws s3 cp snapshot/${ST}_build.json s3://waterledger-data/$ST/$DATE/build.json --endpoint-url $R2
-          aws s3 cp s3://waterledger-data/$ST/latest.json old-latest.json --endpoint-url $R2 || true
           uv run waterledger latest-json $ST $DATE --from old-latest.json > latest.json
           aws s3 cp latest.json s3://waterledger-data/$ST/latest.json --endpoint-url $R2 --cache-control "max-age=300"
           echo "published https://data.waterledger.org/$ST/$DATE/manifest.json"

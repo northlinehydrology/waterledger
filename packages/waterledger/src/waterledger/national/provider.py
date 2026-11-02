@@ -193,7 +193,6 @@ def estimate(state, site):
 
     from waterledger import scenario as sc
     from waterledger.estimate import Estimate, electricity, water_use
-    from waterledger_models import MODEL_VERSION
     f, place = site.facility, site.place
     sd = state_data(state)
     d, runs = _division(state, place)
@@ -222,4 +221,4 @@ def estimate(state, site):
     acres, before = sc.land_default(place.kind)
     resolved = site.model_copy(update={"source": src, "wastewater": dest, "acres": site.acres or acres, "land_before": site.land_before or before})
     power = electricity(sc.electricity(D, d, f.cooling, f.it_mw))
-    return Estimate(site=resolved, water=water, electricity=power, model_version=MODEL_VERSION, data_date=sd.date or datetime.date.today().isoformat())
+    return Estimate(site=resolved, water=water, electricity=power, model_version=sd.model_version(), data_date=sd.date or datetime.date.today().isoformat())

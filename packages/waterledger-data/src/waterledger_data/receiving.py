@@ -30,11 +30,12 @@ def _paged(url, where, fields, order, page=2000, geometry=False):
              "resultRecordCount": page, "orderByFields": order, "f": "json"}
         if geometry:
             p.update(outSR=4326, maxAllowableOffset=0.0005, geometryPrecision=5)
-        feats = _get(url, p, post=True).get("features", [])          # retries on timeouts
+        d = _get(url, p, post=True)          # retries on timeouts
+        feats = d.get("features", [])
         rows += [{**f["attributes"], **({"rings": f["geometry"]["rings"]} if geometry and f.get("geometry") else {})} for f in feats]
-        if len(feats) < page:
+        if len(feats) < page and not d.get("exceededTransferLimit"):
             return rows
-        off += page
+        off += len(feats)
 
 
 def organization(state):

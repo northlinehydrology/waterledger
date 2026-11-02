@@ -1,6 +1,6 @@
 {
- "model_version": "1.5",
- "code_commit": "8d78314b8ebd964c606245210e72c750c5913d98",
+ "model_version": "1.6",
+ "code_commit": "f3738a26c6a6260b9863c4e3e05d7223ab41a75c",
  "numpy": "2.5.4",
  "seed": 20261030,
  "weather": "ERA5 hourly 2 m temperature and relative humidity via the Open-Meteo archive (CC BY 4.0), 42.88 N 85.52 W (West Michigan), 2023-2024",
@@ -199,7 +199,7 @@
    0.15
   ]
  },
- "runtime_s": 8370.3,
+ "runtime_s": 12919.7,
  "quick": false,
  "warnings": []
 }

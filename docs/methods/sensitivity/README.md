@@ -1,8 +1,23 @@
 # Global sensitivity analysis of the data center water model
 
+## Model 1.6 (Nov 1, 2026): tower fans, losses to room air, middle estimate
+
+The CSVs and `run_info.json` here are the model 1.6 run: 39 cooling parameters, N = 8192, West Michigan weather, 2023-2024. The cooling code is that of 3.8.1; `code_commit` is where the repository stood when the run finished, and only version numbers changed in `waterledger-models` while it ran. The model 1.5 table below is kept for comparison.
+
+Total-order indices (ST), largest first:
+
+| Design | Water taken, average day | Water taken, peak day | Annual PUE | Hottest-hour PUE |
+|---|---|---|---|---|
+| Closed loop | loop volume 0.53, top-up share 0.48, humidifier share 0.04 | humidifier share 0.62, outside air flow 0.50, loop volume 0.00 | UPS 0.66, liquid share 0.17, supply air 0.05 | liquid share 0.40, UPS 0.34, liquid water temperature 0.25 |
+| Assist | assist switch point 0.91, utilization 0.05, pad bleed 0.04 | assist switch point 0.71, utilization 0.14, pad bleed 0.10 | UPS 0.66, liquid share 0.15, supply air 0.06 | liquid share 0.50, UPS 0.29, supply air 0.08 |
+| Hybrid | hybrid switch point 0.82, utilization 0.10, hybrid full point 0.05 | hybrid switch point 0.42, utilization 0.35, cycles 0.10 | UPS 0.66, liquid share 0.16, supply air 0.06 | liquid share 0.48, UPS 0.30, supply air 0.10 |
+| Towers | utilization 0.66, cycles 0.18, evaporative ratio 0.12 | utilization 0.65, cycles 0.18, evaporative ratio 0.10 | UPS 0.77, liquid share 0.09, distribution loss 0.03 | liquid share 0.41, UPS 0.38, supply air 0.08 |
+
+The water drivers are unchanged from model 1.5. Cycles remains the second driver of tower water. On the electricity side, L/G drops out of the top three for towers' annual PUE.
+
 ## Model 1.5 (Nov 1, 2026): mass and energy balances, outside air
 
-The CSVs and `run_info.json` here are the model 1.5 run, from the 3.8.0 code: 39 cooling parameters (the sensible heat ratio gone, outside air flow and humidifier share added), N = 8192, West Michigan weather, 2023-2024. The model 1.4 tables below are kept for comparison; their CSVs are in the git history.
+The model 1.5 run, from the 3.8.0 code: 39 cooling parameters (the sensible heat ratio gone, outside air flow and humidifier share added), N = 8192, West Michigan weather, 2023-2024. The model 1.4 tables below are kept for comparison; their CSVs are in the git history.
 
 Total-order indices (ST), largest first:
 

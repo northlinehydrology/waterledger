@@ -22,6 +22,17 @@ WBD = "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer"
 LSAD = {"25": "city", "44": "township", "49": "charter township"}
 
 
+def checked(d, params):
+    """A map service's answer, or an error. ArcGIS reports errors with HTTP 200 and an "error" body, and marks a cut-off answer with exceededTransferLimit: a paged download
+    goes on to the next page, and anything else would be silently partial."""
+    if isinstance(d, dict):
+        if "error" in d:
+            raise RuntimeError(str(d["error"])[:200])
+        if d.get("exceededTransferLimit") and ("resultOffset" not in params or not d.get("features")):
+            raise RuntimeError(f"answer cut off by the service's record limit: {str(params.get('where'))[:100]}")
+    return d
+
+
 def _get(url, params, retries=5, post=False):
     data = urllib.parse.urlencode(params).encode() if post else None
     q = url if post else url + "?" + urllib.parse.urlencode(params)
@@ -29,9 +40,7 @@ def _get(url, params, retries=5, post=False):
         try:
             with urllib.request.urlopen(q, data=data, timeout=120) as r:
                 d = json.load(r)
-            if isinstance(d, dict) and "error" in d:
-                raise RuntimeError(str(d["error"])[:200])
-            return d
+            return checked(d, params)
         except Exception:
             if i == retries - 1:
                 raise
@@ -164,9 +173,9 @@ def _layer_polys(layer, fields, name, page=500):
                 if (f.get("geometry") or {}).get("rings"):
                     out.append({**f["attributes"], "rings": f["geometry"]["rings"]})
             print(name, len(out))
-            if len(feats) < page:
+            if len(feats) < page and not d.get("exceededTransferLimit"):
                 return out
-            off += page
+            off += len(feats)
     polys = _cached(name, fetch)
     for q in polys:
         xs = [pt[0] for r in q["rings"] for pt in r]

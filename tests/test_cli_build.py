@@ -71,3 +71,23 @@ def test_fetch_tries_again_then_stops(tmp_path, monkeypatch):
     fetch = _steps(monkeypatch, ran, fails=5)
     with pytest.raises(OSError):
         fetch.fetch_all(str(tmp_path), tries=2, wait=0)
+
+
+def test_library_runs_one_place_at_a_time_unless_asked(monkeypatch):
+    """A user's script without a __main__ guard can reach run_locations through state_data's build fallback; on macOS a process pool would then break."""
+    from waterledger_models.datacenter import cooling as cw
+
+    class NoPool:
+        def __init__(self, *a):
+            raise AssertionError("started a process pool")
+    monkeypatch.setattr(cw, "ProcessPoolExecutor", NoPool)
+    monkeypatch.setattr(cw, "run_location", lambda *a, **k: "ran")
+    monkeypatch.delenv("WATERLEDGER_WORKERS", raising=False)
+    assert cw.run_locations({"a": (1, 2, 3), "b": (1, 2, 3)}) == {"a": "ran", "b": "ran"}
+
+
+def test_build_state_turns_on_all_cores(calls, monkeypatch):
+    import os
+    monkeypatch.delenv("WATERLEDGER_WORKERS", raising=False)
+    cli.main(["build-state", "OH"])
+    assert os.environ.pop("WATERLEDGER_WORKERS") == str(os.cpu_count() or 1)
