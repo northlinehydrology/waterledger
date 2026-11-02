@@ -141,7 +141,7 @@ def _ppw(state):
                               main_balancing_authority=w["main_ba"], import_share=w["import_share"]) if w else None
 
 
-# Where a state's rules aren't reviewed there are no lines for well pumping. The Compact's 5 MGD belongs to the eight Great Lakes states and is used only for a place on the lakes.
+# Where a state's rules aren't reviewed there are no lines for well pumping. The Compact's 5 MGD belongs to the eight Great Lakes states and is used only for a place on the lakes or in their basin.
 WITHDRAWALS = {"compact_use_mgd": 5.0}
 NOT_COVERED = {"state_rules": "This state's water rules are not yet reviewed, so no legal line or level is shown."}
 

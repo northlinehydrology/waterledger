@@ -124,14 +124,21 @@ def _month_water(month, peak, avg_c=1.0, c90=None):
     return WaterUse(withdrawn=f, withdrawn_annual_mg=r(1), consumed=Flow(avg=r(avg_c), peak_day=r(avg_c)), returned=f, to_sewer=r(0.1), withdrawn_max_month=r(month), consumed_max_90day=r(c90) if c90 else None)
 
 
-def _levels(water, rules, lake=None):
+def _levels(water, rules, lake=None, basin=None):
     from types import SimpleNamespace as NS
 
     from waterledger import levels as lv
-    ctx = NS(wastewater=NS(plants=[]), receiving=NS(great_lake=lake))
+    ctx = NS(wastewater=NS(plants=[]), receiving=NS(great_lake=lake, great_lakes_basin=basin))
     est = NS(site=NS(place=NS(context=lambda: ctx), source="wells", wastewater="water"), water=water, comparisons=[])
     W = {"register_mgd": 0.1, "zone_c_permit_mgd": 1.0, "permit_mgd": 2.0, "compact_use_mgd": 5.0, "low_mgd": 0.5, "high_mgd": 5.0}
     return lv.site_levels(est, {"withdrawals": W, "state_rules": rules})
+
+
+def test_the_compact_follows_the_basin_not_the_shore():
+    inland = _levels(_month_water(1.5, 3.0, 6.0), False, basin=True)      # Akron: not on a lake, in the basin
+    assert inland["great_lakes"] == "large" and inland["great_lakes_where"] == "basin"
+    assert _levels(_month_water(1.5, 3.0, 1.0), False, lake="Lake Erie", basin=True)["great_lakes_where"] == "shore"
+    assert "great_lakes" not in _levels(_month_water(1.5, 3.0, 6.0), False, basin=False)     # Columbus
 
 
 def test_part_327_is_tested_on_the_highest_month_with_the_peak_beside_it():

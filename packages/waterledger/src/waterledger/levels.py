@@ -132,9 +132,10 @@ def site_levels(est, ref):
                 out["withdrawal_flag_note"] = PERMIT_NOTES[flag or flag_peak]
         else:
             out["withdrawal_note"] = NOT_REVIEWED_NOTE
-    if W and ctx.receiving.great_lake:
-        # The Compact's period is 90 days. Data from before model 1.7 has only the average
+    if W and (ctx.receiving.great_lake or ctx.receiving.great_lakes_basin):
+        # The Compact covers the basin, not the shore (Akron is in it, Columbus is not). Its period is 90 days. Data from before model 1.7 has only the average
         on_90 = w.consumed_max_90day is not None
         out["great_lakes"] = compact(compact_share(w.consumed_max_90day.p50 if on_90 else w.consumed.avg.p50, W))
         out["great_lakes_period"] = "highest_90_days" if on_90 else "average"
+        out["great_lakes_where"] = "shore" if ctx.receiving.great_lake else "basin"
     return out
