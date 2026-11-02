@@ -17,6 +17,7 @@ from waterledger_data.config import CACHE
 RAW = os.path.join(CACHE, "climate")
 COUNTY_DIVS = "https://www.ncei.noaa.gov/monitoring-content/data/us/climdiv/monthly/current/county-to-climdivs.txt"
 CAG = "https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/county/time-series/{st}-{county}/pcp/12/12/1991-2020/data.json"
+CAG_PAUSE = 1                                      # seconds between counties: Texas alone is 254 requests
 MAX_KM = 150
 FIRST, LAST = 1995, 2024
 
@@ -77,13 +78,14 @@ def division_stations(state_fips, counties):
     return _cached(f"{state_fips}_division_stations.json", fetch)
 
 
-def cag_json(url, tries=6, wait=30):
-    """A Climate at a Glance file. NOAA answers 429 when asked too quickly, so wait and ask again."""
+def cag_json(url, tries=10, wait=30):
+    """A Climate at a Glance file. NOAA answers 429 when asked too quickly, and can stay busy for many minutes, so wait
+    longer each time and ask again. Only "no such record" (404) is an answer; anything else that fails is asked again."""
     for i in range(tries):
         try:
             return json.load(urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "waterledger"}), timeout=120))
-        except urllib.error.HTTPError as e:
-            if e.code != 429 or i == tries - 1:
+        except OSError as e:                       # urllib's errors, timeouts and dropped connections are all OSError
+            if getattr(e, "code", None) == 404 or i == tries - 1:
                 raise
             time.sleep(wait * (i + 1))
 
@@ -94,6 +96,7 @@ def rain_in(state, counties):
         out = {}
         for c in tqdm(counties, desc=f"{state} rainfall", unit="county", disable=None):
             url = CAG.format(st=state, county=c["geoid"][2:])
+            time.sleep(CAG_PAUSE)
             try:
                 d = cag_json(url)
                 v = [x["value"] for x in d["data"].values()]

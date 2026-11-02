@@ -7,7 +7,7 @@ Sources (all public):
   NOAA NCEI          county annual precipitation, 1991-2020 mean (Climate at a Glance, nClimGrid)
   EPA ECHO           Michigan sewer plants (POTWs): location, receiving water, combined sewer flag, last year's average flow
 """
-import collections, functools, glob, json, os, re, urllib.parse, urllib.request
+import collections, functools, glob, json, os, re, time, urllib.parse, urllib.request
 
 from waterledger_data.config import CACHE
 
@@ -40,11 +40,17 @@ LABELS = {
 ORDER = ["sed", "nut", "temp", "salt", "do", "bio", "flow", "ecoli", "oil", "metal", "fish"]
 
 
-def _get(url, params, timeout=180):
-    with urllib.request.urlopen(url + "?" + urllib.parse.urlencode(params), timeout=timeout) as r:
-        d = json.load(r)
+def _get(url, params, timeout=180, tries=6, wait=15):
+    """One answer from a public service. A busy service or a dropped connection is asked again; a build shouldn't stop for either."""
     from waterledger_data.places import checked
-    return checked(d, params)
+    for i in range(tries):
+        try:
+            with urllib.request.urlopen(url + "?" + urllib.parse.urlencode(params), timeout=timeout) as r:
+                return checked(json.load(r), params)
+        except Exception:
+            if i == tries - 1:
+                raise
+            time.sleep(wait * (i + 1))
 
 
 def _paged(url, where, fields="*", page=2000):
