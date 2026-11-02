@@ -55,7 +55,7 @@ est.electricity.avg_mw           # average power, MW, from the hourly heat balan
 est.electricity.peak_mw          # the 1-in-10-year hottest hour, every computer at capacity
 est.site.source, est.site.wastewater     # the choices, with defaults filled in
 site.estimate(weather="local")   # the model run at the place's own ERA5 grid cell instead of its region's results (about 30 seconds)
-est.comparisons                  # against what is already there: the water system's connections, the county's water, the sewer plant and its spare room, the utilities and the state
+est.comparisons                  # against what is already there: the water system's connections, the county's water, the sewer plant and its spare room, the utilities and the state; a very small water system gets no percent
 est.before_after                 # what changes at the place, today and after, as numbers
 est.levels                       # the levels a reader sees on waterledger.org, by card; waterledger.levels has the bands and levels.compare the verdict against a reported figure
 est.household_wells              # the aquifer most household wells draw from, how deep, the water level, where a state has well records
@@ -92,7 +92,7 @@ and matches [waterledger.org/mi](https://waterledger.org/mi/) exactly. The other
 
 Each state's data is a dated snapshot at [data.waterledger.org](https://data.waterledger.org), checked against its
 manifest and cached on first use ([design 0003](docs/design/0003-data-releases.md)). A published snapshot never changes, and a
-package reads the newest one for its own model version, so a new model's numbers don't reach an older package. Offline, the newest cached snapshot is
+package reads the newest one for its own model version, so a new model's numbers don't reach an older package. An estimate's `model_version` is the model of the data it read. Offline, the newest cached snapshot is
 used. If no snapshot can be had, the package can build the state from the public sources instead (15 to 30 minutes the
 first time, resumable):
 
@@ -101,6 +101,7 @@ first time, resumable):
 | `WATERLEDGER_FALLBACK` | `ask` (default at a terminal), `build`, `fail` (default in scripts) |
 | `WATERLEDGER_DATA` | `snapshot` (default) or `live` (skip snapshots, build from the sources) |
 | `WATERLEDGER_DATA_DATE` | pin a snapshot date to reproduce an old result |
+| `WATERLEDGER_WORKERS` | cooling runs at once in a local build: one by default, every core under `waterledger build-state` |
 
 ### The models directly
 
