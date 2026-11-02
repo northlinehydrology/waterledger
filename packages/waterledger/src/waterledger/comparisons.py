@@ -74,6 +74,7 @@ def equivalents(est, ref):
 
 
 MAIN_SYSTEM_SHARE, MIN_SYSTEM_SHARE = 0.5, 0.05     # shares of the place's mapped area [A]; see main_system
+SECOND_SYSTEM_SHARE = 0.25                          # [A]; see second_system
 TINY_SYSTEM_CONNECTIONS = 100                       # [A]; see tiny_system
 
 
@@ -88,6 +89,14 @@ def main_system(systems):
     if most:
         return max(most, key=share)
     return max([x for x in systems if share(x) >= MIN_SYSTEM_SHARE] or systems, key=lambda x: x.population or 0)
+
+
+def second_system(systems):
+    """Another water system a campus in the place might buy from: the one other than main_system covering the most of the place, if that is at least a quarter [A]. It names a second system and changes
+    nothing about the first or the percent. EPA's service areas overlap, so two systems can cover the same ground."""
+    main = main_system(systems)
+    others = [x for x in systems if x is not main and (x.share_of_place or 0) >= SECOND_SYSTEM_SHARE]
+    return max(others, key=lambda x: (x.share_of_place, x.population or 0), default=None)
 
 
 def tiny_system(systems):
@@ -107,13 +116,15 @@ def water_system_share(withdrawn, systems, home_gpd=None):
     s = main_system(systems)
     if not s or not s.connections:
         return None
+    other = second_system(systems)
+    also = {"second_system": other.name, "second_system_share": other.share_of_place} if other else {}
     if tiny := tiny_system(systems):
-        return Comparison(against="water_system", name=s.name, measure="too_small_for_percent", existing=s.connections, unit="connections", percent=None,
+        return Comparison(against="water_system", name=s.name, measure="too_small_for_percent", existing=s.connections, unit="connections", percent=None, **also,
                           basis=("The only systems mapped here are very small" if tiny == "only" else "The main system mapped here is very small; larger ones cover little of the place")
                           + ", too small for a percent to mean anything. A campus would need a larger supply.")
     gpd = home_gpd or HOUSEHOLD_GPD
     pct = lambda r: Range(**{q: 100 * (getattr(r, q) * 1e6 / gpd) / s.connections for q in ("p10", "p50", "p90")})
-    return Comparison(against="water_system", name=s.name, measure="homes_vs_connections", existing=s.connections, unit="connections",
+    return Comparison(against="water_system", name=s.name, measure="homes_vs_connections", existing=s.connections, unit="connections", **also,
                       percent=Percent(avg=pct(withdrawn.avg), peak_day=pct(withdrawn.peak_day)),
                       basis=(f"Campus water as homes at {gpd:.0f} gallons a day (USGS 2015 water to homes over ACS 2015 households, the state's own), against the system's connections (EPA)" if home_gpd
                              else f"Campus water as homes at {gpd} gallons a day (EPA WaterSense, a family), against the system's connections (EPA)"))

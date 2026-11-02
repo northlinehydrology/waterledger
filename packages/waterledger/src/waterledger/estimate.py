@@ -89,6 +89,8 @@ class Comparison(BaseModel):
     unit: str
     percent: Percent | None
     basis: str
+    second_system: str | None = None            # another water system covering at least a quarter of the place (comparisons.second_system); the percent stays the main system's
+    second_system_share: float | None = None
 
 
 class Equivalents(BaseModel):

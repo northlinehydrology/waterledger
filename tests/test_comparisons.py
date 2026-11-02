@@ -91,3 +91,21 @@ def test_a_peak_below_the_average_load_counts_as_missing():
     assert usable_peak(914.0, 2252 * 8760) is None
     assert usable_peak(2252.0, 2252 * 8760) == 2252.0
     assert usable_peak(None, 2252 * 8760) is None
+
+
+def test_a_second_system_is_named_at_a_quarter_of_the_place():
+    main, other, sliver = _sys("Main", 5000, 0.6), _sys("Other", 900, 0.3), _sys("Sliver", 90000, 0.1)
+    assert cm.main_system([main, other, sliver]) is main and cm.second_system([main, other, sliver]) is other
+    c = cm.water_system_share(R, [main, other, sliver])
+    assert (c.name, c.second_system, c.second_system_share) == ("Main", "Other", 0.3)
+    assert c.percent.avg.p50 == cm.water_system_share(R, [main]).percent.avg.p50       # the percent stays the main system's
+
+
+def test_no_second_system_under_a_quarter():
+    c = cm.water_system_share(R, [_sys("Main", 5000, 0.6), _sys("Other", 900, 0.24)])
+    assert c.second_system is None and c.second_system_share is None
+
+
+def test_the_main_system_rule_is_unchanged_by_a_second():
+    a, b = _sys("Big", 40000, 0.3), _sys("Small", 900, 0.4)      # neither at half: the larger by population among those at 5% or more
+    assert cm.main_system([a, b]) is a and cm.second_system([a, b]) is b
