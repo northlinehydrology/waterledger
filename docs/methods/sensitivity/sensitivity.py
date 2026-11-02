@@ -10,11 +10,12 @@ total ST by Jansen (1999), percentile bootstrap 95% intervals. Elementary effect
 The parameter space is read at run time from waterledger_models.datacenter.physics (PARAMETERS, RANGES, TOPUP, ADIABATIC, STAFF), and the model is the
 package's own physics.hourly_rates and physics.staff_water, so a change to a range, a new parameter or a change to the physics is
 picked up by rerunning this script unchanged. The package is imported from this checkout (packages/*/src), not from whatever is
-installed. Inputs are independent uniforms over each range, as in the package's Monte Carlo.
+installed. Inputs are independent uniforms over each range. The package's draws link some parameters (physics.LINKED, a rank correlation of about 0.5 [A]); Sobol' indices need independent inputs, so
+this script does not, and each index reads as a parameter's own effect.
 
 Outputs, per design (dry, assist, hybrid, towers), in gallons a day per 100 MW of IT capacity over the stored two-year West
-Michigan test weather: annual average consumed, annual average withdrawn, and the 1-in-10-year peak-day withdrawn as the package
-defines it (90th percentile of annual maximum days). Non-cooling water (staff plus maintenance) at 300 MW: withdrawn and consumed,
+Michigan test weather: annual average consumed, annual average withdrawn, the 1-in-10-year peak-day withdrawn as the package
+defines it (90th percentile of annual maximum days, at the peak load: average load over the load factor; model 1.7), and the upper case, the same day with every computer at capacity. Non-cooling water (staff plus maintenance) at 300 MW: withdrawn and consumed,
 gallons a day.
 """
 import argparse
@@ -46,7 +47,7 @@ R_MORRIS = 100             # Morris trajectories
 LEVELS = 4                 # Morris grid levels; step = LEVELS / (2 (LEVELS - 1)) = 2/3
 N_BOOT = 1000
 BATCH = 512
-WATER_OUTPUTS = ("consumed_avg", "withdrawn_avg", "withdrawn_peak_1in10")
+WATER_OUTPUTS = ("consumed_avg", "withdrawn_avg", "withdrawn_peak_1in10", "withdrawn_peak_full_capacity")
 COOL_OUTPUTS = WATER_OUTPUTS + ("pue_avg", "pue_hottest_hour")       # model 1.4: electricity from the same heat balance
 NC_OUTPUTS = ("nc_withdrawn", "nc_consumed")
 
@@ -54,8 +55,7 @@ NC_OUTPUTS = ("nc_withdrawn", "nc_consumed")
 # ---------------------------------------------------------------- parameter spaces (read from the package at run time)
 
 def cooling_space():
-    """[(name, low, high)] for the cooling model: physics.RANGES, topup and physics.ADIABATIC, in the order of physics.PARAMETERS. The
-    package samples topup and ADIABATIC on their own streams; here all are independent uniforms on one design."""
+    """[(name, low, high)] for the cooling model: physics.RANGES, topup and physics.ADIABATIC, in the order of physics.PARAMETERS. All are independent uniforms on one design."""
     bounds = {**ph.RANGES, "topup": ph.TOPUP, **ph.ADIABATIC, **ph.POWER, **ph.OUTSIDE}
     return [(k, float(bounds[k][0]), float(bounds[k][1])) for k in ph.PARAMETERS]
 
@@ -93,15 +93,17 @@ def cooling_outputs(wx, design, X, space):
     ys = np.unique(wx["years"])
     for i in range(0, len(X), BATCH):
         xb = X[i:i + BATCH]
-        p = {k: xb[:, j:j + 1] for j, k in enumerate(names)}
+        p = ph.for_location({k: xb[:, j:j + 1] for j, k in enumerate(names)}, wx["tdb"])      # the location's design dry-bulb
         w, c, _ = ph.hourly_rates(wx["tdb"], wx["twb"], design, p, wx["rh"])
         kw = MW * 1000.0 * p["utilization"]
         wd = (w * kw).reshape(len(xb), nd, 24).sum(-1)      # gal per day
         cd = (c * kw).reshape(len(xb), nd, 24).sum(-1)
-        ann_max = np.stack([wd[:, wx["years"] == y].max(1) for y in ys], axis=1)
+        day_peak = lambda u: (ph.hourly_rates(wx["tdb"], wx["twb"], design, {**p, "utilization": u}, wx["rh"])[0] * MW * 1000.0 * u).reshape(len(xb), nd, 24).sum(-1)
+        peak_1in10 = lambda daily: np.quantile(np.stack([daily[:, wx["years"] == y].max(1) for y in ys], axis=1), 0.9, axis=1)
         out["consumed_avg"][i:i + BATCH] = cd.mean(1)
         out["withdrawn_avg"][i:i + BATCH] = wd.mean(1)
-        out["withdrawn_peak_1in10"][i:i + BATCH] = np.quantile(ann_max, 0.9, axis=1)
+        out["withdrawn_peak_1in10"][i:i + BATCH] = peak_1in10(day_peak(ph.peak_utilization(p)))
+        out["withdrawn_peak_full_capacity"][i:i + BATCH] = peak_1in10(day_peak(np.ones_like(p["utilization"])))
         pue = ph.hourly_heat_power(wx["tdb"], wx["twb"], design, p, wx["rh"])[0]
         out["pue_avg"][i:i + BATCH] = pue.mean(1)
         out["pue_hottest_hour"][i:i + BATCH] = np.quantile(np.stack([pue[:, np.repeat(wx["years"], 24) == y].max(1) for y in ys], axis=1), 0.9, axis=1)
@@ -122,13 +124,15 @@ def check_against_package(wx, space, rng):
     for design in ph.DESIGNS:
         mine = cooling_outputs(wx, design, X, space)
         for r in range(len(X)):
-            p = dict(zip(names, X[r]))
+            p = ph.for_location(dict(zip(names, X[r])), wx["tdb"])
+            stats = lambda arr, kw: cw.daily_stats(day_index, len(wx["days"]), wx["years"], arr, kw)
             w, c, _ = cw.hourly(wx["tdb"], wx["twb"], design, p, wx["rh"])
             kw = MW * 1000 * p["utilization"]
-            sw = cw.daily_stats(day_index, len(wx["days"]), wx["years"], w, kw)
-            sc = cw.daily_stats(day_index, len(wx["days"]), wx["years"], c, kw)
+            u = float(ph.peak_utilization(p))
+            at_peak = cw.hourly(wx["tdb"], wx["twb"], design, {**p, "utilization": u}, wx["rh"])[0]
+            at_capacity = cw.hourly(wx["tdb"], wx["twb"], design, {**p, "utilization": 1.0}, wx["rh"])[0]
             got = [mine[k][r] / 1e6 for k in WATER_OUTPUTS]
-            want = [sc["avg"], sw["avg"], sw["peak_1in10"]]
+            want = [stats(c, kw)["avg"], stats(w, kw)["avg"], stats(at_peak, MW * 1000 * u)["peak_1in10"], stats(at_capacity, MW * 1000)["peak_1in10"]]
             np.testing.assert_allclose(got, want, rtol=1e-9, atol=1e-15)
 
 

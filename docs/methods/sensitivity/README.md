@@ -1,5 +1,7 @@
 # Global sensitivity analysis of the data center water model
 
+The script runs on model 1.7: its peak day is at average load over the load factor, with the upper case, every computer at capacity, as its own output. The CSVs and tables below are still model 1.6 until the script is rerun at release.
+
 ## Model 1.6 (Nov 1, 2026): tower fans, losses to room air, middle estimate
 
 The CSVs and `run_info.json` here are the model 1.6 run: 39 cooling parameters, N = 8192, West Michigan weather, 2023-2024. The cooling code is that of 3.8.1; `code_commit` is where the repository stood when the run finished, and only version numbers changed in `waterledger-models` while it ran. The model 1.5 table below is kept for comparison.
