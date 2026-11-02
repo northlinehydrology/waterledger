@@ -37,3 +37,15 @@ def test_usgs_failure_leaves_michigan_answering(monkeypatch):
     assert mp._usgs_water_use("26081") is None
     monkeypatch.setattr(np, "county_water_use", lambda st, f: ("egle", "usgs" if st == "MI" and f == "26081" else None))
     assert mp._usgs_water_use("26081") == "usgs"
+
+
+def test_every_parameter_has_its_sources_and_none_is_stale():
+    from waterledger.states.mi.build import PARAM_SOURCES, SOURCES, WATER_SOURCES
+    from waterledger_models import runoff
+    from waterledger_models.datacenter import physics
+    assert set(PARAM_SOURCES) == set(physics.PARAMETERS) | set(physics.STAFF_PARAMETERS)
+    assert {s for ids in PARAM_SOURCES.values() for s in ids} <= set(SOURCES)
+    assert PARAM_SOURCES["coc"] == ["lei2021", "han2026", "femp_bmp10"] and "lower" in SOURCES["femp_bmp10"][0]
+    assert not any("Vantage" in c for c, _ in SOURCES.values())
+    cited = lambda x: ({s for v in x.values() for s in cited(v)} | set(x.get("sources", []))) if isinstance(x, dict) else set()
+    assert cited(runoff.PARAMS) <= WATER_SOURCES <= set(SOURCES)

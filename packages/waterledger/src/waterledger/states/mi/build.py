@@ -55,15 +55,17 @@ SOURCES = {
     "hpe_nvl72": ("Hewlett Packard Enterprise. NVIDIA GB200 NVL72 by HPE, product page: 115 kW by liquid, 17 kW by air per rack.", "https://buy.hpe.com/us/en/compute/rack-scale-system/nvidia-nvl-system/nvidia-gb200-nvl72-by-hpe/p/1014890104"),
     "schneider_wp210": ("Schneider Electric. White Paper 210, p. 14: 20% of heat removed by air, as an illustration.", "https://www.se.com/ww/en/download/document/SPD_WP210_EN/"),
     "lei2021": ("Lei, N., & Masanet, E. (2021). Climate- and technology-specific PUE and WUE predictions for U.S. data centers using a physics-based approach. Research Square preprint of Lei & Masanet (2022); the values used here were read from this version.", "https://doi.org/10.21203/rs.3.rs-769999/v1"),
-    "uptime2025": ("Dietrich, J. (2025). Water is local: generalities do not apply. Uptime Institute Journal, May 28, 2025 (adiabatic trim cooling at 20 °C or higher; 100-300 h/yr).", "https://journal.uptimeinstitute.com/water-is-local-generalities-do-not-apply/"),
-    "evapco2018": ("EVAPCO (2018). Adiabatic fluid coolers and refrigerant condensers: impact of pad system design on saturation efficiency and unit operation. White paper, 11/2018.", "https://www.evapco.com/sites/evapco.com/files/2019-02/Adiabatic-Pad-Saturation-White-Paper-11.2018.pdf"),
+    "evapco2018": ("EVAPCO (2019). Adiabatic fluid coolers and refrigerant condensers: impact of pad system design on saturation efficiency and unit operation. White paper dated 11/2018, presented at the Cooling Technology Institute, February 2019 (p. 2: 72-78% at 400-700 fpm across 10 pads, a maker's own test; the wet point as a selection and control output).", "https://www.evapco.com/sites/evapco.com/files/2019-02/Adiabatic-Pad-Saturation-White-Paper-11.2018.pdf"),
     "ashrae2016_41": ("ASHRAE (2016). ASHRAE Handbook: HVAC Systems and Equipment, ch. 41, Evaporative Air-Cooling Equipment.", "https://handbook.ashrae.org/Handbooks/S16/IP/s16_ch41/s16_ch41_ip.aspx"),
     "sce2015": ("Southern California Edison (2015). Evaporative condenser air pre-coolers. Emerging Technologies report ET13SCE1020.", "https://wcec.ucdavis.edu/wp-content/uploads/2016/06/et13sce1020_evaporative_pre-cooler_final.pdf"),
     "thermokey_sheet": ("Thermokey GH2490 and Kelvion LF-PD203T4H-080Y06D dry cooler selection sheets (air rises of 11.2 and 12.8 K at design; used-equipment listings) [estimate].", "https://resale.de/images/164420960_h_r190392800.pdf"),
     "lei2025": ("Lei, N., Lu, J., Shehabi, A., & Masanet, E. (2025). The water use of data center workloads: A review and assessment of key determinants. Resources, Conservation and Recycling 219: 108310.", "https://doi.org/10.1016/j.resconrec.2025.108310"),
-    "usgs2013": ("Diehl, T. H., Harris, M. A., Murphy, J. C., Hutson, S. S., & Ladd, D. E. (2013). Methods for estimating water consumption for thermoelectric power plants in the United States. U.S. Geological Survey Scientific Investigations Report 2013-5188 (eq. 9 gives the Rutberg et al. 2011 dry-bulb evaporation relation).", "https://doi.org/10.3133/sir20135188"),
-    "femp_bmp10": ("U.S. Department of Energy, Federal Energy Management Program. Best Management Practice #10: Cooling Tower Management.", "https://www.energy.gov/femp/best-management-practice-10-cooling-tower-management"),
+    "usgs2013": ("Diehl, T. H., Harris, M. A., Murphy, J. C., Hutson, S. S., & Ladd, D. E. (2013). Methods for estimating water consumption for thermoelectric power plants in the United States. U.S. Geological Survey Scientific Investigations Report 2013-5188 (eq. 9 gives the Rutberg et al. 2011 dry-bulb evaporation relation; pp. 24, 28: 5-15% and 15% for tower evaporative ratios; p. 29: +/-18% is tower consumption with the error in heat included; Eq. 14 is Ward's wind function, which the lake uses as a stated departure from the function USGS used for lakes).", "https://doi.org/10.3133/sir20135188"),
+    "femp_bmp10": ("U.S. Department of Energy, Federal Energy Management Program. Best Management Practice #10: Cooling Tower Management (two to four cycles of concentration typical, six or more possible, which is lower than the 3-6 used here).", "https://www.energy.gov/femp/best-management-practice-10-cooling-tower-management"),
     "femp_dc": ("U.S. Department of Energy, FEMP. Cooling Water Efficiency Opportunities for Federal Data Centers.", "https://www.energy.gov/cmei/femp/cooling-water-efficiency-opportunities-federal-data-centers"),
+    "epa_ap42": ("U.S. EPA. AP-42, Fifth Edition, Section 13.4, Wet Cooling Towers, Table 13.4-1: induced-draft towers, drift 0.020% of circulating water flow (read through secondary copies; EPA's site refuses automated requests).", "https://www3.epa.gov/ttn/chief/ap42/ch13/final/c13s04.pdf"),
+    "crusoe2026": ("Bakane, T., & Chan, H.W. (2026, April 23). Water stewardship at our data centers: what it means for the communities we call home. Crusoe: the initial fill of a typical system takes approximately 1,700,000 gallons; the breakdown for a 200 MW data center is an image.", "https://www.crusoe.ai/resources/blog/water-stewardship-at-our-data-centers"),
+    "us12426214": ("U.S. Patent 12,426,214 B1 (2025). Hybrid dry adiabatic cooling chilled water plant for data centers and other IT environments: the controller's wet mode threshold is 70-95 °F in its embodiments, for example 82 °F.", "https://patents.google.com/patent/US12426214B1/en"),
     "epa_wsaw": ("U.S. EPA (2012). WaterSense at Work: Best Management Practices for Commercial and Institutional Facilities, §6.3 Cooling Towers.", "https://www.epa.gov/watersense/best-management-practices"),
     "stull2011": ("Stull, R. (2011). Wet-bulb temperature from relative humidity and air temperature. Journal of Applied Meteorology and Climatology 50: 2267–2269.", "https://doi.org/10.1175/JAMC-D-11-0143.1"),
     "msft2026": ("Microsoft (June 24, 2026). Inside Microsoft's two-decade push to cut water intensity while scaling for growth.", "https://blogs.microsoft.com/blog/2026/06/24/inside-microsofts-two-decade-push-to-cut-water-intensity-while-scaling-for-growth/"),
@@ -92,6 +94,7 @@ SOURCES = {
     "mpsc_territory": ("Michigan Public Service Commission. Electric Utility Service Areas (GIS hub, 2025): territories of Michigan's investor-owned, cooperative and municipal electric utilities.", "https://data-michiganpsc.hub.arcgis.com"),
     "eia861": ("U.S. Energy Information Administration. Annual Electric Power Industry Report (Form EIA-861), 2025: retail sales and customers by utility and state, and summer and winter peak demand.", "https://www.eia.gov/electricity/data/eia861/"),
     "egle2025": ("Michigan EGLE. Water Use Data, 2025 (by county and sector; reported by registered large-quantity withdrawals).", "https://www.michigan.gov/egle/about/organization/geologic-resources-management/groundwater/water-use/reporting/water-use-data"),
+    "usgs_wu2015": ("Dieter, C.A., et al. (2018). Estimated use of water in the United States, county-level data for 2015. U.S. Geological Survey data release: water delivered to homes by public systems and self-supplied domestic withdrawals.", "https://doi.org/10.5066/F7TB15V5"),
     "epa_watersense": ("U.S. EPA WaterSense. How We Use Water: \"The average American family uses more than 300 gallons of water per day at home.\"", "https://www.epa.gov/watersense/how-we-use-water"),
     "era5": ("Hourly 2 m temperature and humidity, 1995–2024, ECMWF ERA5 reanalysis via the Open-Meteo archive API.", "https://open-meteo.com/en/docs/historical-weather-api"),
     "google2026": ("Google (2026). 2026 Environmental Report (data for 2025), data center water tables.", "https://storage.googleapis.com/gweb-mobius-cdn/sustainability/uploads/7f477eb723fe0c23d03f94b90a08882b9f28187d.pdf"),
@@ -134,7 +137,6 @@ SOURCES = {
     "stepl": ("Tetra Tech for U.S. EPA (2018). Spreadsheet Tool for Estimating Pollutant Loads (STEPL) 4.4 User's Guide: urban and cropland/forest runoff concentrations.", "https://19january2021snapshot.epa.gov/sites/static/files/2021-01/documents/steplguide404.pdf"),
     "egle_ms4": ("Michigan EGLE MS4 permit post-construction standard (example: Charter Township of Lansing, NPDES MI0059459, effective July 1, 2025, Part I.A.f): treat the first inch or 90% of runoff-producing storms with 80% TSS removal or 80 mg/L; hold rate and volume to pre-development up to the 2-year, 24-hour storm.", "https://lansingtwpmi.gov/wp-content/uploads/2026/05/Lansing-Township-Appendix-A-Stormwater-Discharge-Permit-and-Application-4-2026.pdf"),
     "kcdc_rules": ("Kent County Drain Commissioner (2024). Site Development Rules, Procedures and Design Standards for Stormwater Management, rev. Dec 27, 2024 (Table 3 TSS removal; coldwater detention limits; applicability).", "https://www.kentcountymi.gov/DocumentCenter/View/2402/Site-Development-Rules-Procedures-and-Design-Standards-for-Stormwater-Management-PDF"),
-    "bmpdb2020": ("Clary, J., et al. (2020). International Stormwater BMP Database: 2020 Summary Statistics. Water Research Foundation Project 4968, Tables 2-2, 4-3 and 4-6 (wet pond medians in and out).", "https://www.waterrf.org/system/files/resource/2020-11/DRPT-4968_0.pdf"),
     "semcog_lid": ("SEMCOG (2008). Low Impact Development Manual for Michigan, Table 9.5 (pollutant removal by practice, after the Center for Watershed Protection database).", "https://www.swmpc.org/wp-content/uploads//2026/01/lidmanual_1.pdf"),
     "epa_fact26": ("U.S. EPA (2005). Stormwater Phase II Final Rule Fact Sheet 2.6, Construction Site Runoff Control: sediment runoff from construction sites is typically 10 to 20 times that of agricultural lands.", "https://www.epa.gov/sites/default/files/2015-11/documents/fact2-6.pdf"),
     "epa_mm8": ("U.S. EPA (2005). National Management Measures to Control Nonpoint Source Pollution from Urban Areas, Management Measure 8 (construction), p. 8-2 and Table 8.1: construction sites 7.2 to 500 tons per acre per year; Wisconsin 30 to 200.", "https://www.epa.gov/sites/default/files/2015-09/documents/urban_ch08.pdf"),
@@ -152,7 +154,6 @@ SOURCES = {
     "jea2024": ("JEA (2024). Best Management Practice and Guidance Manual for Cooling Towers, Table 1: phosphate inhibitors up to 20 mg/L as PO4 (about 6.5 mg/L as P), molybdate, azoles, biocides in blowdown.", "https://www.jea.com/uploadedFiles/jea.com/Business_Resources/Industrial_Pretreatment/Commercial_Best_Management_Practices/JEA%20Cooling%20Tower%20BMP%20v.2024-CURRENT.pdf"),
     "rule60": ("Michigan Water Quality Standards, R 323.1060: default effluent limit of 1 mg/L total phosphorus (monthly average) for point sources.", "https://www.law.cornell.edu/regulations/michigan/Mich-Admin-Code-R-323-1060"),
     "egle_dc_faq": ("Michigan EGLE. FAQ: Data centers and environmental review (data centers are not categorical industrial users but may be designated significant industrial users; only plants with approved pretreatment programs can issue discharge permits).", "https://www.michigan.gov/egle/faqs/environmental-assistance/data-centers"),
-    "nri2017": ("USDA NRCS (2020). 2017 National Resources Inventory Summary Report: sheet and rill erosion on U.S. cropland averaged 2.67 tons per acre per year in 2017.", "https://www.nrcs.usda.gov/sites/default/files/2022-10/2017NRISummary_Final.pdf"),
     "wellogic": ("Michigan EGLE. Wellogic water well records: household wells by township, the aquifer each draws from (glacial deposits or bedrock), well depth and static water level.", "https://gisagoegle.state.mi.us/arcgis/rest/services/EGLE/DwOpenData/MapServer/3"),
     "wwat": ("Michigan EGLE. Water Withdrawal Assessment Tool (Part 327): new or increased withdrawals over 100,000 gallons a day are screened for how much they would reduce nearby streams' summer flow and harm their fish.", "https://www.egle.state.mi.us/wwat/"),
     "wleb_dap": ("MDARD, EGLE and DNR. Michigan's Domestic Action Plan for the Western Lake Erie Basin (2025 update): a 40% cut in phosphorus loads from 2008 levels.", "https://www.michigan.gov/mdard/environment/conservation/wleb"),
@@ -161,27 +162,30 @@ SOURCES = {
 SHORT = {"lbnl2024": "LBNL 2024", "lei2021": "Lei & Masanet 2021", "wa_energy_code": "WAC 51-11C (ASHRAE 90.1)", "ashrae_tc99": "ASHRAE TC 9.9", "hpe_nvl72": "HPE NVL72", "schneider_wp210": "Schneider WP210", "lbnl2025": "LBNL 2025", "epri2026": "EPRI 2026", "iea2025": "IEA 2025", "google2025": "Google 2025",
          "eia923_2024": "EIA-923 2024", "eia_sep2024": "EIA state profiles 2024", "epa_onsite2002": "EPA 2002", "mi_septic": "Michigan septic criteria", "gilroy2022": "Gilroy 2022",
          "meta_elpaso": "Meta 2026", "meta_richland": "Meta 2025", "oracle_saline2026": "Oracle 2026", "lei2022": "Lei & Masanet 2022", "lei2025": "Lei et al. 2025", "usgs2013": "USGS 2013", "femp_bmp10": "DOE FEMP",
-         "femp_dc": "DOE FEMP", "epa_wsaw": "EPA 2012", "stull2011": "Stull 2011", "msft2026": "Microsoft 2026", "icprb2025": "ICPRB 2025",
+         "femp_dc": "DOE FEMP", "epa_wsaw": "EPA 2012", "epa_ap42": "EPA AP-42", "crusoe2026": "Crusoe 2026", "us12426214": "US 12,426,214", "evapco2018": "EVAPCO 2019", "usgs_wu2015": "USGS 2015", "stull2011": "Stull 2011", "msft2026": "Microsoft 2026", "icprb2025": "ICPRB 2025",
          "icprb2026": "ICPRB 2026", "siddik2024": "Siddik et al. 2024", "macknick2012": "Macknick et al. 2012", "peer2019": "Peer et al. 2019",
          "eia_mi": "EIA", "egle2025": "EGLE 2025", "mpsc_territory": "MPSC", "usgs_cu2007": "Shaffer & Runkle 2007", "energystar_humid": "ENERGY STAR", "nih_closedloop": "NIH 2023", "jlarc2024": "JLARC 2024", "mcl_205_54ee": "MCL 205.54ee", "lowell_firstlook": "Lowell's First Look", "gaines_sunnews": "Sun and News 2026", "saline_post": "The Saline Post", "wgvu_switch": "WGVU 2025", "eia861": "EIA-861", "gcsaa2013": "GCSAA 2013", "epa_watersense": "EPA WaterSense", "era5": "ERA5", "google2026": "Google 2026",
          "han2026": "Han et al. 2026", "mytton2021": "Mytton 2021", "census_tiger": "Census", "epa_sa": "EPA service areas", "usgs_wbd": "USGS WBD",
          "noaa_atlas14": "NOAA Atlas 14", "simple_method": "Simple Method", "nrcs_tr55": "NRCS TR-55", "egle_impaired": "EGLE", "mcl327": "MCL Part 327", "wgvu2026": "WGVU 2026", "naturalearth": "Natural Earth", "glerl": "NOAA GLERL", "eia_res": "EIA-861 2025", "msft2024": "Microsoft 2024", "lsc_cornell": "Cornell LSC", "cfr125_81": "40 CFR 125.81", "egle_npdes": "EGLE NPDES", "mi_part22": "Mich. Part 22 rules",
          "attains2026": "EPA ATTAINS 2026", "mdnr_trout": "Michigan DNR trout streams", "noaa_cag": "NOAA 1991–2020", "echo": "EPA ECHO", "cwns2022": "EPA CWNS 2022",
          "usgs_marquette": "USGS Marquette 1997", "nri2022": "USDA NRI 2022", "helsel1985": "Helsel 1985", "lee_ziegler2010": "Lee & Ziegler 2010", "runoff_reduction2008": "Runoff Reduction memo 2008", "nsqd11": "NSQD 1.1", "acs2015": "ACS 2015", "noaa_normals": "NOAA Normals", "usgs_cir1441": "USGS Circular 1441", "mpca_emc": "MPCA", "nsqd": "NSQD", "stepl": "EPA STEPL", "egle_ms4": "EGLE MS4 standard", "kcdc_rules": "Kent County rules",
-         "bmpdb2020": "BMP Database 2020", "semcog_lid": "SEMCOG 2008", "epa_fact26": "EPA 2005", "epa_mm8": "EPA MM8", "part91": "Part 91", "mpca_salt": "MPCA salt guidance",
+         "semcog_lid": "SEMCOG 2008", "epa_fact26": "EPA 2005", "epa_mm8": "EPA MM8", "part91": "Part 91", "mpca_salt": "MPCA salt guidance",
          "egle_rule57": "EGLE Rule 57", "cat3516c": "Caterpillar", "uptime2014": "Uptime Institute", "amazon_mo2026": "Amazon MO permit", "wyofile2025": "WyoFile 2025",
          "cfr112": "40 CFR 112", "herb2007": "Herb et al. 2007", "stefan2010": "Stefan & Herb 2010", "rule75": "R 323.1075", "jea2024": "JEA 2024", "rule60": "R 323.1060",
-         "egle_dc_faq": "EGLE data center FAQ", "wleb_dap": "Lake Erie action plan", "nri2017": "USDA NRI 2017", "wellogic": "EGLE Wellogic", "wwat": "EGLE WWAT"}
+         "egle_dc_faq": "EGLE data center FAQ", "wleb_dap": "Lake Erie action plan", "wellogic": "EGLE Wellogic", "wwat": "EGLE WWAT"}
 
+# Source ids for each parameter in waterledger_models.datacenter.physics (physics.SOURCES says it in words); none where the range is an assumption [A]. Vantage's 11.8 million gallons is gone (model 1.7).
 PARAM_SOURCES = {
-    "utilization": ["epri2026", "iea2025", "lbnl2024", "lbnl2025"], 
-    "er_adj": ["usgs2013"], "coc": ["femp_bmp10"], "range_f": ["usgs2013", "lei2021"], "drift": ["epa_wsaw"], "fill_gal_per_mw": ["lowell_firstlook"], "topup": ["nih_closedloop"],
+    "utilization": ["epri2026", "iea2025", "lbnl2024", "lbnl2025"], "load_factor": ["epri2026"],
+    "er_adj": ["usgs2013"], "coc": ["lei2021", "han2026", "femp_bmp10"], "range_f": ["lei2021"], "drift": ["epa_wsaw", "epa_ap42"], "fill_gal_per_mw": ["crusoe2026"], "topup": ["nih_closedloop"],
     **{k: ["lei2021"] for k in ("ups", "dist_loss", "light", "supply_air", "air_rise", "coil_eff", "water_rise", "crah_pa", "fan_eff", "tower_fan_pa", "lg", "tower_approach", "hx_approach", "pump_chw_kpa", "pump_tower_kpa", "pump_econ_kpa", "pump_eff")},
     "carnot_water": ["wa_energy_code", "lei2021"], "carnot_air": ["wa_energy_code"], "dc_approach": ["thermokey_sheet"], "dc_fan_pa": ["lei2021"],
     "liquid_water": ["ashrae_tc99", "lbnl2024"], "liquid_air_share": ["hpe_nvl72", "schneider_wp210"], "liquid_share": [],
     "staff_core": ["jlarc2024", "gilroy2022"], "staff_per_mw": ["meta_richland", "meta_elpaso", "oracle_saline2026", "gilroy2022"],
     "staff_gpcd": ["epa_onsite2002", "mi_septic", "gilroy2022"], "staff_used": ["usgs_cu2007"],
-    "assist_on": ["uptime2025", "evapco2018"], "assist_eff": ["evapco2018", "ashrae2016_41"], "assist_dt_air": ["thermokey_sheet"], "assist_bleed": ["sce2015", "ashrae2016_41"], "hybrid_on": ["lei2025", "han2026"], "hybrid_full": ["lei2025"],
+    "staff_maint_base": ["crusoe2026"], "staff_maint_per_mw": ["crusoe2026"], "staff_maint_used": ["usgs_cu2007"],
+    "switch_margin": ["evapco2018", "us12426214"], "hybrid_full_offset": [], "assist_eff": ["evapco2018", "ashrae2016_41"], "assist_dt_air": ["thermokey_sheet"], "assist_bleed": ["sce2015", "ashrae2016_41"],
+    "oa_cfm_per_mw": [], "humidify_share": [],
 }
 
 # Water at the power plants for Michigan's mix: the same table and rules as every state (energy.state_power_water; model 1.3,
@@ -220,8 +224,7 @@ POWER_SUPPLY = {
              "note": "1.57 L/kWh consumed and 57.1 L/kWh withdrawn, MISO excluding hydropower consumption, 2022 (Siddik et al. dataset, load-weighted)"},
 }
 
-CONTEXT = {"household_gpd": {"value": HOUSEHOLD_GPD, "note": "more than 300 gallons per day per family at home", "sources": ["epa_watersense"]},
-           "liters_per_gallon": {"value": 3.78541},
+CONTEXT = {"liters_per_gallon": {"value": 3.78541},
            "golf_season_days": {"value": 153, "note": "May through September, the watering season [estimate]"},
            # Michigan's Part 327: registration above 100,000 gallons a day, a permit for new withdrawals above 2 MGD, 1 MGD in Zone C. The other Great Lakes
            # states review projects using up more than 5 MGD. These are Michigan's and the Compact's: a state whose rules aren't reviewed has no lines (waterledger.levels).
@@ -463,7 +466,7 @@ def main(n=DRAWS):
     Dv = {"regions": regions, "staff": {"runs": staff}}
     from waterledger.scenario import band, flow, pue_by_design
     s2 = lambda v: f"{(round(v) if v < 100 else round(v / 10 ** (math.floor(math.log10(v)) - 1)) * 10 ** (math.floor(math.log10(v)) - 1)):,.0f}"
-    gal = lambda b: f"about {s2(b['mid'] * 1e6)} gal/day (likely {s2(b['lo'] * 1e6)} to {s2(b['hi'] * 1e6)})"
+    gal = lambda b: f"about {s2(b['mid'] * 1e6)} gal/day ({s2(b['lo'] * 1e6)} to {s2(b['hi'] * 1e6)} across our assumptions)"
     util = regions["west"]["per_100mw"]["dry"]["utilization"]["p50"]
     w300 = flow(Dv, "west", "dry", "withdrawn_avg", 300)
     lkwh = w300["mid"] * 1e6 * 3.78541 / (300 * 1000 * util * 24)
@@ -484,7 +487,7 @@ def main(n=DRAWS):
     validation = [
         {"check": "Cooling towers, water use per IT kWh (makeup basis)", "published": "LBNL 2024 large tower-based facilities: median ~2.0–2.2 L/kWh, range ~1.75–2.75 (U.S. climates)",
          "ours": f"{regions['west']['per_100mw']['towers']['wue_makeup_l_per_kwh']['p10']:.2f}–{regions['west']['per_100mw']['towers']['wue_makeup_l_per_kwh']['p90']:.2f} L/kWh (West Michigan)",
-         "reading": "Lower than the U.S. median, as expected for a cool climate; within the published range.", "sources": ["lbnl2024"]},
+         "reading": "Below LBNL's median, and mostly below its range: partly a cool climate, and mainly because LBNL evaporates all the heat while this model uses the evaporative ratio USGS uses, which leaves a share of it as sensible heat in the air. A stated departure, argued from the air's heat balance and disclosed fleets, with no metered tower site to settle it.", "sources": ["lbnl2024", "usgs2013"]},
         {"check": "Hybrid / evaporative assist (consumed)", "published": "Lei et al. 2025, climate zone 5A: ~0.1 (efficient) to ~0.7 (inefficient) L/kWh; operators 0.1–0.3",
          "ours": f"{regions['west']['per_100mw']['hybrid']['wue_l_per_kwh']['p10']:.2f}–{regions['west']['per_100mw']['hybrid']['wue_l_per_kwh']['p90']:.2f} L/kWh",
          "reading": "At or just below the efficient end of the published range, as expected in a cold climate.", "sources": ["lei2025", "lbnl2024"]},
@@ -501,13 +504,13 @@ def main(n=DRAWS):
          "reading": "Inside the developer's range." if 2.0 <= vb["avg"] <= 3.6 else "Outside the developer's range.", "sources": []},
         {"check": "Lowell Charter Township (Microsoft), closed loop", "published": "About 6,000 gal/day (2.2 million gallons a year) excluding cooling, a Microsoft projection reported locally; size not published; primary document not yet located",
          "ours": f"{gal(w300)} at 300 MW, the starting size; {gal(flow(Dv, 'west', 'dry', 'withdrawn_avg', 500))} at 500 MW",
-         "reading": f"The reported figure is about {mx(0.006027 / low['mid'])} times ours at 300 MW, " + ("inside" if inside(0.006027, low) else "outside") + " our likely range there, and " + ("inside" if inside(0.006027, l500) else "outside") + " it at 500 MW. The campus's size is not published, and ours counts staff water and loop top-ups only.", "sources": ["lowell_firstlook"]},
+         "reading": f"The reported figure is about {mx(0.006027 / low['mid'])} times ours at 300 MW, " + ("inside" if inside(0.006027, low) else "outside") + " our range across assumptions there, and " + ("inside" if inside(0.006027, l500) else "outside") + " it at 500 MW. The campus's size is not published, and ours counts staff water and loop top-ups only.", "sources": ["lowell_firstlook"]},
         {"check": "Gaines Township (Microsoft), per building", "published": "About 2,000 gal/day per building (Microsoft at the April 15, 2026 hearing, as reported); building size and count not published",
          "ours": f"{gal(flow(Dv, 'west', 'dry', 'withdrawn_avg', 100))} for one 100 MW building",
-         "reading": f"The reported figure is about {mx(0.002 / gb['mid'])} times our middle estimate, " + ("inside" if inside(0.002, gb) else "outside") + " our likely range.", "sources": ["gaines_sunnews"]},
+         "reading": f"The reported figure is about {mx(0.002 / gb['mid'])} times our middle estimate, " + ("inside" if inside(0.002, gb) else "outside") + " our range across assumptions.", "sources": ["gaines_sunnews"]},
         {"check": "Saline Township (Related Digital for Oracle and OpenAI; 1.4 GW DTE contract), closed loop", "published": "About 20,000 gal/day at the start of operations, a developer estimate as reported locally; primary document not yet located",
          "ours": f"{gal(flow(Dv, 'southeast', 'dry', 'withdrawn_avg', saline_it))} at full build-out, about {saline_it:,.0f} MW of computers",
-         "reading": f"The reported figure is about {mx(0.02 / sal['mid'])} times ours and " + ("inside" if inside(0.02, sal) else "above") + " our likely range, although it is for the start of operations and ours is for the full campus. It may include uses this page does not count, such as landscape watering, process water or a phased first fill; the primary document has not been found.", "sources": ["saline_post"]},
+         "reading": f"The reported figure is about {mx(0.02 / sal['mid'])} times ours and " + ("inside" if inside(0.02, sal) else "above") + " our range across assumptions, although it is for the start of operations and ours is for the full campus. It may include uses this page does not count, such as landscape watering, process water or a phased first fill; the primary document has not been found.", "sources": ["saline_post"]},
         {"check": "Switch data center, Gaines Township (operating since 2017; metered, not projected)", "published": "About 10 million gallons in 2024, about 27,000 gal/day, as a township official reported; design 320 MW; actual load and cooling design not public",
          "ours": f"{gal(flow(Dv, 'west', 'dry', 'withdrawn_avg', 320))} for a closed loop at 320 MW and 50–80% load",
          "reading": f"Metered use is about {mx(0.0274 / sw['mid'])} times ours. Switch's cooling design and actual load are not public, and a metered total includes {not_counted}. Metered use at an operating site can run well above an applicant's projection.", "sources": ["wgvu_switch"]},
@@ -545,7 +548,7 @@ def main(n=DRAWS):
         "parameters": {k: {"range": list(v), "sources": PARAM_SOURCES.get(k, [])}
                        for k, v in list(cw.RANGES.items()) + [("topup", cw.TOPUP)] + [("staff_" + k, v) for k, v in cw.STAFF.items()]},
         "regions": regions,
-        "staff": {"runs": staff, "note": "Staff water per run: [core people, people per MW of IT capacity, gallons per person a day, share lost]; "
+        "staff": {"runs": staff, "note": "Non-cooling water per run: [core people, people per MW of IT capacity, gallons per person a day, share lost, maintenance gallons a day, maintenance gallons a day per MW, maintenance share lost]; "
                                          "added to the per_100mw results at the campus's size (scenario.flow, WQ.flow)"},
         "power": POWER,
         "pue_design": pue_design,

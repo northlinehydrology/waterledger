@@ -54,7 +54,7 @@ RANGES = {
     # TV tour of its Sterling, Virginia site, not Port Washington, with no capacity given.
     "fill_gal_per_mw": (2000.0, 12000.0),
     # When a dry cooler goes wet is an operator's setting, not a property of the equipment (EVAPCO 2019, p. 2: a selection and control output; Trane DC-WPR004A: the
-    # customer chooses; US 12,426,214 B1: customer-set). It is tied to the loop (model 1.7): the setting sits at the dry-bulb where the dry coil can no longer hold loop
+    # customer chooses; US 12,426,214 B1: a controller threshold with a range of embodiments). It is tied to the loop (model 1.7): the setting sits at the dry-bulb where the dry coil can no longer hold loop
     # supply, loop_limit below, give or take this margin in K for operators who go wet early or trim with chillers a while longer [A]. Same for assist and hybrid.
     "switch_margin": (-2.0, 2.0),
     # Dry coolers with adiabatic pre-cooling (model 1.3; on Michigan's detailed calculator only). Microsoft's 85 °F is for its direct-air evaporative design, a
@@ -107,7 +107,7 @@ OUTSIDE = {"oa_cfm_per_mw": (100.0, 1500.0), "humidify_share": (0.0, 1.0)}
 # dehumidifying coil, C [A]: it must be colder than the 15 C dew point, while the air loop's water, at 18.7 C or more, is not, so those coils stay dry.
 DEW_LOW, DEW_HIGH, DEHUMIDIFY_WATER = -9.0, 15.0, 9.0
 TOWER_DESIGN_WB = 25.6     # C, the 78 F wet-bulb of the standard cooling tower rating (95/85/78 F) [A]; a site's own design wet-bulb differs by a few degrees
-# Switch settings stay within the 70-95 °F (21.1-35.1 °C) that US 12,426,214 B1 (2025) gives for customer settings (example: 82 °F, 27.8 °C); applied to assist by analogy [A].
+# Switch settings stay within the 70-95 °F (21.1-35.1 °C) that US 12,426,214 B1 (2025) gives for its controller's wet mode threshold (example: 82 °F, 27.8 °C); applied to assist by analogy [A].
 SWITCH_SETTINGS = (21.1, 35.1)
 HYBRID_MIN_RAMP = 1.0      # K [A]: where a location's design dry-bulb is at or below the switch point, wet mode still comes on over this span, in its hottest hours only
 PARAMETERS = tuple(RANGES) + ("topup",) + tuple(ADIABATIC) + tuple(POWER) + tuple(OUTSIDE)
@@ -139,7 +139,7 @@ SOURCES = {
     "range_f": "Lei and Masanet (preprint rs-769999/v1), Table 3; 10 F rating",
     "drift": "EPA WaterSense at Work 2012, section 6.3, p. 6-9; EPA AP-42 13.4, Table 13.4-1",
     "fill_gal_per_mw": "Crusoe 2026; chilled-water loops of 3-10 gal per ton; top 12,000 [A]",
-    "switch_margin": "Operator's setting around the loop's limit [A]: Trane DC-WPR004A and US 12,426,214 B1 (customer-set); EVAPCO 2019, p. 2",
+    "switch_margin": "Operator's setting around the loop's limit [A]: Trane DC-WPR004A (the customer chooses); US 12,426,214 B1 (a controller threshold, 70-95 F in its embodiments); EVAPCO 2019, p. 2",
     "assist_eff": "EVAPCO 2019 (presented at CTI, Feb 2019), p. 2; ASHRAE 2016, ch. 41",
     "hybrid_full_offset": "Around the location's own 0.4% design dry-bulb [A], no published value",
     "topup": "NIH 2023 Technical Bulletin (under 5% a year); 1% floor [A]",
