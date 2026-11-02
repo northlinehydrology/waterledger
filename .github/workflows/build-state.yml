@@ -13,6 +13,10 @@ on:
         description: "Upload the snapshot to R2"
         type: boolean
         default: false
+      refresh:
+        description: "Download every source again instead of using this month's copies"
+        type: boolean
+        default: false
       snapshot_id:
         description: "Snapshot name, if not today's date: a published snapshot never changes, so a second build the same day is YYYY-MM-DD.2"
         required: false
@@ -32,14 +36,30 @@ jobs:
       - run: uv sync --locked
       - run: echo "month=$(date +%Y-%m)" >> "$GITHUB_OUTPUT"
         id: today
-      # NOAA's records, kept for the month so a rebuild doesn't ask for them again. Not the cooling runs, or anything else worked out by the code.
+      # The raw downloads, kept for the month so a rebuild doesn't ask for them again. Not the cooling runs or the per-place
+      # joins, which the code works out every time. Changing the download code starts over, and a failed job saves nothing.
       - uses: actions/cache@v4
         with:
           path: |
             .wlcache/isd
             .wlcache/noaa_pfds_*
+            .wlcache/openmeteo_*
+            .wlcache/census
+            .wlcache/places
+            .wlcache/supply/*_systems.json
+            .wlcache/wastewater
+            .wlcache/receiving
+            !.wlcache/receiving/*_by_place.json
+            .wlcache/energy/*_territories.json
+            .wlcache/wateruse
+            .wlcache/power
+            .wlcache/waters
+            .wlcache/lit
+            .wlcache/trace
+            .wlcache/climate/county_to_climdiv.json
+            .wlcache/climate/*_division_stations.json
             .wlcache/climate/*_county_rain.json
-          key: noaa-${{ inputs.state }}-${{ steps.today.outputs.month }}
+          key: raw-${{ inputs.state }}-${{ steps.today.outputs.month }}-${{ hashFiles('packages/waterledger-data/src/**/*.py', 'packages/waterledger/src/waterledger/states/mi/fetch.py') }}${{ inputs.refresh && format('-{0}', github.run_id) || '' }}
       - name: Build the state (Michigan from its own sources, the others from the national tier)
         run: uv run waterledger build-state ${{ inputs.state }} --out build-report --no-checks
       - name: Check the state end to end

@@ -21,6 +21,7 @@ Run after `waterledger build-state` (which fills the cache): `waterledger snapsh
 import datetime, hashlib, json, os
 
 from waterledger import states
+from waterledger_data.config import CACHE
 
 SNAPSHOT_ID = r"\d{4}-\d{2}-\d{2}(\.\d+)?"    # a date, with .2, .3 ... for another snapshot of a state built the same day; a published snapshot never changes
 FORMAT = 2              # 2 (Oct 30, 2026): adds wateruse.json and inputs/; readers treat a format 1 snapshot as having no water use
@@ -92,6 +93,12 @@ def pointer(existing, state, snapshot_id, model):
     return {"state": state, "latest": existing.get("latest", snapshot_id), "current": snapshot_id, "by_model": {**existing.get("by_model", {}), model: snapshot_id}}
 
 
+def _oldest_download():
+    """The date of the oldest file in the cache: a rebuild reuses the month's raw downloads, so a snapshot's own date doesn't say when its sources were read."""
+    times = [os.path.getmtime(os.path.join(d, f)) for d, _, names in os.walk(CACHE) for f in names]
+    return datetime.date.fromtimestamp(min(times)).isoformat() if times else None
+
+
 def write(state, out, date=None, checks=None):
     """Write the snapshot for `state` under out/<ST>/<date>/ from the cached layers; returns the snapshot folder."""
     from waterledger.national import climate as nc
@@ -160,6 +167,6 @@ def write(state, out, date=None, checks=None):
                 "sources": {"places": "Census TIGERweb", "supply": "EPA CWS service areas, SDWIS", "wastewater": "EPA CWNS 2022, ECHO",
                             "receiving": "USGS WBD, EPA ATTAINS (assessments by HUC12), Natural Earth 1:50m lakes", "climate": "NOAA ISD, NCEI climate divisions, Atlas 14, Climate at a Glance, NOAA GLERL",
                             "energy": "HIFLD retail service territories (PNNL), EIA-861, Siddik et al. 2024", "wateruse": wu_source},
-                "water_use_years": wu_years, "files": files, "inputs": inputs, "checks": checks}
+                "water_use_years": wu_years, "inputs_downloaded_since": _oldest_download(), "files": files, "inputs": inputs, "checks": checks}
     _write(os.path.join(folder, "manifest.json"), manifest)
     return folder
