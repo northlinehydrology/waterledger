@@ -41,18 +41,46 @@ def test_row_crops_shed_more_than_lawn_in_a_storm():
     assert hydrology.scs_runoff_in(5, 78) > hydrology.scs_runoff_in(5, 65)
 
 
-def test_farmland_phosphorus_is_runoff_times_concentration_alone():
-    L = runoff.loads(200, 36)["tp_lb"]["now"][1]
-    # 0.533 mg/L on the fields, 0.314 on the paved part: 0.40 x 0.1406 + 0.60 x 0.430. 163 lb: no soil phosphorus on top of the concentration, which already holds it
-    assert L == pytest.approx(0.226 * (196 * 6.48 * 0.533 + 4 * 30.78 * 0.3144), rel=1e-3)
+def test_farmland_phosphorus_and_nitrogen_are_ceaps_loss_per_acre():
+    # North Central: (59.6 + 32.1 + 25 + 11) thousand tons x 2,000 lb / 123,296 thousand acres = 2.07 lb; (157 + 196 + 1,025 + 491) -> 30.3 lb. Tables A-1, A-17 to A-20
+    assert runoff.nutrient_yield("farm", "tp", "MI")[1] == pytest.approx(2.0716, abs=1e-3)
+    assert runoff.nutrient_yield("farm", "tn", "OH")[1] == pytest.approx(30.32, abs=0.01)
+    assert runoff.loads(200, 36, state="MI")["tp_lb"]["now"][1] == pytest.approx(200 * 2.0716, abs=0.2)
+    # a state with no region assigned takes the national row, not Michigan's
+    assert runoff.nutrient_yield("farm", "tn", "DC")[1] == pytest.approx(29.1, abs=0.05)
+    # the low is the mean on acres under the thresholds, the high the mean on acres over the dominant pathway's plus the other's mean
+    assert runoff.nutrient_yield("farm", "tp", "MI")[0] == pytest.approx(32.1 * 2000 / 109656 + 11 * 2000 / 83232, abs=1e-2)
+    assert runoff.nutrient_yield("farm", "tp", "MI")[2] == pytest.approx(59.6 * 2000 / 13640 + 36 * 2000 / 123296, abs=1e-2)
+    # nitrogen by water: surface 5.73 of 30.3
+    L = runoff.loads(200, 36, state="MI")["tn_lb"]
+    assert L["now_surface"][1] == pytest.approx(200 * 353 * 2000 / 123296, abs=0.5)
+    assert "now_surface" not in runoff.loads(200, 36, "woods")["tn_lb"]
 
 
-def test_wet_ponds_remove_the_databases_share_of_the_captured_runoff():
+def test_wet_ponds_treat_the_captured_surface_runoff_down_to_a_floor():
     L = runoff.loads(200, 36)
-    # mid capture 85%; removal 80% TSS, 51% TP, 33% TN (CWP 2000, SEMCOG Table 9.5)
+    # surface at 50% impervious: 0.226 x 200 x 18.63 in x C; below ground the natural yield on 100 pervious acres
+    sp, bp = 0.226 * 200 * 18.63 * 0.31, 100 * 0.076
+    assert L["tp_lb"]["after"][1] == pytest.approx(sp + bp, abs=0.1)
+    assert L["tp_lb"]["pond"][1] == pytest.approx(bp + sp * (1 - 0.85 * 0.52), abs=0.1)      # 0.149 mg/L treated, above the 0.13 floor
+    sn, bn = 0.226 * 200 * 18.63 * 2.7, 100 * 0.77
+    assert L["tn_lb"]["pond"][1] == pytest.approx(bn + sn * (1 - 0.85 * 0.31), abs=0.5)
     assert L["tss_t"]["pond"][1] == pytest.approx(L["tss_t"]["after"][1] * (1 - 0.85 * 0.80))
-    assert L["tp_lb"]["pond"][1] == pytest.approx(L["tp_lb"]["after"][1] * (1 - 0.85 * 0.51))
-    assert L["tn_lb"]["pond"][1] == pytest.approx(L["tn_lb"]["after"][1] * (1 - 0.85 * 0.33))
+    # at the low end the floor holds: 0.20 x (1 - 0.76) = 0.048 mg/L would be below 0.13
+    s0, b0 = 0.226 * 200 * 18.63 * 0.20, 100 * 0.043
+    assert L["tp_lb"]["pond"][0] == pytest.approx(b0 + s0 * (1 - 0.95 + 0.95 * 0.13 / 0.20), abs=0.1)
+
+
+def test_infiltration_keeps_runoff_reduction_and_removal_apart_and_its_nitrogen_goes_somewhere():
+    L = runoff.loads(200, 36)
+    s, b = 0.226 * 200 * 18.63 * 2.7, 100 * 0.77
+    # middle: 85% captured, 70% of that soaks in, 15% off the rest
+    assert L["tn_lb"]["infiltration"][1] == pytest.approx(b + s * (0.15 + 0.85 * 0.30 * 0.85), abs=0.5)
+    assert L["tn_lb"]["to_ground"][1] == pytest.approx(s * 0.85 * 0.70, abs=0.5)
+    # what isn't in the stream went to the ground or was treated
+    treated = s * 0.85 * 0.30 * 0.15
+    assert L["tn_lb"]["after"][1] == pytest.approx(L["tn_lb"]["infiltration"][1] + L["tn_lb"]["to_ground"][1] + treated, abs=0.5)
+    assert L["runoff_gal"]["infiltration"][1] == pytest.approx(L["runoff_gal"]["after"][1] * (1 - 0.85 * 0.70))
 
 
 def test_both_stormwater_cases_are_in_the_rows():
@@ -71,30 +99,21 @@ def test_both_stormwater_cases_are_in_the_rows():
     assert rows["soil_moved"].today is None
 
 
-def test_a_mean_from_a_median_and_cov():
-    # lognormal: mean / median = sqrt(1 + COV^2). NSQD commercial TSS: 43 x sqrt(1 + 2.0^2) = 43 x 2.2361
-    assert runoff._mean(43, 2.0) == pytest.approx(96.15, abs=0.01)
-    E = runoff.PARAMS["emc"]
-    assert [round(x, 1) for x in E["paved"]["tss"]] == [96.2, 152.8, 275.8]      # commercial 43, COV 2.0; industrial 81, 1.6; freeways 99, 2.6
-    assert [round(x, 3) for x in E["paved"]["tp"]] == [0.344, 0.430, 0.515]      # 0.22, 1.2; 0.25, 1.4; 0.25, 1.8
-    assert E["paved"]["tn"][0] == pytest.approx(1.5 * 1.3454 + 0.6 * 1.4866, abs=0.001)    # TKN + NO2+NO3, each a mean: 2.91
-    assert E["roof"]["tss"][1] == pytest.approx(53.67, abs=0.01)                 # Marquette 24 at COV 2.0
-    assert E["turf"]["tss"][1] == pytest.approx(87.43, abs=0.01)                 # open space 48.5, COV 1.5
+def test_one_concentration_for_the_whole_site():
+    E = runoff.PARAMS["emc"]["developed"]
+    assert E["tp"] == [0.20, 0.31, 0.40] and E["tn"] == [1.9, 2.7, 3.1] and E["tss"] == [96, 118, 152]
 
 
-def test_the_finished_site_reads_like_a_commercial_or_industrial_outfall():
-    # Load-weighted concentration with no controls, checked against NSQD's outfalls, which the surfaces were not fitted to as a whole: between commercial's 96 and industrial's 153
+def test_the_finished_site_sits_among_published_rates():
+    # 1-2 lb of phosphorus and about 10-14 lb of nitrogen an acre a year at 36 inches: EPA Region 1 and Hampton Roads run about 1-1.7 and 8-19
     L = runoff.loads(200, 36)
-    c = L["tss_t"]["after"][1] * 2000 / (0.226 * 200 * 18.63)
-    assert 96 < c < 153
-    # and 0.2-0.3 tons and 1-2 lb of phosphorus an acre a year, the usual range for commercial land
-    assert 0.2 < L["tss_t"]["after"][1] / 200 < 0.3 and 1 < L["tp_lb"]["after"][1] / 200 < 2
+    assert 1 < L["tp_lb"]["after"][1] / 200 < 2 and 8 < L["tn_lb"]["after"][1] / 200 < 19
 
 
-def test_after_with_means_by_hand():
+def test_after_by_hand():
     L = runoff.loads(200, 36)["tss_t"]["after"][1]
-    # 100 ac x 30.78 in x (0.4 x 53.67 + 0.6 x 152.83 = 113.17) + 100 ac x 6.48 in x 87.43
-    assert L == pytest.approx(0.226 * (100 * 30.78 * 113.17 + 100 * 6.48 * 87.43) / 2000, rel=1e-3)      # 45.7 tons
+    # 200 ac x 18.63 in x 118 mg/L x 0.226 / 2,000
+    assert L == pytest.approx(0.226 * 200 * 18.63 * 118 / 2000, rel=1e-3)      # 49.7 tons
 
 
 def test_a_home_from_usgs_water_and_census_households():
@@ -259,15 +278,17 @@ def test_farmland_sediment_is_a_yield_by_state():
     # the range: Michigan's median 0.58 x 0.2, mean 1.62 x 0.33, cultivated mean 1.88 x 0.5
     assert runoff.sediment_yield("farm", "MI") == pytest.approx([0.116, 0.5346, 0.94])
     assert runoff.sediment_yield("farm", "DC") == runoff.sediment_yield("farm") == pytest.approx([1.26 * 0.2, 2.67 * 0.33, 3.01 * 0.5])    # the national row, not Michigan's
-    # 196 acres of field x 0.5346 = 104.78 tons, plus the paved part: 4 ac x 30.78 in x 113.17 mg/L x 0.226 / 2,000 = 1.57 tons
-    assert runoff.loads(200, 36, state="MI")["tss_t"]["now"][1] == pytest.approx(196 * 0.5346 + 0.226 * 4 * 30.78 * 113.17 / 2000, rel=1e-3)
+    # 196 acres of field x 0.5346 = 104.78 tons, plus the paved part: 4 ac x 30.78 in x 118 mg/L x 0.226 / 2,000 = 1.64 tons
+    assert runoff.loads(200, 36, state="MI")["tss_t"]["now"][1] == pytest.approx(196 * 0.5346 + 0.226 * 4 * 30.78 * 118 / 2000, rel=1e-3)
 
 
 def test_woods_are_a_yield_and_built_land_a_concentration():
     assert runoff.sediment_yield("woods") == pytest.approx([0.002, 0.033, 0.5])     # 0.01 x 0.2, 0.1 x 0.33, 1.0 x 0.5
-    assert runoff.loads(200, 36, "woods")["tss_t"]["now"][1] == pytest.approx(198 * 0.033 + 0.226 * 2 * 30.78 * 113.17 / 2000, rel=1e-3)
-    # built: 60% roofs and paving at 113.17 mg/L, 40% turf at 87.43
-    assert runoff.loads(200, 36, "built")["tss_t"]["now"][1] == pytest.approx(0.226 * (120 * 30.78 * 113.17 + 80 * 6.48 * 87.43) / 2000, rel=1e-3)
+    assert runoff.loads(200, 36, "woods")["tss_t"]["now"][1] == pytest.approx(198 * 0.033 + 0.226 * 2 * 30.78 * 118 / 2000, rel=1e-3)
+    # built: the whole site at 118 mg/L
+    assert runoff.loads(200, 36, "built")["tss_t"]["now"][1] == pytest.approx(0.226 * (120 * 30.78 + 80 * 6.48) * 118 / 2000, rel=1e-3)
+    # natural land: Clark's basins, and no pavement term of its own
+    assert runoff.loads(200, 36, "woods")["tp_lb"]["now"] == pytest.approx([8.6, 15.2, 21.4]) and runoff.loads(200, 36, "woods")["tn_lb"]["now"][1] == pytest.approx(154)
 
 
 def test_construction_is_gross_erosion_times_delivery():

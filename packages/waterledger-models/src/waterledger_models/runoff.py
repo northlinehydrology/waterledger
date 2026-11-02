@@ -5,14 +5,17 @@ Screening level, for a review or a public estimate, not a calibrated model:
   runoff   Simple Method (Schueler 1987), split by surface: R = P x 0.9 x Rv, with Rv by land cover from the Runoff Reduction technical memo
            (Hirschman, Collins and Schueler 2008, Table 4): 0.95 impervious, 0.20 turf and 0.03 forest on hydrologic soil group B (by soil group later).
            Cropland has no value there: 0.20 [A], as turf, since row crop curve numbers on soil group B (78-81, TR-55) are above lawn's (61-69)
-  loads    L (lb/yr) = 0.226 x R (in) x C (mg/L) x A (ac), with mean concentrations C by surface
-  controls two cases, everywhere: no controls, and typical wet pond performance on the captured share of runoff (removal from the Center for Watershed
-           Protection's national database, 2000, as printed in SEMCOG 2008 Table 9.5). 80% TSS is what wet ponds typically do, in any state, and also the
-           level Michigan's post-construction standard asks for (EGLE MS4 permits, Kent County Drain Commissioner rules). Infiltration is the stronger option
+  loads    each land cover reports what leaves an acre in a year, by whatever water carries it. A site's own soils, slopes, drainage and practices can move these a lot.
+           developed  surface: L (lb/yr) = 0.226 x R (in) x C (mg/L) x A (ac), one whole-site C by land use (NSQD 4.02), since outfalls already hold roofs, paving and landscaping;
+                      below ground: the natural yield on the pervious share [A]
+           farmland   phosphorus and nitrogen: USDA CEAP's modeled loss per acre by production region, surface and below ground (tile drains and deep percolation), checked against MANAGE's measurements
+           natural    phosphorus and nitrogen: measured yields of undeveloped basins (Clark et al. 2000), national
+  controls two cases, everywhere: no controls, and typical wet pond performance on the captured share of runoff, on the surface part only. Treated C = max(C x (1 - removal), floor)
+           80% TSS is what wet ponds typically do, in any state (CWP 2000, as printed in SEMCOG 2008 Table 9.5), and also the level Michigan's post-construction standard asks for
+           (EGLE MS4 permits, Kent County Drain Commissioner rules). Phosphorus and nitrogen: CWP 2007's wet pond quartiles. Infiltration is the stronger option, and nitrogen it soaks in goes to groundwater, not away
   sediment two bases, on purpose. Today on soil and the construction years are yields, tons an acre a year, because runoff x concentration doesn't capture soil scoured off the
            ground: gross erosion x a delivery ratio [A]. The finished site is runoff x concentration, because roofs, paving and established lawn aren't scouring.
-           Screening estimates: a study with site soils, slopes and sediment modeling would do better. Farmland phosphorus stays runoff x concentration, which holds its particulate part;
-           tile-drain nitrate is not counted, so farmland nitrogen here is low
+           Screening estimates: a study with site soils, slopes and sediment modeling would do better
 PARAMS is the single source of every value; Water Ledger reads it from waters.json and the Water Review reads it here.
 """
 
@@ -22,46 +25,42 @@ LB = 0.226          # lb per (ac x in x mg/L)
 GAL_PER_AC_IN = 27154.0
 PJ = 0.9            # share of rain events that produce runoff (Simple Method)
 
-# Loads need the mean concentration, not the geometric mean or median: for a lognormal, mean = median x sqrt(1 + COV^2).
-def _mean(median, cov):
-    return median * (1 + cov * cov) ** 0.5
+# Whole-site event mean concentrations, mg/L, [lo, mid, hi], arithmetic means, NSQD 4.02 (Pitt, Maestre and Clary 2018; TP p.39, TKN p.31, NO2+NO3 p.36; TN = TKN + NO2+NO3): institutional, commercial, industrial [A].
+# Outfalls drain mixed land, so one value for the site replaces values by surface. TSS from the database's file (commercial 118, industrial 152; institutional's 144 rests on 13 sites), with NSQD 1.1's commercial mean, 96, low.
+# Built land takes the campus's values, so a change between them comes from impervious share and not a choice of class [A].
+_ROOF_SHARE = 0.40
+_EMC = {"developed": {"tss": [96, 118, 152], "tp": [0.20, 0.31, 0.40], "tn": [1.9, 2.7, 3.1], "sources": ["nsqd402", "nsqd11"]}}
 
-
-# NSQD v1.1 (Maestre and Pitt 2005), Table 3: [median, COV] at outfalls, across U.S. municipalities. TN is TKN + NO2+NO3, each its own mean.
-_NSQD = {"commercial": {"tss": (43, 2.0), "tp": (0.22, 1.2), "tkn": (1.5, 0.9), "no": (0.6, 1.1)},
-         "industrial": {"tss": (81, 1.6), "tp": (0.25, 1.4), "tkn": (1.4, 1.1), "no": (0.69, 0.92)},
-         "freeways": {"tss": (99, 2.6), "tp": (0.25, 1.8), "tkn": (2.0, 1.4), "no": (0.28, 1.2)},
-         # Open space's TP COV (3.5, on 68 events) reflects a few extreme values, so mixed open space's 1.1 is used with open space's median [A]
-         "open_space": {"tss": (48.5, 1.5), "tp": (0.31, 1.1), "tkn": (0.74, 0.9), "no": (0.59, 0.9)},
-         "mixed_open": {"tss": (78, 1.6), "tp": (0.25, 1.1), "tkn": (1.1, 0.9), "no": (0.7, 0.8)}}
-
-
-def _nsqd(use, k):
-    u = _NSQD[use]
-    return _mean(*u[k]) if k != "tn" else _mean(*u["tkn"]) + _mean(*u["no"])
-
-
-def _nsqd3(k, uses):
-    return [_nsqd(u, k) for u in uses]
-
-
-# Event mean concentrations, mg/L: [lo, mid, hi], means. A national source where one has the surface (NSQD); the choices are in the methods log.
-# NSQD has outfalls, not surfaces: pavement takes commercial, industrial and freeway outfalls as its range. Marquette's parking lots (USGS WRIR 97-4242 Table 4: 110 clean,
-# 138 with data the authors mark unreliable, geometric means) and MPCA's commercial 75 are not used; Marquette's clean figure as a mean, about 208, falls inside the range.
-# Roofs have no national source: Marquette's commercial roofs (geometric means 24, 0.09, TKN 1.7 + NO 0.57) as means at NSQD commercial's COVs, MPCA's values as the low end.
-# Turf: MPCA open space low, NSQD open space mid, mixed open space high. Marquette's lawns (TSS 262, TP 2.33) and Madison's (TP 2.67) are not used: a few fertilized lawns, source-area samples.
-ROOF_MEAN = {"tss": _mean(24, 2.0), "tp": _mean(0.09, 1.2), "tn": _mean(1.7, 0.9) + _mean(0.57, 1.1)}
-_PAVED, _ROOF_SHARE = ("commercial", "industrial", "freeways"), 0.40
-_EMC = {
-    "roof": {"tss": [20, ROOF_MEAN["tss"], ROOF_MEAN["tss"]], "tp": [0.03, ROOF_MEAN["tp"], ROOF_MEAN["tp"]], "tn": [1.5, ROOF_MEAN["tn"], ROOF_MEAN["tn"]], "sources": ["usgs_marquette", "mpca_emc", "nsqd11"]},
-    "paved": {k: _nsqd3(k, _PAVED) for k in ("tss", "tp", "tn")} | {"sources": ["nsqd11"]},
-    "turf": {"tss": [21, _nsqd("open_space", "tss"), _nsqd("mixed_open", "tss")], "tp": [0.19, _nsqd("open_space", "tp"), _mean(0.31, 3.5)], "tn": [1.5, _nsqd("open_space", "tn"), _nsqd("mixed_open", "tn")], "sources": ["mpca_emc", "stepl", "nsqd11"]},
-    # Row crops have no national mean: MPCA recommends no TSS EMC (range 50-160, its middle 100 [A]). TP: MPCA's review median 0.533 mid, as a mean at COV 1 high [A], STEPL's 0.3 low. TN 1.9 (STEPL)
-    "farm": {"tss": [50, 100, 160], "tp": [0.3, 0.533, _mean(0.533, 1.0)], "tn": [1.9, 1.9, 1.9], "sources": ["mpca_emc", "stepl"], "assumed": True},
-    "woods": {"tss": [26, 72, 140], "tp": [0.03, 0.09, 0.45], "tn": [0.2, 0.2, 0.2], "sources": ["mpca_emc", "stepl"]},
+# USDA NRCS (2022), Conservation Practices on Cultivated Cropland, CEAP II, thousands of acres and tons a year by production region: Tables A-1, A-17 to A-20, as
+# (acres, surface N, subsurface N, sediment P, soluble P); after the acres, each as (acres above the threshold, tons on them, tons on the rest).
+_CEAP = {
+    "atlantic_gulf": (13825, (481, 7, 16), (8260, 254, 39), (1606, 6.0, 3.3), (9527, 5, 1)),
+    "california": (3913, (49, 1, 2), (1311, 70, 10), (61, 0.2, 0.5), (665, 1, 0.2)),
+    "east_central": (10166, (1770, 30, 18), (5055, 145, 34), (2743, 12.4, 2.7), (7486, 4, 0.5)),
+    "lower_miss_texas_gulf": (20916, (2277, 29, 40), (9886, 273, 74), (2845, 9.3, 6.8), (16233, 11, 1)),
+    "north_central": (123296, (9039, 157, 196), (38371, 1025, 491), (13640, 59.6, 32.1), (40064, 25, 11)),
+    "northeast": (7597, (1047, 17, 12), (3769, 126, 25), (2334, 10.9, 1.9), (4478, 2, 1)),
+    "northern_plains": (51130, (11442, 153, 92), (9988, 285, 128), (4730, 12.0, 14.6), (748, 0.3, 2)),
+    "northwest": (13438, (606, 10, 21), (2684, 115, 21), (836, 3.2, 2.1), (877, 1, 0.4)),
+    "south_central": (5107, (1326, 21, 9), (2045, 76, 17), (1221, 4.4, 1.7), (2586, 2, 0.3)),
+    "southern_central_plains": (62732, (5764, 69, 132), (6784, 202, 108), (3476, 11.1, 17.1), (1405, 1, 2)),
+    "southwest": (3183, (143, 2, 5), (764, 29, 4), (138, 0.4, 0.5), (292, 0, 0.1)),
+    "national": (315303, (33946, 497, 541), (88914, 2601, 949), (33630, 129, 83), (84361, 51, 19)),
 }
-# Land already built: its roofs and paving as the campus's are, at the campus's roof share
-_EMC["built"] = {k: [_ROOF_SHARE * _EMC["roof"][k][i] + (1 - _ROOF_SHARE) * _EMC["paved"][k][i] for i in range(3)] for k in ("tss", "tp", "tn")} | {"sources": ["nsqd11", "usgs_marquette"]}
+
+
+def _ceap(region):
+    """Loss per acre, lb a year, [lo, mid, hi], for a CEAP region. Middle: the region's mean, surface plus below ground. Low: the mean on acres meeting CEAP's thresholds.
+    High: the mean on acres above the threshold of the pathway that carries most of it, plus the other pathway's mean. Low and high show the spread between fields [A]."""
+    acres, *rest = _CEAP[region]
+    pa = lambda t, a: t * 2000 / a
+    def spread(dominant, other):
+        mean_d, mean_o = pa(dominant[1] + dominant[2], acres), pa(other[1] + other[2], acres)
+        low = pa(dominant[2], acres - dominant[0]) + pa(other[2], acres - other[0])
+        return [low, mean_d + mean_o, pa(dominant[1], dominant[0]) + mean_o]
+    surf_n, sub_n, sed_p, sol_p = rest
+    return {"tn": spread(sub_n, surf_n), "tp": spread(sed_p, sol_p), "tn_surface": [pa(surf_n[2], acres - surf_n[0]), pa(surf_n[1] + surf_n[2], acres), pa(surf_n[1], surf_n[0])]}
+
 
 # Sheet and rill erosion on cropland, tons an acre a year, 2022: [total cropland's median, total cropland's mean, cultivated cropland's mean].
 # USDA NRCS, 2022 National Resources Inventory Summary Report, Table 15. A state not there (Alaska, D.C.) takes the national row.
@@ -86,16 +85,23 @@ PARAMS = {
     # Runoff coefficients by land cover: Runoff Reduction memo Table 4, soil group B. farm [A]: no cropland value there; not below turf (see above)
     "rv": {"imp": 0.95, "turf": 0.20, "farm": 0.20, "woods": 0.03, "sources": ["simple_method", "runoff_reduction2008"]},
     "emc": _EMC,
+    # Farmland and natural land, lb an acre a year, [lo, mid, hi]. Farm: CEAP by region; a state takes the region holding most of its cropland [A], from Fig. 2; CEAP publishes no boundaries, so not by place. A state without one takes the national row.
+    # Natural: Clark, Mueller and Mast 2000, Table 1, 63 undeveloped basins, medians of basin means with quartiles (kg/km2 converted). One national value: it is small against every other land cover, and regional readings only exist off a chart. Dry places run lower.
+    "nutrient_yield": {"farm": {k: _ceap(k) for k in _CEAP}, "farm_region": {"MI": "north_central", "OH": "north_central", "VA": "east_central", "TX": "southern_central_plains"},
+                       "natural": {"tp": [0.043, 0.076, 0.107], "tn": [0.40, 0.77, 1.96]}, "sources": ["ceap2022", "clark2000", "manage"]},
     # Yields today, a screening estimate: gross erosion x delivery. Delivery [A]: about a third leaves a site of a few hundred acres, the rest settling at field edges and in swales, as in published
     # area relations (0.33 at half a square mile, Stewart et al. 1978, read only in excerpt); an agricultural figure of 25% +/-15% is reported there too. Woods: EPA MM8 Table 8.1's natural range, 0.01-1.0, its geometric middle 0.1 [A].
     "sediment_yield": {"delivery": [0.2, 0.33, 0.5], "farm_gross": {"national": CROPLAND_EROSION_US, "by_state": CROPLAND_EROSION}, "woods_gross": [0.01, 0.1, 1.0], "sources": ["nri2022", "epa_mm8"]},
     "before_imp": {"farm": 0.02, "woods": 0.01, "built": 0.60},     # [A] impervious share of the land as it is now
     "after": {"imp": 0.50, "imp_range": [0.40, 0.60], "roof_share": _ROOF_SHARE},   # [A] roofs and paving; roofs as a share of that
-    # Removal by practice (share removed): the national database's medians, SEMCOG Table 9.5. Captured share of annual runoff [A]. "standard" is Michigan's rule, for its pages.
+    # Removal by practice, [lo, mid, hi], with concentration floors. Captured share of annual runoff [A]. Wet ponds: sediment SEMCOG Table 9.5; phosphorus and nitrogen CWP 2007 Table 2 (quartiles and median).
+    # Floors: median effluent in the BMP Database (2012 Chesapeake summary, Table 11; nitrogen counts TKN alone). Infiltration: runoff reduction and pollutant removal kept apart (Runoff Reduction memo Tables 2-3, 7), 0.7 its middle [A];
+    # sediment at the pond's 80%, which gives about SEMCOG's 95% in all. "standard" is Michigan's rule, for its pages.
     "controls": {
         "captured": [0.75, 0.85, 0.95],
-        "pond": {"tss": 0.80, "tp": 0.51, "tn": 0.33, "sources": ["semcog_lid"]},
-        "infiltration": {"tss": 0.95, "tp": 0.70, "tn": 0.51, "volume": 0.5, "sources": ["semcog_lid"]},
+        "pond": {"tss": [0.80, 0.80, 0.80], "tp": [0.39, 0.52, 0.76], "tn": [0.16, 0.31, 0.41], "sources": ["semcog_lid", "cwp2007"]},
+        "infiltration": {"tss": 0.80, "tp": 0.25, "tn": 0.15, "volume": [0.5, 0.7, 0.9], "sources": ["runoff_reduction2008", "semcog_lid"]},
+        "floor": {"tss": 0, "tp": 0.13, "tn": 1.1, "sources": ["bmpdb2012"]},
         "standard_sources": ["egle_ms4", "kcdc_rules"],
         "standard": "Treat the first inch of runoff or 90% of runoff-producing storms with at least 80% TSS removal (or 80 mg/L), and hold peak rate and volume to pre-development for storms up to the 2-year, 24-hour event",
     },
@@ -120,8 +126,10 @@ PARAMS = {
 }
 
 
-def _w(lst, i):
-    return lst[i] if isinstance(lst, list) else lst
+def nutrient_yield(before, k, state=None):
+    """Phosphorus ("tp") or nitrogen ("tn") leaving farmland or natural land, lb an acre a year, [lo, mid, hi]. `state`: a postal code, for farmland's CEAP region; without one, or for a state not assigned, the national row."""
+    Y = PARAMS["nutrient_yield"]
+    return Y["natural"][k] if before == "woods" else Y["farm"][Y["farm_region"].get(state, "national")][k]
 
 
 def _rv_pervious(cover):
@@ -141,36 +149,47 @@ def sediment_yield(before, state=None):
     return [gross[i] * Y["delivery"][i] for i in range(3)]
 
 
-def loads(acres, rain_in, before="farm", imp=None, roof_share=None, state=None):
-    """Annual runoff (gallons) and loads (TSS tons, TP lb, TN lb) now, after with no controls, after with typical wet ponds
-    and after with infiltration. Each value is [lo, mid, hi]. Sediment today on farmland or woods is a yield (sediment_yield); everything else is runoff x concentration."""
-    P, E = PARAMS, PARAMS["emc"]
+def loads(acres, rain_in, before="farm", imp=None, state=None):
+    """Annual runoff (gallons) and loads (TSS tons, TP lb, TN lb) now, after with no controls, after with typical wet ponds and after with infiltration, each [lo, mid, hi].
+    Sediment today on farmland or woods is a yield (sediment_yield), phosphorus and nitrogen there too (nutrient_yield). Developed land is runoff x concentration, with the natural yield below its pervious share.
+    Also: "tn_lb" "now_surface", the part of farmland's nitrogen in surface runoff, and "to_ground", the nitrogen infiltration sends to groundwater."""
+    P = PARAMS
     imp = P["after"]["imp"] if imp is None else imp
-    roof = P["after"]["roof_share"] if roof_share is None else roof_share
-    rv = P["rv"]
-    r_imp, r_turf, r_before = rain_in * PJ * rv["imp"], rain_in * PJ * rv["turf"], rain_in * PJ * _rv_pervious(before)
-    i0 = P["before_imp"][before]
+    i0, C, cap, nat = P["before_imp"][before], P["controls"], P["controls"]["captured"], P["nutrient_yield"]["natural"]
+    depth = lambda share: runoff_in(rain_in, share)     # inches over the whole site, developed
     out = {"runoff_gal": {}, "tss_t": {}, "tp_lb": {}, "tn_lb": {}}
-    out["runoff_gal"]["now"] = [acres * (i0 * r_imp + (1 - i0) * r_before) * GAL_PER_AC_IN] * 3
-    out["runoff_gal"]["after"] = [acres * (imp * r_imp + (1 - imp) * r_turf) * GAL_PER_AC_IN] * 3
+    out["runoff_gal"]["now"] = [acres * runoff_in(rain_in, i0, before) * GAL_PER_AC_IN] * 3
+    out["runoff_gal"]["after"] = [acres * depth(imp) * GAL_PER_AC_IN] * 3
     for k, unit in (("tss", "tss_t"), ("tp", "tp_lb"), ("tn", "tn_lb")):
         div = 2000 if k == "tss" else 1
-        now_perv = E[before][k] if before != "built" else E["turf"][k]
-        now_imp = E["built"][k]
-        now = [LB * acres * (i0 * r_imp * _w(now_imp, i) + (1 - i0) * r_before * _w(now_perv, i)) / div for i in range(3)]
-        if k == "tss" and before in ("farm", "woods"):
+        emc, below = P["emc"]["developed"][k], [0, 0, 0] if k == "tss" else nat[k]
+        surface = lambda share: [LB * acres * depth(share) * emc[i] / div for i in range(3)]
+        if before == "built":
+            s0 = surface(i0)
+            now = [s0[i] + acres * (1 - i0) * below[i] for i in range(3)]
+        elif k == "tss":        # the yield on the soil, runoff x concentration on what's paved already
             y = sediment_yield(before, state)
-            now = [LB * acres * i0 * r_imp * _w(now_imp, i) / div + acres * (1 - i0) * y[i] for i in range(3)]
-        after = [LB * acres * (imp * r_imp * (roof * E["roof"][k][i] + (1 - roof) * E["paved"][k][i]) + (1 - imp) * r_turf * E["turf"][k][i]) / div for i in range(3)]
-        cap = P["controls"]["captured"]
-        # lo pairs with the most capture, hi with the least
-        pond = [after[i] * (1 - cap[2 - i] * P["controls"]["pond"][k]) for i in range(3)]
-        inf = P["controls"]["infiltration"]
-        infil = [after[i] * (1 - cap[2 - i] * (1 - (1 - inf["volume"]) * (1 - inf[k]))) for i in range(3)]
+            now = [LB * acres * i0 * rain_in * PJ * P["rv"]["imp"] * emc[i] / div + acres * (1 - i0) * y[i] for i in range(3)]
+        else:
+            now = [acres * x for x in nutrient_yield(before, k, state)]
+        s1, b1 = surface(imp), [acres * (1 - imp) * x for x in below]
+        after = [s1[i] + b1[i] for i in range(3)]
+        pond, infil, ground = [], [], []
+        for i in range(3):
+            j = 2 - i       # lo pairs with the most capture and removal, hi with the least
+            treated = max(emc[i] * (1 - C["pond"][k][j]), C["floor"][k]) / emc[i]
+            pond.append(b1[i] + s1[i] * (1 - cap[j] + cap[j] * min(treated, 1)))
+            soaked = C["infiltration"]["volume"][j]
+            infil.append(b1[i] + s1[i] * (1 - cap[j] + cap[j] * (1 - soaked) * (1 - C["infiltration"][k])))
+            ground.append(s1[i] * cap[j] * soaked)
         out[unit] = {"now": now, "after": after, "pond": pond, "infiltration": infil}
-    vol_inf = P["controls"]["infiltration"]["volume"]
+        if k == "tn":
+            out[unit]["to_ground"] = ground
+            if before == "farm":
+                Y = P["nutrient_yield"]
+                out[unit]["now_surface"] = [acres * x for x in Y["farm"][Y["farm_region"].get(state, "national")]["tn_surface"]]
     out["runoff_gal"]["pond"] = out["runoff_gal"]["after"]
-    out["runoff_gal"]["infiltration"] = [out["runoff_gal"]["after"][0] * (1 - P["controls"]["captured"][2 - i] * vol_inf) for i in range(3)]
+    out["runoff_gal"]["infiltration"] = [out["runoff_gal"]["after"][0] * (1 - cap[2 - i] * C["infiltration"]["volume"][2 - i]) for i in range(3)]
     return out
 
 
