@@ -5,7 +5,6 @@ through towers), and these options describe a kind of plant rather than one year
 Run after states.py. Output: tables/state_fuel_water_2024.csv.
 """
 import os
-import numpy as np
 import pandas as pd
 import states as S
 

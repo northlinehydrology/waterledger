@@ -1,7 +1,6 @@
 """The workflow's upload step, run with a stand-in for aws: only a real not-found counts as absent, so a failed read can't overwrite a snapshot or move older packages onto a new model."""
-import os, re, stat, subprocess
+import os, stat, subprocess
 
-import pytest
 
 WORKFLOW = os.path.join(os.path.dirname(__file__), "..", ".github", "workflows", "build-state.yml")
 AWS = """#!/bin/bash

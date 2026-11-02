@@ -262,10 +262,8 @@ def test_runoff_is_a_part_of_the_rain_and_loads_are_concentration_times_water():
     for imp in (0.0, 0.5, 1.0):
         assert 0 < runoff.runoff_in(37.0, imp) < 37.0
     L = runoff.loads(200, 37.0, before="woods")
-    for k, conc in (("tp_lb", runoff.PARAMS["emc"]["woods"]["tp"]),):
-        i0 = runoff.PARAMS["before_imp"]["woods"]
-        assert L["runoff_gal"]["after"][1] > L["runoff_gal"]["now"][1]
-        assert L[k]["pond"][1] < L[k]["after"][1] and L[k]["infiltration"][1] < L[k]["after"][1]
+    assert L["runoff_gal"]["after"][1] > L["runoff_gal"]["now"][1]
+    assert L["tp_lb"]["pond"][1] < L["tp_lb"]["after"][1] and L["tp_lb"]["infiltration"][1] < L["tp_lb"]["after"][1]
 
 
 def test_salt_and_blowdown_mass():
