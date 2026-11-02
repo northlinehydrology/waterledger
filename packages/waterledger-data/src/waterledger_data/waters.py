@@ -10,6 +10,7 @@ Sources (all public):
 import collections, functools, glob, json, os, re, time, urllib.parse, urllib.request
 
 from waterledger_data.config import CACHE
+from waterledger_data.fetching import save
 
 RAW = os.path.join(CACHE, "waters")
 ATTAINS = "https://gispub.epa.gov/arcgis/rest/services/OW/ATTAINS_Assessment/MapServer"
@@ -208,9 +209,7 @@ def cwns_design_flows():
     (HydroShare mirror, Hodson et al. 2026). CWNS has no actual flows."""
     import csv
     for f in ("FLOW", "FACILITY_PERMIT"):
-        path = os.path.join(RAW, f"cwns2022_{f}.csv")
-        if not os.path.exists(path):
-            urllib.request.urlretrieve(f"{CWNS}/{f}.csv", path)
+        save(f"{CWNS}/{f}.csv", os.path.join(RAW, f"cwns2022_{f}.csv"))
     total = {}
     for r in csv.DictReader(open(os.path.join(RAW, "cwns2022_FLOW.csv"))):
         if r["STATE_CODE"] == "MI" and r["FLOW_TYPE"] == "Total Flow" and r["CURRENT_DESIGN_FLOW"]:

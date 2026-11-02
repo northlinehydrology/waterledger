@@ -3,7 +3,7 @@ import io, json, urllib.error
 
 import pytest
 
-from waterledger_data import divisions, waters
+from waterledger_data import divisions, fetching, waters
 
 
 def service(monkeypatch, module, failures):
@@ -44,4 +44,27 @@ def test_rainfall_takes_no_record_as_the_answer(monkeypatch):
     calls = service(monkeypatch, divisions, [http(404)])
     with pytest.raises(urllib.error.HTTPError):
         divisions.cag_json("https://x")
+    assert len(calls) == 1
+
+
+def test_a_download_waits_out_a_service_that_is_down_and_is_kept_whole(monkeypatch, tmp_path):
+    path = str(tmp_path / "a" / "b.json")
+    calls = service(monkeypatch, fetching, [http(503), http(429), urllib.error.URLError("reset")])
+    assert fetching.save("https://x", path) == path and len(calls) == 4
+    assert json.load(open(path)) == {"ok": 1} and not (tmp_path / "a" / "b.json.part").exists()
+    assert fetching.save("https://x", path) == path and len(calls) == 4      # already there: not asked again
+
+
+def test_a_download_that_never_comes_leaves_nothing_behind(monkeypatch, tmp_path):
+    path = tmp_path / "b.json"
+    service(monkeypatch, fetching, [http(503)] * 8)
+    with pytest.raises(urllib.error.HTTPError):
+        fetching.save("https://x", str(path))
+    assert not path.exists()
+
+
+def test_no_such_record_is_not_asked_again(monkeypatch, tmp_path):
+    calls = service(monkeypatch, fetching, [http(404)])
+    with pytest.raises(urllib.error.HTTPError):
+        fetching.save("https://x", str(tmp_path / "b.json"))
     assert len(calls) == 1

@@ -1,9 +1,10 @@
 """Michigan's public sources: what `waterledger build-state MI` downloads before it builds. A step whose files are already in the
 cache is skipped, so an interrupted build picks up where it stopped. EGLE's water-use file is not here: EGLE refuses scripted
 downloads, so a names-removed copy ships in states/mi/inputs/ (see states/mi/egle.py)."""
-import datetime, glob, json, os, time, urllib.request
+import datetime, glob, json, os, time
 
 from waterledger_data.config import CACHE
+from waterledger_data.fetching import save
 
 
 def _fresh(*mods):
@@ -84,15 +85,7 @@ def weather():
     from waterledger.states import mi as wl
     from waterledger_data.climate import hourly_weather
     for rid, r in wl.REGIONS.items():
-        for attempt in range(6):
-            try:
-                hourly_weather(r["lat"], r["lon"], "1995-01-01", "2024-12-31", f"{r.get('cache', rid)}_1995_2024")
-                break
-            except Exception as e:
-                if "429" not in str(e) or attempt == 5:
-                    raise
-                print(f"  Open-Meteo busy; waiting {60 * (attempt + 1)} s", flush=True)
-                time.sleep(60 * (attempt + 1))
+        hourly_weather(r["lat"], r["lon"], "1995-01-01", "2024-12-31", f"{r.get('cache', rid)}_1995_2024")
         time.sleep(20)
 
 
@@ -127,13 +120,12 @@ def naturalearth():
     from waterledger.states import mi as wl
     base = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/"
     for name, f in (("ne_50m_admin_1_states_provinces_lakes.geojson", "adm50.json"), ("ne_50m_lakes.geojson", "lakes50.json")):
-        urllib.request.urlretrieve(base + name, os.path.join(wl.RAW_PLACES, f))
+        save(base + name, os.path.join(wl.RAW_PLACES, f))
 
 
 def glerl():
     from waterledger.states import mi as wl
-    urllib.request.urlretrieve("https://apps.glerl.noaa.gov/erddap/tabledap/glerlLTAvgTemp.csv?lake,dayOfYear,temperature",
-                               os.path.join(wl.RAW, "glerl_lt_avg_temp.csv"))
+    save("https://apps.glerl.noaa.gov/erddap/tabledap/glerlLTAvgTemp.csv?lake,dayOfYear,temperature", os.path.join(wl.RAW, "glerl_lt_avg_temp.csv"))
 
 
 # (step, the files that show it has run, relative to the cache). Order matters: water_systems reads census's files.

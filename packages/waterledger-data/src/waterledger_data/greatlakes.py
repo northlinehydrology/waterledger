@@ -1,9 +1,10 @@
 """Which Great Lake a place is on, in any state: the nearest within SHORE_KM of the place's boundary, by true distance between the place's polygon and the lake's (Census boundaries;
 Natural Earth 1:50m lakes, whose generalized shoreline is a kilometer or so out in places, well inside the 5 km allowed). Lake St. Clair counts as on the lakes, as it has since Michigan's first
 build. A state with no shoreline simply finds none. Cached under <cache>/places/."""
-import json, os, urllib.request
+import json, os
 
 from waterledger_data.config import CACHE
+from waterledger_data.fetching import save
 
 URL = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_lakes.geojson"
 ALBERS = 5070
@@ -15,10 +16,7 @@ def lakes():
     """The lakes as a GeoDataFrame in meters: name, geometry."""
     import geopandas as gpd
     path = os.path.join(CACHE, "places", "lakes50.json")
-    if not os.path.exists(path):
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with urllib.request.urlopen(URL, timeout=120) as r, open(path, "wb") as f:
-            f.write(r.read())
+    save(URL, path)
     feats = [f for f in json.load(open(path))["features"] if f["properties"].get("name") in NAMES]
     g = gpd.GeoDataFrame.from_features(feats, crs=4326).to_crs(ALBERS)
     g["name"] = g["name"].map(NAMES)

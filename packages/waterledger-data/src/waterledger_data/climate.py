@@ -2,9 +2,10 @@
 
 Both are fetched once and cached under engine/data/raw/ (gitignored); rerunning reads the cache.
 """
-import ast, json, os, re, urllib.request
+import ast, json, os, re
 
 from waterledger_data.config import CACHE as RAW
+from waterledger_data.fetching import save
 
 # Atlas 14 PFDS rows and columns, in the order the NOAA service returns them
 PF_DURATIONS = ["5-min", "10-min", "15-min", "30-min", "60-min", "2-hr", "3-hr", "6-hr", "12-hr", "24-hr",
@@ -12,12 +13,7 @@ PF_DURATIONS = ["5-min", "10-min", "15-min", "30-min", "60-min", "2-hr", "3-hr",
 PF_ARI = [1, 2, 5, 10, 25, 50, 100, 200, 500, 1000]
 
 
-def _fetch(url, path):
-    if not os.path.exists(path):
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with urllib.request.urlopen(url, timeout=300) as r, open(path, "wb") as f:
-            f.write(r.read())
-    return path
+_fetch = save
 
 
 def hourly_weather(lat, lon, start, end, name):

@@ -4,9 +4,10 @@ A terminated or missing permit alone is not that evidence, as permits get renumb
 Left out: records that name themselves a project or only a collection system (Austin's "5 Year CIP", 152 MGD; East China, Michigan's "REG CS"), and plants whose permits are all terminated or gone from ECHO, with no live sewer permit
 at that location, and a live plant at least as large in the same city to have taken the flow (see replaced) (Austin's Govalle; Chesapeake-Elizabeth, Virginia Beach). ECHO's "Expired" is not closed (Cincinnati's Mill Creek, 221 MGD).
 ECHO flows that don't fit the plant's design flow are dropped (unit errors are common at small plants). Cached under <cache>/wastewater/."""
-import collections, csv, json, math, os, re, urllib.request
+import collections, csv, json, math, os, re
 
 from waterledger_data.config import CACHE
+from waterledger_data.fetching import save
 from waterledger_data.waters import CWNS, ECHO, ECHO_COLS, _get, echo_rows
 
 RAW = os.path.join(CACHE, "wastewater")
@@ -15,9 +16,7 @@ CWNS_RAW = os.path.join(CACHE, "waters")          # the national CWNS tables, sh
 
 def _cwns(table):
     path = os.path.join(CWNS_RAW, f"cwns2022_{table}.csv")
-    if not os.path.exists(path):
-        os.makedirs(CWNS_RAW, exist_ok=True)
-        urllib.request.urlretrieve(f"{CWNS}/{table}.csv", path)
+    save(f"{CWNS}/{table}.csv", path)
     return csv.DictReader(open(path))
 
 
