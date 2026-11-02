@@ -1,5 +1,5 @@
-"""Reproduces Water Ledger's published West Michigan estimates (model 1.3) from the same inputs: 30 years of hourly
-ERA5 weather at 42.88 N, 85.52 W (Grand Rapids area), 200 runs, seed 7, and staff water from 200 draws, seed 13.
+"""Reproduces West Michigan's estimates (the model version in the reference file, from the per-run loop as the Michigan build writes them; tests/reproduction_reference.py) with
+the ensembles, from the same inputs: 30 years of hourly Open-Meteo best match weather at 42.88 N, 85.52 W (Grand Rapids area), physics.DRAWS runs, seed 7, and staff water from as many draws, seed 13.
 
 The weather tests need the weather file (about 7 MB). Set WATERLEDGER_WEST_MICHIGAN_WEATHER to a saved Open-Meteo JSON,
 or set WATERLEDGER_FETCH=1 to download it (one Open-Meteo request); otherwise they are skipped. The nightly build fetches it.
@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 
 from waterledger_models.datacenter.ensemble import run_ensemble, summarize
-from waterledger_models.datacenter.physics import STAFF_PARAMETERS, sample_staff
+from waterledger_models.datacenter.physics import DRAWS, STAFF_PARAMETERS, sample_staff
 from waterledger_models.weather import fetch_open_meteo, from_open_meteo_json
 
 REF = json.loads((Path(__file__).parent / "data" / "water_ledger_west_michigan.json").read_text())
@@ -31,7 +31,7 @@ def weather():
 
 
 def ensemble(w, mw):
-    return run_ensemble(w.time.values, w.air_temperature.values, w.relative_humidity.values, mw=mw, n=200, seed=7)
+    return run_ensemble(w.time.values, w.air_temperature.values, w.relative_humidity.values, mw=mw, n=DRAWS, seed=7)
 
 
 def test_staff_draws_match_water_ledger():
@@ -71,6 +71,6 @@ def test_campus_at_300_mw_matches_water_ledger(weather):
             expected = REF["per_100mw"][design][key][q] * 3 + np.quantile(staff[flow], int(q[1:]) / 100) * k
             got = float(s[flow].sel(design=design, stat=stat, quantile=q))
             assert abs(got - expected) <= 3 * PUBLISHED, f"{design}/{key} {q}: {got} vs {expected}"
-    # the figures on the page: a 300 MW closed-loop campus takes about 7,000 gallons a day
+    # the figures on the page: a 300 MW closed-loop campus takes about 6,900 gallons a day (staff water alone: 6,646 at seed 13's 400 draws; 6,888 over 100,000)
     dry = s.sel(design="dry", stat="avg", quantile="p50")
-    assert round(float(dry["withdrawn"]) * 1e6, -2) == 7000
+    assert round(float(dry["withdrawn"]) * 1e6, -2) == 6900
