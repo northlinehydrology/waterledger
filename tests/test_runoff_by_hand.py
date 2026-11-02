@@ -64,6 +64,8 @@ def test_both_stormwater_cases_are_in_the_rows():
     assert rows["mud"].controls == "typical_wet_pond" and rows["mud"].after == pytest.approx(L["tss_t"]["pond"][1])
     assert rows["mud_no_controls"].controls == "none" and rows["mud_no_controls"].after == pytest.approx(L["tss_t"]["after"][1])
     assert rows["p"].after == pytest.approx(L["tp_lb"]["pond"][1]) and rows["p_no_controls"].after == pytest.approx(L["tp_lb"]["after"][1])
+    assert rows["n"].after == pytest.approx(L["tn_lb"]["pond"][1]) and rows["n_no_controls"].after == pytest.approx(L["tn_lb"]["after"][1])
+    assert rows["n"].today == rows["n_no_controls"].today == pytest.approx(L["tn_lb"]["now"][1]) and rows["n"].unit == "pounds a year"
     assert rows["mud"].today == rows["mud_no_controls"].today == rows["build"].today == rows["build_basin"].today
     assert rows["build"].controls == "none" and rows["build_basin"].controls == "sediment_basin"
     assert rows["soil_moved"].today is None

@@ -247,7 +247,7 @@ def sewer_shares(water, plant):
 
 def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, imp, mw, power_mw=None, county_public=None, plant=None, lake=False, reuse=False, salt_events=None, state=None):
     """What changes at a place with the campus, as numbers; a display words them. Water, MGD: `w_avg` and `w_peak` taken, `used` evaporated, `sewer` to the sewer, each a
-    Range. Runoff and loads from runoff.loads, in two rows each: "mud" and "p" with typical wet ponds, "mud_no_controls" and "p_no_controls" with none. Rows for water and wastewater follow the source and destination."""
+    Range. Runoff and loads from runoff.loads, in two rows each: "mud", "p" and "n" with typical wet ponds, "mud_no_controls", "p_no_controls" and "n_no_controls" with none. Rows for water and wastewater follow the source and destination."""
     Row, rows = BeforeAfterRow, []
     today = county_public if src == "muni" else None
     rows.append(Row(key="water", today=today, after=w_avg.p50, after_low=w_avg.p10, after_high=w_avg.p90, percent=percent_of(w_avg.p50, today) if today else None, unit="MGD"))
@@ -259,7 +259,7 @@ def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, 
             rows.append(Row(key="wastewater", after=sewer.p50, after_low=sewer.p10, after_high=sewer.p90, unit="MGD"))
     L, C, S, F = rq.loads(acres, rain_in, before, imp, state=state), rq.construction(acres), rq.salt(acres, imp, salt_events) if salt_events else None, rq.fuel(mw)
     rows.append(Row(key="runoff", today=L["runoff_gal"]["now"][1], after=L["runoff_gal"]["after"][1], unit="gallons a year"))
-    for key, load, unit in (("mud", "tss_t", "tons a year"), ("p", "tp_lb", "pounds a year")):
+    for key, load, unit in (("mud", "tss_t", "tons a year"), ("p", "tp_lb", "pounds a year"), ("n", "tn_lb", "pounds a year")):
         now = L[load]["now"]
         for suffix, case, controls in (("", "pond", "typical_wet_pond"), ("_no_controls", "after", "none")):
             a = L[load][case]

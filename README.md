@@ -56,7 +56,7 @@ est.electricity.peak_mw          # the 1-in-10-year hottest hour, every computer
 est.site.source, est.site.wastewater     # the choices, with defaults filled in
 site.estimate(weather="local")   # the model run at the place's own point on Open-Meteo's best match instead of its region's results (about 30 seconds)
 est.comparisons                  # against what is already there: the water system's connections, the county's water, the sewer plant and its spare room, the utilities and the state; a very small water system gets no percent
-est.before_after                 # what changes at the place, today and after, as numbers; loads in two rows, typical wet ponds and no controls
+est.before_after                 # what changes at the place, today and after, as numbers; sediment, phosphorus and nitrogen in two rows each, typical wet ponds and no controls
 est.levels                       # the levels a reader sees on waterledger.org, by card; waterledger.levels has the bands and levels.compare the verdict against a reported figure
 est.not_covered                  # what isn't covered yet for this state, in words
 est.household_wells              # the aquifer most household wells draw from, how deep, the water level, where a state has well records

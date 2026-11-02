@@ -1027,3 +1027,9 @@ The wider range is the more honest one, for three reasons. The filled plants' re
 
 **Gaines per-building figure (Nov 2, 2026).** The source linked for Microsoft's "about 2,000 gallons a day per building" was a WOOD TV article on the noise study, which doesn't contain the figure. Our earlier notes disagree on its origin: this log said Microsoft's Tyrone letter, and Northline's records say Jonah Mills of Microsoft per Sun and News, Apr 25, 2026. A search on Nov 2 did not find the article. The link is removed and the citation says it is not re-verified. The validation row stays, labeled, until a primary copy is read.
 
+
+## Nov 2, 2026: nitrogen in the before and after
+
+Nitrogen joins sediment and phosphorus in `before_after`: rows `n` and `n_no_controls`, typical wet ponds and no controls, read from `runoff.loads` as the others are. The loads aren't new, only the rows. Farmland's nitrogen today counts surface runoff only (TN 1.9 mg/L, STEPL, unread), with tile-drain nitrate left out, so a campus's change against farmland reads too high until the method by land cover is settled. The pages say so.
+
+Pollution loads rest on general national and state values, not on a site's soils, slopes, drainage or practices, so a site study can move them a lot. The pages say that beside the loads.
