@@ -2,6 +2,22 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.9.0 (Nov 2, 2026)
+
+Model version 1.7: parity and defensibility for Michigan, Ohio, Virginia and Texas, with no Michigan leftovers in the shared method. Water taken on towers moves about 4% on average and 13% on the peak day. Hybrid moves most, down as much as 40% in hot places. Pollution loads change most of all. Every moved number is on the Water Ledger changelog and in the methods log.
+
+- **`est.before_after` no longer has sediment, phosphorus or nitrogen.** They are in `est.site_loads` (`comparisons.site_loads`), because they cover the change in runoff from the finished site, not the whole project. It also carries phosphorus in construction sediment and in cooling wastewater. A site study can move all of it a lot.
+- **`runoff.loads`** drops `roof_share`, and `PARAMS["emc"]` holds one whole-site concentration by pollutant.
+- **Phosphorus and nitrogen by land cover.** Developed land and the campus: Simple Method runoff x one whole-site concentration (NSQD 4.02), plus the natural yield on the pervious share [A]. Farmland: USDA CEAP II's loss per acre by production region, surface and below ground, checked against MANAGE (`runoff.nutrient_yield`; `tn_lb["now_surface"]`). Natural land: measured basin yields (Clark et al. 2000).
+- **Controls.** Wet ponds from CWP 2007's quartiles, down to an effluent floor, on the surface part only. Infiltration no longer counts total removal on top of volume loss, and the nitrogen it soaks in is reported as gone to groundwater (`to_ground`).
+- **The cooling model.** Peak day at average load over a load factor (0.88-0.94), full capacity as its own upper case (`withdrawn_peak_full_capacity`). Cycles 3-6, tower range 7.2-10.8 F, drift from 0.005%. Hybrid fully evaporative at each location's own 0.4% design dry-bulb. Switch points tied to loop temperature. 400 Latin hypercube draws at each location, with linked parameters grouped. `max_90day` kept as a statistic.
+- **One rule in every state:** road salt from a station's cold wet days x 0.6; a home's water from USGS 2015 over ACS 2015 households; which sewer plants count and how far they are; the nearest water system; a second system on a quarter of a place; land defaults on `Place.incorporated`; coal, nuclear and fresh and saline water at power plants; Great Lakes features and lake-source cooling in every lake state; weather times from longitude.
+- **Levels outside reviewed rules:** no invented lines. The calculator is a what-if: the number stands, and `not_covered` says what isn't reviewed. Michigan's Part 327 is tested on the highest month and the Compact on the highest 90 days.
+- **Station records:** a year counts with 85% of its hours, and bad readings are screened unless a nearby station backs them up.
+- **Sediment on a yield basis.** Farmland by state from NRI 2022 and woods from EPA, x a delivery ratio [A]; construction from EPA's gross range x delivery, with and without basins.
+- **Downloads (`waterledger_data.fetching.save`)** wait out a service that is down and are never left half written. `build-state` keeps its raw downloads across code changes and failed builds; changing sources refresh after a month, and records that don't change stay. ECHO and NOAA's county rainfall ride out long busy spells, and a failed manifest fetch no longer empties the cached copy.
+- **Snapshot files** are written with sorted keys, so a file's checksum changes only when its data does.
+
 ## 3.8.1 (Nov 1, 2026)
 
 Model version 1.6, from an independent review of model 1.5. Water taken moves by under 1%. Towers use about 1.5% less electricity on average. The wastewater shown moves by up to about 17% and the water evaporated by up to about 7%, because the middle estimate is now worked out differently. `docs/methods/methods-log.md` has the measured differences.
