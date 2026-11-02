@@ -6,6 +6,7 @@ import subprocess
 import sys
 
 from waterledger.national.snapshot import _write
+from waterledger_data import energy
 
 
 def _sha(path):
@@ -38,3 +39,14 @@ def test_a_dict_built_from_a_set_is_the_same_under_any_hash_seed(tmp_path):
         shas.append(_sha(path))
         assert len(json.load(open(path))) == 200
     assert shas[0] == shas[1]
+
+
+def test_tied_utilities_come_out_in_one_order():
+    us = [{"eia_id": 20, "name": "B", "share": 1.0}, {"eia_id": 10, "name": "A", "share": 1.0}, {"eia_id": None, "name": "C", "share": 1.0}, {"eia_id": 30, "name": "D", "share": 0.4}]
+    want = ["A", "B", "C", "D"]
+    assert [u["name"] for u in energy.in_order(us)] == want and [u["name"] for u in energy.in_order(us[::-1])] == want
+
+
+def test_a_snapshot_writer_uses_sorted_keys_for_every_state(tmp_path):
+    from waterledger.states.mi import snapshot as mi
+    assert mi._write is _write

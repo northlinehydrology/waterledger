@@ -93,8 +93,8 @@ def write(out, date=None):
 
     U = PW["utilities"]
     from waterledger.states.mi.provider import balancing_authority as ba
-    by_u = {gid: [{"eia_id": power.EIA_ID.get(U[i]["n"]), "name": U[i]["n"], "type": U[i]["type"], "balancing_authority": ba(U[i]["n"]), "share": sh}
-                  for i, sh in v] for gid, v in PW["places"].items()}
+    by_u = {gid: energy.in_order([{"eia_id": power.EIA_ID.get(U[i]["n"]), "name": U[i]["n"], "type": U[i]["type"], "balancing_authority": ba(U[i]["n"]), "share": sh}
+                                  for i, sh in v]) for gid, v in PW["places"].items()}
     loads = {str(power.EIA_ID[u["n"]]): {"mwh": round(u["avg_mw"] * 8760, 1) if u.get("avg_mw") is not None else None, "customers": u.get("cust"),
                                          "summer_mw": u.get("summer_mw"), "winter_mw": u.get("winter_mw")} for u in U if u["n"] in power.EIA_ID}
     gw = energy.grid_water()

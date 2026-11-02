@@ -152,6 +152,11 @@ def territories(state, bounds):
     return g[g.geometry.notna() & ~g.geometry.is_empty].reset_index(drop=True)
 
 
+def in_order(utilities):
+    """A place's utilities, the largest share first; a tie goes to the lower EIA id, then the name, so a snapshot's checksum changes only when its data does. Shares tie often (1.0 where territories overlap)."""
+    return sorted(utilities, key=lambda u: (-(u.get("share") or 0), u.get("eia_id") is None, u.get("eia_id") or 0, u.get("name") or ""))
+
+
 def utilities_by_place(state, places):
     """For each place, the utilities whose territory covers part of it, the largest share first:
     {geoid: [{eia_id, name, type, balancing_authority, share}]}; shares of at least 1% (territories overlap where utilities share
@@ -165,7 +170,7 @@ def utilities_by_place(state, places):
             rto = utility_rtos()
             for u in missing:
                 u["balancing_authority"] = rto.get(u["eia_id"])
-        return out
+        return {g: in_order(us) for g, us in out.items()}
     t = territories(state, tuple(places.total_bounds)).to_crs(ALBERS)
     t["geometry"] = shapely.make_valid(t.geometry.values)
     pl = places[["geoid", "geometry"]].to_crs(ALBERS)
@@ -175,10 +180,11 @@ def utilities_by_place(state, places):
     inter = shapely.intersection(gp.loc[pairs.geoid].values, t.geometry.values[pairs.index_right.values])
     pairs["share"] = shapely.area(inter) / shapely.area(gp.loc[pairs.geoid].values)
     out = {}
-    for r in pairs[pairs.share >= 0.01].sort_values("share", ascending=False).itertuples():
+    for r in pairs[pairs.share >= 0.01].itertuples():
         ba = r.balancing_authority if isinstance(r.balancing_authority, str) else None      # pandas turns None into NaN
         out.setdefault(r.geoid, []).append({"eia_id": None if r.eia_id != r.eia_id else int(r.eia_id), "name": r.name, "type": r.type,
                                             "balancing_authority": ba, "share": round(float(r.share), 3)})
+    out = {g: in_order(us) for g, us in out.items()}
     os.makedirs(RAW, exist_ok=True)
     json.dump(out, open(path, "w"))
     return out
