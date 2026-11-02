@@ -300,7 +300,8 @@ def fetch_snapshot(state, date=None, url=None):
     os.makedirs(folder, exist_ok=True)
     mpath = os.path.join(folder, "manifest.json")
     try:                                    # always the published manifest (small), so a same-date republish is picked up
-        open(mpath, "wb").write(_get(f"{url}/{state}/{date}/manifest.json"))
+        got = _get(f"{url}/{state}/{date}/manifest.json")       # fetched first: opening the file empties it, and a failed fetch must leave the copy we have
+        open(mpath, "wb").write(got)
     except Exception:
         if not os.path.exists(mpath):
             raise

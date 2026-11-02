@@ -75,6 +75,17 @@ def test_cached_files_are_not_downloaded_again(cache, monkeypatch):
     assert "OH/2026-10-29/places.json" not in asked
 
 
+def test_failed_manifest_fetch_keeps_the_cached_one(cache, monkeypatch):
+    files = _snapshot("OH", "2026-10-29", {"places.json": b"x"})
+    _serve(monkeypatch, files)
+    folder = data.fetch_snapshot("OH", "2026-10-29")
+    kept = open(os.path.join(folder, "manifest.json"), "rb").read()
+    del files["OH/2026-10-29/manifest.json"]
+    _serve(monkeypatch, files)
+    data.fetch_snapshot("OH", "2026-10-29")
+    assert open(os.path.join(folder, "manifest.json"), "rb").read() == kept
+
+
 def test_offline_uses_the_newest_cached_snapshot(cache, monkeypatch, capsys):
     _serve(monkeypatch, _snapshot("OH", "2026-10-29", {"manifest_only.json": b"{}"}))
     data.fetch_snapshot("OH")
