@@ -110,6 +110,22 @@ def test_the_command_exits_1_on_a_fail_and_0_on_a_pass(monkeypatch):
         assert e.value.code == code
 
 
+def test_a_state_not_yet_published_takes_its_local_builds_places(monkeypatch):
+    import pandas as pd
+
+    from waterledger.national import data
+
+    def unpublished(state, date=None):
+        raise data.DataUnavailable("404 latest.json")
+    monkeypatch.setattr(data, "fetch_snapshot", unpublished)
+    monkeypatch.setattr(data, "_newest_cached", lambda state: None)
+    built = pd.DataFrame([{"geoid": "5501000", "name": "Madison city", "level": "place", "lat": 43.08, "lon": -89.39}])
+    monkeypatch.setattr(data.LiveData, "places", lambda self: built)
+    assert E.state_places("WI") == [{"geoid": "5501000", "name": "Madison city", "level": "place", "lat": 43.08, "lon": -89.39}]
+    with pytest.raises(RuntimeError):
+        E.state_places("WI", date="2026-11-02")                      # a pinned snapshot that isn't there is an error, not a fallback
+
+
 def test_cells_as_json_say_when_a_state_is_done(cache, monkeypatch, capsys):
     monkeypatch.setattr(E, "RUNS", str(cache / "runs"))
     places = [{"geoid": str(i), "name": c, "level": "place", "lat": float(c.split("_")[0]) + 0.01, "lon": float(c.split("_")[1])} for i, c in enumerate(LAND)]

@@ -30,13 +30,19 @@ def _say(msg):
 
 
 def state_places(state, date=None):
-    """The places in the state's snapshot (the latest for this package's model, or `date`), each with geoid, name, level, lat and lon."""
+    """The places in the state's snapshot (the latest for this package's model, or `date`), each with geoid, name, level, lat and lon;
+    for a state with no snapshot published or cached, the places of its local build (`waterledger build-state ST`), the same set."""
     from waterledger.national.data import _newest_cached, fetch_snapshot
     state = state.upper()
     try:
         folder = fetch_snapshot(state, date)
     except Exception as e:                                  # noqa: BLE001  offline: the newest complete copy we have
         folder = None if date else _newest_cached(state)
+        if not folder and not date and state != "MI":       # a state not yet published: its local build's places, the ones its snapshot will carry
+            from waterledger.national.data import LiveData
+            _say(f"{state}: no snapshot reachable or cached ({type(e).__name__}); using the places of its local build")
+            pl = LiveData(state).places()
+            return [{"geoid": r.geoid, "name": r.name, "level": r.level, "lat": float(r.lat), "lon": float(r.lon)} for r in pl.itertuples()]
         if not folder:
             raise RuntimeError(f"no {state} snapshot reachable or cached ({type(e).__name__}: {e})") from e
     d = json.load(open(os.path.join(folder, "places.json")))
