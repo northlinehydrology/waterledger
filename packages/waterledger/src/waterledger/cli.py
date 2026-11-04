@@ -15,14 +15,27 @@ def _build_site(state, part="all"):
 def _era5(a):
     from waterledger.national import era5 as E
     from waterledger_data import era5, r2
+    if a.action == "check":
+        from waterledger.national.era5_check import run_check
+        rep = run_check(a.state, a.out, n=a.places, workers=a.workers, draws=a.draws, weather_only=a.weather_only,
+                        places=E.state_places(a.state, a.snapshot))
+        sys.exit(0 if rep["verdict"] == "pass" else 1)
     k, n = E.parse_part(a.part)
     cells = E.state_cells(a.state, a.snapshot)
     if a.action == "cells":
+        parts = []
         for i in range(1, n + 1):
             ids = E.part(cells, i, n)
-            done = sum(os.path.exists(E.result_path(c)) for c in ids)
-            print(f"{a.state.upper()} part {i}/{n}: {len(ids)} cells ({ids[0]} to {ids[-1]}), {done} done, "
-                  f"{sum(len(cells[c]['places']) for c in ids)} places")
+            parts.append({"part": f"{i}/{n}", "cells": len(ids), "done": sum(os.path.exists(E.result_path(c)) for c in ids),
+                          "places": sum(len(cells[c]["places"]) for c in ids), "first": ids[0] if ids else None, "last": ids[-1] if ids else None})
+        if a.json:
+            import json
+            total, done = sum(p["cells"] for p in parts), sum(p["done"] for p in parts)
+            print(json.dumps({"state": a.state.upper(), "model_version": E.RUN_MODEL, "runs": E.RUNS, "cells": total, "done": done,
+                              "complete": total > 0 and done == total, "parts": parts}))
+            return
+        for p in parts:
+            print(f"{a.state.upper()} part {p['part']}: {p['cells']} cells ({p['first']} to {p['last']}), {p['done']} done, {p['places']} places")
         return
     store = None if a.no_r2 else r2.from_env()
     if a.action == "fetch":
@@ -57,14 +70,20 @@ def main(argv=None):
     sn.add_argument("state")
     sn.add_argument("--out", required=True)
     sn.add_argument("--date", default=None)
-    e5 = sub.add_parser("era5", help="model 1.8's cooling runs on each place's ERA5 cell (design 0004): cells, fetch or run, part by part")
-    e5.add_argument("action", choices=["cells", "fetch", "run"], help="cells: list the parts; fetch: the part's weather only; run: fetch, correct and run")
+    e5 = sub.add_parser("era5", help="model 1.8's cooling runs on each place's ERA5 cell (design 0004): cells, fetch, run part by part, or check")
+    e5.add_argument("action", choices=["cells", "fetch", "run", "check"],
+                    help="cells: the parts and what is done; fetch: a part's weather only; run: fetch, correct and run; "
+                         "check: the leave-one-station-out check of design 0005 (exit 0 pass, 1 fail)")
     e5.add_argument("state")
     e5.add_argument("--part", default="1/1", help="k/n: run the k-th of n parts (default 1/1, the whole state)")
     e5.add_argument("--workers", type=int, default=6, help="cells at once (default 6: past six they share memory bandwidth, not cores)")
     e5.add_argument("--draws", type=int, default=None, help="Monte Carlo draws per cell (default the model's, 400)")
     e5.add_argument("--snapshot", default=None, help="the snapshot date whose places to use (default the latest)")
     e5.add_argument("--no-r2", action="store_true", help="leave R2 off even if it is set up")
+    e5.add_argument("--json", action="store_true", help="cells: print the parts and what is done as JSON (complete: true when every cell has a result)")
+    e5.add_argument("--places", type=int, default=12, help="check: places to run through the cooling model (default 12)")
+    e5.add_argument("--weather-only", action="store_true", help="check: the weather part only (the check then can't pass)")
+    e5.add_argument("--out", default=None, help="check: where to write check.json and check.md (default CACHE/era5/check/ST)")
     a = ap.parse_args(argv)
     if a.cmd == "era5":
         _era5(a)
