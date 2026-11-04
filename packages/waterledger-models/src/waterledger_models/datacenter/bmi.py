@@ -16,6 +16,9 @@ Configuration (a YAML file, or the same keys as a dict passed to initialize):
     parameters: {coc: 5, utilization: 0.8, staff_gpcd: 20, ...}
                                                  (optional overrides of the central values: model.PARAMETERS and
                                                   model.STAFF_PARAMETERS)
+    parameters: {design_db: 31.0}                (hybrid: the place's 0.4% design dry-bulb, C. A forcing file supplies it; when the
+                                                  framework supplies the weather, compute it once from the place's hourly record
+                                                  with waterledger_models.weather.design_dry_bulb)
 
 Variables (all on the one scalar grid point, float64):
     input   atmosphere_bottom_air__temperature                         degC     air (dry-bulb) temperature

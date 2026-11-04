@@ -27,6 +27,25 @@ def from_open_meteo_json(payload):
                              "longitude": payload.get("longitude")})
 
 
+def design_dry_bulb(record):
+    """The 0.4% design dry-bulb, C, of an hourly weather record: the temperature exceeded in 0.4% of its hours (ASHRAE's definition), which a
+    hybrid campus needs as design_db. `record` is a Dataset with air_temperature (as from_open_meteo_json gives), a DataArray, or an array
+    of hourly temperatures in C. Water Ledger computes it this way from each location's whole hourly record (physics.design_dry_bulb).
+
+    For a coupling framework that supplies the weather itself (NextGen's AORC, for example), compute it once from the forcing for the place
+    before the run and pass it in the component's parameters. Use a long record (Water Ledger uses 1995-2024): at Michigan's eight
+    regions one year's value fell 1.9 to 2.8 C below to 0.8 to 1.5 C above the 30 years' in 80% of years, and up to 4.6 C off.
+    AORC's temperature is in K, so subtract 273.15 first.
+
+        from waterledger_models.weather import design_dry_bulb
+        CoolingWaterBmi().initialize({"design": "hybrid", "parameters": {"design_db": design_dry_bulb(t2m_k - 273.15)}})
+    """
+    from waterledger_models.datacenter.physics import design_dry_bulb as from_hours
+    if hasattr(record, "data_vars"):
+        record = record["air_temperature"]
+    return from_hours(getattr(record, "values", record))
+
+
 EPSILON = 0.622        # ratio of the molar masses of water vapor and dry air (Bolton 1980; 0.378 = 1 - EPSILON)
 
 

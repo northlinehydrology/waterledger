@@ -5,7 +5,9 @@ import numpy as np
 
 import pytest
 
-from waterledger_models.weather import from_open_meteo_json, relative_humidity, saturation_vapor_pressure, specific_humidity
+from waterledger_models.datacenter import physics
+from waterledger_models.weather import design_dry_bulb, from_open_meteo_json, relative_humidity, saturation_vapor_pressure, specific_humidity
+from test_physics_properties import synthetic_weather
 
 
 def test_reads_a_saved_response(tmp_path):
@@ -32,3 +34,18 @@ def test_humidity_conversion_round_trips_and_stays_physical():
     assert relative_humidity(10.0, -1e-5, 1e5) == 0.0
     # more water vapor is more humid, warmer air at the same vapor is less
     assert relative_humidity(15.0, 0.008, 1e5) > relative_humidity(15.0, 0.006, 1e5) > relative_humidity(25.0, 0.006, 1e5)
+
+
+def test_design_dry_bulb_from_any_record(tmp_path):
+    """BMI users whose framework supplies the weather get the same design dry-bulb a forcing file gives the component."""
+    from waterledger_models.datacenter.bmi import CoolingWaterBmi
+    time, t, rh = synthetic_weather(730)
+    payload = {"hourly": {"time": [str(x) for x in time.astype("datetime64[m]")], "temperature_2m": t.tolist(), "relative_humidity_2m": rh.tolist()}}
+    ds = from_open_meteo_json(payload)
+    want = physics.design_dry_bulb(t)
+    assert design_dry_bulb(ds) == design_dry_bulb(ds.air_temperature) == design_dry_bulb(t) == design_dry_bulb(list(t)) == want
+    assert np.mean(t > want) == pytest.approx(0.004, abs=1 / t.size)
+    (tmp_path / "w.json").write_text(json.dumps(payload))
+    m = CoolingWaterBmi()
+    m.initialize({"design": "hybrid", "forcing": str(tmp_path / "w.json")})
+    assert m._params["design_db"] == want
