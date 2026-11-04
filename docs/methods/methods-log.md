@@ -1325,14 +1325,19 @@ cells for old and new; Nov 4):
 | 6 | 438-441 s | 74 s per cell | 287-288 s | 48 s per cell |
 | 8 | 541-544 s | 68 s per cell | 292-294 s | 37 s per cell |
 | 10 | 654-662 s | 67 s per cell | 307-310 s | 31 s per cell |
-| 12 | | | 680-686 s | 58 s per cell |
 
 - **The runs no longer wait on memory.** The old code's cells slow as more run at once (358 to 660 s). The new ones hardly
   slow at all (281 to 309 s at ten).
-- **Twelve is worse than ten.** Past ten the runs share the efficiency cores and every one slows. Ten workers is the setting,
-  and `waterledger era5` defaults to the performance cores where macOS reports them.
-- **The four states.** About 10.6 hours of runs (1,233 cells x 31 s), against about 26 hours before. The seven parts take
-  1.2 to 1.8 hours each.
+- **Ten workers is the setting,** the Mac's performance cores, and `waterledger era5` defaults to the performance cores
+  where macOS reports them.
+- **More than ten was not measured.** A first figure for twelve (58 s a cell) is left out: that run overlapped Michigan
+  part 1, restarted at 10:07 on the new code with ten workers, so 22 runs shared the machine.
+- **The timings are short tests,** one batch each. Over a long run the rate is slower: Michigan part 1, on the new code at
+  ten workers with nothing else running, went from 68 to 98 cells between 10:30 and 10:50, about 40 s a cell. The cause
+  was not measured. The likely parts are the Mac slowing as it heats over hours, and the main process's work between cells
+  (each cell's weather and correction, and R2 uploads through wrangler).
+- **The four states.** About 13 to 14 hours of runs at the long-run rate (1,233 cells x 38-40 s; 10.6 hours at the short
+  tests' 31 s), against about 26 hours before. The seven parts take about 1.4 to 2.3 hours each.
 
 **Alternatives considered.**
 - **Numba**, fusing a draw's hours into one compiled loop. It would remove the in-between arrays and Python's cost per

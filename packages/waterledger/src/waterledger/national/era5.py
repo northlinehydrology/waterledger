@@ -24,7 +24,7 @@ SEED, MW = 7, 100.0
 
 def default_workers():
     """Cells at once: the machine's performance cores where macOS reports them (10 on Andrew's M3 Max), else every core. With the runs
-    worked in hour blocks a cell takes about as long with nine others as alone; on efficiency cores too, every run slows (0004, section 3)."""
+    worked in hour blocks a cell takes about as long with nine others as alone; more than the performance cores was not measured (0004, section 3)."""
     import subprocess
     try:
         return int(subprocess.run(["sysctl", "-n", "hw.perflevel0.physicalcpu"], capture_output=True, text=True, timeout=5).stdout)

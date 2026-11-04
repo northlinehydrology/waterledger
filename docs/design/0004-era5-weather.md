@@ -142,25 +142,30 @@ the same Mac, the same cells, old (1b60ae0) against new:
 | 6 | 438-441 s | 74 s per cell | 287-288 s | 48 s per cell |
 | 8 | 541-544 s | 68 s per cell | 292-294 s | 37 s per cell |
 | 10 | 654-662 s | 67 s per cell | 307-310 s | 31 s per cell |
-| 12 | | | 680-686 s | 58 s per cell |
 
-With blocks a cell takes about as long with ten others as alone, so the runs are no longer waiting on memory. Ten is the
-Mac's performance cores; at twelve the runs spill onto its efficiency cores and all slow down. **Ten workers** is the
-setting (`--workers 10`; the default is the machine's performance cores where macOS reports them).
+With blocks a cell takes about as long with nine others as alone, so the runs are no longer waiting on memory. Ten is the
+Mac's performance cores, and **ten workers** is the setting (`--workers 10`; the default is the machine's performance cores
+where macOS reports them). More than ten was not measured: a run of twelve overlapped Michigan part 1's ten workers and is
+left out.
+
+These are short tests, one batch of cells each. Over a long run the rate is slower: Michigan part 1 at ten workers on the new
+code went from 68 to 98 cells between 10:30 and 10:50 on Nov 4, with nothing else running, about 40 s a cell. (From 10:07 to
+10:20 a timing run and the test suite overlapped it.) Why was not measured: the Mac slowing as it heats over hours, and the main process's own work between
+cells (each cell's weather and correction, R2 uploads through wrangler) are the likely parts.
 
 Model 1.6 took about 116 s per cell; model 1.7 takes 362 s alone, about three times as long. From the code (not
 profiled): twice the draws (400 against 200), and model 1.7's peak day at peak load, a further pass over every hour for
 every draw.
 
-**The four states: about 26 hours at six workers before, about 10.6 hours at ten workers with blocks** (1,233 cells with
-the land rule x 77 s, and x 31 s):
+**The four states: about 26 hours at six workers before, about 13 to 14 hours at ten workers with blocks** (1,233 cells
+with the land rule x 77 s; x 38-40 s, the long-run rate; x 31 s, the short tests' rate, would be 10.6 hours):
 
-| State | Cells | Hours at six workers, before | Hours at ten workers, with blocks |
+| State | Cells | Hours at six workers, before | Hours at ten workers, with blocks (38-40 s a cell) |
 |---|---|---|---|
-| Michigan | 272 | 5.8 | 2.3 |
-| Ohio | 203 | 4.3 | 1.7 |
-| Virginia | 148 | 3.2 | 1.3 |
-| Texas | 616 | 13.2 | 5.3 |
+| Michigan | 272 | 5.8 | 2.9-3.0 |
+| Ohio | 203 | 4.3 | 2.1-2.3 |
+| Virginia | 148 | 3.2 | 1.6 |
+| Texas | 616 | 13.2 | 6.5-6.8 |
 
 Fetching is separate and smaller. From Open-Meteo's open copy, the 21 cells of the station check took 183 s with 16
 threads (about 8 MB of JSON per cell). Reading cell by cell, all 1,233 would take about 3 hours [estimate, linear].
@@ -170,8 +175,8 @@ columns, but that was not measured. From CDS it is one request per cell; the que
 **How to split them.** Nothing is scheduled; Andrew starts each part by hand.
 
 - Seven parts, each started by hand: Michigan in two (136 cells each), Ohio, Virginia, and Texas in three (205-206 cells
-  each): `waterledger era5 run TX --part 1/3 --workers 10`. At ten workers with blocks a part takes 1.2 to 1.8 hours
-  (2.9 to 4.4 at six before).
+  each): `waterledger era5 run TX --part 1/3 --workers 10`. At ten workers with blocks a part takes about 1.4 to 2.3 hours
+  at the long-run rate (2.9 to 4.4 at six before).
 - A cell's results are written the moment it finishes (`CACHE/era5/runs/model1.8/<cell>.json`), so a stopped part
   resumes where it stopped, as the state builds do now (0003, decision 4). Fetching and running are separate steps, so a
   CDS outage never stops a run that has its weather.
@@ -253,7 +258,7 @@ snapshot exactly (Findlay, every statistic). In short:
     and checked against their checksums, so a part can restart elsewhere.
   - **Failures.** A failed upload warns and keeps the local file; it never stops the run.
   - **No credentials in the package.** It needs no wrangler to install. wrangler calls take about 2-3 s each, small
-    against a cell finishing every 31 s or so at ten workers.
+    against a cell finishing every 40 s or so at ten workers.
 
 ### Package API (the plan; see "Built" above for what exists)
 

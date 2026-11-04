@@ -81,7 +81,7 @@ def main(argv=None):
                          "check: the leave-one-station-out check of design 0005 (exit 0 pass, 1 fail)")
     e5.add_argument("state")
     e5.add_argument("--part", default="1/1", help="k/n: run the k-th of n parts (default 1/1, the whole state)")
-    e5.add_argument("--workers", type=int, default=None, help="cells at once (default: the performance cores, 10 on an M3 Max; on efficiency cores too, every run slows)")
+    e5.add_argument("--workers", type=int, default=None, help="cells at once (default: the performance cores, 10 on an M3 Max)")
     e5.add_argument("--draws", type=int, default=None, help="Monte Carlo draws per cell (default the model's, 400)")
     e5.add_argument("--snapshot", default=None, help="the snapshot date whose places to use (default the latest)")
     e5.add_argument("--no-r2", action="store_true", help="leave R2 off even if it is set up")
