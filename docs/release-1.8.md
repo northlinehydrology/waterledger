@@ -18,6 +18,9 @@ for st in MI OH VA TX; do uv run waterledger era5 cells $st --json --no-r2; done
 - **Done when:** each line says `"complete": true`: Michigan 272 cells, Ohio 203, Virginia 148 and Texas 616. Cells shared
   across state lines are counted in each state.
 - **Optional, for the record:** `uv run waterledger era5 check ST` (exit 0 is a pass; `docs/add-a-state.md`, step 3).
+- **Then the full test suite**, which wasn't run while the queue had the machine: `uv run pytest`, and `uv run pytest -m live`
+  for the data sources. With `MODEL_VERSION` 1.8 and only 1.7 snapshots published, a test that assumes the package's model
+  equals its data's will fail until step 5. Fix such a test the way `test_site.py`'s lake-source test was.
 
 ## 2. Build and check the four format 3 snapshots
 
