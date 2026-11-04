@@ -1,0 +1,285 @@
+"""Model 1.8's cooling runs: the cooling Monte Carlo on each place's ERA5 cell (design 0004), corrected near the shore by quantile
+mapping (design 0005), one result file per cell. `waterledger era5 run ST --part k/n --workers 6` runs one part by hand.
+
+    state_cells(ST)         {cell: {"cell": era5.cell's record, "places": [geoid, ...]}} for every place in the state's snapshot
+    part(cells, k, n)       the k-th of n parts: the cells in id order, cut into n runs of near-equal size
+    anchors(cells)          the shore stations that can correct these cells, qualified and fitted once (cached)
+    run_part(ST, k, n)      fetch the part's weather, correct it, run each cell and write CACHE/era5/runs/model1.8/<cell>.json
+
+A cell's result is written the moment it finishes, so a stopped part resumes where it stopped. With R2 set up (waterledger_data.r2:
+WATERLEDGER_R2=wrangler, or R2 credentials in the environment), each raw cell series is uploaded as it is fetched and each result as it
+is written, both skipped when R2 already has the same file; and before a part starts, results and raw series already in R2 are pulled,
+so a part can be restarted on another machine. An upload that fails warns and leaves the local file; it never stops the run.
+"""
+import json, os, re, sys
+
+import numpy as np
+
+from waterledger_data import era5
+from waterledger_data.config import CACHE
+
+RUN_MODEL = "1.8"           # model 1.7's cooling on ERA5 cell weather, corrected near the shore: what these runs are for
+SEED, MW = 7, 100.0
+RUNS = os.path.join(CACHE, "era5", "runs", f"model{RUN_MODEL}")
+ANCHORS = os.path.join(CACHE, "era5", "anchors")
+R2_RUNS = f"runs/era5/model{RUN_MODEL}"
+
+
+def _say(msg):
+    print(msg, file=sys.stderr, flush=True)
+
+
+def state_places(state, date=None):
+    """The places in the state's snapshot (the latest for this package's model, or `date`), each with geoid, name, level, lat and lon."""
+    from waterledger.national.data import _newest_cached, fetch_snapshot
+    state = state.upper()
+    try:
+        folder = fetch_snapshot(state, date)
+    except Exception as e:                                  # noqa: BLE001  offline: the newest complete copy we have
+        folder = None if date else _newest_cached(state)
+        if not folder:
+            raise RuntimeError(f"no {state} snapshot reachable or cached ({type(e).__name__}: {e})") from e
+    d = json.load(open(os.path.join(folder, "places.json")))
+    rows = d["places"] if isinstance(d, dict) and "places" in d else d
+    rows = list(rows.values()) if isinstance(rows, dict) else rows
+    return [{k: r[k] for k in ("geoid", "name", "level", "lat", "lon")} for r in rows]
+
+
+def state_cells(state, date=None, places=None):
+    """{cell id: {"cell": era5.cell's record at the cell, "places": [{geoid, name, km, moved}]}} for the state's places."""
+    out = {}
+    for p in places if places is not None else state_places(state, date):
+        c = era5.cell(float(p["lat"]), float(p["lon"]))
+        e = out.setdefault(c["id"], {"cell": {k: c[k] for k in ("id", "lat", "lon", "land")}, "places": []})
+        e["places"].append({"geoid": p["geoid"], "name": p.get("name"), "km": round(c["km"], 2), "moved": c["moved"],
+                            **({"nearest": c["nearest"]["id"], "nearest_km": round(c["nearest"]["km"], 2), "nearest_land": c["nearest"]["land"]} if c["moved"] else {})})
+    return dict(sorted(out.items()))
+
+
+def part(cells, k, n):
+    """The k-th (1-based) of n parts of `cells`, in id order, near-equal in size, so parts never overlap and together cover every cell."""
+    ids = sorted(cells)
+    if not 1 <= k <= n:
+        raise ValueError(f"part {k}/{n}: k must be 1 to {n}")
+    lo, hi = (k - 1) * len(ids) // n, k * len(ids) // n
+    return ids[lo:hi]
+
+
+def parse_part(text):
+    m = re.fullmatch(r"(\d+)/(\d+)", text or "1/1")
+    if not m:
+        raise ValueError(f"--part {text!r}: give k/n, such as 2/3")
+    return int(m[1]), int(m[2])
+
+
+# --- anchors: the shore stations (design 0005) -------------------------------------------------------------------
+
+def _elevations():
+    """ISD's station elevations (m) by USAF-WBAN, from isd-history."""
+    import csv
+
+    from waterledger_data import climate
+    path = climate._fetch(climate.ISD_HISTORY, os.path.join(climate.RAW, "isd", "isd-history.csv"))
+    bad = ("", "-999", "-999.0", "-0999.0", "+9999.0")
+    return {f"{r['USAF']}-{r['WBAN']}": float(r["ELEV(M)"]) for r in csv.DictReader(open(path)) if r["ELEV(M)"] not in bad}
+
+
+def candidates(cells):
+    """The ISD (one ID or linked) and ECCC sites within R_KM of a shore cell in `cells` whose own cell is a shore cell: the stations that
+    could anchor them, before the 85% rule. `cells`: {id: {"cell": {lat, lon, land}}}."""
+    from waterledger_data import climate
+    from waterledger_models import quantile_mapping as Q
+    shore = [c["cell"] for c in cells.values() if c["cell"]["land"] < Q.SHORE_LAND]
+    if not shore:
+        return []
+    elev = _elevations()
+    sites = [{**s, "source": "isd-linked" if "parts" in s else "isd", "elev_m": elev.get(s["id"])} for s in climate.isd_sites()]
+    sites += [{**s, "source": "eccc"} for s in climate.eccc_sites()]
+    out = []
+    for s in sites:
+        if not any(Q.km(c["lat"], c["lon"], s["lat"], s["lon"]) <= Q.R_KM for c in shore):
+            continue
+        try:
+            own = era5.cell(s["lat"], s["lon"])
+        except ValueError:                                  # outside the shipped grid
+            continue
+        if own["land"] < Q.SHORE_LAND:
+            out.append({**s, "cell": own["id"], "cell_land": own["land"]})
+    return out
+
+
+def anchor(site, store=None):
+    """One station qualified under the snapshots' rule and fitted (quantile_mapping.fit on its own hours), cached in ANCHORS as
+    <id>.json (and <id>.npy, its quantiles): the station record quantile_mapping.correct takes, or None if it fails the 85% rule."""
+    from waterledger_data import climate
+    from waterledger_models import quantile_mapping as Q
+    os.makedirs(ANCHORS, exist_ok=True)
+    meta_path, q_path = os.path.join(ANCHORS, site["id"] + ".json"), os.path.join(ANCHORS, site["id"] + ".npy")
+    if not os.path.exists(meta_path) and store:
+        store.get(f"anchors/{site['id']}.json", meta_path) and store.get(f"anchors/{site['id']}.npy", q_path)
+    if os.path.exists(meta_path):
+        meta = json.load(open(meta_path))
+        if not meta["qualifies"]:
+            return None
+        if os.path.exists(q_path):
+            return {**meta, "qt": np.load(q_path)}
+    got = (climate.eccc_hourly if site["source"] == "eccc" else climate.isd_hourly)(site)
+    keep = ("id", "name", "state", "source", "lat", "lon", "elev_m", "cell", "cell_land", "parts")
+    meta = {k: site[k] for k in keep if k in site} | {"qualifies": bool(got)}
+    if got:
+        times, t, rh, share, screen = got
+        t = np.asarray(t, float)
+        g = np.log(np.asarray(rh, float) / 100) + era5.MAGNUS[0] * t / (era5.MAGNUS[1] + t)
+        td = era5.MAGNUS[1] * g / (era5.MAGNUS[0] - g)
+        np.save(q_path, Q.fit(times, t, td))
+        meta |= {"share_observed": share, "screen": screen}
+    json.dump(meta, open(meta_path, "w"), indent=1, default=str)
+    if store:
+        store.put(f"anchors/{site['id']}.json", meta_path)
+        if got:
+            store.put(f"anchors/{site['id']}.npy", q_path)
+    return {**meta, "qt": np.load(q_path)} if got else None
+
+
+def anchors(cells, store=None):
+    """The qualified shore stations for `cells` (quantile_mapping's station records)."""
+    out = []
+    for s in candidates(cells):
+        a = anchor(s, store)
+        if a:
+            out.append(a)
+    return out
+
+
+# --- runs ---------------------------------------------------------------------------------------------------------
+
+def result_path(cid):
+    return os.path.join(RUNS, f"{cid}.json")
+
+
+def _summer_pm(times, t):
+    m = np.array([x[5:7] in ("06", "07", "08") and 12 <= int(x[11:13]) < 18 for x in times])
+    return float(np.mean(np.asarray(t)[m]))
+
+
+def weather(cid, stations):
+    """A cell's run weather: (times, temp_c, rh_pct, correction note), corrected under 0005 when it is a shore cell with a shore station
+    within 100 km. The note records what was done and the change it made."""
+    from waterledger_models import quantile_mapping as Q
+    from waterledger_models.datacenter.physics import design_dry_bulb
+    times, t, td = era5.local(cid)
+    c = {"lat": era5.indexes(cid)[0] / 4, "lon": era5.indexes(cid)[1] / 4, "land": era5.land(cid), "elev_m": era5.elevation(cid)}
+    tc, tdc, note = Q.correct(times, t, td, c, stations)
+    if note["applied"]:
+        note["change"] = {"design_dry_bulb_c": [design_dry_bulb(t), design_dry_bulb(tc)], "summer_afternoon_c": [_summer_pm(times, t), _summer_pm(times, tc)],
+                          "mean_dew_point_c": [float(td.mean()), float(tdc.mean())]}
+        by_id = {s["id"]: s for s in stations}
+        note["stations"] = [{"id": i, "name": n, "source": by_id[i]["source"], "km": k, "weight": w, "elev_m": by_id[i].get("elev_m")}
+                            for i, n, k, w in note["stations"]]
+    return times, list(tc), list(era5.rh_from(tc, tdc)), note
+
+
+def _record(cid, cells, times, temps, note, res, draws):
+    from waterledger_models.datacenter.physics import design_dry_bulb
+    raw = era5.raw_path(cid)
+    meta = json.load(open(raw[:-4] + ".json"))
+    c = cells[cid]["cell"]
+    return {"cell": cid, "lat": c["lat"], "lon": c["lon"], "land": c["land"], "elev_m": era5.elevation(cid), "model_version": RUN_MODEL,
+            "draws": draws, "seed": SEED, "mw": MW, "period": f"{era5.FIRST}-{era5.LAST}", "hours": len(times), "time": "local standard",
+            "design_dry_bulb_c": design_dry_bulb(temps), "correction": note,
+            "weather": {"source": meta["request"]["source"], "fetched": meta["fetched"], "sha256": meta["sha256"], "attribution": era5.ATTRIBUTION,
+                        "citation": era5.CITATION},
+            "per_100mw": res}
+
+
+def _raw_keys(cid):
+    path = era5.raw_path(cid)
+    date = os.path.basename(path)[:-4]
+    return [(f"era5/{cid}/{date}.npz", path), (f"era5/{cid}/{date}.json", path[:-4] + ".json")]
+
+
+def push_raw(store, cid):
+    """Upload a cell's raw series and its record to era5/<cell>/<fetch date>, and point era5/<cell>/latest.json at them."""
+    ok = all(store.put(k, p) for k, p in _raw_keys(cid))
+    if ok:
+        store.put(f"era5/{cid}/latest.json", era5.raw_path(cid)[:-4] + ".json")
+    return ok
+
+
+def pull(store, ids):
+    """Before a part starts: copy down the results and raw series R2 has and this machine doesn't. Returns (results, raw) counts."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    def one(cid):
+        res = os.path.exists(result_path(cid)) or store.get(f"{R2_RUNS}/{cid}.json", result_path(cid))
+        raw = bool(era5.raw_path(cid))
+        if not raw:
+            d = os.path.join(era5.RAW, cid)
+            latest = os.path.join(d, ".r2-latest.json")
+            if store.get(f"era5/{cid}/latest.json", latest):
+                date = json.load(open(latest))["fetched"]
+                raw = store.get(f"era5/{cid}/{date}.json", os.path.join(d, f"{date}.json")) and store.get(f"era5/{cid}/{date}.npz", os.path.join(d, f"{date}.npz"))
+                os.remove(latest)
+        return bool(res), bool(raw)
+    with ThreadPoolExecutor(8) as pool:
+        got = list(pool.map(one, ids))
+    return sum(r for r, _ in got), sum(w for _, w in got)
+
+
+def run_part(state, k=1, n=1, workers=6, draws=None, store=None, cells=None, run=None, fetch=None):
+    """Run part k of n of a state's cells; return {cell: result path}. `run` and `fetch` stand in for cooling.run_location and
+    era5.fetch in tests; `cells` for state_cells(state)."""
+    from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
+
+    from waterledger_models.datacenter import cooling
+    from waterledger_models.datacenter.physics import DRAWS
+    draws = draws or DRAWS
+    run, fetch = run or cooling.run_location, fetch or era5.fetch
+    cells = cells if cells is not None else state_cells(state)
+    ids = part(cells, k, n)
+    _say(f"{state.upper()} part {k}/{n}: {len(ids)} cells" + (f"; R2 ({store.name}) on" if store else "; R2 off"))
+    if store:
+        res, raw = pull(store, ids)
+        _say(f"from R2: {res} results, {raw} raw series already there")
+    todo = [c for c in ids if not os.path.exists(result_path(c))]
+    missing = [c for c in todo if not era5.raw_path(c)]
+    if missing:
+        _say(f"fetching {len(missing)} cells from the open copy")
+        fetch(missing)
+    stations = anchors({c: cells[c] for c in todo}, store) if todo else []
+    _say(f"{len(ids) - len(todo)} cells done before, {len(todo)} to run; {len(stations)} shore stations")
+    os.makedirs(RUNS, exist_ok=True)
+    out = {c: result_path(c) for c in ids if c not in todo}
+    uploads = ThreadPoolExecutor(2)                         # uploads go up while the cells run; put() never raises
+    if store:
+        for c in todo:                                      # skipped by checksum where R2 has them already
+            uploads.submit(push_raw, store, c)
+
+    def finish(cid, times, temps, note, res):
+        path = result_path(cid)
+        json.dump(_record(cid, cells, times, temps, note, res, draws), open(path + ".part", "w"))
+        os.replace(path + ".part", path)
+        out[cid] = path
+        if store:
+            uploads.submit(store.put, f"{R2_RUNS}/{cid}.json", path)
+        _say(f"  {cid} done ({len(out)}/{len(ids)})" + (", corrected" if note["applied"] else ""))
+
+    try:
+        if workers <= 1:
+            for cid in todo:
+                times, temps, rhs, note = weather(cid, stations)
+                finish(cid, times, temps, note, run(times, temps, rhs, n=draws, seed=SEED, mw=MW))
+            return out
+        with ProcessPoolExecutor(workers) as pool:
+            queue, live = list(todo), {}
+            while queue or live:
+                while queue and len(live) < 2 * workers:        # weather for a few cells ahead, not the whole part, in memory
+                    cid = queue.pop(0)
+                    times, temps, rhs, note = weather(cid, stations)
+                    live[pool.submit(run, times, temps, rhs, n=draws, seed=SEED, mw=MW)] = (cid, times, temps, note)
+                done = next(as_completed(live))
+                cid, times, temps, note = live.pop(done)
+                finish(cid, times, temps, note, done.result())
+        return out
+    finally:
+        uploads.shutdown(wait=True)

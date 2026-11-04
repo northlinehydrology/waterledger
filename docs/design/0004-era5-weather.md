@@ -1,7 +1,9 @@
 # 0004: ERA5 weather at every place's nearest cell
 
-Status: **proposed, Nov 3, 2026; not built.** The direction was decided by Andrew on Nov 1, 2026, and the rule for
-mostly-water cells on Nov 3; this note is the plan for review before the build. It changes [0002](0002-national-tier.md)
+Status: **decided; the run path built Nov 4, 2026, not run.** The direction was decided by Andrew on Nov 1, 2026, the rule
+for mostly-water cells on Nov 3, and the release ("Do all and fold into an era5 release") with quantile mapping on Nov 4
+([0005](0005-era5-quantile-mapping.md)). What is built is in section 5, "Built, Nov 4": the cells, fetching, the runs part by
+part, and saving to R2. Snapshot format 3 and the site are not built. The seven parts are started by Andrew by hand. It changes [0002](0002-national-tier.md)
 decision 4 (climate) and Michigan's eight regions ([0001](0001-schema-and-api.md) decision 5), and the snapshot format of
 [0003](0003-data-releases.md).
 
@@ -185,7 +187,56 @@ snapshot exactly (Findlay, every statistic). In short:
 
 ## 5. The code change
 
-### Package API
+### Built, Nov 4, 2026
+
+- **`waterledger_data.era5`.**
+  - `cell(lat, lon, land=0.5)` is the land rule on ERA5's land-sea mask, which ships with the package for 24-50 N,
+    125-66 W (`tables/era5_conus.npz`, 112 KB, with ERA5's surface elevation for quantile mapping's lapse). It gives all
+    5,662 places in the four states the cell, distance, land fraction and move of `cell_assignment.csv`, tested.
+  - `fetch(cells)` reads the open copy (s3://openmeteo/data/copernicus_era5), every cell per file read, into the raw cache.
+    The cache is `CACHE/era5/raw/<cell>/<fetch date>.npz` (float32, UTC, as fetched, about 0.85 MB a cell, about 1 GB for the four states), with a `.json`
+    holding the request, the file's sha256, any missing hours, the licence and the attribution. Two cells took 24 s.
+  - `hourly(cell, correct=None)` gives local standard time by isd_hourly's rule, whole days 1995-2024, with RH by Magnus.
+    A missing hour is an error.
+  - **Source.** The open copy is what's built: the source of every check so far, with values to 0.05 C. CDS
+    (section 1's build source) needs an ECMWF key, which Andrew creates. It isn't built and is a small addition when he
+    wants it. The raw cache records which source each cell came from.
+- **`waterledger.national.era5`.**
+  - `state_cells(ST)` reads the places from the state's snapshot (the latest, or `--snapshot DATE`).
+  - `part(cells, k, n)` splits the cells in id order into near-equal runs: Michigan 136 and 136, Ohio 203, Virginia 148,
+    Texas 205, 205 and 206.
+  - `anchors(cells)` finds the shore stations for quantile mapping (0005: ISD by one ID or linked, and ECCC, within 100 km
+    of the part's shore cells, each standing in a shore cell itself). It qualifies them under the 85% rule and fits their
+    quantiles, cached per station in `CACHE/era5/anchors/`.
+  - `run_part(ST, k, n)` fetches what is missing, corrects each shore cell (`quantile_mapping.correct`), and runs
+    `cooling.run_location` (400 draws, seed 7, per 100 MW) six cells at a time. As each cell finishes it writes
+    `CACHE/era5/runs/model1.8/<cell>.json`: `per_100mw`, the design dry-bulb, the correction (applied, reason, stations,
+    and the change in the design dry-bulb, summer afternoon and mean dew point) and the weather's source, fetch date and
+    sha256. A cell already written is not run again.
+- **CLI.** `waterledger era5 cells ST [--part k/n]` lists a part's cells and how many are done. `waterledger era5 fetch ST
+  [--part k/n]` fetches only. `waterledger era5 run ST --part k/n --workers 6 [--draws N] [--snapshot DATE] [--no-r2]`
+  fetches, corrects and runs.
+- **Saving to R2 (`waterledger_data.r2`, Andrew's request of Nov 4: "Save to r2").** The bucket is the private
+  `waterledger-raw`, separate from the public `waterledger-data`. The step is off unless set up:
+  - `WATERLEDGER_R2=wrangler` uses the wrangler login on the machine;
+  - `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY` in the environment use R2's S3 API, for a token
+    limited to the bucket if Andrew makes one (boto3, `waterledger-data[r2]`);
+  - `WATERLEDGER_R2=off` or `--no-r2` turns it off.
+
+  What it does:
+  - **Layout.** Raw series go to `era5/<cell>/<fetch date>.npz` and `.json`, with `era5/<cell>/latest.json` naming the
+    newest. Results go to `runs/era5/model1.8/<cell>.json`, the cache's layout, and station fits to `anchors/<id>.json`
+    and `.npy`.
+  - **Checksums.** Every object has a `<key>.sha256` sidecar, written after the object, and a file R2 holds with the same
+    checksum is not sent again.
+  - **When.** Uploads run in the background as each cell finishes, so a lost machine loses at most the cells running.
+  - **Resume.** Before a part starts, the results, raw series and station fits R2 has and the machine doesn't are pulled
+    and checked against their checksums, so a part can restart elsewhere.
+  - **Failures.** A failed upload warns and keeps the local file; it never stops the run.
+  - **No credentials in the package.** It needs no wrangler to install. wrangler calls take about 2-3 s each, small
+    against 77 s a cell.
+
+### Package API (the plan; see "Built" above for what exists)
 
 `waterledger-data` (fetching):
 

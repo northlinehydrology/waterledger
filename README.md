@@ -176,6 +176,31 @@ asked) publishes a state's snapshot.
 Paths (download cache, site output) come from `WATERLEDGER_CACHE` / `WATERLEDGER_SITE` or a `waterledger.toml` (see
 `waterledger_data.config`).
 
+### Model 1.8's ERA5 runs
+
+Model 1.8's cooling numbers come from one run per ERA5 cell, about 26 hours at six workers for the four states, in seven parts
+started by hand ([design 0004](docs/design/0004-era5-weather.md), section 3). Each part fetches its cells from Open-Meteo's open
+copy of ERA5, corrects the shore cells ([design 0005](docs/design/0005-era5-quantile-mapping.md)), runs them and writes
+`CACHE/era5/runs/model1.8/<cell>.json` as each finishes, so a stopped part resumes where it stopped:
+
+```bash
+uv sync                                              # the workspace includes waterledger-data[era5] (omfiles, s3fs) for the open copy
+uv run waterledger era5 cells TX --part 1/3           # what a part holds, and how much of it is done
+uv run waterledger era5 run TX --part 1/3 --workers 6
+```
+
+Saving to R2 is optional and off unless set up. With it on, each raw cell series goes to the private bucket `waterledger-raw` at
+`era5/<cell>/<fetch date>.npz` (with its request and checksum) and each result to `runs/era5/model1.8/<cell>.json` as it
+finishes. A file R2 already has with the same checksum is skipped. Before a part starts, whatever R2 has and this machine
+doesn't is pulled, so a part can be restarted on another machine. A failed upload warns and keeps the local file; it never
+stops the run.
+
+| Setting | R2 through |
+|---|---|
+| `WATERLEDGER_R2=wrangler` | the wrangler login on this machine (`npx wrangler login`) |
+| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | R2's S3 API, with a token limited to the bucket (`uv sync --extra r2` for boto3) |
+| `WATERLEDGER_R2=off`, or `--no-r2` | nothing: off |
+
 ## Contributing and project standards
 
 Corrections, bug reports and proposals are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md). Contributions follow EPA's

@@ -1,4 +1,4 @@
-"""waterledger build-state <ST>: build a state's data. waterledger build <state> [all|estimates|waters|power]: Michigan's site
+"""waterledger build-state <ST>: build a state's data. waterledger era5 run <ST> --part k/n: model 1.8's cooling runs on ERA5 cells. waterledger build <state> [all|estimates|waters|power]: Michigan's site
 data, part by part (paths from waterledger_data.config); kept for scripts, build-state MI runs the same build."""
 import argparse, os, sys
 
@@ -10,6 +10,30 @@ def _build_site(state, part="all"):
     parts = {"estimates": m.main, "waters": m.build_waters, "power": m.build_power}
     for p in (["estimates", "waters", "power"] if part == "all" else [part]):
         parts[p]()
+
+
+def _era5(a):
+    from waterledger.national import era5 as E
+    from waterledger_data import era5, r2
+    k, n = E.parse_part(a.part)
+    cells = E.state_cells(a.state, a.snapshot)
+    if a.action == "cells":
+        for i in range(1, n + 1):
+            ids = E.part(cells, i, n)
+            done = sum(os.path.exists(E.result_path(c)) for c in ids)
+            print(f"{a.state.upper()} part {i}/{n}: {len(ids)} cells ({ids[0]} to {ids[-1]}), {done} done, "
+                  f"{sum(len(cells[c]['places']) for c in ids)} places")
+        return
+    store = None if a.no_r2 else r2.from_env()
+    if a.action == "fetch":
+        ids = [c for c in E.part(cells, k, n) if not era5.raw_path(c)]
+        era5.fetch(ids)
+        if store:
+            for c in ids:
+                E.push_raw(store, c)
+        print(f"{len(ids)} cells fetched")
+        return
+    E.run_part(a.state, k, n, workers=a.workers, draws=a.draws, store=store, cells=cells)
 
 
 def main(argv=None):
@@ -33,7 +57,18 @@ def main(argv=None):
     sn.add_argument("state")
     sn.add_argument("--out", required=True)
     sn.add_argument("--date", default=None)
+    e5 = sub.add_parser("era5", help="model 1.8's cooling runs on each place's ERA5 cell (design 0004): cells, fetch or run, part by part")
+    e5.add_argument("action", choices=["cells", "fetch", "run"], help="cells: list the parts; fetch: the part's weather only; run: fetch, correct and run")
+    e5.add_argument("state")
+    e5.add_argument("--part", default="1/1", help="k/n: run the k-th of n parts (default 1/1, the whole state)")
+    e5.add_argument("--workers", type=int, default=6, help="cells at once (default 6: past six they share memory bandwidth, not cores)")
+    e5.add_argument("--draws", type=int, default=None, help="Monte Carlo draws per cell (default the model's, 400)")
+    e5.add_argument("--snapshot", default=None, help="the snapshot date whose places to use (default the latest)")
+    e5.add_argument("--no-r2", action="store_true", help="leave R2 off even if it is set up")
     a = ap.parse_args(argv)
+    if a.cmd == "era5":
+        _era5(a)
+        return
     if a.cmd in ("build-state", "build"):
         os.environ.setdefault("WATERLEDGER_WORKERS", str(os.cpu_count() or 1))    # a command, so safe for a process pool (cooling.run_locations)
     if a.cmd == "latest-json":
