@@ -40,6 +40,20 @@ def test_bmi_daily_run(tmp_path):
     m.finalize()
 
 
+def test_bmi_configuration_as_a_dict(tmp_path):
+    temps = REF["Lake Michigan"]["temps"][:10]
+    (tmp_path / "t.csv").write_text("\n".join(str(t) for t in temps))
+    cfg = {"it_capacity_mw": 100, "forcing": str(tmp_path / "t.csv"), "wind_speed": 4.47}
+    (tmp_path / "c.yaml").write_text(yaml.safe_dump(cfg))
+    a, b = LakeCoolingBmi(), LakeCoolingBmi()
+    a.initialize(str(tmp_path / "c.yaml"))
+    b.initialize(cfg)
+    for _ in range(5):
+        a.update()
+        b.update()
+    assert a.get_value(EVAP, np.empty(1))[0] == b.get_value(EVAP, np.empty(1))[0] > 0
+
+
 def test_bmi_rejects_unknown_parameters(tmp_path):
     cfg = tmp_path / "c.yaml"
     cfg.write_text(yaml.safe_dump({"parameters": {"coc": 4}}))

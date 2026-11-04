@@ -88,7 +88,7 @@ class Site(BaseModel):
         needs `design_db`, the location's 0.4% design dry-bulb in C, which a forcing file otherwise supplies.
 
             entry, cfg = site.to_bmi_config("site.yaml")
-            m = CoolingWaterBmi(); m.initialize("site.yaml")
+            m = CoolingWaterBmi(); m.initialize(cfg)      # or m.initialize("site.yaml")
         """
         f = self.facility
         if f.cooling == "lake":

@@ -2,19 +2,15 @@
 temperature and humidity, step it, and read the water fluxes. Here the 'other model' is a simple synthetic weather
 generator; in practice it would be an atmosphere or land-surface component."""
 import math
-import tempfile
 
 import numpy as np
 
 from waterledger_models.datacenter.bmi import CoolingWaterBmi
 
-config = tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False)
-# one week, hourly steps; a hybrid needs the place's 0.4% design dry-bulb (C), which a forcing file would otherwise supply
-config.write("design: hybrid\nit_capacity_mw: 300\nend_time: 604800\nparameters: {design_db: 32.0}\n")
-config.close()
-
 model = CoolingWaterBmi()
-model.initialize(config.name)
+# one week, hourly steps; a hybrid needs the place's 0.4% design dry-bulb (C), which a forcing file would otherwise supply.
+# The settings can also be a YAML file: model.initialize("config.yaml")
+model.initialize({"design": "hybrid", "it_capacity_mw": 300, "end_time": 604800, "parameters": {"design_db": 32.0}})
 temp, rh = np.empty(1), np.empty(1)
 withdrawn = np.empty(1)
 total_m3 = 0.0

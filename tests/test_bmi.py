@@ -131,6 +131,24 @@ def test_specific_humidity_and_pressure(tmp_path):
             assert w + n == pytest.approx(c + r, rel=1e-12)
 
 
+def test_configuration_as_a_dict(tmp_path):
+    cfg = {"design": "hybrid", "it_capacity_mw": 50, "end_time": 7200, "parameters": {"design_db": 31.0, "coc": 4}}
+    from_file, from_dict = CoolingWaterBmi(), CoolingWaterBmi()
+    from_file.initialize(write_config(tmp_path, **cfg))
+    from_dict.initialize(cfg)
+    assert cfg["parameters"] == {"design_db": 31.0, "coc": 4}       # the caller's dict is left as it was
+    for m in (from_file, from_dict):
+        m.set_value(TEMP, np.array([29.0]))
+        m.set_value(RH, np.array([55.0]))
+        m.update()
+    assert from_dict.get_end_time() == 7200
+    for name in OUTPUTS:
+        assert from_dict.get_value(name, np.empty(1))[0] == from_file.get_value(name, np.empty(1))[0]
+    m = CoolingWaterBmi()
+    m.initialize()                                                   # no configuration: towers at 100 MW
+    assert m._design == "towers" and m._mw == 100.0
+
+
 def test_bad_configuration(tmp_path):
     m = CoolingWaterBmi()
     with pytest.raises(ValueError):

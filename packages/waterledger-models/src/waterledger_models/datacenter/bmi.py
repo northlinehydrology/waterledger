@@ -4,7 +4,7 @@ hour: set air temperature and humidity, call update(), read the water withdrawn,
 One data center is one scalar grid point. A run uses a single parameter set (the central values by default, any of
 them overridable in the configuration file); the Monte Carlo ensemble lives in waterledger_models.datacenter.ensemble.
 
-Configuration (YAML):
+Configuration (a YAML file, or the same keys as a dict passed to initialize):
     design: dry | assist | hybrid | towers      (default towers)
     it_capacity_mw: 100                          (IT capacity, MW; sets the cooling load and the staff on site)
     time_step: 3600                              (seconds; the model is calibrated hourly)
@@ -59,6 +59,17 @@ OUTPUTS = {
     "atmosphere_bottom_air__wet_bulb_temperature": "degC",
     "data_center__electric_power": "MW",
 }
+
+
+def read_config(config):
+    """A component's configuration: a path to a YAML file, or the same settings as a dict (a framework that runs several campuses need not
+    write a file for each), or None for the defaults. The dict is copied, so the component never changes the caller's."""
+    if config is None:
+        return {}
+    if isinstance(config, dict):
+        return dict(config)
+    with open(config) as f:
+        return yaml.safe_load(f) or {}
 
 
 class _ScalarPointBmi(Bmi):
@@ -240,10 +251,7 @@ class CoolingWaterBmi(_ScalarPointBmi):
 
     # ---------- control ----------
     def initialize(self, config_file=None):
-        cfg = {}
-        if config_file:
-            with open(config_file) as f:
-                cfg = yaml.safe_load(f) or {}
+        cfg = read_config(config_file)
         self._design = cfg.get("design", "towers")
         if self._design not in model.DESIGNS:
             raise ValueError(f"design must be one of {model.DESIGNS}")
@@ -323,7 +331,7 @@ class LakeCoolingBmi(_ScalarPointBmi):
     lake's natural surface temperature and wind speed; outputs the water drawn and returned and the extra
     evaporation the returned heat causes.
 
-    Configuration (YAML):
+    Configuration (a YAML file, or the same keys as a dict):
         it_capacity_mw: 100
         time_step: 86400                         (seconds)
         end_time: 31536000
@@ -344,10 +352,7 @@ class LakeCoolingBmi(_ScalarPointBmi):
         self._forcing = None
 
     def initialize(self, config_file=None):
-        cfg = {}
-        if config_file:
-            with open(config_file) as f:
-                cfg = yaml.safe_load(f) or {}
+        cfg = read_config(config_file)
         self._mw = float(cfg.get("it_capacity_mw", 100.0))
         self._dt = float(cfg.get("time_step", 86400.0))
         self._params = {**{k: (a + b) / 2 for k, (a, b) in lake.RANGES.items()},
