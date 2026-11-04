@@ -4,7 +4,16 @@ Package changes (code). Changes to the numbers are listed by model version on th
 
 ## Unreleased
 
+Seven changes from coupling the BMI components in NOAA's NextGen (the Water Ledger NextGen Michigan example), and ERA5 weather for every place (in progress, not yet in this release).
+
 - **BMI: outputs change on `update()`, not on `set_value`** (behavior change). `CoolingWaterBmi` and `LakeCoolingBmi` store inputs when they are set, and `update()` computes the step from the current time to the next from them, then moves the clock on. Outputs always describe the last step taken and read 0 before the first one, so a framework that sets the next step's inputs before reading this step's outputs gets this step's values. Code that set inputs and read outputs without calling `update()` must now call it in between (NextGen's order, set, update, read, is unchanged). With a forcing file, the outputs read at time t are for the hour from t - 1 h to t; they were for the hour from t. A hybrid campus without a design dry-bulb now stops at `initialize()`, and `initialize()` starts a component over, its inputs included.
+- **BMI: specific humidity and surface pressure.** `CoolingWaterBmi` with `humidity: specific` takes `atmosphere_bottom_air_water_vapor__mass_fraction` (kg kg-1) and `land_surface_air__pressure` (Pa), what NextGen's AORC and NWM forcing carry, and converts them inside (Bolton 1980). `waterledger_models.weather` has `relative_humidity`, `specific_humidity` and `saturation_vapor_pressure`; the round trip is tested and stays within 0-100%.
+- **BMI: settings without a file.** `initialize()` takes a dict as well as a YAML path, in both components (`bmi.read_config`).
+- **BMI: a public base.** `ScalarPointBmi` is the shared base for components at one point, with its contract in the docstring. `_ScalarPointBmi` stays as an alias.
+- **BMI: the design dry-bulb.** `waterledger_models.weather.design_dry_bulb` gives a hybrid's 0.4% design dry-bulb from any hourly record (Dataset, DataArray or array), the value a forcing file gives the component, for frameworks that supply the weather. Use a long record: one Michigan year is up to 4.6 C off its 30 years.
+- **`hydrology.stream_depletion` takes arrays** (numpy, with `hydrology.erfc` within 1e-13 of `math.erfc`) and gives the scalar form's values; at t = 0 the share is 0. Ten years of hourly well responses are one 6 ms call.
+- **The BMI example runs again.** `examples/bmi_coupling.py` gives its hybrid a design dry-bulb (it failed under 3.9.0), and every example now runs in the tests (`tests/test_examples.py`; on synthetic weather offline, downloading under `-m live`).
+- **`__version__` matches each package.** 3.9.0 shipped with `__version__` 3.8.1, so every model 1.7 snapshot's manifest records packages 3.8.1 (2026-11-02 in Michigan, Virginia and Texas; 2026-11-02.2 in all four). The dated snapshots stay as they are; a test now holds `__version__` to `pyproject.toml`.
 
 ## 3.9.0 (Nov 2, 2026)
 
