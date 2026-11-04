@@ -124,13 +124,20 @@ physics.RANGES["switch_margin"], physics.SOURCES["switch_margin"]    # a paramet
 
 ```python
 from waterledger_models.datacenter import CoolingWaterBmi
+from waterledger_models.weather import design_dry_bulb
 
 m = CoolingWaterBmi()
-m.initialize("config.yaml")          # design, it_capacity_mw, forcing, parameter overrides
-m.set_value("atmosphere_bottom_air__temperature", ...)
-m.update()
+m.initialize({"design": "hybrid", "it_capacity_mw": 300,       # or a YAML file with the same keys
+              "humidity": "specific",                            # NextGen's AORC: specific humidity and pressure, converted inside
+              "parameters": {"design_db": design_dry_bulb(t2m)}})   # a hybrid's 0.4% design dry-bulb, from the place's hourly record
+m.set_value("atmosphere_bottom_air__temperature", ...)           # this hour's inputs
+m.update()                                                       # computes the hour; outputs change only here
 m.get_value("data_center_cooling_water__withdrawal_volume_flux", ...)
 ```
+
+A component of your own at one point can build on `waterledger_models.datacenter.ScalarPointBmi`, which supplies every BMI
+function but `initialize()`; its docstring has the contract. `waterledger_models.hydrology.stream_depletion` takes arrays,
+for a well's response at every step of a run.
 
 More in [examples/](examples/): a BMI coupling loop, eight Michigan locations in parallel, and a STAC catalog of results.
 
