@@ -241,3 +241,35 @@ def test_a_component_on_the_public_base():
     assert m.get_grid_type(m.get_var_grid("y")) == "scalar" and m.get_var_type("x") == "float64"
     with pytest.raises(KeyError):
         m.set_value("y", np.array([1.0]))
+
+
+def test_update_path_gives_the_set_value_paths_hours(tmp_path):
+    """Hour by hour, set, update, read gives what 3.9.0 gave on set_value for the same inputs (its _compute on those inputs), with no
+    step's shift; a framework's set_value wins over a forcing file for that step."""
+    time, t, rh = synthetic_weather(3)
+    for design in model.DESIGNS:
+        cfg = {"design": design, "it_capacity_mw": 300, "parameters": {"design_db": 30.0}}
+        new, old = CoolingWaterBmi(), CoolingWaterBmi()
+        new.initialize(cfg)
+        old.initialize(cfg)
+        for k in range(len(t)):
+            for m in (new, old):
+                m.set_value(TEMP, np.array([t[k]]))
+                m.set_value(RH, np.array([rh[k]]))
+            old._compute()                                       # what 3.9.0's set_value did
+            new.update()
+            for name in OUTPUTS:
+                assert new.get_value(name, np.empty(1))[0] == old.get_value(name, np.empty(1))[0], (design, k, name)
+    forcing = tmp_path / "weather.json"
+    forcing.write_text(json.dumps({"hourly": {"time": [str(x) for x in time.astype("datetime64[m]")],
+                                              "temperature_2m": t.tolist(), "relative_humidity_2m": rh.tolist()}}))
+    a, b = CoolingWaterBmi(), CoolingWaterBmi()
+    a.initialize({"forcing": str(forcing)})
+    b.initialize({"forcing": str(forcing)})
+    a.update()
+    b.set_value(TEMP, np.array([35.0]))                          # this step only
+    b.update()
+    assert b.get_value(TEMP, np.empty(1))[0] == 35.0 and b.get_value(WITHDRAWN, np.empty(1))[0] > a.get_value(WITHDRAWN, np.empty(1))[0]
+    a.update()
+    b.update()                                                   # the next step is the file's again
+    assert b.get_value(TEMP, np.empty(1))[0] == t[1] and b.get_value(WITHDRAWN, np.empty(1))[0] == a.get_value(WITHDRAWN, np.empty(1))[0]

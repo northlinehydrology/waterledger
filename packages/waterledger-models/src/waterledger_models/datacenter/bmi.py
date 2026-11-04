@@ -92,11 +92,12 @@ class ScalarPointBmi(Bmi):
         initialize(config_file=None)
                           reads its settings (read_config takes a YAML path or a dict) and sets self._dt, self._end and self._time
         _compute()        reads the inputs in self._values and writes the outputs; it has no side effects other than the outputs
-        _advance()        optional: loads the inputs for the step starting at self._time when the component reads forcing itself
+        _advance()        optional: loads the inputs for the step starting at self._time when the component reads forcing itself,
+                          through self._force(name, value), which leaves alone any input set since the last update
     The order of a step: update() calls _advance(), then _compute() for the step from the current time to the next, then moves the clock
     one step on. set_value and set_value_at_indices only store inputs (an output raises KeyError), so outputs change on update() alone and
     always describe the last step taken; before the first update they are 0. A framework can set the next step's inputs before it reads
-    this step's outputs.
+    this step's outputs. An input set with set_value wins over a forcing file for the step it was set for.
     """
 
     INPUTS: dict = {}
@@ -107,14 +108,21 @@ class ScalarPointBmi(Bmi):
         self._time = 0.0
         self._dt = 3600.0
         self._end = 365 * 86400.0
+        self._set = set()          # inputs set since the last update, which a forcing file does not overwrite
 
     def update(self):
         self._advance()
         self._compute()
+        self._set.clear()
         self._time += self._dt
 
     def _advance(self):
         """Load the inputs for the step starting now, if the component reads forcing itself."""
+
+    def _force(self, name, value):
+        """An input from the component's own forcing, unless the framework set it for this step."""
+        if name not in self._set:
+            self._values[name][0] = value
 
     def update_until(self, time):
         while self._time + self._dt <= time + 1e-9:
@@ -199,11 +207,13 @@ class ScalarPointBmi(Bmi):
         if name not in self.INPUTS:
             raise KeyError(f"{name} is not an input variable")
         self._values[name][:] = src
+        self._set.add(name)
 
     def set_value_at_indices(self, name, inds, src):
         if name not in self.INPUTS:
             raise KeyError(f"{name} is not an input variable")
         self._values[name].put(inds, src)
+        self._set.add(name)
 
     # ---------- grid: one scalar point ----------
     def get_grid_rank(self, grid):
@@ -303,11 +313,12 @@ class CoolingWaterBmi(ScalarPointBmi):
             model.hybrid_full(self._params)          # a hybrid without a design dry-bulb stops here, not at the first step
         for v in self._values.values():
             v[:] = 0.0
+        self._set.clear()
 
     def _load_forcing(self):
         i = min(int(self._time // self._dt), len(self._forcing[0]) - 1)
-        self._values["atmosphere_bottom_air__temperature"][0] = self._forcing[0][i]
-        self._values["atmosphere_bottom_air_water_vapor__relative_saturation"][0] = self._forcing[1][i]
+        self._force("atmosphere_bottom_air__temperature", self._forcing[0][i])
+        self._force("atmosphere_bottom_air_water_vapor__relative_saturation", self._forcing[1][i])
 
     def _compute(self):
         tdb = self._values["atmosphere_bottom_air__temperature"]
@@ -397,11 +408,12 @@ class LakeCoolingBmi(ScalarPointBmi):
             self._end = float(cfg.get("end_time", 365 * 86400.0))
         for name in self.OUTPUTS:
             self._values[name][:] = 0.0
+        self._set.clear()
 
     def _advance(self):
         if self._forcing is not None:
             i = min(int(self._time // self._dt), len(self._forcing) - 1)
-            self._values["lake_water_surface__temperature"][0] = self._forcing[i]
+            self._force("lake_water_surface__temperature", self._forcing[i])
 
     def _compute(self):
         p = self._params
