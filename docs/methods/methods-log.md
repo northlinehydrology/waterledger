@@ -1349,3 +1349,70 @@ cells for old and new; Nov 4):
 
 **Open.** None for the numbers. Michigan part 1's 38 cells finished on the old code are identical to what the new code
 gives, so a part can restart on the new code and keep them.
+
+## Nov 4, 2026: snapshot format 3, cooling by ERA5 cell in the state snapshots (model 1.8; built, not yet written for a state)
+
+**Decision (Andrew, Nov 4, 2026: "yes").** Model 1.8's cell results go into the state snapshots as snapshot format 3 (design
+0004, section 5), and the package reads them. A place's cooling estimate takes its ERA5 cell's results per 100 MW, the cell
+its places.json entry names. Rainfall, road salt and golf stay with the climate divisions' stations.
+
+**What a format 3 snapshot carries** (`waterledger.national.cells`, `national.snapshot.write`):
+- **`cells/<cell>.json`** for every cell the state's places use, from the cell's run (`CACHE/era5/runs/model1.8`). It has:
+  - `per_100mw`, in the structure the divisions and regions carry;
+  - the cell's center, land fraction and ERA5 elevation;
+  - the 0.4% design dry-bulb, period (1995-2024), hours, draws and seed;
+  - the weather's source (Open-Meteo's open copy, fetch date, checksum), its citation, licence and attribution;
+  - design 0005's correction block: method qm-1, whether it was applied and why, the stations (id, name, source, km,
+    weight, elevation), and the change to the design dry-bulb, summer afternoon and mean dew point.
+- **`cells/index.json`**: every cell's center, land fraction, places, the places the land rule moved there, whether it
+  was corrected, and its file's checksum.
+- **`places.json`**: each place gains `cell`, `cell_km`, `cell_land`, `cell_moved` (with `nearest_cell`, `nearest_km` and
+  `nearest_land` when moved) and `weather_corrected`.
+- **`manifest.json`**:
+  - `format: 3` and `model_version` 1.8 (the runs', not the writing package's);
+  - `cells`, every cell file's size and checksum;
+  - `cell_rule`, land at least 0.5;
+  - `weather`: ERA5's dataset, DOI, citation, CC-BY 4.0 licence, attribution, copy, period and first and last fetch dates;
+  - `correction`: method, rule, the stations used, with source, ISD parts, share observed and the first and last dates
+    their files were downloaded, and ISD's citation. Where a Canadian station is used it also has ECCC's licence (Data
+    Servers End-use Licence 2.1) and attribution ("Contains information licenced under the Data Server End-use Licence of
+    Environment and Climate Change Canada.").
+- **`climate.json`**: its divisions keep their stations (name, station, id, share observed, screens) but no cooling results
+  (`climate.division_stations`).
+
+**Reading it.**
+- **Cell files are fetched on demand.** Each is fetched the first time a place needs it and checked against the manifest's
+  checksum; a mismatch is refused. A snapshot download stays the size it was, and the page, likewise, loads one cell file
+  per place.
+- **The estimate.** It reads the place's cell in a format 3 snapshot and its division in format 2 (`provider._cooling`).
+  `Climate` gains `cell`, `cell_km`, `cell_land`, `cell_moved` and `weather_corrected`, and lists `era5_cell` among its
+  sources.
+- **Tested.** An estimate from a format 3 snapshot equals the one computed straight from the cell's run file, for every
+  design. The test uses Michigan part 1's real runs, read and not rerun: 41.75_-83.50, corrected; 42.00_-85.00, land;
+  43.50_-83.50, where the land rule moved Akron township from 43.75_-83.50.
+
+**Checking it** (check-snapshot, `build.checks`, besides format 2's checks):
+- every place on a cell with results (`era5_cell`, 100%);
+- each cell's central run closing on the average day and over the year: withdrawn + condensate = consumed + returned, to
+  1e-9 (measured: within 2e-16);
+- each corrected cell naming its stations, and every one of them in the manifest's stations.
+
+The peak day isn't held to closing, since each flow's 1-in-10-year peak is taken on its own days (up to 1% apart on
+41.75_-83.50, assist). `scenario.cooling_estimate` closes the estimate's middle peak by taking consumed as what is left, as
+before.
+
+**Model versions kept apart.** A format 3 manifest says model 1.8, and `waterledger latest-json --dir` files the snapshot
+under the model its manifest gives (the `build-state` workflow passes `--dir`). Before this, latest-json filed a snapshot
+under the writing package's `MODEL_VERSION`, so a format 3 snapshot written by a package still at 1.7 would have reached
+model 1.7 packages, which can't read it. `MODEL_VERSION` itself moves to 1.8 with the release.
+
+**Across state lines.** A cell shared by two states is in both snapshots, copied from its one run file, so both states'
+places in it get the same numbers.
+
+**Not built.** Michigan: its estimate reads its site files' eight regions (`estimates.json`), and the package matches
+waterledger.org/mi exactly, so Michigan moves to cells with the site's own change.
+
+**Alternatives considered.**
+- Cell files listed in the manifest's `files`, so a download takes all of them: up to 616 files for Texas for one place.
+  Not chosen.
+- Every cell in one file per state: simpler, but 3-9 MB for the page to load for one place.

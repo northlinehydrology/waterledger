@@ -311,6 +311,28 @@ snapshot exactly (Findlay, every statistic). In short:
 - A package that reads format 2 keeps working on the snapshots it reads now: `by_model` means model 1.7 packages never
   see a model 1.8 snapshot.
 
+**Built Nov 4, 2026 (national tier; not yet run on a state)** as above, with these additions (`waterledger.national.cells`):
+- **Cell files.** Each carries 0005's `correction` block (method, applied, reason, stations, and the before and after of
+  the design dry-bulb, summer afternoon and mean dew point), the cell's ERA5 elevation, and the run's draws and seed.
+- **Places.** Each place also gains `weather_corrected`.
+- **The manifest.**
+  - `cells` lists every cell file with its size and checksum. They are kept apart from `files`, so the package fetches
+    only the cell a place needs, checked against its checksum.
+  - `correction` gives the method and rule, and the stations used, each with its source, ISD parts and fetch dates. It
+    carries ISD's citation and, where a Canadian station is used, ECCC's licence and attribution.
+  - `model_version` is the runs' (1.8), whatever the writing package's `MODEL_VERSION`. `waterledger latest-json --dir`
+    files a snapshot under its manifest's model, and the `build-state` workflow passes it.
+- **check-snapshot adds three checks:**
+  - every place has a cell with results;
+  - each cell's central run closes (withdrawn + condensate = consumed + returned) on the average day and over the year;
+  - each corrected cell names stations that the manifest lists.
+
+  The peak day isn't held to closing: each flow's 1-in-10-year peak falls on its own days, up to 1% apart on 41.75_-83.50,
+  and the estimate closes its middle peak itself.
+- **Cells across a state line** are in both states' snapshots, copied from the one run file, so the numbers are the same.
+- **Michigan is not built yet.** Its estimate reads its site files' regions, and the package matches waterledger.org/mi
+  exactly, so its move to cells goes with the site's.
+
 ### The site
 
 The calculator loads `cells/<cell>.json` for the chosen place instead of reading its region's or division's numbers
