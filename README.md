@@ -95,6 +95,8 @@ within 100 km (619 places; [design 0005](docs/design/0005-era5-quantile-mapping.
 Michigan has its own layers (state-reported water use, domestic wells, trout streams, lake-source cooling, state rules)
 and matches [waterledger.org/mi](https://waterledger.org/mi/) exactly. The other states use national datasets only
 ([design 0002](docs/design/0002-national-tier.md)); any other state can be built locally with `waterledger build-state ST`.
+Adding a state from start to publication, step by step with what each step writes and how to tell it's done, is in
+[docs/add-a-state.md](docs/add-a-state.md).
 
 ### Data
 
