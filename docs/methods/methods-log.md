@@ -491,7 +491,8 @@ Decision (Andrew): the packages are the standard, and waterledger.org is built o
   used here, with library access; metered water at an adiabatic site.
 - Landscape irrigation as an optional, climate-specific term.
 - Station distance: how far places are from their division's station, and how much a nearer station changes the
-  estimates ([station-distance-check.md](station-distance-check.md), in progress).
+  estimates ([station-distance-check.md](station-distance-check.md), Oct 29; rerun on model 1.7 with ERA5 at each place's cell,
+  [era5-station-check.md](era5-station-check.md), Nov 3). Superseded by the ERA5 decision below once it is built.
 - NOAA climate division names in the data.
 - Virginia's withdrawals by use type (published only in DEQ's dashboard; a bulk export to request).
 - The share of homes a utility serves, shown for Michigan, needs a national source.
@@ -1067,3 +1068,60 @@ Sediment, phosphorus and nitrogen leave `before_after` for `est.site_loads`. The
 ## Nov 2, 2026: citations checked for 3.9.0
 
 Corrected: `usgs_wu2015` to the revised release the code loads (Sleckman, Ross and Cook 2026, doi:10.5066/P14Q6AVK), not Dieter et al.'s; the Clark et al. DOI; CEAP's and CWP's links; the BMP Database report's title, with its Table 11 values named as retention ponds outside the Chesapeake. AP-42 was read directly at EPA's copy: Table 13.4-1, induced draft 0.020%, rated D. Hermantown's slides were read; its Oct 2025 slides are credited on the city's page to Mortenson and Minnesota Power, not Google. Crusoe's chart was read: about 2 million gallons a year at 200 MW, called illustrative, so about 19-20 gal/day per MW directly against the 23 this log worked out, with the range's top of 20 holding; the phrase "equipment washdowns" quoted above isn't in the post's text. Trane's DC-WPR004A could not be opened and is removed; the patent and EVAPCO carry the switch margin. The Gaines figure, Sun and News, still can't be located and stays labeled as not re-verified.
+
+## Nov 3, 2026: ERA5 at every place's nearest cell (decided Nov 1; model 1.8, not built)
+
+**Decision (Andrew, Nov 1, 2026).** Every place in every published state takes its cooling weather from its nearest ERA5 grid
+cell, 1995-2024. This replaces Michigan's eight regions (Open-Meteo's best match at a hand-picked point each) and the
+national tier's one NOAA ISD station per climate division. Cells are not grouped; each has its own results, in a file the
+page loads for its place. Distribution correction (quantile mapping of ERA5 to nearby stations) is a later, separate model
+version, with Andrew leading the method. The plan is [design 0004](../design/0004-era5-weather.md).
+
+**Why.** One source and one rule for every state, at about 10 km instead of the 58-115 km median distance to a division
+station (Ohio, Virginia, Texas) or 59 km to a Michigan region point ([station-distance-check.md](station-distance-check.md)).
+On Oct 29 the single-station design added scatter without a consistent direction, and Texas had 42% of people more than
+100 km from their station.
+
+**What was checked (Nov 3).**
+- **Source.** ERA5 has been CC-BY 4.0 since July 2, 2025, so commercial use with attribution is allowed (ECMWF, "CC-BY
+  licence to replace Licence to use Copernicus Products on 02 July 2025",
+  https://forum.ecmwf.int/t/cc-by-licence-to-replace-licence-to-use-copernicus-products-on-02-july-2025/13464).
+- **The build's source:** the Copernicus CDS `reanalysis-era5-single-levels-timeseries`, one request per cell. It needs a
+  free key and ECMWF labels it experimental.
+- **The no-key path:** Open-Meteo's open-data copy of ERA5 on AWS, anonymous, CC-BY 4.0.
+- **Not used:** Open-Meteo's API, whose free tier is non-commercial only (https://open-meteo.com/en/terms) and whose
+  historical data needs a paid plan.
+- **Cells.** 1,294 for the four states (Michigan 313, Ohio 211, Virginia 157, Texas 619), against an estimate of about 1,700.
+  Every place is within 18 km of its cell's center.
+- **Water cells.** 189 places have a nearest cell that ERA5's land-sea mask puts mostly over water: Michigan 116, Ohio 35,
+  Virginia 23, Texas 15.
+- **Run time.** Model 1.7 takes 362 s per cell alone on an M3 Max, against about 116 s on model 1.6. The machine tops out
+  at 77 s per cell with six runs at once: twelve are no faster. The four states take about 28 hours of runs.
+- **Against stations** ([era5-station-check.md](era5-station-check.md)), at the 21 places of the Oct 29 check:
+  - Towers are within 3% of the nearest qualifying station.
+  - On land cells, hybrid and assist are mostly within 9%, and ERA5 removes the far-station errors (Austin, Amarillo, El
+    Paso).
+  - On cells that are part lake or sea, hybrid and assist averages run 6-52% below the shore airports.
+
+**Alternatives considered.**
+- The nearest qualifying station per place, with ISD records linked by WBAN: options A and D of the Oct 29 check, cheap and
+  traceable to a named record. Not chosen, so that every state uses one source.
+- Stations interpolated by distance (option B): it blends across coasts and ridges.
+- ERA5-Land at 0.1 degree: 3,751 cells and no values over the sea.
+- Grouping cells into regions: decided against, so a place's numbers are its own cell's.
+
+**Open.**
+- **The rule for water cells:** keep the nearest cell, or take the nearest cell that is at least half land.
+- **Quantile mapping:** its stations, its method and whether it applies by season.
+- **The CDS time-series dataset's queue in practice**, and its experimental status.
+- **Valley and ridge cells**, such as Roanoke's, where ERA5's cell averages unlike terrain.
+
+**References.**
+- Hersbach, H., Bell, B., Berrisford, P., et al. (2020). The ERA5 global reanalysis. Quarterly Journal of the Royal
+  Meteorological Society 146(730): 1999-2049. doi:10.1002/qj.3803.
+- Hersbach, H., et al. (2023). ERA5 hourly data on single levels from 1940 to present. Copernicus Climate Change Service (C3S)
+  Climate Data Store. doi:10.24381/cds.adbb2d47.
+- Bolton, D. (1980). The computation of equivalent potential temperature. Monthly Weather Review 108(7): 1046-1053 (the BMI
+  components' humidity conversion, released with this change).
+- Alduchov, O. A. and Eskridge, R. E. (1996). Improved Magnus form approximation of saturation vapor pressure. Journal of
+  Applied Meteorology 35(4): 601-609 (relative humidity from dew point, for stations and ERA5 alike).

@@ -1,0 +1,1114 @@
+{
+ "rows": [
+  {
+   "state": "TX",
+   "geoid": "4805000",
+   "name": "Austin city",
+   "lat": 30.29862,
+   "lon": -97.75413,
+   "published": {
+    "point": "Victoria Regional Airport",
+    "station_id": "722550-12912",
+    "km": 178.5,
+    "towers.withdrawn_avg": 0.7338785117246491,
+    "towers.withdrawn_peak_1in10": 0.9304087022905037,
+    "hybrid.withdrawn_avg": 0.11360599845850422,
+    "hybrid.withdrawn_peak_1in10": 0.5568131392971264,
+    "assist.withdrawn_avg": 0.13061222007267617,
+    "assist.withdrawn_peak_1in10": 0.5919904532602358
+   },
+   "nearest_station": {
+    "id": "722530-12921",
+    "name": "San Antonio International Airport",
+    "state": "TX",
+    "lat": 29.544,
+    "lon": -98.484,
+    "km": 109.5,
+    "share_observed": 0.999
+   },
+   "era5_cell": {
+    "lat": 30.25,
+    "lon": -97.75,
+    "km": 5.4
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.7235063320172495,
+    "towers.withdrawn_peak_1in10": 0.9326865528313757,
+    "hybrid.withdrawn_avg": 0.10923963229365666,
+    "hybrid.withdrawn_peak_1in10": 0.6061801766298592,
+    "assist.withdrawn_avg": 0.1517996110514928,
+    "assist.withdrawn_peak_1in10": 0.7220712012274422,
+    "design_db": 38.1,
+    "mean_t": 20.55092626391677,
+    "mean_rh": 66.96211232004993,
+    "hours": 262992
+   },
+   "nearest": {
+    "towers.withdrawn_avg": 0.7261651608342496,
+    "towers.withdrawn_peak_1in10": 0.9310125361521626,
+    "hybrid.withdrawn_avg": 0.1113069115705404,
+    "hybrid.withdrawn_peak_1in10": 0.6165269758677054,
+    "assist.withdrawn_avg": 0.15554061639933328,
+    "assist.withdrawn_peak_1in10": 0.7443799577294661,
+    "design_db": 37.8,
+    "mean_t": 21.033889313306965,
+    "mean_rh": 66.07905109420051,
+    "hours": 262992
+   }
+  },
+  {
+   "state": "TX",
+   "geoid": "4865000",
+   "name": "San Antonio city",
+   "lat": 29.45977,
+   "lon": -98.52426,
+   "published": {
+    "point": "Victoria Regional Airport",
+    "station_id": "722550-12912",
+    "km": 168.5,
+    "towers.withdrawn_avg": 0.7338785117246491,
+    "towers.withdrawn_peak_1in10": 0.9304087022905037,
+    "hybrid.withdrawn_avg": 0.11360599845850422,
+    "hybrid.withdrawn_peak_1in10": 0.5568131392971264,
+    "assist.withdrawn_avg": 0.13061222007267617,
+    "assist.withdrawn_peak_1in10": 0.5919904532602358
+   },
+   "nearest_station": {
+    "id": "722530-12921",
+    "name": "San Antonio International Airport",
+    "state": "TX",
+    "lat": 29.544,
+    "lon": -98.484,
+    "km": 10.1,
+    "share_observed": 0.999
+   },
+   "era5_cell": {
+    "lat": 29.5,
+    "lon": -98.5,
+    "km": 5.1
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.7246943352013488,
+    "towers.withdrawn_peak_1in10": 0.926444974317467,
+    "hybrid.withdrawn_avg": 0.10981790189114744,
+    "hybrid.withdrawn_peak_1in10": 0.5850056199570262,
+    "assist.withdrawn_avg": 0.14845110043395254,
+    "assist.withdrawn_peak_1in10": 0.6840843101617093,
+    "design_db": 37.75,
+    "mean_t": 20.79161704538541,
+    "mean_rh": 67.72786415413862,
+    "hours": 262992
+   },
+   "nearest": {
+    "towers.withdrawn_avg": 0.7261651608342496,
+    "towers.withdrawn_peak_1in10": 0.9310125361521626,
+    "hybrid.withdrawn_avg": 0.1113069115705404,
+    "hybrid.withdrawn_peak_1in10": 0.6165269758677054,
+    "assist.withdrawn_avg": 0.15554061639933328,
+    "assist.withdrawn_peak_1in10": 0.7443799577294661,
+    "design_db": 37.8,
+    "mean_t": 21.033889313306965,
+    "mean_rh": 66.07905109420051,
+    "hours": 262992
+   }
+  },
+  {
+   "state": "TX",
+   "geoid": "4863500",
+   "name": "Round Rock city",
+   "lat": 30.52677,
+   "lon": -97.66008,
+   "published": {
+    "point": "Fort Worth Naval Air Station Jrb/Carswell Field",
+    "station_id": "722595-13911",
+    "km": 249.9,
+    "towers.withdrawn_avg": 0.7179024338691884,
+    "towers.withdrawn_peak_1in10": 0.9504749102110088,
+    "hybrid.withdrawn_avg": 0.11333266979694961,
+    "hybrid.withdrawn_peak_1in10": 0.6794171677292873,
+    "assist.withdrawn_avg": 0.17690906827856065,
+    "assist.withdrawn_peak_1in10": 0.8272507050622782
+   },
+   "nearest_station": {
+    "id": "722560-13959",
+    "name": "Waco Regional Airport",
+    "state": "TX",
+    "lat": 31.618,
+    "lon": -97.228,
+    "km": 128.1,
+    "share_observed": 0.996
+   },
+   "era5_cell": {
+    "lat": 30.5,
+    "lon": -97.75,
+    "km": 9.1
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.7211881454316629,
+    "towers.withdrawn_peak_1in10": 0.9316401406144441,
+    "hybrid.withdrawn_avg": 0.10618040817756058,
+    "hybrid.withdrawn_peak_1in10": 0.613616695506974,
+    "assist.withdrawn_avg": 0.1479999804708557,
+    "assist.withdrawn_peak_1in10": 0.7217985789907929,
+    "design_db": 38.0,
+    "mean_t": 20.299534396483544,
+    "mean_rh": 66.7681905515126,
+    "hours": 262992
+   },
+   "nearest": {
+    "towers.withdrawn_avg": 0.718385977143372,
+    "towers.withdrawn_peak_1in10": 0.9421734150587493,
+    "hybrid.withdrawn_avg": 0.10561624796079173,
+    "hybrid.withdrawn_peak_1in10": 0.6220361518572284,
+    "assist.withdrawn_avg": 0.1552265485064822,
+    "assist.withdrawn_peak_1in10": 0.7522184289364473,
+    "design_db": 38.9,
+    "mean_t": 19.6507457523158,
+    "mean_rh": 67.09235404879392,
+    "hours": 262992
+   }
+  },
+  {
+   "state": "TX",
+   "geoid": "4819000",
+   "name": "Dallas city",
+   "lat": 32.79333,
+   "lon": -96.76651,
+   "published": {
+    "point": "Fort Worth Naval Air Station Jrb/Carswell Field",
+    "station_id": "722595-13911",
+    "km": 64.0,
+    "towers.withdrawn_avg": 0.7179024338691884,
+    "towers.withdrawn_peak_1in10": 0.9504749102110088,
+    "hybrid.withdrawn_avg": 0.11333266979694961,
+    "hybrid.withdrawn_peak_1in10": 0.6794171677292873,
+    "assist.withdrawn_avg": 0.17690906827856065,
+    "assist.withdrawn_peak_1in10": 0.8272507050622782
+   },
+   "nearest_station": {
+    "id": "722590-03927",
+    "name": "Dallas/Ft Worth International Ap",
+    "state": "TX",
+    "lat": 32.897,
+    "lon": -97.022,
+    "km": 26.5,
+    "share_observed": 1.0
+   },
+   "era5_cell": {
+    "lat": 32.75,
+    "lon": -96.75,
+    "km": 5.1
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.7160432573635096,
+    "towers.withdrawn_peak_1in10": 0.9474546816169784,
+    "hybrid.withdrawn_avg": 0.10517287985129029,
+    "hybrid.withdrawn_peak_1in10": 0.6718202401095583,
+    "assist.withdrawn_avg": 0.14937542423267516,
+    "assist.withdrawn_peak_1in10": 0.7966864684772214,
+    "design_db": 38.35,
+    "mean_t": 19.453997459998785,
+    "mean_rh": 64.95526695751555,
+    "hours": 262992
+   },
+   "nearest": {
+    "towers.withdrawn_avg": 0.7164199183305575,
+    "towers.withdrawn_peak_1in10": 0.9492901029783989,
+    "hybrid.withdrawn_avg": 0.10790932496988226,
+    "hybrid.withdrawn_peak_1in10": 0.6785863822150386,
+    "assist.withdrawn_avg": 0.16275454861552924,
+    "assist.withdrawn_peak_1in10": 0.8293069637894641,
+    "design_db": 38.9,
+    "mean_t": 19.599493238298457,
+    "mean_rh": 62.358249548895834,
+    "hours": 262992
+   }
+  },
+  {
+   "state": "TX",
+   "geoid": "4824000",
+   "name": "El Paso city",
+   "lat": 31.84778,
+   "lon": -106.43111,
+   "published": {
+    "point": "Winkler County Airport",
+    "station_id": "722656-23040",
+    "km": 305.2,
+    "towers.withdrawn_avg": 0.7054644900661168,
+    "towers.withdrawn_peak_1in10": 0.922757411106375,
+    "hybrid.withdrawn_avg": 0.10403158633906139,
+    "hybrid.withdrawn_peak_1in10": 0.5674297971500407,
+    "assist.withdrawn_avg": 0.18901888426538344,
+    "assist.withdrawn_peak_1in10": 0.7611528737695219
+   },
+   "nearest_station": {
+    "id": "722700-23044",
+    "name": "El Paso International Airport",
+    "state": "TX",
+    "lat": 31.812,
+    "lon": -106.377,
+    "km": 6.5,
+    "share_observed": 1.0
+   },
+   "era5_cell": {
+    "lat": 31.75,
+    "lon": -106.5,
+    "km": 12.7
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.700763816090705,
+    "towers.withdrawn_peak_1in10": 0.9045897756536114,
+    "hybrid.withdrawn_avg": 0.09934306874158182,
+    "hybrid.withdrawn_peak_1in10": 0.6047994242796181,
+    "assist.withdrawn_avg": 0.1733732941390539,
+    "assist.withdrawn_peak_1in10": 0.7849499087367022,
+    "design_db": 38.4,
+    "mean_t": 18.724267087972255,
+    "mean_rh": 38.00923695207157,
+    "hours": 262992
+   },
+   "nearest": {
+    "towers.withdrawn_avg": 0.7041877504933662,
+    "towers.withdrawn_peak_1in10": 0.9183117389020108,
+    "hybrid.withdrawn_avg": 0.10164765924539539,
+    "hybrid.withdrawn_peak_1in10": 0.6499212089375168,
+    "assist.withdrawn_avg": 0.1840007818246221,
+    "assist.withdrawn_peak_1in10": 0.8254612077188633,
+    "design_db": 38.9,
+    "mean_t": 19.291769143722455,
+    "mean_rh": 36.21421262942787,
+    "hours": 262992
+   }
+  },
+  {
+   "state": "TX",
+   "geoid": "4803000",
+   "name": "Amarillo city",
+   "lat": 35.1999,
+   "lon": -101.83019,
+   "published": {
+    "point": "Lubbock International Airport",
+    "station_id": "722670-23042",
+    "km": 170.6,
+    "towers.withdrawn_avg": 0.6883607684741334,
+    "towers.withdrawn_peak_1in10": 0.9085261257619899,
+    "hybrid.withdrawn_avg": 0.07707881195116095,
+    "hybrid.withdrawn_peak_1in10": 0.5974113788415104,
+    "assist.withdrawn_avg": 0.12620457678000924,
+    "assist.withdrawn_peak_1in10": 0.7506203639809487
+   },
+   "nearest_station": {
+    "id": "723630-23047",
+    "name": "Amarillo Rick Husband Intl Airport",
+    "state": "TX",
+    "lat": 35.22,
+    "lon": -101.717,
+    "km": 10.5,
+    "share_observed": 0.998
+   },
+   "era5_cell": {
+    "lat": 35.25,
+    "lon": -101.75,
+    "km": 9.2
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.6803628017309471,
+    "towers.withdrawn_peak_1in10": 0.8912612880427313,
+    "hybrid.withdrawn_avg": 0.0663967602151476,
+    "hybrid.withdrawn_peak_1in10": 0.5550908850765721,
+    "assist.withdrawn_avg": 0.10219963308212232,
+    "assist.withdrawn_peak_1in10": 0.6837497871587528,
+    "design_db": 36.8,
+    "mean_t": 14.872948226562027,
+    "mean_rh": 53.00636473812909,
+    "hours": 262992
+   },
+   "nearest": {
+    "towers.withdrawn_avg": 0.6784994426969553,
+    "towers.withdrawn_peak_1in10": 0.8912010740253153,
+    "hybrid.withdrawn_avg": 0.06306075847514273,
+    "hybrid.withdrawn_peak_1in10": 0.5471729077422718,
+    "assist.withdrawn_avg": 0.10068995878255416,
+    "assist.withdrawn_peak_1in10": 0.6891680225797279,
+    "design_db": 37.2,
+    "mean_t": 14.459204514050466,
+    "mean_rh": 55.080262464749254,
+    "hours": 262992
+   }
+  },
+  {
+   "state": "TX",
+   "geoid": "4835000",
+   "name": "Houston city",
+   "lat": 29.78574,
+   "lon": -95.38881,
+   "published": {
+    "point": "G Bush Intercontinental Ap/Houston Ap",
+    "station_id": "722430-12960",
+    "km": 22.2,
+    "towers.withdrawn_avg": 0.7310154513709725,
+    "towers.withdrawn_peak_1in10": 0.9361400749114874,
+    "hybrid.withdrawn_avg": 0.11262205445932048,
+    "hybrid.withdrawn_peak_1in10": 0.5930442148336355,
+    "assist.withdrawn_avg": 0.1331862462413486,
+    "assist.withdrawn_peak_1in10": 0.6490504683912348
+   },
+   "nearest_station": {
+    "id": "722430-12960",
+    "name": "G Bush Intercontinental Ap/Houston Ap",
+    "state": "TX",
+    "lat": 29.984,
+    "lon": -95.361,
+    "km": 22.2,
+    "share_observed": 1.0
+   },
+   "era5_cell": {
+    "lat": 29.75,
+    "lon": -95.5,
+    "km": 11.4
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.7312238094862479,
+    "towers.withdrawn_peak_1in10": 0.9298223329472131,
+    "hybrid.withdrawn_avg": 0.11103541239360978,
+    "hybrid.withdrawn_peak_1in10": 0.5843243972939289,
+    "assist.withdrawn_avg": 0.12572563850751917,
+    "assist.withdrawn_peak_1in10": 0.6388561532160952,
+    "design_db": 36.45,
+    "mean_t": 21.11087599622802,
+    "mean_rh": 73.56009027078827,
+    "hours": 262992
+   },
+   "nearest": null
+  },
+  {
+   "state": "TX",
+   "geoid": "4845000",
+   "name": "Lubbock city",
+   "lat": 33.5619,
+   "lon": -101.88888,
+   "published": {
+    "point": "Lubbock International Airport",
+    "station_id": "722670-23042",
+    "km": 13.1,
+    "towers.withdrawn_avg": 0.6883607684741334,
+    "towers.withdrawn_peak_1in10": 0.9085261257619899,
+    "hybrid.withdrawn_avg": 0.07707881195116095,
+    "hybrid.withdrawn_peak_1in10": 0.5974113788415104,
+    "assist.withdrawn_avg": 0.12620457678000924,
+    "assist.withdrawn_peak_1in10": 0.7506203639809487
+   },
+   "nearest_station": {
+    "id": "722670-23042",
+    "name": "Lubbock International Airport",
+    "state": "TX",
+    "lat": 33.666,
+    "lon": -101.823,
+    "km": 13.1,
+    "share_observed": 0.999
+   },
+   "era5_cell": {
+    "lat": 33.5,
+    "lon": -102.0,
+    "km": 12.4
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.6881129288050489,
+    "towers.withdrawn_peak_1in10": 0.8992578082989386,
+    "hybrid.withdrawn_avg": 0.07591318253195817,
+    "hybrid.withdrawn_peak_1in10": 0.5707560612613995,
+    "assist.withdrawn_avg": 0.1193576538537269,
+    "assist.withdrawn_peak_1in10": 0.7147838475122588,
+    "design_db": 37.3,
+    "mean_t": 16.406334223094238,
+    "mean_rh": 51.91818677024818,
+    "hours": 262992
+   },
+   "nearest": null
+  },
+  {
+   "state": "VA",
+   "geoid": "5182000",
+   "name": "Virginia Beach city",
+   "lat": 36.77911,
+   "lon": -76.02845,
+   "published": {
+    "point": "Richmond International Airport",
+    "station_id": "724010-13740",
+    "km": 140.7,
+    "towers.withdrawn_avg": 0.68325521017117,
+    "towers.withdrawn_peak_1in10": 0.9286681463897903,
+    "hybrid.withdrawn_avg": 0.05601616790050859,
+    "hybrid.withdrawn_peak_1in10": 0.6182349700402422,
+    "assist.withdrawn_avg": 0.06903785993865148,
+    "assist.withdrawn_peak_1in10": 0.6215366597811942
+   },
+   "nearest_station": {
+    "id": "723075-13769",
+    "name": "Oceana Nas",
+    "state": "VA",
+    "lat": 36.817,
+    "lon": -76.033,
+    "km": 4.2,
+    "share_observed": 0.978
+   },
+   "era5_cell": {
+    "lat": 36.75,
+    "lon": -76.0,
+    "km": 4.1
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.6872171475926391,
+    "towers.withdrawn_peak_1in10": 0.9144087623660146,
+    "hybrid.withdrawn_avg": 0.05039700797585478,
+    "hybrid.withdrawn_peak_1in10": 0.7177816193755203,
+    "assist.withdrawn_avg": 0.03469038603786587,
+    "assist.withdrawn_peak_1in10": 0.441269843118164,
+    "design_db": 30.9,
+    "mean_t": 15.966529400133844,
+    "mean_rh": 76.49621514690496,
+    "hours": 262992
+   },
+   "nearest": {
+    "towers.withdrawn_avg": 0.6881723805708456,
+    "towers.withdrawn_peak_1in10": 0.9334487757732237,
+    "hybrid.withdrawn_avg": 0.05582267662882337,
+    "hybrid.withdrawn_peak_1in10": 0.6669654414399546,
+    "assist.withdrawn_avg": 0.061625324027452535,
+    "assist.withdrawn_peak_1in10": 0.6309449634084537,
+    "design_db": 33.9,
+    "mean_t": 16.07991574727481,
+    "mean_rh": 70.64681708244012,
+    "hours": 262992
+   }
+  },
+  {
+   "state": "VA",
+   "geoid": "5109816",
+   "name": "Bristol city",
+   "lat": 36.61721,
+   "lon": -82.15755,
+   "published": {
+    "point": "Raleigh County Memorial Airport",
+    "station_id": "724120-03872",
+    "km": 158.8,
+    "towers.withdrawn_avg": 0.659961755978101,
+    "towers.withdrawn_peak_1in10": 0.8416409867168074,
+    "hybrid.withdrawn_avg": 0.022006986104461945,
+    "hybrid.withdrawn_peak_1in10": 0.4048739289330999,
+    "assist.withdrawn_avg": 0.020788971309165093,
+    "assist.withdrawn_peak_1in10": 0.2920782759019044
+   },
+   "nearest_station": {
+    "id": "723150-03812",
+    "name": "Asheville Regional Airport",
+    "state": "NC",
+    "lat": 35.432,
+    "lon": -82.538,
+    "km": 136.2,
+    "share_observed": 0.998
+   },
+   "era5_cell": {
+    "lat": 36.5,
+    "lon": -82.25,
+    "km": 15.4
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.6708354580933615,
+    "towers.withdrawn_peak_1in10": 0.8573646638986623,
+    "hybrid.withdrawn_avg": 0.035177930019843213,
+    "hybrid.withdrawn_peak_1in10": 0.45144194167523954,
+    "assist.withdrawn_avg": 0.03803558432624202,
+    "assist.withdrawn_peak_1in10": 0.37571503517625343,
+    "design_db": 31.15,
+    "mean_t": 13.506741269696416,
+    "mean_rh": 70.70356740454041,
+    "hours": 262992
+   },
+   "nearest": {
+    "towers.withdrawn_avg": 0.6701647205411929,
+    "towers.withdrawn_peak_1in10": 0.8532512829068226,
+    "hybrid.withdrawn_avg": 0.03252265358967947,
+    "hybrid.withdrawn_peak_1in10": 0.40838160395112266,
+    "assist.withdrawn_avg": 0.03493325831679556,
+    "assist.withdrawn_peak_1in10": 0.3268477110652924,
+    "design_db": 31.1,
+    "mean_t": 13.437786767837471,
+    "mean_rh": 71.43764092022401,
+    "hours": 262992
+   }
+  },
+  {
+   "state": "VA",
+   "geoid": "51107",
+   "name": "Loudoun County",
+   "lat": 39.0812,
+   "lon": -77.6389,
+   "published": {
+    "point": "Washington Dulles International Ap",
+    "station_id": "724030-93738",
+    "km": 23.2,
+    "towers.withdrawn_avg": 0.6738665321460473,
+    "towers.withdrawn_peak_1in10": 0.9144650192148358,
+    "hybrid.withdrawn_avg": 0.047550948666577594,
+    "hybrid.withdrawn_peak_1in10": 0.6038526351207749,
+    "assist.withdrawn_avg": 0.05792866483590248,
+    "assist.withdrawn_peak_1in10": 0.5922165059778438
+   },
+   "nearest_station": {
+    "id": "724030-93738",
+    "name": "Washington Dulles International Ap",
+    "state": "VA",
+    "lat": 38.935,
+    "lon": -77.447,
+    "km": 23.2,
+    "share_observed": 0.999
+   },
+   "era5_cell": {
+    "lat": 39.0,
+    "lon": -77.75,
+    "km": 13.2
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.6734922250538464,
+    "towers.withdrawn_peak_1in10": 0.9111850567617032,
+    "hybrid.withdrawn_avg": 0.045337858762931754,
+    "hybrid.withdrawn_peak_1in10": 0.5892054543980549,
+    "assist.withdrawn_avg": 0.057784608259792786,
+    "assist.withdrawn_peak_1in10": 0.5828598269430236,
+    "design_db": 34.2,
+    "mean_t": 13.522262844497172,
+    "mean_rh": 65.98775584171041,
+    "hours": 262992
+   },
+   "nearest": null
+  },
+  {
+   "state": "VA",
+   "geoid": "5167000",
+   "name": "Richmond city",
+   "lat": 37.5314,
+   "lon": -77.47601,
+   "published": {
+    "point": "Richmond International Airport",
+    "station_id": "724010-13740",
+    "km": 13.7,
+    "towers.withdrawn_avg": 0.68325521017117,
+    "towers.withdrawn_peak_1in10": 0.9286681463897903,
+    "hybrid.withdrawn_avg": 0.05601616790050859,
+    "hybrid.withdrawn_peak_1in10": 0.6182349700402422,
+    "assist.withdrawn_avg": 0.06903785993865148,
+    "assist.withdrawn_peak_1in10": 0.6215366597811942
+   },
+   "nearest_station": {
+    "id": "724010-13740",
+    "name": "Richmond International Airport",
+    "state": "VA",
+    "lat": 37.512,
+    "lon": -77.323,
+    "km": 13.7,
+    "share_observed": 1.0
+   },
+   "era5_cell": {
+    "lat": 37.5,
+    "lon": -77.5,
+    "km": 4.1
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.6836116883112644,
+    "towers.withdrawn_peak_1in10": 0.922539275126713,
+    "hybrid.withdrawn_avg": 0.054780980551690256,
+    "hybrid.withdrawn_peak_1in10": 0.6247265826082227,
+    "assist.withdrawn_avg": 0.06814564182126424,
+    "assist.withdrawn_peak_1in10": 0.6367346067708691,
+    "design_db": 34.85179999999964,
+    "mean_t": 15.35278031270913,
+    "mean_rh": 67.90775945411082,
+    "hours": 262992
+   },
+   "nearest": null
+  },
+  {
+   "state": "VA",
+   "geoid": "5168000",
+   "name": "Roanoke city",
+   "lat": 37.27846,
+   "lon": -79.95817,
+   "published": {
+    "point": "Roanoke Regional/Woodrum Field Ap",
+    "station_id": "724110-13741",
+    "km": 4.5,
+    "towers.withdrawn_avg": 0.6763422500667465,
+    "towers.withdrawn_peak_1in10": 0.8916277657572884,
+    "hybrid.withdrawn_avg": 0.04578393276407418,
+    "hybrid.withdrawn_peak_1in10": 0.552973232496067,
+    "assist.withdrawn_avg": 0.05617197482498097,
+    "assist.withdrawn_peak_1in10": 0.5603717513621829
+   },
+   "nearest_station": {
+    "id": "724110-13741",
+    "name": "Roanoke Regional/Woodrum Field Ap",
+    "state": "VA",
+    "lat": 37.317,
+    "lon": -79.974,
+    "km": 4.5,
+    "share_observed": 0.999
+   },
+   "era5_cell": {
+    "lat": 37.25,
+    "lon": -80.0,
+    "km": 4.9
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.6705446279034353,
+    "towers.withdrawn_peak_1in10": 0.8712646717250072,
+    "hybrid.withdrawn_avg": 0.037900203869713364,
+    "hybrid.withdrawn_peak_1in10": 0.4782942387774048,
+    "assist.withdrawn_avg": 0.04395652267991747,
+    "assist.withdrawn_peak_1in10": 0.43549811873883837,
+    "design_db": 32.45,
+    "mean_t": 13.281920742836284,
+    "mean_rh": 68.5773042146703,
+    "hours": 262992
+   },
+   "nearest": null
+  },
+  {
+   "state": "OH",
+   "geoid": "3944856",
+   "name": "Lorain city",
+   "lat": 41.4388,
+   "lon": -82.17972,
+   "published": {
+    "point": "Findlay Airport",
+    "station_id": "725366-14825",
+    "km": 133.1,
+    "towers.withdrawn_avg": 0.6612313303866627,
+    "towers.withdrawn_peak_1in10": 0.8995475576386329,
+    "hybrid.withdrawn_avg": 0.034600229067408464,
+    "hybrid.withdrawn_peak_1in10": 0.5653219892943218,
+    "assist.withdrawn_avg": 0.04110436740370668,
+    "assist.withdrawn_peak_1in10": 0.5079958095680791
+   },
+   "nearest_station": {
+    "id": "725240-14820",
+    "name": "Cleveland-Hopkins International Ap",
+    "state": "OH",
+    "lat": 41.406,
+    "lon": -81.852,
+    "km": 27.6,
+    "share_observed": 1.0
+   },
+   "era5_cell": {
+    "lat": 41.5,
+    "lon": -82.25,
+    "km": 9.0
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.660533999243957,
+    "towers.withdrawn_peak_1in10": 0.8986369602947726,
+    "hybrid.withdrawn_avg": 0.027327441584525533,
+    "hybrid.withdrawn_peak_1in10": 0.714142104608467,
+    "assist.withdrawn_avg": 0.021818699674722886,
+    "assist.withdrawn_peak_1in10": 0.3818442381370304,
+    "design_db": 29.6,
+    "mean_t": 11.00873657753848,
+    "mean_rh": 74.67216621484279,
+    "hours": 262992
+   },
+   "nearest": {
+    "towers.withdrawn_avg": 0.6609697833333411,
+    "towers.withdrawn_peak_1in10": 0.8926630734450904,
+    "hybrid.withdrawn_avg": 0.030491834923620974,
+    "hybrid.withdrawn_peak_1in10": 0.5668886999882881,
+    "assist.withdrawn_avg": 0.03583196861072585,
+    "assist.withdrawn_peak_1in10": 0.4705719571851704,
+    "design_db": 32.2,
+    "mean_t": 11.145402151128557,
+    "mean_rh": 69.79278844944695,
+    "hours": 262992
+   }
+  },
+  {
+   "state": "OH",
+   "geoid": "3977000",
+   "name": "Toledo city",
+   "lat": 41.66407,
+   "lon": -83.58186,
+   "published": {
+    "point": "Findlay Airport",
+    "station_id": "725366-14825",
+    "km": 72.6,
+    "towers.withdrawn_avg": 0.6612313303866627,
+    "towers.withdrawn_peak_1in10": 0.8995475576386329,
+    "hybrid.withdrawn_avg": 0.034600229067408464,
+    "hybrid.withdrawn_peak_1in10": 0.5653219892943218,
+    "assist.withdrawn_avg": 0.04110436740370668,
+    "assist.withdrawn_peak_1in10": 0.5079958095680791
+   },
+   "nearest_station": {
+    "id": "725360-94830",
+    "name": "Toledo Express Airport",
+    "state": "OH",
+    "lat": 41.587,
+    "lon": -83.805,
+    "km": 20.4,
+    "share_observed": 0.995
+   },
+   "era5_cell": {
+    "lat": 41.75,
+    "lon": -83.5,
+    "km": 11.7
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.6599590487509692,
+    "towers.withdrawn_peak_1in10": 0.9050866583765129,
+    "hybrid.withdrawn_avg": 0.0317928107815939,
+    "hybrid.withdrawn_peak_1in10": 0.5889076068874862,
+    "assist.withdrawn_avg": 0.03578309997727304,
+    "assist.withdrawn_peak_1in10": 0.5185346585449535,
+    "design_db": 32.25,
+    "mean_t": 10.787481178134696,
+    "mean_rh": 72.81535034951553,
+    "hours": 262992
+   },
+   "nearest": {
+    "towers.withdrawn_avg": 0.6594948497826032,
+    "towers.withdrawn_peak_1in10": 0.903967904314001,
+    "hybrid.withdrawn_avg": 0.0338758679965582,
+    "hybrid.withdrawn_peak_1in10": 0.5834091103112716,
+    "assist.withdrawn_avg": 0.04027936670661049,
+    "assist.withdrawn_peak_1in10": 0.5520955098856418,
+    "design_db": 32.8,
+    "mean_t": 10.689465789109297,
+    "mean_rh": 70.73230555116757,
+    "hours": 262992
+   }
+  },
+  {
+   "state": "OH",
+   "geoid": "3915000",
+   "name": "Cincinnati city",
+   "lat": 39.14018,
+   "lon": -84.50583,
+   "published": {
+    "point": "Cina Muni Apt/Lukn Fd Apt",
+    "station_id": "724297-93812",
+    "km": 8.6,
+    "towers.withdrawn_avg": 0.6705772568098955,
+    "towers.withdrawn_peak_1in10": 0.9051749508754902,
+    "hybrid.withdrawn_avg": 0.04419018876420332,
+    "hybrid.withdrawn_peak_1in10": 0.536564913496175,
+    "assist.withdrawn_avg": 0.049883495463568246,
+    "assist.withdrawn_peak_1in10": 0.48665358413805976
+   },
+   "nearest_station": {
+    "id": "724297-93812",
+    "name": "Cina Muni Apt/Lukn Fd Apt",
+    "state": "OH",
+    "lat": 39.106,
+    "lon": -84.416,
+    "km": 8.6,
+    "share_observed": 0.987
+   },
+   "era5_cell": {
+    "lat": 39.25,
+    "lon": -84.5,
+    "km": 12.2
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.6713117073904684,
+    "towers.withdrawn_peak_1in10": 0.9022634869511771,
+    "hybrid.withdrawn_avg": 0.04562735392120076,
+    "hybrid.withdrawn_peak_1in10": 0.5792657252491961,
+    "assist.withdrawn_avg": 0.05182603574675644,
+    "assist.withdrawn_peak_1in10": 0.5027117652461731,
+    "design_db": 32.8,
+    "mean_t": 13.018094656871693,
+    "mean_rh": 68.52690965534306,
+    "hours": 262992
+   },
+   "nearest": null
+  },
+  {
+   "state": "OH",
+   "geoid": "3916000",
+   "name": "Cleveland city",
+   "lat": 41.47846,
+   "lon": -81.67944,
+   "published": {
+    "point": "Cleveland-Hopkins International Ap",
+    "station_id": "725240-14820",
+    "km": 16.5,
+    "towers.withdrawn_avg": 0.6609697833333411,
+    "towers.withdrawn_peak_1in10": 0.8926630734450904,
+    "hybrid.withdrawn_avg": 0.030491834923620974,
+    "hybrid.withdrawn_peak_1in10": 0.5668886999882881,
+    "assist.withdrawn_avg": 0.03583196861072585,
+    "assist.withdrawn_peak_1in10": 0.4705719571851704
+   },
+   "nearest_station": {
+    "id": "725240-14820",
+    "name": "Cleveland-Hopkins International Ap",
+    "state": "OH",
+    "lat": 41.406,
+    "lon": -81.852,
+    "km": 16.5,
+    "share_observed": 1.0
+   },
+   "era5_cell": {
+    "lat": 41.5,
+    "lon": -81.75,
+    "km": 6.3
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.6596444566266975,
+    "towers.withdrawn_peak_1in10": 0.8898172740926338,
+    "hybrid.withdrawn_avg": 0.027129915948566855,
+    "hybrid.withdrawn_peak_1in10": 0.5869750769974051,
+    "assist.withdrawn_avg": 0.026025365541380432,
+    "assist.withdrawn_peak_1in10": 0.395074107730005,
+    "design_db": 30.7,
+    "mean_t": 10.894826078359797,
+    "mean_rh": 74.04332465381218,
+    "hours": 262992
+   },
+   "nearest": null
+  },
+  {
+   "state": "OH",
+   "geoid": "3918000",
+   "name": "Columbus city",
+   "lat": 39.98737,
+   "lon": -82.98518,
+   "published": {
+    "point": "Port Columbus International Airport",
+    "station_id": "724280-14821",
+    "km": 9.2,
+    "towers.withdrawn_avg": 0.6671581106923385,
+    "towers.withdrawn_peak_1in10": 0.9051823561705988,
+    "hybrid.withdrawn_avg": 0.04097327481433964,
+    "hybrid.withdrawn_peak_1in10": 0.5620654875467155,
+    "assist.withdrawn_avg": 0.048147232037193864,
+    "assist.withdrawn_peak_1in10": 0.4784260550096031
+   },
+   "nearest_station": {
+    "id": "724280-14821",
+    "name": "Port Columbus International Airport",
+    "state": "OH",
+    "lat": 39.991,
+    "lon": -82.877,
+    "km": 9.2,
+    "share_observed": 1.0
+   },
+   "era5_cell": {
+    "lat": 40.0,
+    "lon": -83.0,
+    "km": 1.9
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.6646012793227716,
+    "towers.withdrawn_peak_1in10": 0.892180419646921,
+    "hybrid.withdrawn_avg": 0.03740006314801422,
+    "hybrid.withdrawn_peak_1in10": 0.5644415252475238,
+    "assist.withdrawn_avg": 0.04075865733058999,
+    "assist.withdrawn_peak_1in10": 0.46146202330256314,
+    "design_db": 32.0,
+    "mean_t": 11.804274274502648,
+    "mean_rh": 69.95852299606027,
+    "hours": 262992
+   },
+   "nearest": null
+  },
+  {
+   "state": "MI",
+   "geoid": "2614765820",
+   "name": "Port Huron city",
+   "lat": 42.99333,
+   "lon": -82.43427,
+   "published": {
+    "point": "Ann Arbor area",
+    "station_id": null,
+    "km": 126.2,
+    "towers.withdrawn_avg": 0.65506,
+    "towers.withdrawn_peak_1in10": 0.89436,
+    "hybrid.withdrawn_avg": 0.02701,
+    "hybrid.withdrawn_peak_1in10": 0.58285,
+    "assist.withdrawn_avg": 0.02962,
+    "assist.withdrawn_peak_1in10": 0.47817
+   },
+   "nearest_station": {
+    "id": "725375-14822",
+    "name": "Detroit City Airport",
+    "state": "MI",
+    "lat": 42.407,
+    "lon": -83.009,
+    "km": 80.4,
+    "share_observed": 0.879
+   },
+   "era5_cell": {
+    "lat": 43.0,
+    "lon": -82.5,
+    "km": 5.4
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.6528854584590431,
+    "towers.withdrawn_peak_1in10": 0.8886943252362095,
+    "hybrid.withdrawn_avg": 0.02163546219720335,
+    "hybrid.withdrawn_peak_1in10": 0.605582256069982,
+    "assist.withdrawn_avg": 0.020263584328195215,
+    "assist.withdrawn_peak_1in10": 0.4474172681200763,
+    "design_db": 30.2,
+    "mean_t": 9.492660613250592,
+    "mean_rh": 74.04037938165737,
+    "hours": 262992
+   },
+   "nearest": {
+    "towers.withdrawn_avg": 0.6605415636494119,
+    "towers.withdrawn_peak_1in10": 0.9146226254977574,
+    "hybrid.withdrawn_avg": 0.03562776360264587,
+    "hybrid.withdrawn_peak_1in10": 0.6411146673461701,
+    "assist.withdrawn_avg": 0.04183119850963262,
+    "assist.withdrawn_peak_1in10": 0.5820583619466271,
+    "design_db": 32.2,
+    "mean_t": 10.948129328481906,
+    "mean_rh": 66.68773107815181,
+    "hours": 201624
+   }
+  },
+  {
+   "state": "MI",
+   "geoid": "2605341060",
+   "name": "Ironwood city",
+   "lat": 46.45167,
+   "lon": -90.15116,
+   "published": {
+    "point": "Marquette area",
+    "station_id": null,
+    "km": 210.8,
+    "towers.withdrawn_avg": 0.63799,
+    "towers.withdrawn_peak_1in10": 0.86986,
+    "hybrid.withdrawn_avg": 0.01222,
+    "hybrid.withdrawn_peak_1in10": 0.54748,
+    "assist.withdrawn_avg": 0.01108,
+    "assist.withdrawn_peak_1in10": 0.39654
+   },
+   "nearest_station": {
+    "id": "727440-14858",
+    "name": "Houghton County Memo Arpt",
+    "state": "MI",
+    "lat": 47.166,
+    "lon": -88.481,
+    "km": 149.9,
+    "share_observed": 0.984
+   },
+   "era5_cell": {
+    "lat": 46.5,
+    "lon": -90.25,
+    "km": 9.3
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.6375737457209255,
+    "towers.withdrawn_peak_1in10": 0.8755819451950972,
+    "hybrid.withdrawn_avg": 0.017011732368803517,
+    "hybrid.withdrawn_peak_1in10": 0.5298214756016011,
+    "assist.withdrawn_avg": 0.01978884578339198,
+    "assist.withdrawn_peak_1in10": 0.4485830728361488,
+    "design_db": 30.8,
+    "mean_t": 6.009887753239642,
+    "mean_rh": 72.77291612800607,
+    "hours": 262992
+   },
+   "nearest": {
+    "towers.withdrawn_avg": 0.63497938892801,
+    "towers.withdrawn_peak_1in10": 0.8598420029457061,
+    "hybrid.withdrawn_avg": 0.012033047033828074,
+    "hybrid.withdrawn_peak_1in10": 0.5182731583436204,
+    "assist.withdrawn_avg": 0.010750675700941709,
+    "assist.withdrawn_peak_1in10": 0.3871483584031947,
+    "design_db": 29.0,
+    "mean_t": 5.524786218453853,
+    "mean_rh": 73.76426723546393,
+    "hours": 262992
+   }
+  },
+  {
+   "state": "MI",
+   "geoid": "2608131240",
+   "name": "Gaines charter township",
+   "lat": 42.805,
+   "lon": -85.60446,
+   "published": {
+    "point": "Grand Rapids area",
+    "station_id": null,
+    "km": 10.8,
+    "towers.withdrawn_avg": 0.65332,
+    "towers.withdrawn_peak_1in10": 0.88676,
+    "hybrid.withdrawn_avg": 0.02566,
+    "hybrid.withdrawn_peak_1in10": 0.57412,
+    "assist.withdrawn_avg": 0.02793,
+    "assist.withdrawn_peak_1in10": 0.41512
+   },
+   "nearest_station": {
+    "id": "726350-94860",
+    "name": "Gerald R Ford International Airport",
+    "state": "MI",
+    "lat": 42.882,
+    "lon": -85.523,
+    "km": 10.8,
+    "share_observed": 0.999
+   },
+   "era5_cell": {
+    "lat": 42.75,
+    "lon": -85.5,
+    "km": 10.5
+   },
+   "era5": {
+    "towers.withdrawn_avg": 0.6545719848710748,
+    "towers.withdrawn_peak_1in10": 0.898619200775141,
+    "hybrid.withdrawn_avg": 0.027871594635725104,
+    "hybrid.withdrawn_peak_1in10": 0.5999681363899393,
+    "assist.withdrawn_avg": 0.030767691716382356,
+    "assist.withdrawn_peak_1in10": 0.44786262566784063,
+    "design_db": 31.45,
+    "mean_t": 9.709715694773985,
+    "mean_rh": 71.57969618754905,
+    "hours": 262992
+   },
+   "nearest": {
+    "towers.withdrawn_avg": 0.6547947817900558,
+    "towers.withdrawn_peak_1in10": 0.9020860033479791,
+    "hybrid.withdrawn_avg": 0.028755307664760994,
+    "hybrid.withdrawn_peak_1in10": 0.6029475887957465,
+    "assist.withdrawn_avg": 0.03235533502052071,
+    "assist.withdrawn_peak_1in10": 0.48687254408772507,
+    "design_db": 31.7,
+    "mean_t": 9.730700515690753,
+    "mean_rh": 71.74724211870925,
+    "hours": 262992
+   }
+  }
+ ],
+ "reproduction_check": {
+  "published": {
+   "towers.withdrawn_avg": 0.6612313303866627,
+   "towers.withdrawn_peak_1in10": 0.8995475576386329,
+   "hybrid.withdrawn_avg": 0.034600229067408464,
+   "hybrid.withdrawn_peak_1in10": 0.5653219892943218,
+   "assist.withdrawn_avg": 0.04110436740370668,
+   "assist.withdrawn_peak_1in10": 0.5079958095680791
+  },
+  "rerun": {
+   "towers.withdrawn_avg": 0.6612313303866627,
+   "towers.withdrawn_peak_1in10": 0.8995475576386329,
+   "hybrid.withdrawn_avg": 0.034600229067408464,
+   "hybrid.withdrawn_peak_1in10": 0.5653219892943218,
+   "assist.withdrawn_avg": 0.04110436740370668,
+   "assist.withdrawn_peak_1in10": 0.507995809568079,
+   "design_db": 32.8,
+   "mean_t": 11.07882774613216,
+   "mean_rh": 70.3707234270982,
+   "hours": 262992
+  }
+ }
+}

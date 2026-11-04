@@ -86,6 +86,9 @@ They are validated, round-trip through JSON, and are described in
 | Virginia | 322 cities, towns and counties | NOAA stations, 6 climate divisions | [waterledger.org/methods/va](https://waterledger.org/methods/va/), [brief](docs/methods/va.pdf) |
 | Texas | 1,481 cities, towns and counties | NOAA stations, 10 climate divisions | [waterledger.org/methods/tx](https://waterledger.org/methods/tx/), [brief](docs/methods/tx.pdf) |
 
+Planned (model 1.8, not yet built): every place takes its cooling weather from its nearest ERA5 grid cell, about 10 km
+away, in place of regions and division stations ([design 0004](docs/design/0004-era5-weather.md)).
+
 Michigan has its own layers (state-reported water use, domestic wells, trout streams, lake-source cooling, state rules)
 and matches [waterledger.org/mi](https://waterledger.org/mi/) exactly. The other states use national datasets only
 ([design 0002](docs/design/0002-national-tier.md)); any other state can be built locally with `waterledger build-state ST`.
