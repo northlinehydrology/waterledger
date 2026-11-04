@@ -9,7 +9,8 @@ import numpy as np
 from waterledger_models.datacenter.bmi import CoolingWaterBmi
 
 config = tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False)
-config.write("design: hybrid\nit_capacity_mw: 300\nend_time: 604800\n")   # one week, hourly steps
+# one week, hourly steps; a hybrid needs the place's 0.4% design dry-bulb (C), which a forcing file would otherwise supply
+config.write("design: hybrid\nit_capacity_mw: 300\nend_time: 604800\nparameters: {design_db: 32.0}\n")
 config.close()
 
 model = CoolingWaterBmi()
@@ -23,7 +24,7 @@ while model.get_current_time() < model.get_end_time():
     rh[0] = 55 - 15 * math.sin(2 * math.pi * (hour % 24 - 9) / 24)
     model.set_value("atmosphere_bottom_air__temperature", temp)
     model.set_value("atmosphere_bottom_air_water_vapor__relative_saturation", rh)
+    model.update()                                                       # the hour just set
     total_m3 += model.get_value("data_center_cooling_water__withdrawal_volume_flux", withdrawn)[0] * model.get_time_step()
-    model.update()
 model.finalize()
 print(f"Water withdrawn over the week: {total_m3:,.0f} m3 ({total_m3 * 264.172 / 7:,.0f} gallons a day)")
