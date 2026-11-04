@@ -71,6 +71,7 @@ def main(argv=None):
     lj.add_argument("state")
     lj.add_argument("snapshot_id")
     lj.add_argument("--from", dest="old", default=None)
+    lj.add_argument("--dir", default=None, help="the snapshot root: the snapshot's manifest gives the model it is filed under (else this package's model)")
     sn = sub.add_parser("snapshot", help="write a state's snapshot files from its built data (run build-state first)")
     sn.add_argument("state")
     sn.add_argument("--out", required=True)
@@ -99,7 +100,10 @@ def main(argv=None):
         import json
         from waterledger.national.snapshot import pointer
         from waterledger_models import MODEL_VERSION
-        print(json.dumps(pointer(json.load(open(a.old)) if a.old and os.path.exists(a.old) else None, a.state.upper(), a.snapshot_id, MODEL_VERSION)))
+        model = MODEL_VERSION
+        if a.dir:                                       # a snapshot is filed under the model of its numbers: a format 3 one under 1.8, so 1.7 packages never read it
+            model = json.load(open(os.path.join(a.dir, a.state.upper(), a.snapshot_id, "manifest.json")))["model_version"]
+        print(json.dumps(pointer(json.load(open(a.old)) if a.old and os.path.exists(a.old) else None, a.state.upper(), a.snapshot_id, model)))
         return
     if a.cmd == "snapshot":
         if a.state.upper() == "MI":                       # Michigan: from its own data, with its site files carried along

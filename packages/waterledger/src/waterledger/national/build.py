@@ -14,8 +14,9 @@ STAGES = ["places", "supply", "wastewater", "receiving", "cooling", "storms_and_
 # of 100% is expected; a larger gap would mean the table or the county codes changed.
 # county_water_use: USGS's 2015 counties; a county created since 2015 would have none.
 # rain, design_storms: NOAA by county and independent city. A state outside Atlas 14 will need its own storm source first.
+# era5_cell (format 3): every place's cooling comes from its cell, so every place needs one with results.
 COVERAGE_MIN = {"watersheds": 0.99, "utilities": 0.95, "climate_division": 0.99, "sewer_plant_within_40km": 0.5, "county_water_use": 0.99,
-                "rain": 0.99, "design_storms": 0.99}
+                "rain": 0.99, "design_storms": 0.99, "era5_cell": 1.0}
 SAMPLE = 50
 
 
@@ -47,9 +48,23 @@ def checks(state, d, sample=SAMPLE, seed=1):
            "county_water_use": sum(1 for f in pl.county_fips if f in usgs) / n,
            "rain": sum(1 for f in pl.county_fips if f in rain) / n,
            "design_storms": sum(1 for f in pl.county_fips if f in storms) / n}
+    errors = []
+    cell = None
+    if d.format() >= 3:                     # model 1.8: every place has a cell with results, each cell's flows close, each corrected cell names its stations
+        from waterledger.national import cells
+        cell = cells.check(d, list(pl.geoid))
+        cov["era5_cell"] = cell["places_with_cell"]
+        errors += [f"cell {x} has no results" for x in cell["cells_missing"]] + [f"cell {x} does not close" for x in cell["unclosed"]]
+        errors += [f"cell {x} is corrected but names no stations" for x in cell["corrected_without_stations"]]
+        listed = {a["id"] for a in getattr(d, "manifest", {}).get("correction", {}).get("anchors", [])} if hasattr(d, "manifest") else None
+        if listed is not None:
+            for cid in sorted({d.cell_of(g)["cell"] for g in pl.geoid if d.cell_of(g)}):
+                rec = d.cell(cid)
+                missing = [s["id"] for s in rec["correction"]["stations"] if s["id"] not in listed]
+                if missing:
+                    errors.append(f"cell {cid}'s stations {missing} are not in the manifest's anchors")
     cov = {k: round(v, 3) for k, v in cov.items()}
     low = {k: v for k, v in cov.items() if k in COVERAGE_MIN and v < COVERAGE_MIN[k]}
-    errors = []
     for r in pl.sample(min(sample, n), random_state=seed).itertuples():
         try:
             p = wl.place(geoid=r.geoid)
@@ -58,7 +73,7 @@ def checks(state, d, sample=SAMPLE, seed=1):
                 wl.Site(place=p, facility=wl.DataCenter(it_mw=100, cooling=cool)).estimate()
         except Exception as e:                       # noqa: BLE001  any failure is reported, with the place
             errors.append(f"{r.name} ({r.geoid}): {type(e).__name__}: {e}"[:300])
-    result = {"coverage": cov, "sampled": min(sample, n), "errors": errors}
+    result = {"coverage": cov, "sampled": min(sample, n), "errors": errors, **({"cells": cell["cells"]} if cell else {})}
     if low or errors:
         raise RuntimeError(f"{state} checks failed: coverage below minimum {low}; {len(errors)} sample errors: {errors[:5]}")
     return result
@@ -92,7 +107,8 @@ def build(state, out=None, n=DRAWS, run_checks=True):
     stage("wastewater", lambda: {"plants": len(wastewater.plants(state))})
     stage("receiving", lambda: {"huc12": len(receiving.by_huc12(state)), "places_with_watersheds": len(receiving.watersheds_by_place(state, pl)),
                                     "places_on_a_great_lake": len(greatlakes.near(pl))})
-    stage("cooling", lambda: {"divisions": len(nc.division_runs(state, n)), "great_lakes": sorted({v["lake"] for v in greatlakes.near(pl).values()})})
+    # model 1.8 cools on each place's ERA5 cell (`waterledger era5 run`); the divisions keep their stations, for rainfall, salt and golf
+    stage("cooling", lambda: {"divisions": len(nc.division_stations(state)), "great_lakes": sorted({v["lake"] for v in greatlakes.near(pl).values()})})
     stage("storms_and_rain", lambda: {"counties_with_storms": len(nc.storms_and_rain(state)[0])})
     stage("energy", lambda: {"places_with_utilities": len(energy.utilities_by_place(state, pl)), "utilities_with_loads": len(energy.loads(state))})
 
