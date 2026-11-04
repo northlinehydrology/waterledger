@@ -196,7 +196,7 @@ def _climate(state, place):
     d, runs = _division(state, place)
     cell = sd.cell_of(place.geoid) if sd.format() >= 3 else None
     extra = {} if cell is None else {k: cell[k] for k in ("cell", "cell_km", "cell_land", "cell_moved", "weather_corrected")}
-    return cx.Climate(provider="national", sources=["noaa_isd", "noaa_cag", "noaa_atlas14", *(["era5_cell"] if cell else [])], region=d, region_name=runs[d]["name"],
+    return cx.Climate(provider="national", sources=["noaa_isd", "noaa_cag", "noaa_atlas14", *(["era5"] if cell else [])], region=d, region_name=runs[d]["name"],
                       station=runs[d]["station"], rain_in=sd.rain().get(place.county_fips), rain_from=sd.rain_from().get(place.county_fips), design_storms_in=sd.storms().get(place.county_fips, {}),
                       **extra)
 

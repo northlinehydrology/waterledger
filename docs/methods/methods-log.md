@@ -1385,7 +1385,7 @@ its places.json entry names. Rainfall, road salt and golf stay with the climate 
   checksum; a mismatch is refused. A snapshot download stays the size it was, and the page, likewise, loads one cell file
   per place.
 - **The estimate.** It reads the place's cell in a format 3 snapshot and its division in format 2 (`provider._cooling`).
-  `Climate` gains `cell`, `cell_km`, `cell_land`, `cell_moved` and `weather_corrected`, and lists `era5_cell` among its
+  `Climate` gains `cell`, `cell_km`, `cell_land`, `cell_moved` and `weather_corrected`, and lists `era5` among its
   sources.
 - **Tested.** An estimate from a format 3 snapshot equals the one computed straight from the cell's run file, for every
   design. The test uses Michigan part 1's real runs, read and not rerun: 41.75_-83.50, corrected; 42.00_-85.00, land;

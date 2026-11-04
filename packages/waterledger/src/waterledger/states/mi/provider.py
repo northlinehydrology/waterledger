@@ -41,7 +41,7 @@ def estimate(site):
     water = water_use(S["E"])
     resolved = site.model_copy(update={"source": S["src"], "wastewater": S["dest"], "acres": S["acres"], "land_before": S["before"]})
     D = sc.data("estimates")
-    power = electricity(sc.electricity(D, S["place"]["r"], f.cooling, f.it_mw))
+    power = electricity(sc.electricity(*sc.cooling(S["place"], D), f.cooling, f.it_mw))
     return Estimate(site=resolved, water=water, electricity=power, model_version=D["model_version"], data_date=D["generated"])
 
 
@@ -104,8 +104,15 @@ def context(place):
                              basin=cx.Watershed(huc12=r["h8"]["code"], name=r["h8"]["name"]) if r.get("h8") else None,
                              great_lake=(r.get("gl") or {}).get("lake"), great_lakes_basin=r["h12"][0]["code"].startswith("04") if r["h12"] else None, downstream=path)
     meta = E["region_meta"][r["r"]]
+    cell = {}
+    if r.get("e"):                                      # model 1.8: the place's ERA5 cell, the same fields as the national tier's
+        from waterledger.national import cells
+        from waterledger_data import era5
+        lon, lat = sc.lonlat(r)
+        c = era5.cell(round(lat, 5), round(lon, 5))
+        cell = {k: v for k, v in cells.place_fields(c, sc.cell(r["e"])["correction"]["applied"]).items() if k in ("cell", "cell_km", "cell_land", "cell_moved", "weather_corrected")}
     climate = cx.Climate(provider="MI", sources=["era5", "noaa_cag", "noaa_atlas14"], region=r["r"], region_name=meta["name"], station=meta["station"],
-                         rain_in=Wd["rain_in"].get(r["cf"]), design_storms_in=E["county_storms_in"].get(r["cf"], {}))
+                         rain_in=Wd["rain_in"].get(r["cf"]), design_storms_in=E["county_storms_in"].get(r["cf"], {}), **cell)
     U = P["utilities"]
     from waterledger.national.provider import _ppw
     from waterledger_data.energy import grid_water
