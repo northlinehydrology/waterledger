@@ -1,6 +1,7 @@
-"""The anchor stations for the quantile-mapping prototype: every ISD station spanning 1995-2024 (climate.isd_stations) in Michigan,
-Ohio, Virginia or Texas, or within 100 km of a place in them, that passes the snapshots' rule (climate.isd_hourly: 85% of hours with
-temperature and dew point, the same screens and gap filling). Each qualifying station's hourly record goes to OUT/stations/<id>.npz
+"""The anchor stations for the quantile-mapping prototype: every ISD station spanning 1995-2024 (climate.isd_stations), every ISD site
+whose record covers it only across a change of ID (climate.isd_sites, decided Nov 4, 2026) and every Canadian site with hourly records
+covering it (climate.eccc_sites), in Michigan, Ohio, Virginia or Texas, or within 100 km of a place in them, that passes the snapshots'
+rule (climate.isd_hourly or eccc_hourly: 85% of hours with temperature and dew point, the same screens and gap filling). Each qualifying station's hourly record goes to OUT/stations/<id>.npz
 (local standard time, T and dew point in C) and the list, with elevation from isd-history, to OUT/stations.json.
 Usage: python stations.py OUT [workers]"""
 import csv, json, os, sys
@@ -25,11 +26,12 @@ def candidates():
     for r in csv.DictReader(open(os.path.join(climate.RAW, "isd", "isd-history.csv"))):
         elev[f"{r['USAF']}-{r['WBAN']}"] = float(r["ELEV(M)"]) if r["ELEV(M)"] not in ("", "-999", "-999.0", "-0999.0") else None
     out = []
-    for s in climate.isd_stations():
+    sites = [{**s, "source": "isd-linked" if "parts" in s else "isd", "elev_m": elev.get(s["id"])} for s in climate.isd_sites()]
+    for s in sites + [{**s, "source": "eccc"} for s in climate.eccc_sites()]:
         a, b = np.radians(s["lat"]), np.radians(s["lon"])
         d = 12742 * np.arcsin(np.sqrt(np.sin((la - a) / 2) ** 2 + np.cos(a) * np.cos(la) * np.sin((lo - b) / 2) ** 2))
         if s["state"] in ("MI", "OH", "VA", "TX") or d.min() <= 100:
-            out.append({**s, "elev_m": elev.get(s["id"])})
+            out.append(s)
     return out
 
 
@@ -40,7 +42,7 @@ def one(s):
         z = np.load(path)
         return {**s, "share_observed": float(z["share"])}
     try:
-        got = climate.isd_hourly(s)
+        got = (climate.eccc_hourly if s["source"] == "eccc" else climate.isd_hourly)(s)
     except Exception as e:                              # a station whose files will not download is left out, and said so
         return {**s, "error": repr(e)[:200]}
     if not got:

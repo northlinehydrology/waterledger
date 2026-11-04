@@ -15,7 +15,9 @@ from waterledger_models.datacenter.physics import wet_bulb
 HERE = os.path.dirname(os.path.abspath(__file__))
 WAYS = {"none": None, "bias": dict(how="bias"), "target": dict(how="target"), "lapse": dict(how="lapse"),
         "bias_nearest": dict(how="bias", nearest_only=True), "target_nearest": dict(how="target", nearest_only=True),
-        "bias_50km": dict(how="bias", r_km=50), "target_50km": dict(how="target", r_km=50)}
+        "bias_50km": dict(how="bias", r_km=50), "target_50km": dict(how="target", r_km=50),
+        "lapse_shore": dict(how="lapse", shore_only=True), "lapse_shore_isd": dict(how="lapse", shore_only=True, sources=("isd",)),
+        "lapse_shore_linked": dict(how="lapse", shore_only=True, sources=("isd", "isd-linked")), "lapse_isd": dict(how="lapse", sources=("isd",))}
 
 
 def stats(times, t, td):
@@ -54,7 +56,9 @@ def one(i):
             "q_mae_t": float(np.abs(s["_q"][0] - truth["_q"][0]).mean()), "q_mae_td": float(np.abs(s["_q"][1] - truth["_q"][1]).mean()),
             "corrected": d is not None}
     near = sorted(qm.km(a["lat"], a["lon"], s0["lat"], s0["lon"]) for a in rest)
-    return {k: s0[k] for k in ("id", "name", "state", "lat", "lon", "elev_m", "cell", "cell_land", "cell_elev_m")} | {
+    shore = sorted(qm.km(a["lat"], a["lon"], s0["lat"], s0["lon"]) for a in rest if a["cell_land"] < qm.SHORE_LAND)
+    return {k: s0.get(k) for k in ("id", "name", "state", "source", "lat", "lon", "elev_m", "cell", "cell_land", "cell_elev_m")} | {
+        "shore_within_100km": int(sum(x <= 100 for x in shore)),
         "truth": {k: truth[k] for k in ("ddb", "wb", "summer_pm", "td")}, "nearest_other_km": round(float(near[0]), 1),
         "within_100km": int(sum(x <= 100 for x in near)), "errors": res}
 

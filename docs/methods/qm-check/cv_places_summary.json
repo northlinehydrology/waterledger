@@ -40,10 +40,39 @@
     "assist.withdrawn_avg": -2.4051629950056608,
     "assist.withdrawn_peak_1in10": -2.9969582429477115,
     "design_db": 0.30000000000000426
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.36614656835720627,
+    "towers.withdrawn_peak_1in10": 0.17980602990930183,
+    "hybrid.withdrawn_avg": -1.8572784454392255,
+    "hybrid.withdrawn_peak_1in10": -1.6782395001101125,
+    "assist.withdrawn_avg": -2.4051629950056608,
+    "assist.withdrawn_peak_1in10": -2.9969582429477115,
+    "design_db": 0.30000000000000426
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.36614656835720627,
+    "towers.withdrawn_peak_1in10": 0.17980602990930183,
+    "hybrid.withdrawn_avg": -1.8572784454392255,
+    "hybrid.withdrawn_peak_1in10": -1.6782395001101125,
+    "assist.withdrawn_avg": -2.4051629950056608,
+    "assist.withdrawn_peak_1in10": -2.9969582429477115,
+    "design_db": 0.30000000000000426
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.36614656835720627,
+    "towers.withdrawn_peak_1in10": 0.17980602990930183,
+    "hybrid.withdrawn_avg": -1.8572784454392255,
+    "hybrid.withdrawn_peak_1in10": -1.6782395001101125,
+    "assist.withdrawn_avg": -2.4051629950056608,
+    "assist.withdrawn_peak_1in10": -2.9969582429477115,
+    "design_db": 0.30000000000000426
    }
   },
   "corrected": false,
   "anchors": [],
+  "decided_corrected": false,
+  "decided_anchors": [],
   "station": "San Antonio International Airport",
   "station_km": 109.5
  },
@@ -88,6 +117,33 @@
     "assist.withdrawn_avg": -4.55798371479974,
     "assist.withdrawn_peak_1in10": -8.100117009016827,
     "design_db": -0.04999999999999716
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.2025469841063443,
+    "towers.withdrawn_peak_1in10": -0.4906015394350316,
+    "hybrid.withdrawn_avg": -1.3377513205451774,
+    "hybrid.withdrawn_peak_1in10": -5.112729392954107,
+    "assist.withdrawn_avg": -4.55798371479974,
+    "assist.withdrawn_peak_1in10": -8.100117009016827,
+    "design_db": -0.04999999999999716
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.2025469841063443,
+    "towers.withdrawn_peak_1in10": -0.4906015394350316,
+    "hybrid.withdrawn_avg": -1.3377513205451774,
+    "hybrid.withdrawn_peak_1in10": -5.112729392954107,
+    "assist.withdrawn_avg": -4.55798371479974,
+    "assist.withdrawn_peak_1in10": -8.100117009016827,
+    "design_db": -0.04999999999999716
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.2025469841063443,
+    "towers.withdrawn_peak_1in10": -0.4906015394350316,
+    "hybrid.withdrawn_avg": -1.3377513205451774,
+    "hybrid.withdrawn_peak_1in10": -5.112729392954107,
+    "assist.withdrawn_avg": -4.55798371479974,
+    "assist.withdrawn_peak_1in10": -8.100117009016827,
+    "design_db": -0.04999999999999716
    }
   },
   "corrected": true,
@@ -98,6 +154,8 @@
     1.0
    ]
   ],
+  "decided_corrected": false,
+  "decided_anchors": [],
   "station": "San Antonio International Airport",
   "station_km": 10.1
  },
@@ -142,10 +200,39 @@
     "assist.withdrawn_avg": -4.655497468156833,
     "assist.withdrawn_peak_1in10": -4.044018170182917,
     "design_db": -0.8999999999999986
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": 0.39006444689155817,
+    "towers.withdrawn_peak_1in10": -1.1179761895158569,
+    "hybrid.withdrawn_avg": 0.5341604418462875,
+    "hybrid.withdrawn_peak_1in10": -1.353531675790265,
+    "assist.withdrawn_avg": -4.655497468156833,
+    "assist.withdrawn_peak_1in10": -4.044018170182917,
+    "design_db": -0.8999999999999986
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": 0.39006444689155817,
+    "towers.withdrawn_peak_1in10": -1.1179761895158569,
+    "hybrid.withdrawn_avg": 0.5341604418462875,
+    "hybrid.withdrawn_peak_1in10": -1.353531675790265,
+    "assist.withdrawn_avg": -4.655497468156833,
+    "assist.withdrawn_peak_1in10": -4.044018170182917,
+    "design_db": -0.8999999999999986
+   },
+   "decided": {
+    "towers.withdrawn_avg": 0.39006444689155817,
+    "towers.withdrawn_peak_1in10": -1.1179761895158569,
+    "hybrid.withdrawn_avg": 0.5341604418462875,
+    "hybrid.withdrawn_peak_1in10": -1.353531675790265,
+    "assist.withdrawn_avg": -4.655497468156833,
+    "assist.withdrawn_peak_1in10": -4.044018170182917,
+    "design_db": -0.8999999999999986
    }
   },
   "corrected": false,
   "anchors": [],
+  "decided_corrected": false,
+  "decided_anchors": [],
   "station": "Waco Regional Airport",
   "station_km": 128.1
  },
@@ -190,6 +277,33 @@
     "assist.withdrawn_avg": -8.220430394519562,
     "assist.withdrawn_peak_1in10": -3.933464535638953,
     "design_db": -0.5499999999999972
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.052575445965497014,
+    "towers.withdrawn_peak_1in10": -0.19334672885157334,
+    "hybrid.withdrawn_avg": -2.5358745589000087,
+    "hybrid.withdrawn_peak_1in10": -0.9970937057997453,
+    "assist.withdrawn_avg": -8.220430394519562,
+    "assist.withdrawn_peak_1in10": -3.933464535638953,
+    "design_db": -0.5499999999999972
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.052575445965497014,
+    "towers.withdrawn_peak_1in10": -0.19334672885157334,
+    "hybrid.withdrawn_avg": -2.5358745589000087,
+    "hybrid.withdrawn_peak_1in10": -0.9970937057997453,
+    "assist.withdrawn_avg": -8.220430394519562,
+    "assist.withdrawn_peak_1in10": -3.933464535638953,
+    "design_db": -0.5499999999999972
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.052575445965497014,
+    "towers.withdrawn_peak_1in10": -0.19334672885157334,
+    "hybrid.withdrawn_avg": -2.5358745589000087,
+    "hybrid.withdrawn_peak_1in10": -0.9970937057997453,
+    "assist.withdrawn_avg": -8.220430394519562,
+    "assist.withdrawn_peak_1in10": -3.933464535638953,
+    "design_db": -0.5499999999999972
    }
   },
   "corrected": true,
@@ -200,6 +314,8 @@
     1.0
    ]
   ],
+  "decided_corrected": false,
+  "decided_anchors": [],
   "station": "Dallas/Ft Worth International Ap",
   "station_km": 26.5
  },
@@ -244,10 +360,39 @@
     "assist.withdrawn_avg": -5.775783983188532,
     "assist.withdrawn_peak_1in10": -4.907716874317192,
     "design_db": -0.5
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.48622464680226907,
+    "towers.withdrawn_peak_1in10": -1.494259810378351,
+    "hybrid.withdrawn_avg": -2.267234209741986,
+    "hybrid.withdrawn_peak_1in10": -6.942654592187147,
+    "assist.withdrawn_avg": -5.775783983188532,
+    "assist.withdrawn_peak_1in10": -4.907716874317192,
+    "design_db": -0.5
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.48622464680226907,
+    "towers.withdrawn_peak_1in10": -1.494259810378351,
+    "hybrid.withdrawn_avg": -2.267234209741986,
+    "hybrid.withdrawn_peak_1in10": -6.942654592187147,
+    "assist.withdrawn_avg": -5.775783983188532,
+    "assist.withdrawn_peak_1in10": -4.907716874317192,
+    "design_db": -0.5
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.48622464680226907,
+    "towers.withdrawn_peak_1in10": -1.494259810378351,
+    "hybrid.withdrawn_avg": -2.267234209741986,
+    "hybrid.withdrawn_peak_1in10": -6.942654592187147,
+    "assist.withdrawn_avg": -5.775783983188532,
+    "assist.withdrawn_peak_1in10": -4.907716874317192,
+    "design_db": -0.5
    }
   },
   "corrected": false,
   "anchors": [],
+  "decided_corrected": false,
+  "decided_anchors": [],
   "station": "El Paso International Airport",
   "station_km": 6.5
  },
@@ -292,10 +437,39 @@
     "assist.withdrawn_avg": 1.499329543701955,
     "assist.withdrawn_peak_1in10": -0.7861994816145579,
     "design_db": -0.4000000000000057
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": 0.2746294126027893,
+    "towers.withdrawn_peak_1in10": 0.006756501890636812,
+    "hybrid.withdrawn_avg": 5.290138940082456,
+    "hybrid.withdrawn_peak_1in10": 1.447070427330055,
+    "assist.withdrawn_avg": 1.499329543701955,
+    "assist.withdrawn_peak_1in10": -0.7861994816145579,
+    "design_db": -0.4000000000000057
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": 0.2746294126027893,
+    "towers.withdrawn_peak_1in10": 0.006756501890636812,
+    "hybrid.withdrawn_avg": 5.290138940082456,
+    "hybrid.withdrawn_peak_1in10": 1.447070427330055,
+    "assist.withdrawn_avg": 1.499329543701955,
+    "assist.withdrawn_peak_1in10": -0.7861994816145579,
+    "design_db": -0.4000000000000057
+   },
+   "decided": {
+    "towers.withdrawn_avg": 0.2746294126027893,
+    "towers.withdrawn_peak_1in10": 0.006756501890636812,
+    "hybrid.withdrawn_avg": 5.290138940082456,
+    "hybrid.withdrawn_peak_1in10": 1.447070427330055,
+    "assist.withdrawn_avg": 1.499329543701955,
+    "assist.withdrawn_peak_1in10": -0.7861994816145579,
+    "design_db": -0.4000000000000057
    }
   },
   "corrected": false,
   "anchors": [],
+  "decided_corrected": false,
+  "decided_anchors": [],
   "station": "Amarillo Rick Husband Intl Airport",
   "station_km": 10.5
  },
@@ -340,10 +514,39 @@
     "assist.withdrawn_avg": -5.601635262180116,
     "assist.withdrawn_peak_1in10": -1.570650615260727,
     "design_db": null
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": 0.028502559677034967,
+    "towers.withdrawn_peak_1in10": -0.6748714357594054,
+    "hybrid.withdrawn_avg": -1.4088200338094548,
+    "hybrid.withdrawn_peak_1in10": -1.4703486387018683,
+    "assist.withdrawn_avg": -5.601635262180116,
+    "assist.withdrawn_peak_1in10": -1.570650615260727,
+    "design_db": null
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": 0.028502559677034967,
+    "towers.withdrawn_peak_1in10": -0.6748714357594054,
+    "hybrid.withdrawn_avg": -1.4088200338094548,
+    "hybrid.withdrawn_peak_1in10": -1.4703486387018683,
+    "assist.withdrawn_avg": -5.601635262180116,
+    "assist.withdrawn_peak_1in10": -1.570650615260727,
+    "design_db": null
+   },
+   "decided": {
+    "towers.withdrawn_avg": 0.028502559677034967,
+    "towers.withdrawn_peak_1in10": -0.6748714357594054,
+    "hybrid.withdrawn_avg": -1.4088200338094548,
+    "hybrid.withdrawn_peak_1in10": -1.4703486387018683,
+    "assist.withdrawn_avg": -5.601635262180116,
+    "assist.withdrawn_peak_1in10": -1.570650615260727,
+    "design_db": null
    }
   },
   "corrected": false,
   "anchors": [],
+  "decided_corrected": false,
+  "decided_anchors": [],
   "station": "G Bush Intercontinental Ap/Houston Ap",
   "station_km": 22.2
  },
@@ -388,10 +591,39 @@
     "assist.withdrawn_avg": -5.425257229947689,
     "assist.withdrawn_peak_1in10": -4.774253162894404,
     "design_db": null
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.03600432802610687,
+    "towers.withdrawn_peak_1in10": -1.0201487002124199,
+    "hybrid.withdrawn_avg": -1.512256597755235,
+    "hybrid.withdrawn_peak_1in10": -4.461802791871894,
+    "assist.withdrawn_avg": -5.425257229947689,
+    "assist.withdrawn_peak_1in10": -4.774253162894404,
+    "design_db": null
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.03600432802610687,
+    "towers.withdrawn_peak_1in10": -1.0201487002124199,
+    "hybrid.withdrawn_avg": -1.512256597755235,
+    "hybrid.withdrawn_peak_1in10": -4.461802791871894,
+    "assist.withdrawn_avg": -5.425257229947689,
+    "assist.withdrawn_peak_1in10": -4.774253162894404,
+    "design_db": null
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.03600432802610687,
+    "towers.withdrawn_peak_1in10": -1.0201487002124199,
+    "hybrid.withdrawn_avg": -1.512256597755235,
+    "hybrid.withdrawn_peak_1in10": -4.461802791871894,
+    "assist.withdrawn_avg": -5.425257229947689,
+    "assist.withdrawn_peak_1in10": -4.774253162894404,
+    "design_db": null
    }
   },
   "corrected": false,
   "anchors": [],
+  "decided_corrected": false,
+  "decided_anchors": [],
   "station": "Lubbock International Airport",
   "station_km": 13.1
  },
@@ -436,6 +668,33 @@
     "assist.withdrawn_avg": 1.3329831612765242,
     "assist.withdrawn_peak_1in10": 0.07585007338106742,
     "design_db": 0.2998934231772168
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": 0.41288332162809915,
+    "towers.withdrawn_peak_1in10": 0.9069976060342988,
+    "hybrid.withdrawn_avg": 4.457809709920824,
+    "hybrid.withdrawn_peak_1in10": 4.027949255146601,
+    "assist.withdrawn_avg": 1.3329831612765242,
+    "assist.withdrawn_peak_1in10": 0.07585007338106742,
+    "design_db": 0.2998934231772168
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": 0.3794557694682288,
+    "towers.withdrawn_peak_1in10": 0.9124116564214857,
+    "hybrid.withdrawn_avg": 4.543630662082432,
+    "hybrid.withdrawn_peak_1in10": 3.9783199731874275,
+    "assist.withdrawn_avg": 1.8763733561505624,
+    "assist.withdrawn_peak_1in10": -0.06868059793159187,
+    "design_db": 0.30815388538399446
+   },
+   "decided": {
+    "towers.withdrawn_avg": 0.3794557694682288,
+    "towers.withdrawn_peak_1in10": 0.9124116564214857,
+    "hybrid.withdrawn_avg": 4.543630662082432,
+    "hybrid.withdrawn_peak_1in10": 3.9783199731874275,
+    "assist.withdrawn_avg": 1.8763733561505624,
+    "assist.withdrawn_peak_1in10": -0.06868059793159187,
+    "design_db": 0.30815388538399446
    }
   },
   "corrected": true,
@@ -449,6 +708,24 @@
     "Norfolk Nas",
     33.1,
     0.35
+   ]
+  ],
+  "decided_corrected": true,
+  "decided_anchors": [
+   [
+    "Norfolk International Airport",
+    24.3,
+    0.59
+   ],
+   [
+    "Norfolk Nas",
+    33.1,
+    0.317
+   ],
+   [
+    "Nwpt News/Wimburg Intl Apt",
+    61.1,
+    0.093
    ]
   ],
   "station": "Oceana Nas",
@@ -495,10 +772,39 @@
     "assist.withdrawn_avg": 8.880723296157278,
     "assist.withdrawn_peak_1in10": 14.951098770644,
     "design_db": 0.04999999999999716
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": 0.10008547624336117,
+    "towers.withdrawn_peak_1in10": 0.48208318865063937,
+    "hybrid.withdrawn_avg": 8.164390469682804,
+    "hybrid.withdrawn_peak_1in10": 10.544142367703358,
+    "assist.withdrawn_avg": 8.880723296157278,
+    "assist.withdrawn_peak_1in10": 14.951098770644,
+    "design_db": 0.04999999999999716
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": 0.10008547624336117,
+    "towers.withdrawn_peak_1in10": 0.48208318865063937,
+    "hybrid.withdrawn_avg": 8.164390469682804,
+    "hybrid.withdrawn_peak_1in10": 10.544142367703358,
+    "assist.withdrawn_avg": 8.880723296157278,
+    "assist.withdrawn_peak_1in10": 14.951098770644,
+    "design_db": 0.04999999999999716
+   },
+   "decided": {
+    "towers.withdrawn_avg": 0.10008547624336117,
+    "towers.withdrawn_peak_1in10": 0.48208318865063937,
+    "hybrid.withdrawn_avg": 8.164390469682804,
+    "hybrid.withdrawn_peak_1in10": 10.544142367703358,
+    "assist.withdrawn_avg": 8.880723296157278,
+    "assist.withdrawn_peak_1in10": 14.951098770644,
+    "design_db": 0.04999999999999716
    }
   },
   "corrected": false,
   "anchors": [],
+  "decided_corrected": false,
+  "decided_anchors": [],
   "station": "Asheville Regional Airport",
   "station_km": 136.2
  },
@@ -543,6 +849,33 @@
     "assist.withdrawn_avg": -0.24867926184345412,
     "assist.withdrawn_peak_1in10": -1.5799422914379635,
     "design_db": null
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.05554617633388714,
+    "towers.withdrawn_peak_1in10": -0.3586755517393958,
+    "hybrid.withdrawn_avg": -4.654144587448295,
+    "hybrid.withdrawn_peak_1in10": -2.4256217280215098,
+    "assist.withdrawn_avg": -0.24867926184345412,
+    "assist.withdrawn_peak_1in10": -1.5799422914379635,
+    "design_db": null
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.05554617633388714,
+    "towers.withdrawn_peak_1in10": -0.3586755517393958,
+    "hybrid.withdrawn_avg": -4.654144587448295,
+    "hybrid.withdrawn_peak_1in10": -2.4256217280215098,
+    "assist.withdrawn_avg": -0.24867926184345412,
+    "assist.withdrawn_peak_1in10": -1.5799422914379635,
+    "design_db": null
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.05554617633388714,
+    "towers.withdrawn_peak_1in10": -0.3586755517393958,
+    "hybrid.withdrawn_avg": -4.654144587448295,
+    "hybrid.withdrawn_peak_1in10": -2.4256217280215098,
+    "assist.withdrawn_avg": -0.24867926184345412,
+    "assist.withdrawn_peak_1in10": -1.5799422914379635,
+    "design_db": null
    }
   },
   "corrected": true,
@@ -568,6 +901,8 @@
     0.114
    ]
   ],
+  "decided_corrected": false,
+  "decided_anchors": [],
   "station": "Washington Dulles International Ap",
   "station_km": 23.2
  },
@@ -612,10 +947,39 @@
     "assist.withdrawn_avg": -1.2923606238375296,
     "assist.withdrawn_peak_1in10": 2.4452213317594396,
     "design_db": null
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": 0.052173497514229616,
+    "towers.withdrawn_peak_1in10": -0.659963549617093,
+    "hybrid.withdrawn_avg": -2.2050550673373026,
+    "hybrid.withdrawn_peak_1in10": 1.0500235157448135,
+    "assist.withdrawn_avg": -1.2923606238375296,
+    "assist.withdrawn_peak_1in10": 2.4452213317594396,
+    "design_db": null
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": 0.052173497514229616,
+    "towers.withdrawn_peak_1in10": -0.659963549617093,
+    "hybrid.withdrawn_avg": -2.2050550673373026,
+    "hybrid.withdrawn_peak_1in10": 1.0500235157448135,
+    "assist.withdrawn_avg": -1.2923606238375296,
+    "assist.withdrawn_peak_1in10": 2.4452213317594396,
+    "design_db": null
+   },
+   "decided": {
+    "towers.withdrawn_avg": 0.052173497514229616,
+    "towers.withdrawn_peak_1in10": -0.659963549617093,
+    "hybrid.withdrawn_avg": -2.2050550673373026,
+    "hybrid.withdrawn_peak_1in10": 1.0500235157448135,
+    "assist.withdrawn_avg": -1.2923606238375296,
+    "assist.withdrawn_peak_1in10": 2.4452213317594396,
+    "design_db": null
    }
   },
   "corrected": false,
   "anchors": [],
+  "decided_corrected": false,
+  "decided_anchors": [],
   "station": "Richmond International Airport",
   "station_km": 13.7
  },
@@ -660,6 +1024,33 @@
     "assist.withdrawn_avg": -21.74652428212478,
     "assist.withdrawn_peak_1in10": -22.28406987322161,
     "design_db": null
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.8572024241778609,
+    "towers.withdrawn_peak_1in10": -2.283811116512968,
+    "hybrid.withdrawn_avg": -17.219422662936967,
+    "hybrid.withdrawn_peak_1in10": -13.504992525871195,
+    "assist.withdrawn_avg": -21.74652428212478,
+    "assist.withdrawn_peak_1in10": -22.28406987322161,
+    "design_db": null
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.8572024241778609,
+    "towers.withdrawn_peak_1in10": -2.283811116512968,
+    "hybrid.withdrawn_avg": -17.219422662936967,
+    "hybrid.withdrawn_peak_1in10": -13.504992525871195,
+    "assist.withdrawn_avg": -21.74652428212478,
+    "assist.withdrawn_peak_1in10": -22.28406987322161,
+    "design_db": null
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.8572024241778609,
+    "towers.withdrawn_peak_1in10": -2.283811116512968,
+    "hybrid.withdrawn_avg": -17.219422662936967,
+    "hybrid.withdrawn_peak_1in10": -13.504992525871195,
+    "assist.withdrawn_avg": -21.74652428212478,
+    "assist.withdrawn_peak_1in10": -22.28406987322161,
+    "design_db": null
    }
   },
   "corrected": true,
@@ -670,6 +1061,8 @@
     1.0
    ]
   ],
+  "decided_corrected": false,
+  "decided_anchors": [],
   "station": "Roanoke Regional/Woodrum Field Ap",
   "station_km": 4.5
  },
@@ -714,6 +1107,33 @@
     "assist.withdrawn_avg": 11.582954236014853,
     "assist.withdrawn_peak_1in10": 1.1315010647598767,
     "design_db": 0.5914520980834936
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.02390466697225202,
+    "towers.withdrawn_peak_1in10": 0.09498743734648318,
+    "hybrid.withdrawn_avg": -8.108795432718408,
+    "hybrid.withdrawn_peak_1in10": 18.479975935877313,
+    "assist.withdrawn_avg": -34.963624824988,
+    "assist.withdrawn_peak_1in10": -22.054405257869412,
+    "design_db": -2.3500000000000014
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.0626144261776207,
+    "towers.withdrawn_peak_1in10": 1.5277995119105325,
+    "hybrid.withdrawn_avg": 3.5363214818258992,
+    "hybrid.withdrawn_peak_1in10": 5.258209403478875,
+    "assist.withdrawn_avg": -3.706704264533911,
+    "assist.withdrawn_peak_1in10": -2.3140358509933567,
+    "design_db": -0.04832666903986649
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.0626144261776207,
+    "towers.withdrawn_peak_1in10": 1.5277995119105325,
+    "hybrid.withdrawn_avg": 3.5363214818258992,
+    "hybrid.withdrawn_peak_1in10": 5.258209403478875,
+    "assist.withdrawn_avg": -3.706704264533911,
+    "assist.withdrawn_peak_1in10": -2.3140358509933567,
+    "design_db": -0.04832666903986649
    }
   },
   "corrected": true,
@@ -721,6 +1141,14 @@
    [
     "Akron-Canton Regional Airport",
     79.7,
+    1.0
+   ]
+  ],
+  "decided_corrected": true,
+  "decided_anchors": [
+   [
+    "Lorain County Rgnl Airport",
+    22.7,
     1.0
    ]
   ],
@@ -768,6 +1196,33 @@
     "assist.withdrawn_avg": -2.2183246971814508,
     "assist.withdrawn_peak_1in10": -2.0245428099454066,
     "design_db": -0.3198047849557213
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": 0.005819198613687959,
+    "towers.withdrawn_peak_1in10": -0.35312725195602024,
+    "hybrid.withdrawn_avg": -3.9577138820496516,
+    "hybrid.withdrawn_peak_1in10": 1.0918264554722334,
+    "assist.withdrawn_avg": -4.19139138406166,
+    "assist.withdrawn_peak_1in10": -1.5767439448676202,
+    "design_db": -0.41489855506102913
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": 0.005819198613687959,
+    "towers.withdrawn_peak_1in10": -0.35312725195602024,
+    "hybrid.withdrawn_avg": -3.9577138820496516,
+    "hybrid.withdrawn_peak_1in10": 1.0918264554722334,
+    "assist.withdrawn_avg": -4.19139138406166,
+    "assist.withdrawn_peak_1in10": -1.5767439448676202,
+    "design_db": -0.41489855506102913
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.08801481460414262,
+    "towers.withdrawn_peak_1in10": -0.4292702814831517,
+    "hybrid.withdrawn_avg": -7.149649923854118,
+    "hybrid.withdrawn_peak_1in10": 1.0870348883629921,
+    "assist.withdrawn_avg": -8.604262523448035,
+    "assist.withdrawn_peak_1in10": -2.6103626564272564,
+    "design_db": -0.5610908487684441
    }
   },
   "corrected": true,
@@ -791,6 +1246,24 @@
     "Jakson Co-Rynolds Fld Arpt",
     97.5,
     0.146
+   ]
+  ],
+  "decided_corrected": true,
+  "decided_anchors": [
+   [
+    "Detroit Metro Wayne County Airport",
+    55.3,
+    0.501
+   ],
+   [
+    "Windsor A",
+    73.9,
+    0.28
+   ],
+   [
+    "Detroit City Airport",
+    83.5,
+    0.219
    ]
   ],
   "station": "Toledo Express Airport",
@@ -837,6 +1310,33 @@
     "assist.withdrawn_avg": 3.894154299204833,
     "assist.withdrawn_peak_1in10": 3.29971495772603,
     "design_db": null
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": 0.10952512527293568,
+    "towers.withdrawn_peak_1in10": -0.32164654153289396,
+    "hybrid.withdrawn_avg": 3.252226788769974,
+    "hybrid.withdrawn_peak_1in10": 7.958181886100069,
+    "assist.withdrawn_avg": 3.894154299204833,
+    "assist.withdrawn_peak_1in10": 3.29971495772603,
+    "design_db": null
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": 0.10952512527293568,
+    "towers.withdrawn_peak_1in10": -0.32164654153289396,
+    "hybrid.withdrawn_avg": 3.252226788769974,
+    "hybrid.withdrawn_peak_1in10": 7.958181886100069,
+    "assist.withdrawn_avg": 3.894154299204833,
+    "assist.withdrawn_peak_1in10": 3.29971495772603,
+    "design_db": null
+   },
+   "decided": {
+    "towers.withdrawn_avg": 0.10952512527293568,
+    "towers.withdrawn_peak_1in10": -0.32164654153289396,
+    "hybrid.withdrawn_avg": 3.252226788769974,
+    "hybrid.withdrawn_peak_1in10": 7.958181886100069,
+    "assist.withdrawn_avg": 3.894154299204833,
+    "assist.withdrawn_peak_1in10": 3.29971495772603,
+    "design_db": null
    }
   },
   "corrected": true,
@@ -852,6 +1352,8 @@
     0.112
    ]
   ],
+  "decided_corrected": false,
+  "decided_anchors": [],
   "station": "Cina Muni Apt/Lukn Fd Apt",
   "station_km": 8.6
  },
@@ -896,6 +1398,33 @@
     "assist.withdrawn_avg": 3.769036481750754,
     "assist.withdrawn_peak_1in10": -3.618431697265534,
     "design_db": null
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.20051245004876206,
+    "towers.withdrawn_peak_1in10": -0.3187988208668391,
+    "hybrid.withdrawn_avg": -11.02563680892079,
+    "hybrid.withdrawn_peak_1in10": 3.543266431229286,
+    "assist.withdrawn_avg": -27.36830670924939,
+    "assist.withdrawn_peak_1in10": -16.043847981671576,
+    "design_db": null
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.21130182800678243,
+    "towers.withdrawn_peak_1in10": 0.5625073739293107,
+    "hybrid.withdrawn_avg": -0.03405688860892431,
+    "hybrid.withdrawn_peak_1in10": -0.08166057007676919,
+    "assist.withdrawn_avg": -6.624426412048489,
+    "assist.withdrawn_peak_1in10": -2.8485402505110113,
+    "design_db": null
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.21130182800678243,
+    "towers.withdrawn_peak_1in10": 0.5625073739293107,
+    "hybrid.withdrawn_avg": -0.03405688860892431,
+    "hybrid.withdrawn_peak_1in10": -0.08166057007676919,
+    "assist.withdrawn_avg": -6.624426412048489,
+    "assist.withdrawn_peak_1in10": -2.8485402505110113,
+    "design_db": null
    }
   },
   "corrected": true,
@@ -909,6 +1438,14 @@
     "Youngstown-Warren Regional Airport",
     93.8,
     0.355
+   ]
+  ],
+  "decided_corrected": true,
+  "decided_anchors": [
+   [
+    "Lorain County Rgnl Airport",
+    39.7,
+    1.0
    ]
   ],
   "station": "Cleveland-Hopkins International Ap",
@@ -955,6 +1492,33 @@
     "assist.withdrawn_avg": -15.345793296894373,
     "assist.withdrawn_peak_1in10": -3.545800135550614,
     "design_db": null
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.3832421923063545,
+    "towers.withdrawn_peak_1in10": -1.4363886387139702,
+    "hybrid.withdrawn_avg": -8.72083494062057,
+    "hybrid.withdrawn_peak_1in10": 0.42273324967507797,
+    "assist.withdrawn_avg": -15.345793296894373,
+    "assist.withdrawn_peak_1in10": -3.545800135550614,
+    "design_db": null
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.3832421923063545,
+    "towers.withdrawn_peak_1in10": -1.4363886387139702,
+    "hybrid.withdrawn_avg": -8.72083494062057,
+    "hybrid.withdrawn_peak_1in10": 0.42273324967507797,
+    "assist.withdrawn_avg": -15.345793296894373,
+    "assist.withdrawn_peak_1in10": -3.545800135550614,
+    "design_db": null
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.3832421923063545,
+    "towers.withdrawn_peak_1in10": -1.4363886387139702,
+    "hybrid.withdrawn_avg": -8.72083494062057,
+    "hybrid.withdrawn_peak_1in10": 0.42273324967507797,
+    "assist.withdrawn_avg": -15.345793296894373,
+    "assist.withdrawn_peak_1in10": -3.545800135550614,
+    "design_db": null
    }
   },
   "corrected": true,
@@ -965,6 +1529,8 @@
     1.0
    ]
   ],
+  "decided_corrected": false,
+  "decided_anchors": [],
   "station": "Port Columbus International Airport",
   "station_km": 9.2
  },
@@ -1009,10 +1575,45 @@
     "assist.withdrawn_avg": -51.5586809602669,
     "assist.withdrawn_peak_1in10": -23.13188893571757,
     "design_db": -2.0000000000000036
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -1.1590648661182978,
+    "towers.withdrawn_peak_1in10": -2.8348632035466226,
+    "hybrid.withdrawn_avg": -39.273588882809904,
+    "hybrid.withdrawn_peak_1in10": -5.542286440469535,
+    "assist.withdrawn_avg": -51.5586809602669,
+    "assist.withdrawn_peak_1in10": -23.13188893571757,
+    "design_db": -2.0000000000000036
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -1.1590648661182978,
+    "towers.withdrawn_peak_1in10": -2.8348632035466226,
+    "hybrid.withdrawn_avg": -39.273588882809904,
+    "hybrid.withdrawn_peak_1in10": -5.542286440469535,
+    "assist.withdrawn_avg": -51.5586809602669,
+    "assist.withdrawn_peak_1in10": -23.13188893571757,
+    "design_db": -2.0000000000000036
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.545402674095441,
+    "towers.withdrawn_peak_1in10": -1.3818223085526604,
+    "hybrid.withdrawn_avg": -21.044319645232267,
+    "hybrid.withdrawn_peak_1in10": -2.8418430288343677,
+    "assist.withdrawn_avg": -24.884850156754368,
+    "assist.withdrawn_peak_1in10": -7.005473634908432,
+    "design_db": -0.4193822675746688
    }
   },
   "corrected": false,
   "anchors": [],
+  "decided_corrected": true,
+  "decided_anchors": [
+   [
+    "Windsor A",
+    88.5,
+    1.0
+   ]
+  ],
   "station": "Detroit City Airport",
   "station_km": 80.4
  },
@@ -1057,10 +1658,39 @@
     "assist.withdrawn_avg": 84.07071642630397,
     "assist.withdrawn_peak_1in10": 15.868519935443715,
     "design_db": 1.8000000000000007
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": 0.4085733864992669,
+    "towers.withdrawn_peak_1in10": 1.8305621492632485,
+    "hybrid.withdrawn_avg": 41.37510076191877,
+    "hybrid.withdrawn_peak_1in10": 2.2282298575694304,
+    "assist.withdrawn_avg": 84.07071642630397,
+    "assist.withdrawn_peak_1in10": 15.868519935443715,
+    "design_db": 1.8000000000000007
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": 0.4085733864992669,
+    "towers.withdrawn_peak_1in10": 1.8305621492632485,
+    "hybrid.withdrawn_avg": 41.37510076191877,
+    "hybrid.withdrawn_peak_1in10": 2.2282298575694304,
+    "assist.withdrawn_avg": 84.07071642630397,
+    "assist.withdrawn_peak_1in10": 15.868519935443715,
+    "design_db": 1.8000000000000007
+   },
+   "decided": {
+    "towers.withdrawn_avg": 0.4085733864992669,
+    "towers.withdrawn_peak_1in10": 1.8305621492632485,
+    "hybrid.withdrawn_avg": 41.37510076191877,
+    "hybrid.withdrawn_peak_1in10": 2.2282298575694304,
+    "assist.withdrawn_avg": 84.07071642630397,
+    "assist.withdrawn_peak_1in10": 15.868519935443715,
+    "design_db": 1.8000000000000007
    }
   },
   "corrected": false,
   "anchors": [],
+  "decided_corrected": false,
+  "decided_anchors": [],
   "station": "Houghton County Memo Arpt",
   "station_km": 149.9
  },
@@ -1105,6 +1735,33 @@
     "assist.withdrawn_avg": -4.906898052922104,
     "assist.withdrawn_peak_1in10": -8.012347151959265,
     "design_db": -0.25
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.03402545731532314,
+    "towers.withdrawn_peak_1in10": -0.38430954032890874,
+    "hybrid.withdrawn_avg": -3.0732170886102583,
+    "hybrid.withdrawn_peak_1in10": -0.49414782663912415,
+    "assist.withdrawn_avg": -4.906898052922104,
+    "assist.withdrawn_peak_1in10": -8.012347151959265,
+    "design_db": -0.25
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.03402545731532314,
+    "towers.withdrawn_peak_1in10": -0.38430954032890874,
+    "hybrid.withdrawn_avg": -3.0732170886102583,
+    "hybrid.withdrawn_peak_1in10": -0.49414782663912415,
+    "assist.withdrawn_avg": -4.906898052922104,
+    "assist.withdrawn_peak_1in10": -8.012347151959265,
+    "design_db": -0.25
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.03402545731532314,
+    "towers.withdrawn_peak_1in10": -0.38430954032890874,
+    "hybrid.withdrawn_avg": -3.0732170886102583,
+    "hybrid.withdrawn_peak_1in10": -0.49414782663912415,
+    "assist.withdrawn_avg": -4.906898052922104,
+    "assist.withdrawn_peak_1in10": -8.012347151959265,
+    "design_db": -0.25
    }
   },
   "corrected": true,
@@ -1120,6 +1777,8 @@
     0.483
    ]
   ],
+  "decided_corrected": false,
+  "decided_anchors": [],
   "station": "Gerald R Ford International Airport",
   "station_km": 10.8
  }

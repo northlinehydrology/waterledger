@@ -154,7 +154,7 @@ Lorain's hybrid peak is 26% above the station and Virginia Beach's 8%. This is c
 hybrid is fully evaporative at the design dry-bulb plus an offset (`physics.hybrid_full`), so a lower one makes it run wetter on
 its hottest days. Of the five, only Lorain is among the 189 places (MI 116, OH 35, VA 23, TX 15) whose nearest cell is
 mostly water, which the land rule of Nov 3 moves (below); the other four are on cells half to nine-tenths land. Both kinds
-are the case quantile mapping is for.
+are the case quantile mapping is for (decided Nov 4 for model 1.8: [design 0005](../design/0005-era5-quantile-mapping.md)).
 
 **Against what is published today**, ERA5 moves the hybrid average by -21% to +60% (median -5%) and the assist average by -50%
 to +83% (median -8%), across these 21 places. Towers move by 2% or less. The largest moves are where today's point is far

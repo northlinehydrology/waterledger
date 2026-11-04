@@ -1,0 +1,88 @@
+{
+ "cells": 1233,
+ "shore_cells": 126,
+ "shore_places": 777,
+ "shore_places_by_state": {
+  "MI": 462,
+  "OH": 172,
+  "VA": 56,
+  "TX": 87
+ },
+ "sets": [
+  {
+   "set": "isd",
+   "stations": 88,
+   "shore_stations": 20,
+   "any": {
+    "cells": 110,
+    "places": 711,
+    "places_by_state": {
+     "MI": 400,
+     "OH": 172,
+     "VA": 56,
+     "TX": 83
+    }
+   },
+   "shore": {
+    "cells": 90,
+    "places": 601,
+    "places_by_state": {
+     "MI": 335,
+     "OH": 172,
+     "VA": 56,
+     "TX": 38
+    }
+   }
+  },
+  {
+   "set": "+ linked",
+   "stations": 101,
+   "shore_stations": 22,
+   "any": {
+    "cells": 110,
+    "places": 711,
+    "places_by_state": {
+     "MI": 400,
+     "OH": 172,
+     "VA": 56,
+     "TX": 83
+    }
+   },
+   "shore": {
+    "cells": 90,
+    "places": 601,
+    "places_by_state": {
+     "MI": 335,
+     "OH": 172,
+     "VA": 56,
+     "TX": 38
+    }
+   }
+  },
+  {
+   "set": "+ eccc",
+   "stations": 106,
+   "shore_stations": 27,
+   "any": {
+    "cells": 114,
+    "places": 729,
+    "places_by_state": {
+     "MI": 418,
+     "OH": 172,
+     "VA": 56,
+     "TX": 83
+    }
+   },
+   "shore": {
+    "cells": 94,
+    "places": 619,
+    "places_by_state": {
+     "MI": 353,
+     "OH": 172,
+     "VA": 56,
+     "TX": 38
+    }
+   }
+  }
+ ]
+}

@@ -27,3 +27,16 @@ print(len(R), "stations;", len(ok), "with another station within 100 km;", "not:
 table(ok, "Every station with a neighbor within 100 km")
 table([r for r in ok if r["cell_land"] < 0.9], "Stations whose cell is under 90% land")
 table([r for r in ok if r["cell_land"] >= 0.9], "Stations whose cell is at least 90% land")
+
+# The rule decided Nov 4, 2026: shore stations only, so the cells it corrects are the shore stations with another shore station near
+WAYS = ["none", "lapse_isd", "lapse", "lapse_shore_isd", "lapse_shore"]
+d["ways"] = WAYS
+dec = [r for r in R if r["cell_land"] < 0.9 and r["errors"]["lapse_shore"]["corrected"]]
+table(dec, "Shore stations the decided rule corrects (another shore station within 100 km)")
+print("\n| Station | Source | Cell land | Design dry-bulb error, none / lapse (any) / lapse_shore (C) | 0.4% wet bulb (C) |")
+print("|---|---|---|---|---|")
+for r in sorted(R, key=lambda r: r["cell_land"]):
+    if r["cell_land"] < 0.9:
+        e = r["errors"]
+        f = lambda k: " / ".join(f'{e[w][k]:+.1f}' if e[w]["corrected"] or w == "none" else "-" for w in ("none", "lapse", "lapse_shore"))
+        print(f'| {r["name"]}, {r["state"]} | {r.get("source")} | {r["cell_land"]:.2f} | {f("ddb")} | {f("wb")} |')

@@ -1162,8 +1162,8 @@ Cleveland-Hopkins for the hybrid average and 39% below for assist, and 26% above
 
 **Open.**
 - The 777 places on cells 50-90% land keep the shore bias the check shows (Cleveland, Port Huron, Toledo, Virginia Beach).
-  Andrew asked for quantile mapping now (Nov 3); the method and a leave-one-station-out prototype are proposed in
-  [design 0005](../design/0005-era5-quantile-mapping.md), not decided.
+  Andrew asked for quantile mapping now (Nov 3) and decided it on Nov 4: cells under 90% land are corrected toward shore
+  stations, in model 1.8 ([design 0005](../design/0005-era5-quantile-mapping.md); entry of Nov 4 below).
 - Island places whose land cell is in another country (Isle Royale to Ontario) are kept by the rule as decided.
 
 **References.**
@@ -1173,3 +1173,113 @@ Cleveland-Hopkins for the hybrid average and 39% below for assist, and 26% above
   doi:10.24381/cds.adbb2d47. Land-sea mask read from Google's ARCO-ERA5 copy (gs://gcp-public-data-arco-era5); hourly
   series from Open-Meteo's open-data copy (s3://openmeteo/data/copernicus_era5), CC-BY 4.0.
 - U.S. Census Bureau, TIGERweb internal points (INTPTLAT, INTPTLON), as carried in the 2026-11-02.2 snapshots' places.
+
+## Nov 4, 2026: quantile mapping of ERA5 to shore stations (model 1.8, not built)
+
+**Decision (Andrew, Nov 4, 2026: "Yes to all three").** Model 1.8 corrects the hourly temperature and dew point of every
+ERA5 cell under 90% land toward the shore stations within 100 km, and leaves cells at least 90% land as ERA5 gives them.
+
+- **Shore stations only.** A shore station is one whose own cell, the land rule's cell at the station, is under 90% land.
+  A shore cell with no shore station within 100 km stays uncorrected and is flagged.
+- **More stations.** ISD records split across a change of station ID are linked and held to the snapshots' 85% rule as
+  one site. Environment and Climate Change Canada's hourly stations are added under the same rule and screens.
+
+The method was proposed and prototyped the same day. It is design 0005
+([0005-era5-quantile-mapping.md](../design/0005-era5-quantile-mapping.md)), and the code is
+`waterledger_models.quantile_mapping`, `climate.isd_sites`, `climate.eccc_sites` and `climate.eccc_hourly`. The scripts
+and results are in `qm-check/`.
+
+**Why.** After the land rule (Nov 3), 777 places still sit on cells 50-90% land. At the station check's five shoreline
+places those cells run 15% low on the hybrid average day and 34% low on assist, with design dry-bulbs 2-3 C low. Held-out
+stations show ERA5 inland to be as close as any correction, so only shore cells are corrected.
+
+The proposal corrected shore cells from any station. Where the only near stations are inland it overshot: Lorain +18%
+and Cleveland +10% on the hybrid average day, from Akron-Canton; Palacios +3.0 C and Muskegon +1.4 C on the design
+dry-bulb. Requiring a shore station removes that. Linking and Canadian stations bring back some of the cells the
+requirement leaves without a station.
+
+**Method.**
+- **What is corrected.** T and the dew-point depression D = T - Td, each by an additive delta at the hour's own quantile.
+  D is kept at or above 0, so Td never passes T and RH stays at or below 100%.
+- **Bins.** Empirical quantiles (99 per bin) by calendar month (fitted on it and the months either side) and 3-hour block
+  of local standard time.
+- **Carrying it.** The shore stations' quantiles are averaged with 1/d^2 weights (d at least 5 km, at most 4 stations),
+  their temperature moved to the cell's ERA5 elevation at 6.5 C per km, and the cell is mapped onto them.
+- **Period.** The pairs are fitted on 1995-2024, each station's on its own kept hours and its cell's on the same hours.
+  ERA5's sequence and trend are kept.
+- **Stations.** 106 of 207 candidates qualify: 88 ISD under one ID, 13 linked ISD sites (of 66) and 5 ECCC sites (of 9).
+  27 of them are shore stations.
+- **Linking ISD.** Pieces sharing a USAF or a WBAN within 5 km, together covering 85% of the days, with a WBAN among them;
+  an hour both report is the newer piece's.
+- **Linking ECCC.** Pieces within 5 km sharing the first word of their names. A value flagged "M" is left out.
+- **Sarnia (Port Huron's neighbor) fails at 79.8% of hours**: Sarnia Airport reported 43% of hours in 1995-2004.
+
+**What it does.**
+- **Coverage.** 94 of the 126 shore cells and 619 of their 777 places are corrected: Michigan 353 of 462, Ohio 172 of
+  172, Virginia 56 of 56, Texas 38 of 87. 158 places in 32 cells stay uncorrected: Lake Michigan's southwest shore, the
+  Thumb's Saginaw Bay side, the Upper Peninsula's shores, Galveston Bay, and the Gulf shore from Freeport to South Padre.
+- **What each change does.** Requiring a shore station alone would leave 176 uncorrected. Linking adds no cells but
+  supplies Lorain County Regional, Lorain's and Cleveland's anchor once Cleveland-Hopkins is held out. ECCC adds 4 cells
+  (18 places): the Thumb's Lake Huron shore from Goderich and Isle Royale from Thunder Bay. The proposal (any station)
+  would have corrected 711.
+- **Weather, held out at 106 stations.** At the 16 shore stations the rule corrects, the design dry-bulb error is 0.23 C
+  (median absolute; mean -0.04 C), against 1.18 C (mean -1.34 C) uncorrected and 0.28 C (+0.05 C) under the proposal. The
+  mean dew point is 0.16 C against 0.42 C. The 0.4% wet bulb is 0.28 C against 0.22 C: it rises about 0.3 C on average.
+  On cells at least 90% land no correction beats ERA5 (design dry-bulb 0.42 C uncorrected, 0.45 C with lapse).
+- **The five shoreline places, through the cooling model** (model 1.7, 400 draws, seed 7, each place's reference
+  station held out), mean difference from the station:
+  - hybrid average day -15% to -4%;
+  - assist -34% to -8%;
+  - hybrid peak +5% to +1%, assist peak -19% to -3%;
+  - towers 2% or less.
+- **The five, place by place:**
+  - Lorain: hybrid average -8% to +4%, assist -35% to -4%, from Lorain County Regional at 23 km.
+  - Cleveland: hybrid average -11% to -0%, assist -27% to -7%, from the same station at 40 km.
+  - Port Huron: hybrid average -39% to -21%, assist -52% to -25%, design dry-bulb -2.0 to -0.4 C, from Windsor A at
+    88 km. Its reference, Detroit City, is 80 km away.
+  - Virginia Beach: hybrid average +5%, assist +2%.
+  - Toledo: hybrid average -7%, assist -9%.
+- **Physical.** No corrected hour has Td above T, and RH is at most 100%. The model's mass and energy balance tests pass
+  unchanged, since the correction is outside the model.
+
+**Alternatives considered.**
+- **Any station within 100 km** (the proposal). Overshoots where only inland stations are near.
+- **Weighting stations by how alike their cells' land fractions are.** Softer than a cutoff, but it still lets an
+  inland station anchor a shore cell when it is the only one.
+- **Distance from the shoreline as the shore-station test.** It needs a shoreline dataset and a second threshold. The
+  cell test is the one the cells already get.
+- **"bias"** (carrying ERA5's own error from station cells) and **"target"** without elevation. Both did worse on the
+  held-out stations (0005, prototype).
+- **Parametric quantiles, seasons, hourly bins, and T with RH or the wet bulb as the corrected pair.** See 0005,
+  section 1-2.
+- **Detrending or quantile delta mapping.** Not needed for a historical period corrected against itself.
+
+**Open.**
+- The 0.4% wet bulb rises about 0.3 C where cells are corrected: the margins are matched, not their joint distribution.
+  A joint correction is the next refinement. Towers barely move.
+- Sarnia fails the 85% rule on its 1995-2004 record and is whole over 2006-2024.
+- The cell test counts inland-lake stations as shore stations (Roscommon County, Detroit City, Detroit Metro: 0.88-0.89),
+  and misses stations on the water in mostly-land cells (Corpus Christi NAS, 0.96).
+- Goderich corrects the Thumb's Lake Huron shore from 83-88 km across the lake.
+- 158 shore places stay uncorrected. Single-ID ISD sites that start after 1995, which the span test excludes, are the
+  likeliest source of more stations.
+
+**References.**
+- Cannon, A. J., Sobie, S. R. and Murdock, T. Q. (2015). Bias correction of GCM precipitation by quantile mapping: how
+  well do methods preserve changes in quantiles and extremes? Journal of Climate 28(17): 6938-6959.
+  doi:10.1175/JCLI-D-14-00754.1.
+- Maraun, D. (2016). Bias correcting climate change simulations: a critical review. Current Climate Change Reports 2(4):
+  211-220. doi:10.1007/s40641-016-0050-x.
+- Themeßl, M. J., Gobiet, A. and Leuprecht, A. (2011). Empirical-statistical downscaling and error correction of daily
+  precipitation from regional climate models. International Journal of Climatology 31(10): 1530-1544. doi:10.1002/joc.2168.
+- Hersbach, H., et al. (2020). The ERA5 global reanalysis. QJRMS 146(730): 1999-2049. doi:10.1002/qj.3803.
+- NOAA NCEI, Integrated Surface Database, ISD-Lite and isd-history.csv, fetched Oct 29 and Nov 4, 2026.
+- Environment and Climate Change Canada, Historical Climate Data, hourly observations via MSC GeoMet-OGC-API
+  (api.weather.gc.ca, collection climate-hourly) and the Station Inventory (Sep 30, 2026), fetched Nov 4, 2026. Licence:
+  ECCC Data Servers End-use Licence, version 2.1 (https://eccc-msc.github.io/open-data/licence/readme_en/). "Contains
+  information licenced under the Data Server End-use Licence of Environment and Climate Change Canada."
+- Alduchov, O. A. and Eskridge, R. E. (1996). Improved Magnus form approximation of saturation vapor pressure. Journal of
+  Applied Meteorology 35(4): 601-609.
+- Dunn, R. J. H., Willett, K. M., Thorne, P. W., et al. (2012). HadISD: a quality-controlled global synoptic report
+  database for selected variables at long-term stations from 1973-2011. Climate of the Past 8: 1649-1679 (the neighbor
+  check the screens follow).

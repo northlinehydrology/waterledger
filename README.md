@@ -88,7 +88,9 @@ They are validated, round-trip through JSON, and are described in
 
 Planned (model 1.8, not yet built): every place takes its cooling weather from its nearest ERA5 grid cell, about 10 km
 away, or, where that cell is mostly water, the nearest cell that is at least half land (189 places), in place of regions
-and division stations ([design 0004](docs/design/0004-era5-weather.md)).
+and division stations ([design 0004](docs/design/0004-era5-weather.md)). Where that cell is under 90% land, its
+temperature and dew point are corrected toward NOAA and Environment and Climate Change Canada stations near the shore
+within 100 km (619 places; [design 0005](docs/design/0005-era5-quantile-mapping.md)).
 
 Michigan has its own layers (state-reported water use, domestic wells, trout streams, lake-source cooling, state rules)
 and matches [waterledger.org/mi](https://waterledger.org/mi/) exactly. The other states use national datasets only

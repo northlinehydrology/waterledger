@@ -3,7 +3,8 @@
 Each place's cell is the land rule's. Its reference is the nearest qualifying station from the station check; that station, and any
 other within 5 km of it, is taken out of the anchors before the place's cell is corrected (leave one station out). The corrected
 cell runs through cooling.run_location as station_check.py does (model 1.7, 400 draws, seed 7, per 100 MW), and the results are
-compared with the reference station's run there. Writes cv_places.json beside this file. Usage: python cv_places.py OUT WAY [WAY ...]"""
+compared with the reference station's run there. Writes cv_places.json beside this file (runs of other ways kept).
+Usage: python cv_places.py OUT [--shore] WAY [WAY ...]; --shore runs only the places whose cell is under 90% land."""
 import json, os, sys
 from concurrent.futures import ProcessPoolExecutor
 
@@ -44,13 +45,17 @@ def one(job):
 
 
 if __name__ == "__main__":
-    out, ways = sys.argv[1], sys.argv[2:]
+    out, ways = sys.argv[1], [w for w in sys.argv[2:] if w != "--shore"]
     d = json.load(open(os.path.join(HERE, "..", "era5-check", "station_check_results.json")))
-    jobs = [(r, w) for w in ways for r in d["rows"]]
+    rows = d["rows"]
+    if "--shore" in sys.argv:
+        A.setup(out)
+        rows = [r for r in rows if A.cell_of(r["lat"], r["lon"])[3] < qm.SHORE_LAND]
+    jobs = [(r, w) for w in ways for r in rows]
     with ProcessPoolExecutor(6, initializer=init, initargs=(out,)) as pool:
         got = list(pool.map(one, jobs))
     path = os.path.join(HERE, "cv_places.json")
     old = json.load(open(path))["runs"] if os.path.exists(path) else []
-    keep = [x for x in old if x["way"] not in ways]
+    keep = [x for x in old if (x["geoid"], x["way"]) not in {(r["geoid"], w) for r, w in jobs}]
     json.dump({"runs": keep + got}, open(path, "w"), indent=1, default=float)
     print("wrote cv_places.json,", len(got), "runs")

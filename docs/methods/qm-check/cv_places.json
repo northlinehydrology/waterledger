@@ -945,6 +945,372 @@
    "design_db": 32.20889620000244,
    "rh_max": 100.0,
    "td_over_t": 0
+  },
+  {
+   "geoid": "5182000",
+   "way": "lapse_shore",
+   "cell": "36.75_-76.00",
+   "cell_land": 0.5116811394691467,
+   "corrected": true,
+   "anchors": [
+    [
+     "Norfolk International Airport",
+     24.3,
+     0.59
+    ],
+    [
+     "Norfolk Nas",
+     33.1,
+     0.317
+    ],
+    [
+     "Nwpt News/Wimburg Intl Apt",
+     61.1,
+     0.093
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6907836903728085,
+   "towers.withdrawn_peak_1in10": 0.9419656712101023,
+   "hybrid.withdrawn_avg": 0.058359052880525716,
+   "hybrid.withdrawn_peak_1in10": 0.6934994608110181,
+   "assist.withdrawn_avg": 0.06278164518814511,
+   "assist.withdrawn_peak_1in10": 0.6305116266349655,
+   "design_db": 34.20815388538399,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3944856",
+   "way": "lapse_shore",
+   "cell": "41.50_-82.00",
+   "cell_land": 0.5864068269729614,
+   "corrected": true,
+   "anchors": [
+    [
+     "Lorain County Rgnl Airport",
+     22.7,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6605559208962994,
+   "towers.withdrawn_peak_1in10": 0.9063011755241901,
+   "hybrid.withdrawn_avg": 0.031570124232227874,
+   "hybrid.withdrawn_peak_1in10": 0.5966968949183313,
+   "assist.withdrawn_avg": 0.034503783502165625,
+   "assist.withdrawn_peak_1in10": 0.4596827533911845,
+   "design_db": 32.151673330960136,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3977000",
+   "way": "lapse_shore",
+   "cell": "41.75_-83.50",
+   "cell_land": 0.7815909385681152,
+   "corrected": true,
+   "anchors": [
+    [
+     "Detroit Metro Wayne County Airport",
+     55.3,
+     0.501
+    ],
+    [
+     "Windsor A",
+     73.9,
+     0.28
+    ],
+    [
+     "Detroit City Airport",
+     83.5,
+     0.219
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6589143966132431,
+   "towers.withdrawn_peak_1in10": 0.9000874387466349,
+   "hybrid.withdrawn_avg": 0.031453862026137355,
+   "hybrid.withdrawn_peak_1in10": 0.5897509708822433,
+   "assist.withdrawn_avg": 0.036813624252391396,
+   "assist.withdrawn_peak_1in10": 0.5376838148677754,
+   "design_db": 32.23890915123155,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3916000",
+   "way": "lapse_shore",
+   "cell": "41.50_-81.75",
+   "cell_land": 0.6492148637771606,
+   "corrected": true,
+   "anchors": [
+    [
+     "Lorain County Rgnl Airport",
+     39.7,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6595731420985853,
+   "towers.withdrawn_peak_1in10": 0.8976843690575631,
+   "hybrid.withdrawn_avg": 0.03048145035336622,
+   "hybrid.withdrawn_peak_1in10": 0.5664257754441768,
+   "assist.withdrawn_avg": 0.03345830621812,
+   "assist.withdrawn_peak_1in10": 0.4571675255771334,
+   "design_db": 32.0109500635612,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "2614765820",
+   "way": "lapse_shore",
+   "cell": "43.00_-82.50",
+   "cell_land": 0.7500801086425781,
+   "corrected": true,
+   "anchors": [
+    [
+     "Windsor A",
+     88.5,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6569389522977561,
+   "towers.withdrawn_peak_1in10": 0.9019841660195593,
+   "hybrid.withdrawn_avg": 0.028130143147657355,
+   "hybrid.withdrawn_peak_1in10": 0.6228951948653583,
+   "assist.withdrawn_avg": 0.031421567441736076,
+   "assist.withdrawn_peak_1in10": 0.5412824168606762,
+   "design_db": 31.780617732425334,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "5182000",
+   "way": "lapse_shore_isd",
+   "cell": "36.75_-76.00",
+   "cell_land": 0.5116811394691467,
+   "corrected": true,
+   "anchors": [
+    [
+     "Norfolk International Airport",
+     24.3,
+     0.65
+    ],
+    [
+     "Norfolk Nas",
+     33.1,
+     0.35
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6910137295542738,
+   "towers.withdrawn_peak_1in10": 0.9419151338230434,
+   "hybrid.withdrawn_avg": 0.058311145327920755,
+   "hybrid.withdrawn_peak_1in10": 0.6938304709705205,
+   "assist.withdrawn_avg": 0.06244677921982057,
+   "assist.withdrawn_peak_1in10": 0.6314235356261932,
+   "design_db": 34.199893423177215,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3944856",
+   "way": "lapse_shore_isd",
+   "cell": "41.50_-82.00",
+   "cell_land": 0.5864068269729614,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6608117807078481,
+   "towers.withdrawn_peak_1in10": 0.8935109912226943,
+   "hybrid.withdrawn_avg": 0.02801931440598236,
+   "hybrid.withdrawn_peak_1in10": 0.6716495953293314,
+   "assist.withdrawn_avg": 0.023303813538264197,
+   "assist.withdrawn_peak_1in10": 0.3667901107176652,
+   "design_db": 29.85,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3977000",
+   "way": "lapse_shore_isd",
+   "cell": "41.75_-83.50",
+   "cell_land": 0.7815909385681152,
+   "corrected": true,
+   "anchors": [
+    [
+     "Detroit Metro Wayne County Airport",
+     55.3,
+     0.695
+    ],
+    [
+     "Detroit City Airport",
+     83.5,
+     0.305
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6595332270977591,
+   "towers.withdrawn_peak_1in10": 0.9007757472949325,
+   "hybrid.withdrawn_avg": 0.0325351580661936,
+   "hybrid.withdrawn_peak_1in10": 0.5897789253212853,
+   "assist.withdrawn_avg": 0.03859110080091502,
+   "assist.withdrawn_peak_1in10": 0.5433903773636339,
+   "design_db": 32.38510144493897,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3916000",
+   "way": "lapse_shore_isd",
+   "cell": "41.50_-81.75",
+   "cell_land": 0.6492148637771606,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6596444566266975,
+   "towers.withdrawn_peak_1in10": 0.8898172740926338,
+   "hybrid.withdrawn_avg": 0.027129915948566855,
+   "hybrid.withdrawn_peak_1in10": 0.5869750769974051,
+   "assist.withdrawn_avg": 0.026025365541380432,
+   "assist.withdrawn_peak_1in10": 0.395074107730005,
+   "design_db": 30.7,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "2614765820",
+   "way": "lapse_shore_isd",
+   "cell": "43.00_-82.50",
+   "cell_land": 0.7500801086425781,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6528854584590431,
+   "towers.withdrawn_peak_1in10": 0.8886943252362095,
+   "hybrid.withdrawn_avg": 0.02163546219720335,
+   "hybrid.withdrawn_peak_1in10": 0.605582256069982,
+   "assist.withdrawn_avg": 0.020263584328195215,
+   "assist.withdrawn_peak_1in10": 0.4474172681200763,
+   "design_db": 30.2,
+   "rh_max": 100.0,
+   "td_over_t": 3
+  },
+  {
+   "geoid": "5182000",
+   "way": "lapse_shore_linked",
+   "cell": "36.75_-76.00",
+   "cell_land": 0.5116811394691467,
+   "corrected": true,
+   "anchors": [
+    [
+     "Norfolk International Airport",
+     24.3,
+     0.59
+    ],
+    [
+     "Norfolk Nas",
+     33.1,
+     0.317
+    ],
+    [
+     "Nwpt News/Wimburg Intl Apt",
+     61.1,
+     0.093
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6907836903728085,
+   "towers.withdrawn_peak_1in10": 0.9419656712101023,
+   "hybrid.withdrawn_avg": 0.058359052880525716,
+   "hybrid.withdrawn_peak_1in10": 0.6934994608110181,
+   "assist.withdrawn_avg": 0.06278164518814511,
+   "assist.withdrawn_peak_1in10": 0.6305116266349655,
+   "design_db": 34.20815388538399,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3944856",
+   "way": "lapse_shore_linked",
+   "cell": "41.50_-82.00",
+   "cell_land": 0.5864068269729614,
+   "corrected": true,
+   "anchors": [
+    [
+     "Lorain County Rgnl Airport",
+     22.7,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6605559208962994,
+   "towers.withdrawn_peak_1in10": 0.9063011755241901,
+   "hybrid.withdrawn_avg": 0.031570124232227874,
+   "hybrid.withdrawn_peak_1in10": 0.5966968949183313,
+   "assist.withdrawn_avg": 0.034503783502165625,
+   "assist.withdrawn_peak_1in10": 0.4596827533911845,
+   "design_db": 32.151673330960136,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3977000",
+   "way": "lapse_shore_linked",
+   "cell": "41.75_-83.50",
+   "cell_land": 0.7815909385681152,
+   "corrected": true,
+   "anchors": [
+    [
+     "Detroit Metro Wayne County Airport",
+     55.3,
+     0.695
+    ],
+    [
+     "Detroit City Airport",
+     83.5,
+     0.305
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6595332270977591,
+   "towers.withdrawn_peak_1in10": 0.9007757472949325,
+   "hybrid.withdrawn_avg": 0.0325351580661936,
+   "hybrid.withdrawn_peak_1in10": 0.5897789253212853,
+   "assist.withdrawn_avg": 0.03859110080091502,
+   "assist.withdrawn_peak_1in10": 0.5433903773636339,
+   "design_db": 32.38510144493897,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3916000",
+   "way": "lapse_shore_linked",
+   "cell": "41.50_-81.75",
+   "cell_land": 0.6492148637771606,
+   "corrected": true,
+   "anchors": [
+    [
+     "Lorain County Rgnl Airport",
+     39.7,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6595731420985853,
+   "towers.withdrawn_peak_1in10": 0.8976843690575631,
+   "hybrid.withdrawn_avg": 0.03048145035336622,
+   "hybrid.withdrawn_peak_1in10": 0.5664257754441768,
+   "assist.withdrawn_avg": 0.03345830621812,
+   "assist.withdrawn_peak_1in10": 0.4571675255771334,
+   "design_db": 32.0109500635612,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "2614765820",
+   "way": "lapse_shore_linked",
+   "cell": "43.00_-82.50",
+   "cell_land": 0.7500801086425781,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6528854584590431,
+   "towers.withdrawn_peak_1in10": 0.8886943252362095,
+   "hybrid.withdrawn_avg": 0.02163546219720335,
+   "hybrid.withdrawn_peak_1in10": 0.605582256069982,
+   "assist.withdrawn_avg": 0.020263584328195215,
+   "assist.withdrawn_peak_1in10": 0.4474172681200763,
+   "design_db": 30.2,
+   "rh_max": 100.0,
+   "td_over_t": 3
   }
  ]
 }
