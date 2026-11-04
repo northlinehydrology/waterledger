@@ -41,7 +41,6 @@ not read. Staff water is a constant flow at the configured capacity (it follows 
 IT load); withdrawal plus condensate always equals consumption plus return.
 """
 import numpy as np
-import yaml
 from bmipy import Bmi
 
 from waterledger_models.datacenter import lake, physics as model
@@ -73,6 +72,10 @@ def read_config(config):
         return {}
     if isinstance(config, dict):
         return dict(config)
+    try:                                    # only a YAML file needs pyyaml, so the components import with bmipy alone (Basin Ledger, Nov 4, 2026)
+        import yaml
+    except ImportError as e:
+        raise ImportError(f"reading {config} needs pyyaml: pip install 'waterledger-models[bmi]', or pass the settings as a dict") from e
     with open(config) as f:
         return yaml.safe_load(f) or {}
 

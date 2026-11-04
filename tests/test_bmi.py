@@ -189,6 +189,26 @@ def test_configuration_as_a_dict(tmp_path):
     assert m._design == "towers" and m._mw == 100.0
 
 
+def test_the_components_import_and_run_without_pyyaml(tmp_path):
+    """pyyaml is in the [bmi] extra but was imported with the module, so a framework with bmipy alone couldn't import the components
+    (Basin Ledger, Nov 4, 2026). Only a YAML file needs it; a dict configuration runs without, and a file says what to install."""
+    import subprocess, sys
+    code = f"""
+import sys; sys.modules["yaml"] = None                               # as if pyyaml weren't installed
+import numpy as np
+from waterledger_models.datacenter.bmi import CoolingWaterBmi, LakeCoolingBmi
+m = CoolingWaterBmi(); m.initialize({{"design": "towers", "it_capacity_mw": 50}})
+m.set_value("atmosphere_bottom_air__temperature", np.array([25.0])); m.set_value("atmosphere_bottom_air_water_vapor__relative_saturation", np.array([60.0])); m.update()
+assert m.get_value("data_center_cooling_water__withdrawal_volume_flux", np.empty(1))[0] > 0
+try:
+    CoolingWaterBmi().initialize({str(write_config(tmp_path, design="towers"))!r})
+except ImportError as e:
+    assert "waterledger-models[bmi]" in str(e); print("ok")
+"""
+    got = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=120)
+    assert got.returncode == 0 and got.stdout.strip() == "ok", got.stderr[-2000:]
+
+
 def test_bad_configuration(tmp_path):
     m = CoolingWaterBmi()
     with pytest.raises(ValueError):
