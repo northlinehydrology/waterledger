@@ -232,9 +232,31 @@ def pull(store, ids):
     return sum(r for r, _ in got), sum(w for _, w in got)
 
 
+def _ignore_interrupts():
+    """A worker's start: Ctrl-C goes to the whole terminal's process group, and only the main process should act on it."""
+    import signal
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+
+def _stop(pool):
+    """Cancel the cells not started and end the workers now; a cell in progress is lost and runs again next time. The workers are
+    taken before shutdown, which forgets them, and ended first, so the pool's manager thread sees them gone and Python's exit, which
+    joins that thread, doesn't wait on cells that will never finish."""
+    procs = list((getattr(pool, "_processes", None) or {}).values())
+    for p in procs:
+        p.terminate()
+    pool.shutdown(wait=False, cancel_futures=True)
+    for p in procs:
+        p.join(5)
+
+
 def run_part(state, k=1, n=1, workers=6, draws=None, store=None, cells=None, run=None, fetch=None):
     """Run part k of n of a state's cells; return {cell: result path}. `run` and `fetch` stand in for cooling.run_location and
-    era5.fetch in tests; `cells` for state_cells(state)."""
+    era5.fetch in tests; `cells` for state_cells(state).
+
+    Ctrl-C stops it cleanly: the cells not started are cancelled and the workers ended (a cell in progress runs again next time),
+    uploads under way finish, and uploads not yet started are dropped with a warning; the next start uploads them, since it sends
+    every done cell's result and raw series that R2 doesn't have (skipped by checksum where it does)."""
     from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 
     from waterledger_models.datacenter import cooling
@@ -256,10 +278,13 @@ def run_part(state, k=1, n=1, workers=6, draws=None, store=None, cells=None, run
     _say(f"{len(ids) - len(todo)} cells done before, {len(todo)} to run; {len(stations)} shore stations")
     os.makedirs(RUNS, exist_ok=True)
     out = {c: result_path(c) for c in ids if c not in todo}
-    uploads = ThreadPoolExecutor(2)                         # uploads go up while the cells run; put() never raises
+    uploads, sent = ThreadPoolExecutor(2), []               # uploads go up while the cells run; put() never raises
     if store:
-        for c in todo:                                      # skipped by checksum where R2 has them already
-            uploads.submit(push_raw, store, c)
+        for c in ids:                                       # every cell's raw series, and the results already done: skipped by checksum where R2 has them
+            if era5.raw_path(c):
+                sent.append(uploads.submit(push_raw, store, c))
+            if c in out:
+                sent.append(uploads.submit(store.put, f"{R2_RUNS}/{c}.json", out[c]))
 
     def finish(cid, times, temps, note, res):
         path = result_path(cid)
@@ -267,16 +292,18 @@ def run_part(state, k=1, n=1, workers=6, draws=None, store=None, cells=None, run
         os.replace(path + ".part", path)
         out[cid] = path
         if store:
-            uploads.submit(store.put, f"{R2_RUNS}/{cid}.json", path)
+            sent.append(uploads.submit(store.put, f"{R2_RUNS}/{cid}.json", path))
         _say(f"  {cid} done ({len(out)}/{len(ids)})" + (", corrected" if note["applied"] else ""))
 
+    interrupted = False
     try:
         if workers <= 1:
             for cid in todo:
                 times, temps, rhs, note = weather(cid, stations)
                 finish(cid, times, temps, note, run(times, temps, rhs, n=draws, seed=SEED, mw=MW))
             return out
-        with ProcessPoolExecutor(workers) as pool:
+        pool = ProcessPoolExecutor(workers, initializer=_ignore_interrupts)
+        try:
             queue, live = list(todo), {}
             while queue or live:
                 while queue and len(live) < 2 * workers:        # weather for a few cells ahead, not the whole part, in memory
@@ -286,6 +313,19 @@ def run_part(state, k=1, n=1, workers=6, draws=None, store=None, cells=None, run
                 done = next(as_completed(live))
                 cid, times, temps, note = live.pop(done)
                 finish(cid, times, temps, note, done.result())
+        except BaseException:
+            _stop(pool)
+            raise
+        pool.shutdown(wait=True)
         return out
+    except KeyboardInterrupt:
+        interrupted = True
+        _say(f"interrupted: {len(out)} of {len(ids)} cells done and kept; the cells in progress run again next time")
+        raise
     finally:
+        if interrupted:
+            dropped = sum(f.cancel() for f in sent)
+            if dropped:
+                _say(f"Water Ledger R2: {dropped} uploads not started were dropped; the next start sends them")
+            _say("waiting for the uploads under way to finish")
         uploads.shutdown(wait=True)

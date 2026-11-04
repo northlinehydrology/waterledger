@@ -46,7 +46,11 @@ def _era5(a):
                 E.push_raw(store, c)
         print(f"{len(ids)} cells fetched")
         return
-    E.run_part(a.state, k, n, workers=a.workers, draws=a.draws, store=store, cells=cells)
+    try:
+        E.run_part(a.state, k, n, workers=a.workers, draws=a.draws, store=store, cells=cells)
+    except KeyboardInterrupt:
+        print(f"stopped; `waterledger era5 run {a.state.upper()} --part {a.part}` resumes where it stopped", file=sys.stderr)
+        sys.exit(130)
 
 
 def main(argv=None):

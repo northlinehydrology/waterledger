@@ -217,6 +217,74 @@ def test_a_part_finishes_when_r2_fails(cache, monkeypatch, capsys):
     assert json.load(open(out["41.50_-82.00"]))["correction"]["reason"] == "no shore station within 100 km"
 
 
+def test_a_restart_uploads_finished_results_r2_does_not_have(cache, monkeypatch):
+    """A cell finished while R2 was off (or before an interrupted upload) goes up on the next start, without running again."""
+    monkeypatch.setattr(E, "anchors", lambda cells, store=None: [])
+    calls, fetch = [], lambda ids: [_synthetic(c) for c in ids]
+    E.run_part("OH", 1, 1, workers=1, draws=5, store=None, cells=CELLS, run=_run_stub(calls), fetch=fetch)
+    bucket = Counting(str(cache / "bucket"))
+    E.run_part("OH", 1, 1, workers=1, draws=5, store=bucket, cells=CELLS, run=_run_stub(calls), fetch=fetch)
+    assert len(calls) == 2
+    for c in CELLS:
+        assert f"runs/era5/model1.8/{c}.json" in bucket.puts and f"era5/{c}/2026-11-04.npz" in bucket.puts
+
+
+def test_an_interrupt_keeps_the_finished_cells_and_their_uploads(cache, monkeypatch, capsys):
+    monkeypatch.setattr(E, "anchors", lambda cells, store=None: [])
+    calls = []
+
+    def run(*a, **k):
+        if calls:
+            raise KeyboardInterrupt
+        return _run_stub(calls)(*a, **k)
+    bucket = Counting(str(cache / "bucket"))
+    with pytest.raises(KeyboardInterrupt):
+        E.run_part("OH", 1, 1, workers=1, draws=5, store=bucket, cells=CELLS, run=run, fetch=lambda ids: [_synthetic(c) for c in ids])
+    first = sorted(CELLS)[0]
+    assert os.path.exists(E.result_path(first)) and not os.path.exists(E.result_path(sorted(CELLS)[1]))
+    assert "interrupted: 1 of 2 cells done and kept" in capsys.readouterr().err
+
+
+SLOW_PART = '''
+import sys, time
+import numpy as np
+from waterledger.national import era5 as E
+from waterledger_data import era5
+
+def slow(times, temps, rhs, n, seed, mw):
+    time.sleep(120)
+
+if __name__ == "__main__":
+    era5.RAW, E.RUNS, E.ANCHORS = sys.argv[1] + "/raw", sys.argv[1] + "/runs", sys.argv[1] + "/anchors"
+    E.anchors = lambda cells, store=None: []
+    cells = {c: {"cell": {"id": c, "lat": 41.5, "lon": -82.0, "land": 0.59}, "places": []} for c in ("41.50_-82.00", "43.00_-85.50")}
+    n = int((era5.END - era5.START).astype(int))
+    for c in cells:
+        t = np.full(n, 20.0, np.float32)
+        era5.write_raw(c, {"temperature_2m": t, "dew_point_2m": t - 5}, "2026-11-04", {"source": "test"})
+    print("started", flush=True)
+    E.run_part("OH", 1, 1, workers=2, draws=5, cells=cells, run=slow)
+'''
+
+
+def test_ctrl_c_ends_a_part_and_its_workers(tmp_path):
+    """SIGINT to the process group, as Ctrl-C sends it: the part stops within seconds and leaves no workers behind."""
+    import signal, sys, time
+    script = tmp_path / "slow_part.py"
+    script.write_text(SLOW_PART)
+    p = subprocess.Popen([sys.executable, str(script), str(tmp_path)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True)
+    assert p.stdout.readline().strip() == "started"
+    time.sleep(4)                                                               # the workers have started their cells
+    kids = subprocess.run(["pgrep", "-g", str(p.pid)], capture_output=True, text=True).stdout.split()
+    assert len(kids) >= 3                                                       # the part and its two workers
+    os.killpg(p.pid, signal.SIGINT)
+    p.wait(timeout=20)
+    err = p.stderr.read()
+    assert "interrupted: 0 of 2 cells done and kept" in err and "KeyboardInterrupt" in err
+    time.sleep(0.5)
+    assert subprocess.run(["pgrep", "-g", str(p.pid)], capture_output=True, text=True).stdout.split() == []
+
+
 @pytest.mark.live
 def test_open_copy_cells_and_one_run(cache):
     """Two cells from the open copy (Lorain's and Port Huron's), their local series physical, and one short run with the real model."""
