@@ -26,7 +26,7 @@ def test_information_and_variables(tmp_path):
     m = CoolingWaterBmi()
     m.initialize(write_config(tmp_path, design="towers", it_capacity_mw=100))
     assert m.get_component_name()
-    assert m.get_input_item_count() == len(m.get_input_var_names()) == 2
+    assert m.get_input_item_count() == len(m.get_input_var_names()) == 4
     assert m.get_output_item_count() == len(m.get_output_var_names()) == 6
     for name in list(INPUTS) + list(OUTPUTS):
         assert m.get_var_grid(name) == 0
@@ -109,12 +109,38 @@ def test_closed_loop_includes_staff_water_at_capacity(tmp_path):
     assert w2 == pytest.approx(300 * 7000 * 0.01 / 365 + 130 * 30 + maint, rel=1e-9)
 
 
+def test_specific_humidity_and_pressure(tmp_path):
+    """NextGen's forcing carries specific humidity and pressure: the component converts them and gives what relative humidity gives."""
+    from waterledger_models.weather import specific_humidity
+    for design in model.DESIGNS:
+        params = {"design_db": 31.0} if design == "hybrid" else {}
+        rel, spec = CoolingWaterBmi(), CoolingWaterBmi()
+        rel.initialize(write_config(tmp_path, design=design, parameters=params))
+        spec.initialize(write_config(tmp_path, design=design, humidity="specific", parameters=params))
+        for t, rh, p in ((30.0, 60.0, 98000.0), (5.0, 85.0, 101325.0), (-10.0, 40.0, 95000.0)):
+            rel.set_value(TEMP, np.array([t]))
+            rel.set_value(RH, np.array([rh]))
+            spec.set_value(TEMP, np.array([t]))
+            spec.set_value("atmosphere_bottom_air_water_vapor__specific_saturation", np.array([specific_humidity(t, rh, p)]))
+            spec.set_value("land_surface_air__pressure", np.array([p]))
+            rel.update()
+            spec.update()
+            for name in OUTPUTS:
+                assert spec.get_value(name, np.empty(1))[0] == pytest.approx(rel.get_value(name, np.empty(1))[0], rel=1e-9), (design, name)
+            w, c, r, n = (spec.get_value(k, np.empty(1))[0] for k in (WITHDRAWN, CONSUMED, RETURNED, "data_center_cooling_water__condensate_volume_flux"))
+            assert w + n == pytest.approx(c + r, rel=1e-12)
+
+
 def test_bad_configuration(tmp_path):
     m = CoolingWaterBmi()
     with pytest.raises(ValueError):
         m.initialize(write_config(tmp_path, design="spray-pond"))
     with pytest.raises(ValueError):
         m.initialize(write_config(tmp_path, parameters={"not_a_parameter": 1}))
+    with pytest.raises(ValueError):
+        m.initialize(write_config(tmp_path, humidity="dew point"))
+    with pytest.raises(ValueError):
+        m.initialize(write_config(tmp_path, humidity="specific", forcing="weather.json"))
 
 
 def test_condensate_output_in_humid_air(tmp_path):

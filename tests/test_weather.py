@@ -3,7 +3,9 @@ import json
 
 import numpy as np
 
-from waterledger_models.weather import from_open_meteo_json
+import pytest
+
+from waterledger_models.weather import from_open_meteo_json, relative_humidity, saturation_vapor_pressure, specific_humidity
 
 
 def test_reads_a_saved_response(tmp_path):
@@ -15,3 +17,18 @@ def test_reads_a_saved_response(tmp_path):
         ds = from_open_meteo_json(src)
         assert list(ds.air_temperature.values) == [21.5, 20.9] and ds.relative_humidity.attrs["units"] == "%"
         assert ds.time.values[1] - ds.time.values[0] == np.timedelta64(60, "m") and ds.attrs["latitude"] == 42.9
+
+
+def test_humidity_conversion_round_trips_and_stays_physical():
+    t, rh, p = np.meshgrid(np.linspace(-30, 45, 16), np.linspace(0, 100, 21), np.linspace(60000, 105000, 4), indexing="ij")
+    q = specific_humidity(t, rh, p)
+    assert np.all(q >= 0) and np.all(q <= specific_humidity(t, 100.0, p)) and np.all(q < 1)
+    np.testing.assert_allclose(relative_humidity(t, q, p), rh, rtol=1e-12, atol=1e-10)
+    # by hand at 20 C, 50%, sea level: es = 611.2 exp(17.67 x 20 / 263.5) = 2337 Pa, e = 1168.5 Pa, q = 0.622 e / (p - 0.378 e)
+    assert saturation_vapor_pressure(20.0) == pytest.approx(2337.0, rel=2e-4)
+    assert specific_humidity(20.0, 50.0, 101325.0) == pytest.approx(0.622 * 1168.5 / (101325 - 0.378 * 1168.5), rel=2e-4)
+    # supersaturated reanalysis air and a negative interpolated q stay within 0-100
+    assert relative_humidity(10.0, 2 * specific_humidity(10.0, 100.0, 1e5), 1e5) == 100.0
+    assert relative_humidity(10.0, -1e-5, 1e5) == 0.0
+    # more water vapor is more humid, warmer air at the same vapor is less
+    assert relative_humidity(15.0, 0.008, 1e5) > relative_humidity(15.0, 0.006, 1e5) > relative_humidity(25.0, 0.006, 1e5)

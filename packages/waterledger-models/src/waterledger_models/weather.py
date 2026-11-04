@@ -27,6 +27,31 @@ def from_open_meteo_json(payload):
                              "longitude": payload.get("longitude")})
 
 
+EPSILON = 0.622        # ratio of the molar masses of water vapor and dry air (Bolton 1980; 0.378 = 1 - EPSILON)
+
+
+def saturation_vapor_pressure(t_c):
+    """Saturation vapor pressure over water, Pa, at air temperature t_c (C): Bolton (1980) eq. 10, within 0.1% from -30 to 35 C."""
+    t_c = np.asarray(t_c, dtype=float)
+    return 611.2 * np.exp(17.67 * t_c / (t_c + 243.5))
+
+
+def relative_humidity(t_c, q, p):
+    """Relative humidity, percent, from air temperature (C), specific humidity (kg kg-1) and surface pressure (Pa), the pair NextGen's AORC and NWM
+    forcing carries: vapor pressure e = q p / (0.622 + 0.378 q) over saturation (Bolton 1980). Kept within 0-100: a reanalysis can be slightly
+    supersaturated, and a negative q from interpolation is read as dry air."""
+    q = np.clip(np.asarray(q, dtype=float), 0.0, None)
+    e = q * np.asarray(p, dtype=float) / (EPSILON + (1 - EPSILON) * q)
+    return np.clip(100.0 * e / saturation_vapor_pressure(t_c), 0.0, 100.0)
+
+
+def specific_humidity(t_c, rh, p):
+    """Specific humidity, kg kg-1, from air temperature (C), relative humidity (percent) and surface pressure (Pa): the inverse of
+    relative_humidity, q = 0.622 e / (p - 0.378 e) with e = rh/100 x saturation vapor pressure (Bolton 1980)."""
+    e = np.clip(np.asarray(rh, dtype=float), 0.0, 100.0) / 100.0 * saturation_vapor_pressure(t_c)
+    return EPSILON * e / (np.asarray(p, dtype=float) - (1 - EPSILON) * e)
+
+
 def local_standard_offset(lon):
     """Hours from UTC to local standard time at a longitude, the same rule the NOAA station records use, for any place. No daylight time, so every day has 24 hours."""
     return round(lon / 15)

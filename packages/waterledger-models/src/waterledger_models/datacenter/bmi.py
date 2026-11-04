@@ -9,14 +9,17 @@ Configuration (YAML):
     it_capacity_mw: 100                          (IT capacity, MW; sets the cooling load and the staff on site)
     time_step: 3600                              (seconds; the model is calibrated hourly)
     end_time: 31536000                           (seconds; default one year)
-    forcing: path/to/open_meteo.json             (optional; otherwise inputs come from set_value each step)
+    humidity: relative | specific                (default relative: which humidity inputs the component reads)
+    forcing: path/to/open_meteo.json             (optional; otherwise inputs come from set_value each step; relative humidity)
     parameters: {coc: 5, utilization: 0.8, staff_gpcd: 20, ...}
                                                  (optional overrides of the central values: model.PARAMETERS and
                                                   model.STAFF_PARAMETERS)
 
 Variables (all on the one scalar grid point, float64):
     input   atmosphere_bottom_air__temperature                         degC     air (dry-bulb) temperature
-    input   atmosphere_bottom_air_water_vapor__relative_saturation     percent  relative humidity
+    input   atmosphere_bottom_air_water_vapor__relative_saturation     percent  relative humidity (humidity: relative)
+    input   atmosphere_bottom_air_water_vapor__specific_saturation     kg kg-1  specific humidity (humidity: specific)
+    input   land_surface_air__pressure                                 Pa       surface pressure (humidity: specific)
     output  data_center_cooling_water__withdrawal_volume_flux          m3 s-1   water taken: cooling makeup (evaporation,
                                                                                 drift, blowdown, loop top-ups) plus staff water
     output  data_center_cooling_water__consumption_volume_flux         m3 s-1   water evaporated or lost: evaporation, drift, loop top-ups,
@@ -27,7 +30,9 @@ Variables (all on the one scalar grid point, float64):
     output  atmosphere_bottom_air__wet_bulb_temperature                degC     wet-bulb temperature (Stull 2011)
     output  data_center__electric_power                                MW       facility electricity: computers at the run's utilization, cooling
                                                                                 and losses (hour's PUE x IT power)
-Staff water is a constant flow at the configured capacity (it follows the people on site, not the weather or the
+With humidity: specific the component takes specific humidity and surface pressure, the pair NextGen's AORC and NWM forcing carries, and
+converts them to relative humidity each step (waterledger_models.weather.relative_humidity, Bolton 1980); the relative humidity input is then
+not read. Staff water is a constant flow at the configured capacity (it follows the people on site, not the weather or the
 IT load); withdrawal plus condensate always equals consumption plus return.
 """
 import numpy as np
@@ -35,14 +40,17 @@ import yaml
 from bmipy import Bmi
 
 from waterledger_models.datacenter import lake, physics as model
-from waterledger_models.weather import from_open_meteo_json
+from waterledger_models.weather import from_open_meteo_json, relative_humidity
 
 GAL_PER_M3 = model.GAL_M3
 
 INPUTS = {
     "atmosphere_bottom_air__temperature": "degC",
     "atmosphere_bottom_air_water_vapor__relative_saturation": "percent",
+    "atmosphere_bottom_air_water_vapor__specific_saturation": "kg kg-1",
+    "land_surface_air__pressure": "Pa",
 }
+HUMIDITY = ("relative", "specific")
 OUTPUTS = {
     "data_center_cooling_water__withdrawal_volume_flux": "m3 s-1",
     "data_center_cooling_water__consumption_volume_flux": "m3 s-1",
@@ -225,6 +233,7 @@ class CoolingWaterBmi(_ScalarPointBmi):
     def __init__(self):
         super().__init__()
         self._design = "towers"
+        self._humidity = "relative"
         self._mw = 100.0
         self._params = {**model.central_parameters(), **model.central_staff()}
         self._forcing = None
@@ -238,6 +247,11 @@ class CoolingWaterBmi(_ScalarPointBmi):
         self._design = cfg.get("design", "towers")
         if self._design not in model.DESIGNS:
             raise ValueError(f"design must be one of {model.DESIGNS}")
+        self._humidity = cfg.get("humidity", "relative")
+        if self._humidity not in HUMIDITY:
+            raise ValueError(f"humidity must be one of {HUMIDITY}")
+        if self._humidity == "specific" and cfg.get("forcing"):
+            raise ValueError("a forcing file carries relative humidity: use humidity: relative with it")
         self._mw = float(cfg.get("it_capacity_mw", 100.0))
         self._dt = float(cfg.get("time_step", 3600.0))
         self._params = {**model.central_parameters(), **model.central_staff(),
@@ -264,7 +278,10 @@ class CoolingWaterBmi(_ScalarPointBmi):
 
     def _compute(self):
         tdb = self._values["atmosphere_bottom_air__temperature"]
-        rh = self._values["atmosphere_bottom_air_water_vapor__relative_saturation"]
+        if self._humidity == "specific":
+            rh = relative_humidity(tdb, self._values["atmosphere_bottom_air_water_vapor__specific_saturation"], self._values["land_surface_air__pressure"])
+        else:
+            rh = self._values["atmosphere_bottom_air_water_vapor__relative_saturation"]
         twb = model.wet_bulb(tdb, rh)
         w, c, r = model.hourly_rates(tdb, twb, self._design, self._params, rh)
         kwh_per_s = self._mw * 1000.0 * self._params["utilization"] / 3600.0     # IT energy per second of model time
