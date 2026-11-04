@@ -33,10 +33,10 @@ CRITERIA = [
     ("W5", "corrected shore cells (3 or more): median |error| in the design dry-bulb, C, at most", 0.5, "four states 0.19-0.32 (Michigan); +0.18"),
     ("W6", "corrected shore cells (3 or more): median |error| no worse than uncorrected", None, "the reason to correct"),
     ("P1", "places sampled, at least", 5, "too few to judge below this"),
-    ("P2", "places: median |difference| in the hybrid average day, %, at most", 8.0, "four states 2-5 (Virginia); +3"),
-    ("P3", "places: |mean difference| in the hybrid average day, %, at most", 6.0, "four states 0.6-4.8 (Virginia); +1.2"),
-    ("P4", "places: median |difference| in the hybrid peak day, %, at most", 6.0, "four states 1.1-4.0 (Virginia); +2"),
-    ("P5", "places: median |difference| in towers' average day, %, at most", 2.0, "four states 0.1-0.4; +1.6"),
+    ("P2", "places: median |difference| in the hybrid average day, %, at most", 8.0, "four states 1.9-4.6 (Virginia); +3.4"),
+    ("P3", "places: |mean difference| in the hybrid average day, %, at most", 6.0, "four states 0.6-4.9 (Virginia); +1.1"),
+    ("P4", "places: median |difference| in the hybrid peak day, %, at most", 6.0, "four states 0.5-3.2 (Virginia); +2.8"),
+    ("P5", "places: median |difference| in towers' average day, %, at most", 2.0, "four states 0.03-0.22; +1.8"),
 ]
 
 
