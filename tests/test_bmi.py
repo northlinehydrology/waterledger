@@ -170,3 +170,34 @@ def test_condensate_output_in_humid_air(tmp_path):
     w, c, r, n = (m.get_value(k, np.empty(1))[0] for k in (WITHDRAWN, CONSUMED, RETURNED, "data_center_cooling_water__condensate_volume_flux"))
     assert n > 0 and w + n == pytest.approx(c + r, rel=1e-12)
     assert "data_center_cooling_water__condensate_volume_flux" in m.get_output_var_names()
+
+
+def test_a_component_on_the_public_base():
+    """A component built on ScalarPointBmi gets every BMI function but initialize(); the old private name still works."""
+    from waterledger_models.datacenter import ScalarPointBmi
+    from waterledger_models.datacenter.bmi import _ScalarPointBmi, read_config
+    assert _ScalarPointBmi is ScalarPointBmi and issubclass(CoolingWaterBmi, ScalarPointBmi)
+
+    class Doubler(ScalarPointBmi):
+        INPUTS = {"x": "m"}
+        OUTPUTS = {"y": "m"}
+        _name = "doubler"
+
+        def initialize(self, config_file=None):
+            cfg = read_config(config_file)
+            self._dt, self._end, self._time = float(cfg.get("time_step", 60)), float(cfg.get("end_time", 600)), 0.0
+
+        def _compute(self):
+            self._values["y"][0] = 2 * self._values["x"][0]
+
+    m = Doubler()
+    m.initialize({"time_step": 60})
+    ptr = m.get_value_ptr("y")
+    m.set_value("x", np.array([1.5]))
+    m.update_until(300)
+    assert m.get_current_time() == 300 and m.get_end_time() == 600 and m.get_time_step() == 60
+    assert ptr[0] == 3.0 and m.get_value("y", np.empty(1))[0] == 3.0
+    assert m.get_input_var_names() == ("x",) and m.get_output_var_names() == ("y",) and m.get_component_name() == "doubler"
+    assert m.get_grid_type(m.get_var_grid("y")) == "scalar" and m.get_var_type("x") == "float64"
+    with pytest.raises(KeyError):
+        m.set_value("y", np.array([1.0]))

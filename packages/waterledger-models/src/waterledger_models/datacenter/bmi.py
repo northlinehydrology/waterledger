@@ -72,10 +72,25 @@ def read_config(config):
         return yaml.safe_load(f) or {}
 
 
-class _ScalarPointBmi(Bmi):
-    """BMI plumbing shared by the components here: one point (a 'scalar' grid), float64 values held in 1-element
-    arrays so get_value_ptr stays live, inputs set with set_value, and a fixed time step. Subclasses define INPUTS,
-    OUTPUTS, _name, initialize() and _compute()."""
+class ScalarPointBmi(Bmi):
+    """BMI 2.0 plumbing for a component at one point, shared by the components here and public for components built on them (such as a
+    NextGen catchment component that steps several campuses). It supplies every BMI function except initialize().
+
+    The grid: one node on grid 0, of type "scalar" (rank 0, size 1); the grid shape, spacing, origin and coordinates raise NotImplementedError.
+    Values: every input and output is a float64 held in a 1-element array made at construction, so get_value_ptr returns a live view that
+    stays valid for the component's life; a subclass writes into it (self._values[name][0] = x) and never replaces the array.
+    Time: in seconds from 0 (get_start_time), a fixed step self._dt, and self._end; update_until steps whole steps up to the time asked.
+
+    A subclass defines:
+        INPUTS, OUTPUTS   dicts of standard name -> units, in the order get_input_var_names and get_output_var_names report
+        _name             the component name
+        initialize(config_file=None)
+                          reads its settings (read_config takes a YAML path or a dict) and sets self._dt, self._end and self._time
+        _compute()        reads the inputs in self._values and writes the outputs; it has no side effects other than the outputs
+        _advance()        optional: loads the next step's inputs when the component reads forcing itself
+    set_value and set_value_at_indices take inputs only (an output raises KeyError) and then call _compute(); update() advances the clock one
+    step, calls _advance() and then _compute().
+    """
 
     INPUTS: dict = {}
     OUTPUTS: dict = {}
@@ -233,7 +248,10 @@ class _ScalarPointBmi(Bmi):
 
     def get_grid_nodes_per_face(self, grid, nodes_per_face):
         raise NotImplementedError("scalar grid has no faces")
-class CoolingWaterBmi(_ScalarPointBmi):
+_ScalarPointBmi = ScalarPointBmi      # its name through 3.9.0, kept so components built on it keep working
+
+
+class CoolingWaterBmi(ScalarPointBmi):
     """BMI 2.0 wrapper around waterledger_models.datacenter.physics: hourly cooling-tower, hybrid and closed-loop water use."""
 
     INPUTS = INPUTS
@@ -326,7 +344,7 @@ LAKE_OUTPUTS = {
 }
 
 
-class LakeCoolingBmi(_ScalarPointBmi):
+class LakeCoolingBmi(ScalarPointBmi):
     """BMI 2.0 wrapper around waterledger_models.datacenter.lake: once-through lake cooling, daily by default. Inputs are the
     lake's natural surface temperature and wind speed; outputs the water drawn and returned and the extra
     evaporation the returned heat causes.
