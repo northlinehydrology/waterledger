@@ -1,0 +1,1833 @@
+[
+ {
+  "id": "722390-03931",
+  "name": "Polk Army Airfield",
+  "state": "LA",
+  "lat": 31.05,
+  "lon": -93.183,
+  "elev_m": 100.6,
+  "qualifies": false
+ },
+ {
+  "id": "722400-03937",
+  "name": "Lake Charles Regional Airport",
+  "state": "LA",
+  "lat": 30.126,
+  "lon": -93.228,
+  "elev_m": 2.0,
+  "share_observed": 0.9936195777818336,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 1
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722404-13941",
+  "name": "Chennault International Ap",
+  "state": "LA",
+  "lat": 30.21,
+  "lon": -93.143,
+  "elev_m": 5.2,
+  "qualifies": false
+ },
+ {
+  "id": "722410-12917",
+  "name": "Southeast Texas Regional Airport",
+  "state": "TX",
+  "lat": 29.952,
+  "lon": -94.026,
+  "elev_m": 3.8,
+  "share_observed": 0.995870596824238,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 2
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722420-12923",
+  "name": "Scholes Intl At Glston Apt",
+  "state": "TX",
+  "lat": 29.27,
+  "lon": -94.864,
+  "elev_m": 1.5,
+  "qualifies": false
+ },
+ {
+  "id": "722430-12960",
+  "name": "G Bush Intercontinental Ap/Houston Ap",
+  "state": "TX",
+  "lat": 29.984,
+  "lon": -95.361,
+  "elev_m": 27.5,
+  "share_observed": 0.9996767962523575,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722436-12906",
+  "name": "Ellington Field Airport",
+  "state": "TX",
+  "lat": 29.617,
+  "lon": -95.167,
+  "elev_m": 9.8,
+  "qualifies": false
+ },
+ {
+  "id": "722446-93987",
+  "name": "Angelina County Airport",
+  "state": "TX",
+  "lat": 31.236,
+  "lon": -94.755,
+  "elev_m": 87.1,
+  "share_observed": 0.9938857455740099,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 1
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722448-13972",
+  "name": "Tyler Pounds Regional Arpt",
+  "state": "TX",
+  "lat": 32.359,
+  "lon": -95.404,
+  "elev_m": 159.5,
+  "qualifies": false
+ },
+ {
+  "id": "722470-03901",
+  "name": "East Texas Regional Arpt",
+  "state": "TX",
+  "lat": 32.391,
+  "lon": -94.714,
+  "elev_m": 107.3,
+  "share_observed": 0.9107615440773864,
+  "screen": {
+   "years_left_out": [
+    1995,
+    1996,
+    1997,
+    1998
+   ],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722480-13957",
+  "name": "Shreveport Regional Airport",
+  "state": "LA",
+  "lat": 32.447,
+  "lon": -93.824,
+  "elev_m": 69.6,
+  "share_observed": 0.9993611972987771,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722485-13944",
+  "name": "Barksdale Air Force Base",
+  "state": "LA",
+  "lat": 32.5,
+  "lon": -93.667,
+  "elev_m": 50.6,
+  "qualifies": false
+ },
+ {
+  "id": "722500-12919",
+  "name": "Brownsville/S Padre Island Intl Ap",
+  "state": "TX",
+  "lat": 25.915,
+  "lon": -97.423,
+  "elev_m": 5.7,
+  "share_observed": 0.9957032913548701,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 2
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722505-12904",
+  "name": "Valley International Arpt",
+  "state": "TX",
+  "lat": 26.23,
+  "lon": -97.656,
+  "elev_m": 9.5,
+  "qualifies": false
+ },
+ {
+  "id": "722506-12959",
+  "name": "Mc Allen Miller Intl Arpt",
+  "state": "TX",
+  "lat": 26.179,
+  "lon": -98.245,
+  "elev_m": 30.1,
+  "share_observed": 0.9812085538723612,
+  "screen": {
+   "years_left_out": [
+    1996
+   ],
+   "hours_removed": 1,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722510-12924",
+  "name": "Corpus Christi International Airport",
+  "state": "TX",
+  "lat": 27.773,
+  "lon": -97.513,
+  "elev_m": 12.5,
+  "share_observed": 0.9991444606680051,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 3
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722515-12926",
+  "name": "Corpus Christi Nas",
+  "state": "TX",
+  "lat": 27.688,
+  "lon": -97.292,
+  "elev_m": 4.7,
+  "share_observed": 0.9475383281620734,
+  "screen": {
+   "years_left_out": [
+    2006,
+    2024
+   ],
+   "hours_removed": 1,
+   "dew_points_removed": 1
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722516-12928",
+  "name": "Kingsville Nas",
+  "state": "TX",
+  "lat": 27.509,
+  "lon": -97.804,
+  "elev_m": 13.4,
+  "share_observed": 0.8788366186043682,
+  "screen": {
+   "years_left_out": [
+    1998,
+    1999,
+    2000,
+    2003,
+    2004,
+    2005,
+    2006
+   ],
+   "hours_removed": 2,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722517-12932",
+  "name": "Alice International Arpt",
+  "state": "TX",
+  "lat": 27.741,
+  "lon": -98.025,
+  "elev_m": 52.0,
+  "qualifies": false
+ },
+ {
+  "id": "722526-12947",
+  "name": "Cotulla-La Salle Co Arpt",
+  "state": "TX",
+  "lat": 28.459,
+  "lon": -99.223,
+  "elev_m": 144.0,
+  "share_observed": 0.901369623410598,
+  "screen": {
+   "years_left_out": [
+    1995,
+    1996,
+    1997,
+    1998,
+    1999,
+    2000,
+    2002
+   ],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722530-12921",
+  "name": "San Antonio International Airport",
+  "state": "TX",
+  "lat": 29.544,
+  "lon": -98.484,
+  "elev_m": 243.6,
+  "share_observed": 0.9994372452393989,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 3
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722533-12962",
+  "name": "Hondo Municipal Airport",
+  "state": "TX",
+  "lat": 29.36,
+  "lon": -99.174,
+  "elev_m": 281.0,
+  "share_observed": 0.9362680233619274,
+  "screen": {
+   "years_left_out": [
+    1995,
+    1996
+   ],
+   "hours_removed": 2,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722535-12909",
+  "name": "Lackland Air Force Base (Kelly Field Annex)",
+  "state": "TX",
+  "lat": 29.383,
+  "lon": -98.583,
+  "elev_m": 210.3,
+  "qualifies": false
+ },
+ {
+  "id": "722536-12911",
+  "name": "Randolph Afb Airport",
+  "state": "TX",
+  "lat": 29.533,
+  "lon": -98.262,
+  "elev_m": 221.9,
+  "qualifies": false
+ },
+ {
+  "id": "722550-12912",
+  "name": "Victoria Regional Airport",
+  "state": "TX",
+  "lat": 28.862,
+  "lon": -96.93,
+  "elev_m": 33.7,
+  "share_observed": 0.9952584109022328,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 1,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722555-12935",
+  "name": "Palacios Municipal Airport",
+  "state": "TX",
+  "lat": 28.725,
+  "lon": -96.254,
+  "elev_m": 3.2,
+  "share_observed": 0.980254152217558,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 1
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722560-13959",
+  "name": "Waco Regional Airport",
+  "state": "TX",
+  "lat": 31.618,
+  "lon": -97.228,
+  "elev_m": 151.9,
+  "share_observed": 0.9960340998965748,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 2,
+   "dew_points_removed": 2
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722570-03933",
+  "name": "Hood Aaf Airport",
+  "state": "TX",
+  "lat": 31.133,
+  "lon": -97.717,
+  "elev_m": 281.6,
+  "qualifies": false
+ },
+ {
+  "id": "722576-03902",
+  "name": "Robert Gray Aff Airport",
+  "state": "TX",
+  "lat": 31.067,
+  "lon": -97.833,
+  "elev_m": 309.4,
+  "qualifies": false
+ },
+ {
+  "id": "722580-13960",
+  "name": "Dallas Love Field Airport",
+  "state": "TX",
+  "lat": 32.838,
+  "lon": -96.836,
+  "elev_m": 147.6,
+  "qualifies": false
+ },
+ {
+  "id": "722590-03927",
+  "name": "Dallas/Ft Worth International Ap",
+  "state": "TX",
+  "lat": 32.897,
+  "lon": -97.022,
+  "elev_m": 165.7,
+  "share_observed": 0.9996463770761088,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 3
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722595-13911",
+  "name": "Fort Worth Naval Air Station Jrb/Carswell Field",
+  "state": "TX",
+  "lat": 32.767,
+  "lon": -97.45,
+  "elev_m": 185.3,
+  "share_observed": 0.8810572184705239,
+  "screen": {
+   "years_left_out": [
+    1998,
+    1999,
+    2000,
+    2001,
+    2002,
+    2003,
+    2004,
+    2005,
+    2006,
+    2022
+   ],
+   "hours_removed": 0,
+   "dew_points_removed": 7
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722597-93985",
+  "name": "Mineral Wells Airport",
+  "state": "TX",
+  "lat": 32.782,
+  "lon": -98.06,
+  "elev_m": 287.1,
+  "share_observed": 0.9255224493520715,
+  "screen": {
+   "years_left_out": [
+    1995,
+    1996,
+    1997,
+    1998,
+    1999,
+    2000
+   ],
+   "hours_removed": 1,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722600-03969",
+  "name": "Clark Field Muni Airport",
+  "state": "TX",
+  "lat": 32.215,
+  "lon": -98.178,
+  "elev_m": 402.6,
+  "qualifies": false
+ },
+ {
+  "id": "722610-22010",
+  "name": "Del Rio International Airport",
+  "state": "TX",
+  "lat": 29.378,
+  "lon": -100.927,
+  "elev_m": 305.7,
+  "share_observed": 0.9929085295370201,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722615-22001",
+  "name": "Laughlin Afb Airport",
+  "state": "TX",
+  "lat": 29.367,
+  "lon": -100.783,
+  "elev_m": 329.8,
+  "qualifies": false
+ },
+ {
+  "id": "722620-23055",
+  "name": "Guadalupe Pass Amos",
+  "state": "TX",
+  "lat": 31.833,
+  "lon": -104.809,
+  "elev_m": 1655.0,
+  "qualifies": false
+ },
+ {
+  "id": "722630-23034",
+  "name": "San Angelo Regional/Maths Field Ap",
+  "state": "TX",
+  "lat": 31.352,
+  "lon": -100.495,
+  "elev_m": 582.4,
+  "share_observed": 0.9969238608018495,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 7
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722640-93035",
+  "name": "Marfa Municipal Airport",
+  "state": "TX",
+  "lat": 30.371,
+  "lon": -104.017,
+  "elev_m": 1478.0,
+  "qualifies": false
+ },
+ {
+  "id": "722650-23023",
+  "name": "Midland International Airport",
+  "state": "TX",
+  "lat": 31.948,
+  "lon": -102.209,
+  "elev_m": 872.4,
+  "share_observed": 0.9952279917259841,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722656-23040",
+  "name": "Winkler County Airport",
+  "state": "TX",
+  "lat": 31.78,
+  "lon": -103.202,
+  "elev_m": 858.3,
+  "share_observed": 0.9674438766198211,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 2,
+   "dew_points_removed": 3
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722660-13962",
+  "name": "Abilene Regional Airport",
+  "state": "TX",
+  "lat": 32.411,
+  "lon": -99.682,
+  "elev_m": 544.8,
+  "share_observed": 0.9960721238668857,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 5,
+   "dew_points_removed": 3
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722670-23042",
+  "name": "Lubbock International Airport",
+  "state": "TX",
+  "lat": 33.666,
+  "lon": -101.823,
+  "elev_m": 993.2,
+  "share_observed": 0.999095029506601,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 2
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722686-23008",
+  "name": "Cannon Afb Airport",
+  "state": "NM",
+  "lat": 34.383,
+  "lon": -103.317,
+  "elev_m": 1309.1,
+  "qualifies": false
+ },
+ {
+  "id": "722687-93033",
+  "name": "Cavern City Air Trml Arpt",
+  "state": "NM",
+  "lat": 32.334,
+  "lon": -104.258,
+  "elev_m": 990.5,
+  "share_observed": 0.9838626270000609,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 1
+  },
+  "qualifies": true
+ },
+ {
+  "id": "722688-93034",
+  "name": "Lea County Regional Airport",
+  "state": "NM",
+  "lat": 32.693,
+  "lon": -103.213,
+  "elev_m": 1114.0,
+  "qualifies": false
+ },
+ {
+  "id": "722700-23044",
+  "name": "El Paso International Airport",
+  "state": "TX",
+  "lat": 31.812,
+  "lon": -106.377,
+  "elev_m": 1202.1,
+  "share_observed": 0.9995056883859585,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 1
+  },
+  "qualifies": true
+ },
+ {
+  "id": "723060-13722",
+  "name": "Raleigh-Durham International Ap",
+  "state": "NC",
+  "lat": 35.892,
+  "lon": -78.782,
+  "elev_m": 120.5,
+  "share_observed": 0.999007574374886,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "723075-13769",
+  "name": "Oceana Nas",
+  "state": "VA",
+  "lat": 36.817,
+  "lon": -76.033,
+  "elev_m": 7.0,
+  "share_observed": 0.9775734623106406,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 4,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "723080-13737",
+  "name": "Norfolk International Airport",
+  "state": "VA",
+  "lat": 36.904,
+  "lon": -76.193,
+  "elev_m": 3.3,
+  "share_observed": 0.997760388148689,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 2
+  },
+  "qualifies": true
+ },
+ {
+  "id": "723083-13763",
+  "name": "Franklin Municipal-John Beverly Rose Airport",
+  "state": "VA",
+  "lat": 36.698,
+  "lon": -76.903,
+  "elev_m": 12.5,
+  "qualifies": false
+ },
+ {
+  "id": "723085-13750",
+  "name": "Norfolk Nas",
+  "state": "VA",
+  "lat": 36.937,
+  "lon": -76.289,
+  "elev_m": 5.2,
+  "share_observed": 0.9796305591044594,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "723087-93735",
+  "name": "Felker Army Airfield",
+  "state": "VA",
+  "lat": 37.133,
+  "lon": -76.6,
+  "elev_m": 3.7,
+  "qualifies": false
+ },
+ {
+  "id": "723170-13723",
+  "name": "Piedmont Triad International Airport",
+  "state": "NC",
+  "lat": 36.097,
+  "lon": -79.943,
+  "elev_m": 275.0,
+  "share_observed": 0.9995208979740828,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "723193-93807",
+  "name": "Smith Reynolds Airport",
+  "state": "NC",
+  "lat": 36.133,
+  "lon": -80.224,
+  "elev_m": 291.6,
+  "qualifies": false
+ },
+ {
+  "id": "723418-13977",
+  "name": "Texarkana Regional Airport-Webb Field",
+  "state": "AR",
+  "lat": 33.456,
+  "lon": -93.988,
+  "elev_m": 115.8,
+  "share_observed": 0.9852238851371905,
+  "screen": {
+   "years_left_out": [
+    1996
+   ],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "723510-13966",
+  "name": "Sheppard Afb/Wichita Falls Muni Ap",
+  "state": "TX",
+  "lat": 33.979,
+  "lon": -98.493,
+  "elev_m": 308.6,
+  "share_observed": 0.9964941899373365,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 2
+  },
+  "qualifies": true
+ },
+ {
+  "id": "723520-13902",
+  "name": "Altus Afb Airport",
+  "state": "OK",
+  "lat": 34.65,
+  "lon": -99.267,
+  "elev_m": 421.2,
+  "qualifies": false
+ },
+ {
+  "id": "723525-93986",
+  "name": "Hobart Municipal Airport",
+  "state": "OK",
+  "lat": 34.989,
+  "lon": -99.053,
+  "elev_m": 473.4,
+  "share_observed": 0.9691283385045933,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 3,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "723550-13945",
+  "name": "Henry Post Aaf Airport",
+  "state": "OK",
+  "lat": 34.65,
+  "lon": -98.4,
+  "elev_m": 362.4,
+  "qualifies": false
+ },
+ {
+  "id": "723600-23051",
+  "name": "Clayton Municipal Airpark Airport",
+  "state": "NM",
+  "lat": 36.448,
+  "lon": -103.154,
+  "elev_m": 1514.6,
+  "share_observed": 0.985976759749346,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 1,
+   "dew_points_removed": 7
+  },
+  "qualifies": true
+ },
+ {
+  "id": "723630-23047",
+  "name": "Amarillo Rick Husband Intl Airport",
+  "state": "TX",
+  "lat": 35.22,
+  "lon": -101.717,
+  "elev_m": 1099.3,
+  "share_observed": 0.9982242805864817,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 5
+  },
+  "qualifies": true
+ },
+ {
+  "id": "723676-23048",
+  "name": "Tucumcari Municipal Arpt",
+  "state": "NM",
+  "lat": 35.181,
+  "lon": -103.601,
+  "elev_m": 1230.9,
+  "qualifies": false
+ },
+ {
+  "id": "724010-13740",
+  "name": "Richmond International Airport",
+  "state": "VA",
+  "lat": 37.512,
+  "lon": -77.323,
+  "elev_m": 50.7,
+  "share_observed": 0.999570329135487,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 3
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724016-93736",
+  "name": "Charlottesville Albemarle Arpt",
+  "state": "VA",
+  "lat": 38.137,
+  "lon": -78.455,
+  "elev_m": 192.3,
+  "qualifies": false
+ },
+ {
+  "id": "724020-93739",
+  "name": "Wallops Flight Facility Airport",
+  "state": "VA",
+  "lat": 37.937,
+  "lon": -75.466,
+  "elev_m": 9.7,
+  "share_observed": 0.9512494676644156,
+  "screen": {
+   "years_left_out": [
+    1995,
+    1996
+   ],
+   "hours_removed": 1,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724030-93738",
+  "name": "Washington Dulles International Ap",
+  "state": "VA",
+  "lat": 38.935,
+  "lon": -77.447,
+  "elev_m": 89.5,
+  "share_observed": 0.9994144308572124,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 1,
+   "dew_points_removed": 2
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724035-13773",
+  "name": "Quantico Mcaf",
+  "state": "VA",
+  "lat": 38.504,
+  "lon": -77.305,
+  "elev_m": 3.1,
+  "share_observed": 0.9324047879783416,
+  "screen": {
+   "years_left_out": [
+    1997,
+    2001,
+    2020,
+    2023,
+    2024
+   ],
+   "hours_removed": 8,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724037-93728",
+  "name": "Davison Aaf Airport",
+  "state": "VA",
+  "lat": 38.717,
+  "lon": -77.183,
+  "elev_m": 22.3,
+  "qualifies": false
+ },
+ {
+  "id": "724040-13721",
+  "name": "Naval Air Station",
+  "state": "MD",
+  "lat": 38.3,
+  "lon": -76.417,
+  "elev_m": 11.9,
+  "share_observed": 0.9476295856908195,
+  "screen": {
+   "years_left_out": [
+    1999,
+    2000,
+    2001,
+    2005,
+    2006
+   ],
+   "hours_removed": 0,
+   "dew_points_removed": 3
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724050-13743",
+  "name": "Ronald Reagan Washington Natl Ap",
+  "state": "VA",
+  "lat": 38.847,
+  "lon": -77.035,
+  "elev_m": 4.1,
+  "share_observed": 0.9995779339295492,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 1,
+   "dew_points_removed": 1
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724060-93721",
+  "name": "Baltimore-Washington Intl Airport",
+  "state": "MD",
+  "lat": 39.173,
+  "lon": -76.684,
+  "elev_m": 42.0,
+  "share_observed": 0.9995931435176736,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724100-13733",
+  "name": "Lynchburg Rgnl/Preston Glenn Fld Ap",
+  "state": "VA",
+  "lat": 37.321,
+  "lon": -79.206,
+  "elev_m": 274.9,
+  "share_observed": 0.9906575104946158,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 2
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724106-13728",
+  "name": "Danville Regional Airport",
+  "state": "VA",
+  "lat": 36.573,
+  "lon": -79.335,
+  "elev_m": 168.2,
+  "qualifies": false
+ },
+ {
+  "id": "724110-13741",
+  "name": "Roanoke Regional/Woodrum Field Ap",
+  "state": "VA",
+  "lat": 37.317,
+  "lon": -79.974,
+  "elev_m": 346.8,
+  "share_observed": 0.9986121250836527,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 3
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724116-13868",
+  "name": "New River Valley Airport",
+  "state": "VA",
+  "lat": 37.133,
+  "lon": -80.683,
+  "elev_m": 641.6,
+  "qualifies": false
+ },
+ {
+  "id": "724120-03872",
+  "name": "Raleigh County Memorial Airport",
+  "state": "WV",
+  "lat": 37.784,
+  "lon": -81.123,
+  "elev_m": 760.2,
+  "share_observed": 0.9902620612033826,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 3
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724140-13866",
+  "name": "Yeager Airport",
+  "state": "WV",
+  "lat": 38.38,
+  "lon": -81.591,
+  "elev_m": 278.1,
+  "share_observed": 0.9993307781225285,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 2
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724170-13729",
+  "name": "Elkins-Rand Co-J.Rand Field Airport",
+  "state": "WV",
+  "lat": 38.89,
+  "lon": -79.855,
+  "elev_m": 595.7,
+  "share_observed": 0.9725010646711687,
+  "screen": {
+   "years_left_out": [
+    1995
+   ],
+   "hours_removed": 0,
+   "dew_points_removed": 6
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724176-13736",
+  "name": "Mgtn Rgnl-W L B Hart Fd Ap",
+  "state": "WV",
+  "lat": 39.65,
+  "lon": -79.921,
+  "elev_m": 373.6,
+  "share_observed": 0.9182218470523819,
+  "screen": {
+   "years_left_out": [
+    1996,
+    1997,
+    1998
+   ],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724177-13734",
+  "name": "Etrn Wv Rgnl/Shpherd Fd Ap",
+  "state": "WV",
+  "lat": 39.404,
+  "lon": -77.975,
+  "elev_m": 165.0,
+  "share_observed": 0.9818625661617083,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 1,
+   "dew_points_removed": 1
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724210-93814",
+  "name": "Cincinnati/Northern Kentucky Intl Ap",
+  "state": "KY",
+  "lat": 39.044,
+  "lon": -84.672,
+  "elev_m": 262.4,
+  "share_observed": 0.9995741315325181,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724220-93820",
+  "name": "Blue Grass Airport",
+  "state": "KY",
+  "lat": 38.034,
+  "lon": -84.611,
+  "elev_m": 293.2,
+  "share_observed": 0.9956386506053416,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 1,
+   "dew_points_removed": 2
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724243-03849",
+  "name": "Ldon-Crbn Apt-Mgee Fld Apt",
+  "state": "KY",
+  "lat": 37.09,
+  "lon": -84.069,
+  "elev_m": 360.0,
+  "share_observed": 0.9510251262395815,
+  "screen": {
+   "years_left_out": [
+    1995,
+    1996
+   ],
+   "hours_removed": 0,
+   "dew_points_removed": 1
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724250-03860",
+  "name": "Tri-State/M.J.Fergus",
+  "state": "WV",
+  "lat": 38.365,
+  "lon": -82.555,
+  "elev_m": 251.3,
+  "share_observed": 0.9937450568838596,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 1,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724273-03804",
+  "name": "Parkersburg/Mid-Ohio Valley Regional Airport",
+  "state": "WV",
+  "lat": 39.339,
+  "lon": -81.444,
+  "elev_m": 245.3,
+  "share_observed": 0.9133281620733711,
+  "screen": {
+   "years_left_out": [
+    1996,
+    1997,
+    1998,
+    1999,
+    2000,
+    2014
+   ],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724275-14894",
+  "name": "Wheeling Ohio County Arpt",
+  "state": "WV",
+  "lat": 40.17,
+  "lon": -80.644,
+  "elev_m": 364.3,
+  "qualifies": false
+ },
+ {
+  "id": "724280-14821",
+  "name": "Port Columbus International Airport",
+  "state": "OH",
+  "lat": 39.991,
+  "lon": -82.877,
+  "elev_m": 246.8,
+  "share_observed": 0.9995437123562694,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724285-13812",
+  "name": "Rickenbacker Intl Airport",
+  "state": "OH",
+  "lat": 39.817,
+  "lon": -82.933,
+  "elev_m": 226.8,
+  "qualifies": false
+ },
+ {
+  "id": "724286-93824",
+  "name": "Zanesville Municipal Arpt",
+  "state": "OH",
+  "lat": 39.946,
+  "lon": -81.893,
+  "elev_m": 268.6,
+  "share_observed": 0.9823150514084079,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 2
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724290-93815",
+  "name": "J.M.Cox Dayton International Airport",
+  "state": "OH",
+  "lat": 39.906,
+  "lon": -84.219,
+  "elev_m": 302.6,
+  "share_observed": 0.9991102390947253,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 2,
+   "dew_points_removed": 7
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724296-13841",
+  "name": "Airborne Airpark Airport",
+  "state": "OH",
+  "lat": 39.431,
+  "lon": -83.777,
+  "elev_m": 324.9,
+  "qualifies": false
+ },
+ {
+  "id": "724297-93812",
+  "name": "Cina Muni Apt/Lukn Fd Apt",
+  "state": "OH",
+  "lat": 39.106,
+  "lon": -84.416,
+  "elev_m": 144.9,
+  "share_observed": 0.9872885867250715,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "724363-13803",
+  "name": "Columbus Municipal Airport",
+  "state": "IN",
+  "lat": 39.267,
+  "lon": -85.9,
+  "elev_m": 200.0,
+  "qualifies": false
+ },
+ {
+  "id": "725200-94823",
+  "name": "Pittsburgh International Airport",
+  "state": "PA",
+  "lat": 40.485,
+  "lon": -80.214,
+  "elev_m": 341.0,
+  "share_observed": 0.9997376346048549,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 3
+  },
+  "qualifies": true
+ },
+ {
+  "id": "725205-14762",
+  "name": "Allegheny County Airport",
+  "state": "PA",
+  "lat": 40.355,
+  "lon": -79.921,
+  "elev_m": 379.2,
+  "share_observed": 0.8533453489079516,
+  "screen": {
+   "years_left_out": [
+    2000,
+    2001,
+    2002,
+    2003
+   ],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "725210-14895",
+  "name": "Akron-Canton Regional Airport",
+  "state": "OH",
+  "lat": 40.918,
+  "lon": -81.443,
+  "elev_m": 368.8,
+  "share_observed": 0.9984828435845957,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 3
+  },
+  "qualifies": true
+ },
+ {
+  "id": "725240-14820",
+  "name": "Cleveland-Hopkins International Ap",
+  "state": "OH",
+  "lat": 41.406,
+  "lon": -81.852,
+  "elev_m": 236.8,
+  "share_observed": 0.9995665267384559,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 3
+  },
+  "qualifies": true
+ },
+ {
+  "id": "725250-14852",
+  "name": "Youngstown-Warren Regional Airport",
+  "state": "OH",
+  "lat": 41.255,
+  "lon": -80.674,
+  "elev_m": 355.6,
+  "share_observed": 0.9992091014175336,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 2
+  },
+  "qualifies": true
+ },
+ {
+  "id": "725260-14860",
+  "name": "Erie Intl/T. Ridge Field Airport",
+  "state": "PA",
+  "lat": 42.08,
+  "lon": -80.182,
+  "elev_m": 222.2,
+  "share_observed": 0.9947793088763156,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 4
+  },
+  "qualifies": true
+ },
+ {
+  "id": "725267-94868",
+  "name": "Venango Regional Airport",
+  "state": "PA",
+  "lat": 41.383,
+  "lon": -79.867,
+  "elev_m": 469.4,
+  "qualifies": false
+ },
+ {
+  "id": "725330-14827",
+  "name": "Fort Wayne International Airport",
+  "state": "IN",
+  "lat": 40.972,
+  "lon": -85.206,
+  "elev_m": 243.0,
+  "share_observed": 0.9762806473200706,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 2
+  },
+  "qualifies": true
+ },
+ {
+  "id": "725340-14819",
+  "name": "Chicago Midway Intl Arpt",
+  "state": "IL",
+  "lat": 41.784,
+  "lon": -87.755,
+  "elev_m": 185.8,
+  "share_observed": 0.9642422583196447,
+  "screen": {
+   "years_left_out": [
+    1996,
+    1997
+   ],
+   "hours_removed": 0,
+   "dew_points_removed": 1
+  },
+  "qualifies": true
+ },
+ {
+  "id": "725350-14848",
+  "name": "South Bend Regional Airport",
+  "state": "IN",
+  "lat": 41.707,
+  "lon": -86.316,
+  "elev_m": 235.4,
+  "share_observed": 0.9968440104641967,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 2
+  },
+  "qualifies": true
+ },
+ {
+  "id": "725360-94830",
+  "name": "Toledo Express Airport",
+  "state": "OH",
+  "lat": 41.587,
+  "lon": -83.805,
+  "elev_m": 205.5,
+  "share_observed": 0.9952013749467664,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 2
+  },
+  "qualifies": true
+ },
+ {
+  "id": "725366-14825",
+  "name": "Findlay Airport",
+  "state": "OH",
+  "lat": 41.014,
+  "lon": -83.668,
+  "elev_m": 246.5,
+  "share_observed": 0.9862201131593357,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 2
+  },
+  "qualifies": true
+ },
+ {
+  "id": "725370-94847",
+  "name": "Detroit Metro Wayne County Airport",
+  "state": "MI",
+  "lat": 42.231,
+  "lon": -83.331,
+  "elev_m": 191.9,
+  "share_observed": 0.9765658270974023,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 2
+  },
+  "qualifies": true
+ },
+ {
+  "id": "725375-14822",
+  "name": "Detroit City Airport",
+  "state": "MI",
+  "lat": 42.407,
+  "lon": -83.009,
+  "elev_m": 189.8,
+  "share_observed": 0.8785248220478189,
+  "screen": {
+   "years_left_out": [
+    1996,
+    1997,
+    1998,
+    1999,
+    2000,
+    2013,
+    2014
+   ],
+   "hours_removed": 0,
+   "dew_points_removed": 4
+  },
+  "qualifies": true
+ },
+ {
+  "id": "725376-14853",
+  "name": "Willow Run Airport",
+  "state": "MI",
+  "lat": 42.237,
+  "lon": -83.526,
+  "elev_m": 215.7,
+  "qualifies": false
+ },
+ {
+  "id": "725377-14804",
+  "name": "Selfridge Air National Guard Base",
+  "state": "MI",
+  "lat": 42.608,
+  "lon": -82.818,
+  "elev_m": 176.8,
+  "qualifies": false
+ },
+ {
+  "id": "725390-14836",
+  "name": "Capital City Airport",
+  "state": "MI",
+  "lat": 42.776,
+  "lon": -84.6,
+  "elev_m": 261.2,
+  "share_observed": 0.9982242805864817,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 1
+  },
+  "qualifies": true
+ },
+ {
+  "id": "725395-14833",
+  "name": "Jakson Co-Rynolds Fld Arpt",
+  "state": "MI",
+  "lat": 42.264,
+  "lon": -84.456,
+  "elev_m": 295.9,
+  "share_observed": 0.9095980105858733,
+  "screen": {
+   "years_left_out": [
+    1996,
+    1997,
+    1998,
+    1999,
+    2000
+   ],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "725396-14815",
+  "name": "W K Kellogg Airport",
+  "state": "MI",
+  "lat": 42.312,
+  "lon": -85.241,
+  "elev_m": 282.5,
+  "qualifies": false
+ },
+ {
+  "id": "726350-94860",
+  "name": "Gerald R Ford International Airport",
+  "state": "MI",
+  "lat": 42.882,
+  "lon": -85.523,
+  "elev_m": 240.3,
+  "share_observed": 0.998749011376772,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 1
+  },
+  "qualifies": true
+ },
+ {
+  "id": "726360-14840",
+  "name": "Muskegon County Airport",
+  "state": "MI",
+  "lat": 43.171,
+  "lon": -86.237,
+  "elev_m": 190.3,
+  "share_observed": 0.9987033826123989,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 4
+  },
+  "qualifies": true
+ },
+ {
+  "id": "726370-14826",
+  "name": "Bishop International Airport",
+  "state": "MI",
+  "lat": 42.967,
+  "lon": -83.75,
+  "elev_m": 234.9,
+  "share_observed": 0.9754593295613555,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 2
+  },
+  "qualifies": true
+ },
+ {
+  "id": "726379-14845",
+  "name": "Mbs International Airport",
+  "state": "MI",
+  "lat": 43.528,
+  "lon": -84.081,
+  "elev_m": 201.7,
+  "share_observed": 0.9500973413639958,
+  "screen": {
+   "years_left_out": [
+    1996,
+    1997,
+    1998
+   ],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "726380-94814",
+  "name": "Roscommon County Airport",
+  "state": "MI",
+  "lat": 44.359,
+  "lon": -84.674,
+  "elev_m": 350.6,
+  "share_observed": 0.9828511893897913,
+  "screen": {
+   "years_left_out": [
+    1995
+   ],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "726384-14817",
+  "name": "Wexford County Airport",
+  "state": "MI",
+  "lat": 44.283,
+  "lon": -85.417,
+  "elev_m": 397.8,
+  "qualifies": false
+ },
+ {
+  "id": "726387-14850",
+  "name": "Cherry Capital Airport",
+  "state": "MI",
+  "lat": 44.739,
+  "lon": -85.568,
+  "elev_m": 185.2,
+  "share_observed": 0.9928058648171808,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "726390-94849",
+  "name": "Alpena County Regional Airport",
+  "state": "MI",
+  "lat": 45.072,
+  "lon": -83.565,
+  "elev_m": 208.3,
+  "share_observed": 0.9978934720447771,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 1
+  },
+  "qualifies": true
+ },
+ {
+  "id": "726395-14808",
+  "name": "Oscoda-Wurtsmith Airport",
+  "state": "MI",
+  "lat": 44.45,
+  "lon": -83.4,
+  "elev_m": 192.9,
+  "qualifies": false
+ },
+ {
+  "id": "726450-14898",
+  "name": "Austin Straubel International Ap",
+  "state": "WI",
+  "lat": 44.48,
+  "lon": -88.137,
+  "elev_m": 208.6,
+  "share_observed": 0.9975170347386992,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "727340-14847",
+  "name": "Sault Ste Marie Muni/Sasn Field Ap",
+  "state": "MI",
+  "lat": 46.48,
+  "lon": -84.358,
+  "elev_m": 219.8,
+  "share_observed": 0.9959390399707976,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "727347-14841",
+  "name": "Pellston Regional Arpt Of Emmet County Arpt",
+  "state": "MI",
+  "lat": 45.564,
+  "lon": -84.793,
+  "elev_m": 215.3,
+  "share_observed": 0.9836458903692888,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 0,
+   "dew_points_removed": 6
+  },
+  "qualifies": true
+ },
+ {
+  "id": "727430-94850",
+  "name": "Marquette Michigan County Ap (Wfo)",
+  "state": "MI",
+  "lat": 46.531,
+  "lon": -87.549,
+  "elev_m": 431.3,
+  "qualifies": false
+ },
+ {
+  "id": "727440-14858",
+  "name": "Houghton County Memo Arpt",
+  "state": "MI",
+  "lat": 47.166,
+  "lon": -88.481,
+  "elev_m": 323.9,
+  "share_observed": 0.9836687047514753,
+  "screen": {
+   "years_left_out": [],
+   "hours_removed": 5,
+   "dew_points_removed": 1
+  },
+  "qualifies": true
+ },
+ {
+  "id": "745700-13840",
+  "name": "Wright-Patterson Afb Airport",
+  "state": "OH",
+  "lat": 39.833,
+  "lon": -84.05,
+  "elev_m": 250.9,
+  "qualifies": false
+ },
+ {
+  "id": "745940-13705",
+  "name": "Andrews Air Force Base Airport",
+  "state": "MD",
+  "lat": 38.817,
+  "lon": -76.867,
+  "elev_m": 86.0,
+  "qualifies": false
+ },
+ {
+  "id": "745980-13702",
+  "name": "Langley Afb Airport",
+  "state": "VA",
+  "lat": 37.083,
+  "lon": -76.36,
+  "elev_m": 3.1,
+  "qualifies": false
+ },
+ {
+  "id": "747400-13973",
+  "name": "Kimble County Airport",
+  "state": "TX",
+  "lat": 30.51,
+  "lon": -99.766,
+  "elev_m": 521.5,
+  "share_observed": 0.8718021840968546,
+  "screen": {
+   "years_left_out": [
+    1996,
+    1997,
+    1998,
+    1999,
+    2001,
+    2002
+   ],
+   "hours_removed": 2,
+   "dew_points_removed": 0
+  },
+  "qualifies": true
+ },
+ {
+  "id": "999999-13752",
+  "name": "U.S. Naval Academy",
+  "state": "MD",
+  "lat": 38.991,
+  "lon": -76.489,
+  "elev_m": 1.8,
+  "qualifies": false
+ }
+]

@@ -12,7 +12,8 @@ decision 4 (climate) and Michigan's eight regions ([0001](0001-schema-and-api.md
    each cell is run on its own, and its results go in a small file the page loads for its place.
 2. **Distribution correction is a later, separate step.** Quantile mapping that anchors ERA5 to nearby stations comes
    after this change, as its own model version, with Andrew leading the method. This plan keeps what it will need
-   (below) but builds none of it.
+   (below) but builds none of it. *Nov 3: Andrew asked for it now; the method, a prototype and whether it ships in model
+   1.8 are in [0005](0005-era5-quantile-mapping.md).*
 3. **A place whose nearest cell is mostly water takes the nearest cell that is at least half land** (decided Nov 3,
    2026: "use b nearest land cell"). Mostly water means an ERA5 land-sea mask under 0.5; the nearest land cell is the
    nearest by great-circle distance from the place's internal point with a mask of at least 0.5. 189 places move. Every
@@ -244,6 +245,8 @@ that its nearest cell was mostly water and how far it moved. This is a change in
 package release and Andrew's approval.
 
 ### What quantile mapping will need (not built now)
+
+Proposed and prototyped in [0005](0005-era5-quantile-mapping.md); the hooks below are what it uses.
 
 - The raw cell series (R2 cache), unrounded, in UTC.
 - Station-cell pairs: every ISD station passing the snapshot rule (85% of hours, 1995-2024), with its nearest cell; the

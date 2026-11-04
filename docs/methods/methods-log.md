@@ -1161,8 +1161,9 @@ Cleveland-Hopkins for the hybrid average and 39% below for assist, and 26% above
 - Blending the nearest cells by land fraction: not considered further, since cells are not grouped (Nov 1 decision).
 
 **Open.**
-- The 777 places on cells 50-90% land keep the shore bias the check shows (Cleveland, Port Huron, Toledo, Virginia Beach):
-  quantile mapping against shore stations, or a stricter threshold, is the question for the next model version.
+- The 777 places on cells 50-90% land keep the shore bias the check shows (Cleveland, Port Huron, Toledo, Virginia Beach).
+  Andrew asked for quantile mapping now (Nov 3); the method and a leave-one-station-out prototype are proposed in
+  [design 0005](../design/0005-era5-quantile-mapping.md), not decided.
 - Island places whose land cell is in another country (Isle Royale to Ontario) are kept by the rule as decided.
 
 **References.**
