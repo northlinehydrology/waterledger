@@ -77,6 +77,66 @@ def isd_stations(first=1995, last=2024):
     return out
 
 
+# Pieces of one site's record under different IDs: they share a USAF or a WBAN number and stand this close. A site that changed its ID
+# (most often WBAN 99999 until 2005, its own WBAN from 2006) has no single ID spanning the period. Quantile mapping, design 0005 (Nov 4, 2026). [A]
+LINK_KM = 5.0
+
+
+def _span_share(parts, first, last):
+    """The share of first..last that `parts` [{begin, end}] (YYYYMMDD) cover between them."""
+    import numpy as np
+    days = np.arange(np.datetime64(f"{first}-01-01"), np.datetime64(f"{last + 1}-01-01"))
+    on = np.zeros(len(days), bool)
+    for p in parts:
+        b, e = (np.datetime64(f"{x[:4]}-{x[4:6]}-{x[6:]}") for x in (p["begin"], p["end"]))
+        on |= (days >= b) & (days <= e)
+    return float(on.mean())
+
+
+def isd_sites(first=1995, last=2024, min_share=0.85):
+    """isd_stations, plus the US sites whose record covers first..last only across a change of station ID: pieces sharing a USAF or
+    a WBAN number within LINK_KM of each other, between them covering at least `min_share` of the days (the share isd_hourly then asks
+    of the hours), the newest open to the last year's fall, and at least one with a WBAN. A linked site is named after its newest piece and carries `parts` [{id, begin, end}], newest first, which _isd_frame
+    reads in turn; isd_stations' own stations are returned as they are."""
+    import csv
+    path = _fetch(ISD_HISTORY, os.path.join(RAW, "isd", "isd-history.csv"))
+    rows = [r for r in csv.DictReader(open(path)) if r["CTRY"] == "US" and r["LAT"] and r["BEGIN"] and r["END"] >= f"{first}0101"
+            and r["BEGIN"] <= f"{last}1231"]
+    up = list(range(len(rows)))
+
+    def root(i):
+        while up[i] != i:
+            up[i] = up[up[i]]
+            i = up[i]
+        return i
+    by = {}
+    for i, r in enumerate(rows):
+        for key in (("usaf", r["USAF"]) if r["USAF"] != "999999" else None, ("wban", r["WBAN"]) if r["WBAN"] != "99999" else None):
+            if key:
+                by.setdefault(key, []).append(i)
+    for ids in by.values():
+        for a in ids:
+            for b in ids:
+                if a < b and _km(float(rows[a]["LAT"]), float(rows[a]["LON"]), float(rows[b]["LAT"]), float(rows[b]["LON"])) <= LINK_KM:
+                    up[root(b)] = root(a)
+    groups = {}
+    for i in range(len(rows)):
+        groups.setdefault(root(i), []).append(rows[i])
+    out = isd_stations(first, last)
+    single = {s["id"] for s in out}
+    for g in groups.values():
+        if len(g) < 2 or any(f"{r['USAF']}-{r['WBAN']}" in single for r in g) or all(r["WBAN"] == "99999" for r in g):
+            continue
+        g = sorted(g, key=lambda r: (r["END"], r["BEGIN"]), reverse=True)
+        parts = [{"id": f"{r['USAF']}-{r['WBAN']}", "begin": r["BEGIN"], "end": r["END"]} for r in g]
+        if parts[0]["end"] < f"{last}1001" or _span_share(parts, first, last) < min_share:
+            continue
+        r = g[0]
+        out.append({"id": parts[0]["id"], "name": r["STATION NAME"].title(), "state": r["STATE"] or next((x["STATE"] for x in g if x["STATE"]), ""),
+                    "lat": float(r["LAT"]), "lon": float(r["LON"]), "parts": parts})
+    return out
+
+
 # Station screens, the same in every state (methods log, Nov 1, 2026). A year counts only with this share of its hours observed, the share the whole record already has to
 # reach: Kimble County's 1997 is 2% observed, and filling it from the station's own means would add a year of nothing but average weather. [A]
 YEAR_MIN_SHARE = 0.85
@@ -98,23 +158,28 @@ def _km(a_lat, a_lon, b_lat, b_lon):
 
 
 def _isd_frame(station, years):
-    """A station's reports with both temperature and dew point, in UTC, for `years`: a DataFrame indexed by hour, with T and Td (C)."""
+    """A station's reports with both temperature and dew point, in UTC, for `years`: a DataFrame indexed by hour, with T and Td (C).
+    A linked site (isd_sites) reads each of its `parts` for the years it was open, newest first; an hour two parts both report is the newer part's."""
     import gzip
     import pandas as pd
-    usaf, wban = station["id"].split("-")
+    parts = station.get("parts") or [{"id": station["id"], "begin": "0", "end": "9"}]
     rows = []
-    for y in years:
-        path = os.path.join(RAW, "isd", "lite", f"{station['id']}-{y}.gz")
-        try:
-            _fetch(ISD_LITE.format(y=y, usaf=usaf, wban=wban), path, tries=3, wait=20)      # a station's year may be missing: not worth a long wait
-        except Exception:
-            continue
-        with gzip.open(path, "rt") as f:
-            for ln in f:
-                p = ln.split()
-                t, d = int(p[4]), int(p[5])
-                if t != -9999 and d != -9999:
-                    rows.append((f"{p[0]}-{p[1]}-{p[2]} {p[3]}", t / 10, d / 10))
+    for part in parts:
+        usaf, wban = part["id"].split("-")
+        for y in years:
+            if not part["begin"][:4] <= str(y) <= part["end"][:4]:
+                continue
+            path = os.path.join(RAW, "isd", "lite", f"{part['id']}-{y}.gz")
+            try:
+                _fetch(ISD_LITE.format(y=y, usaf=usaf, wban=wban), path, tries=3, wait=20)      # a station's year may be missing: not worth a long wait
+            except Exception:
+                continue
+            with gzip.open(path, "rt") as f:
+                for ln in f:
+                    p = ln.split()
+                    t, d = int(p[4]), int(p[5])
+                    if t != -9999 and d != -9999:
+                        rows.append((f"{p[0]}-{p[1]}-{p[2]} {p[3]}", t / 10, d / 10))
     if not rows:
         return None
     df = pd.DataFrame(rows, columns=["t", "T", "Td"]).drop_duplicates("t")
@@ -177,9 +242,14 @@ def isd_hourly(station, first=1995, last=2024, min_share=0.85, neighbors=None):
     filled linearly and longer ones with the station's mean for that month and hour, so every day kept has 24 hours. Returns
     (times, temp_c, rh_pct, share_observed, screen), or None when fewer than `min_share` of hours were observed. `screen` says what was removed:
     {"years_left_out", "hours_removed", "dew_points_removed"}, with share_observed the share before screening. `neighbors`, for tests: f(years) -> frames."""
+    return screened_hourly(_isd_frame(station, range(first, last + 1)), station, first, last, min_share, neighbors)
+
+
+def screened_hourly(raw, station, first=1995, last=2024, min_share=0.85, neighbors=None):
+    """isd_hourly's rule on any station's reports: `raw` a DataFrame of T and Td (C) indexed by UTC hour, as _isd_frame and
+    _eccc_frame give, `station` its {id, lat, lon}. The neighbors that can overrule a suspect hour are ISD's (_neighbor_frames)."""
     import numpy as np
     import pandas as pd
-    raw = _isd_frame(station, range(first, last + 1))
     if raw is None:
         return None
     full_utc = pd.date_range(f"{first}-01-01 00:00", f"{last}-12-31 23:00", freq="h")
@@ -214,6 +284,84 @@ def isd_hourly(station, first=1995, last=2024, min_share=0.85, neighbors=None):
     rh = np.clip(100 * a(df["Td"].values) / a(df["T"].values), 1, 100)
     return [i.strftime("%Y-%m-%dT%H:00") for i in df.index], df["T"].tolist(), rh.tolist(), share, screen
 
+
+
+# Environment and Climate Change Canada's hourly station records, read from MSC GeoMet (api.weather.gc.ca) under the ECCC Data Servers
+# End-use Licence (version 2.1; open, commercial use allowed, with attribution). Design 0005, Nov 4, 2026.
+ECCC_INVENTORY = "https://collaboration.cmc.ec.gc.ca/cmc/climate/Get_More_Data_Plus_de_donnees/Station%20Inventory%20EN.csv"
+ECCC_HOURLY = ("https://api.weather.gc.ca/collections/climate-hourly/items?f=csv&limit=10000&CLIMATE_IDENTIFIER={cid}&LOCAL_YEAR={y}"
+               "&properties=UTC_DATE,TEMP,TEMP_FLAG,DEW_POINT_TEMP,DEW_POINT_TEMP_FLAG&sortby=UTC_DATE")
+ECCC_ATTRIBUTION = "Contains information licenced under the Data Server End-use Licence of Environment and Climate Change Canada."
+ECCC_LICENCE = "https://eccc-msc.github.io/open-data/licence/readme_en/"
+
+
+def eccc_sites(first=1995, last=2024, min_share=0.85):
+    """Canadian stations with hourly records covering first..last, as isd_sites gives US ones: [{id, name, state, lat, lon, elev_m, parts}].
+    ECCC gives a station a new Climate ID when it moves to automatic reporting or changes hands, and keeps no number across the change,
+    so pieces are linked when they stand within LINK_KM and share the first word of their names (Sarnia Airport, Sarnia Chris Hadfield A,
+    Sarnia). The pieces' hourly years must cover `min_share` of the period, the newest reaching the last year. `parts` [{id, begin, end}]
+    are Climate IDs and hourly years, newest first; the site's id is "eccc-" and its newest Climate ID."""
+    import csv
+    path = _fetch(ECCC_INVENTORY, os.path.join(RAW, "eccc", "station-inventory.csv"))
+    lines = open(path, encoding="utf-8-sig").read().splitlines()
+    rows = [r for r in csv.DictReader(lines[3:]) if r["HLY First Year"] and int(r["HLY Last Year"]) >= first and int(r["HLY First Year"]) <= last]
+    for r in rows:
+        r["lat"], r["lon"] = float(r["Latitude (Decimal Degrees)"]), float(r["Longitude (Decimal Degrees)"])
+    up = list(range(len(rows)))
+
+    def root(i):
+        while up[i] != i:
+            up[i] = up[up[i]]
+            i = up[i]
+        return i
+    first_word = lambda r: r["Name"].split()[0]
+    for a in range(len(rows)):
+        for b in range(a + 1, len(rows)):
+            if first_word(rows[a]) == first_word(rows[b]) and _km(rows[a]["lat"], rows[a]["lon"], rows[b]["lat"], rows[b]["lon"]) <= LINK_KM:
+                up[root(b)] = root(a)
+    groups = {}
+    for i in range(len(rows)):
+        groups.setdefault(root(i), []).append(rows[i])
+    out = []
+    for g in groups.values():
+        g = sorted(g, key=lambda r: (int(r["HLY Last Year"]), int(r["HLY First Year"])), reverse=True)
+        parts = [{"id": r["Climate ID"], "begin": f"{r['HLY First Year']}0101", "end": f"{r['HLY Last Year']}1231"} for r in g]
+        if int(g[0]["HLY Last Year"]) < last or _span_share(parts, first, last) < min_share:
+            continue
+        r = g[0]
+        elev = r["Elevation (m)"]
+        out.append({"id": f"eccc-{r['Climate ID']}", "name": r["Name"].title(), "state": r["Province"].title(), "lat": r["lat"], "lon": r["lon"],
+                    "elev_m": float(elev) if elev else None, "parts": parts})
+    return out
+
+
+def _eccc_frame(station, years):
+    """A Canadian site's hours with both temperature and dew point, in UTC, as _isd_frame gives; each piece of `parts` for the years it
+    reported hourly, newest first. A value ECCC flags missing ("M") is left out; its other flags (estimated, accumulated) are kept, as ISD-Lite keeps them."""
+    import pandas as pd
+    rows = []
+    for part in station["parts"]:
+        for y in years:
+            if not part["begin"][:4] <= str(y) <= part["end"][:4]:
+                continue
+            path = os.path.join(RAW, "eccc", "hourly", f"{part['id']}-{y}.csv")
+            try:
+                _fetch(ECCC_HOURLY.format(cid=part["id"], y=y), path, tries=3, wait=20, check=lambda d: d.startswith(b"x,y,UTC_DATE") or d.startswith(b"\xef\xbb\xbfx,y"))
+            except Exception:
+                continue
+            f = pd.read_csv(path, dtype={"TEMP_FLAG": str, "DEW_POINT_TEMP_FLAG": str})
+            ok = f["TEMP"].notna() & f["DEW_POINT_TEMP"].notna() & (f["TEMP_FLAG"] != "M") & (f["DEW_POINT_TEMP_FLAG"] != "M")
+            rows.append(pd.DataFrame({"t": pd.to_datetime(f["UTC_DATE"][ok]), "T": f["TEMP"][ok].astype(float), "Td": f["DEW_POINT_TEMP"][ok].astype(float)}))
+    if not rows:
+        return None
+    df = pd.concat(rows).drop_duplicates("t")
+    df.index = pd.DatetimeIndex(df.pop("t"))
+    return df[~df.index.duplicated()].sort_index()
+
+
+def eccc_hourly(station, first=1995, last=2024, min_share=0.85, neighbors=None):
+    """isd_hourly for a Canadian site from eccc_sites: the same share of hours, screens and gap filling, on ECCC's hourly reports."""
+    return screened_hourly(_eccc_frame(station, range(first, last + 1)), station, first, last, min_share, neighbors)
 
 def atlas14_depths(lat, lon, name):
     """NOAA Atlas 14 partial-duration precipitation depths (inches) as {duration: {ARI years: depth}}, plus metadata."""

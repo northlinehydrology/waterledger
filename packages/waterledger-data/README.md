@@ -14,7 +14,7 @@ pip install waterledger-data
 | `receiving` | each place's HUC-12 watersheds, impairments and TMDLs by watershed (USGS WBD, EPA ATTAINS) |
 | `trace` | the watershed tracer: follows a HUC-12 upstream or downstream across state lines with the impaired waters on the way (also the `waterledger-trace` command) |
 | `divisions` | NOAA climate divisions, one long-record ISD station for each, county rainfall and Atlas 14 design storms |
-| `climate` | hourly Open-Meteo best match (ERA5, ERA5-Land, IFS HRES) and NOAA ISD weather, Atlas 14 depths |
+| `climate` | hourly Open-Meteo best match (ERA5, ERA5-Land, IFS HRES), NOAA ISD weather (with sites linked across a change of station ID, `isd_sites`) and Environment and Climate Change Canada hourly station records (`eccc_sites`, `eccc_hourly`), Atlas 14 depths |
 | `energy` | electric utility territories (HIFLD), EIA-861 sales and peaks, power-plant water per kWh by grid region (Siddik et al. 2024) |
 | `power` | EIA-861 retail sales and residential use for any state (`state_retail_mwh`, `residential`); Michigan's MPSC territories |
 | `wateruse` | water use by county and category: USGS's revised 2015 estimates for every state (`usgs_2015`), and the states' own figures for Ohio (ODNR registration, `ohio`), Texas (TWDB Water Use Survey, `texas`) and Virginia (DEQ locality totals, `virginia`), each with its basis (year, reported or estimate, withdrawals or use) |
