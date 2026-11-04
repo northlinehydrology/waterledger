@@ -1283,3 +1283,64 @@ requirement leaves without a station.
 - Dunn, R. J. H., Willett, K. M., Thorne, P. W., et al. (2012). HadISD: a quality-controlled global synoptic report
   database for selected variables at long-term stations from 1973-2011. Climate of the Past 8: 1649-1679 (the neighbor
   check the screens follow).
+
+## Nov 4, 2026: the cooling runs worked in blocks of hours (model 1.8's runs; the numbers unchanged)
+
+**Decision.** `cooling.run_location` works each draw's hourly heat balance 4,096 hours at a time (`HOUR_BLOCK`) rather than
+over all 262,992 hours of a 30-year record at once, and takes the statistics over the whole series as before. Andrew asked on
+Nov 4 for the in-between arrays to stop going out to memory, in 64-bit and with the same numbers ("this is the best middle
+ground ... It stays in 64-bit"). The ERA5 runs use ten workers, the Mac's performance cores. No model parameter or equation
+changes, so the model version doesn't either.
+
+**Why.** On Nov 3 a cell took 362 s alone, 77 s per cell at six at once and no better at twelve (0004, section 3). That
+pattern points to memory. The working idea was that each step wrote a 400-draw x 263,000-hour array (about 840 MB), but the
+code doesn't: `run_location` loops over the draws one at a time. Each step of one draw's heat balance writes a 263,000-hour
+array, 2.1 MB, and a draw has a few hundred such steps, three times over (the average load, the peak day's load, and every
+computer at capacity). A profile on five years and 20 draws put 70% of the time in the heat balance (`physics._loop` alone,
+60%). Over 30 years those 2.1 MB arrays outrun each core's share of the cache, so with several runs at once the steps wait
+on memory. Blocking the draws, as first suggested, would have made the arrays larger, not smaller, so the hours are blocked.
+
+**The test of the idea, before the change** (one process, 30 years, 4 draws, Nov 4, with Michigan part 1's six workers
+loading memory): 7.5 s whole, 4.1 s by blocks. By block size: 1,024 hours 5.95 s (Python's cost per operation shows), 2,048
+4.57 s, **4,096 3.97 s**, 8,192 4.28 s, 16,384 4.29 s, 32,768 4.62 s.
+
+**Same numbers, to the bit.**
+- **Why they can't move.** Every step of the heat balance is the same calculation on each hour, so working the hours in
+  blocks changes no value. The statistics (daily totals by `bincount`, means, quantiles, years' maxima) are taken over the
+  full hourly series assembled from the blocks, in the same order as before. `daily_stats` now takes the years' and months'
+  runs of days as slices: the same values in the same order as the masks it used.
+- **Tests.** `tests/test_cooling_blocks.py` checks whole runs (default blocks, and 1,000-hour blocks that don't divide the
+  record), every hourly series, and the grouped statistics, all bitwise.
+- **Real cells.** Both reference cells from Michigan part 1, rerun in full (400 draws, 1995-2024), match all 480 stored
+  values exactly: 41.75_-83.50 (78% land, corrected toward Detroit Metro, Windsor A and Detroit City) and 42.00_-85.00
+  (98% land). Ten cells, old code (1b60ae0) against new, match all 480 values in every run.
+- **Unchanged.** The golden test and the mass and energy balance tests pass unchanged.
+
+**Timings** (Andrew's Mac, Apple M3 Max, 10 performance and 4 efficiency cores, 96 GB; full cells, 400 draws, the same
+cells for old and new; Nov 4):
+
+| Cells at once | Old: each cell | Old: throughput | New: each cell | New: throughput |
+|---|---|---|---|---|
+| 1 | 325-392 s | 358 s per cell | 280-281 s | 281 s per cell |
+| 6 | 438-441 s | 74 s per cell | 287-288 s | 48 s per cell |
+| 8 | 541-544 s | 68 s per cell | 292-294 s | 37 s per cell |
+| 10 | 654-662 s | 67 s per cell | 307-310 s | 31 s per cell |
+| 12 | | | 680-686 s | 58 s per cell |
+
+- **The runs no longer wait on memory.** The old code's cells slow as more run at once (358 to 660 s). The new ones hardly
+  slow at all (281 to 309 s at ten).
+- **Twelve is worse than ten.** Past ten the runs share the efficiency cores and every one slows. Ten workers is the setting,
+  and `waterledger era5` defaults to the performance cores where macOS reports them.
+- **The four states.** About 10.6 hours of runs (1,233 cells x 31 s), against about 26 hours before. The seven parts take
+  1.2 to 1.8 hours each.
+
+**Alternatives considered.**
+- **Numba**, fusing a draw's hours into one compiled loop. It would remove the in-between arrays and Python's cost per
+  operation altogether, and likely run several times faster again. But its exp, arctan and powers are LLVM's rather than
+  NumPy's, so results would agree to about 1e-15 per hour rather than to the bit, and it adds a compiled dependency. Not
+  needed: blocking took memory out of the way.
+- **float32.** Ruled out by Andrew ("It stays in 64-bit").
+- **Blocking the draws.** Larger arrays, the wrong way (above).
+
+**Open.** None for the numbers. Michigan part 1's 38 cells finished on the old code are identical to what the new code
+gives, so a part can restart on the new code and keep them.

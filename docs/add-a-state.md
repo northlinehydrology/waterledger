@@ -86,12 +86,12 @@ gh workflow run build-state --ref main -f state=ST -f upload=false
 
 ### 2. Run the ERA5 cells, in parts
 
-One run per cell: 400 draws, about 77 s a cell at six workers on Andrew's Mac. Split the state so each part takes 3 to 4.5 hours,
+One run per cell: 400 draws, about 31 s a cell at ten workers on Andrew's Mac (one per performance core). Split the state into parts of about 205 cells (under 2 hours each),
 `n = ceil(cells / 205)` parts, and start each by hand, an evening or overnight:
 
 ```bash
 uv run waterledger era5 cells ST --part 1/n --json
-WATERLEDGER_R2=wrangler uv run waterledger era5 run ST --part 1/n --workers 6
+WATERLEDGER_R2=wrangler uv run waterledger era5 run ST --part 1/n --workers 10
 ```
 
 The second command is repeated for parts 2/n to n/n. Leave out `WATERLEDGER_R2=wrangler` (or pass `--no-r2`) to keep everything
@@ -107,14 +107,14 @@ another machine (README, "Model 1.8's ERA5 runs").
 ### 3. Check ERA5 against the state's stations
 
 ```bash
-uv run waterledger era5 check ST --workers 6
+uv run waterledger era5 check ST --workers 10
 ```
 
 Design 0005's leave-one-station-out check, as `docs/methods/qm-check/` ran it for the first four states. It needs no runs from step 2,
 so a runner may take it first and stop early on a fail. Every qualifying station (ISD by one ID or linked, and ECCC) in the state or
 within 100 km of its places is held out in turn, and its cell given the decided method. Up to 12 places, each the nearest within 30 km
-of a station in the state, are run through the cooling model against the station's own record (24 runs, about 30 minutes at six
-workers).
+of a station in the state, are run through the cooling model against the station's own record (24 runs, about 15 minutes at ten
+workers, plus qualifying the stations the first time: Ohio's 54 candidates and its weather part took 12 minutes).
 
 The criteria (`waterledger.national.era5_check.CRITERIA`) are the four accepted states' worst result plus a margin:
 
@@ -203,7 +203,7 @@ gh workflow run build-state --ref main -f state=ST -f upload=true
 |---|---|---|---|
 | 0 Preflight | `waterledger era5 cells ST --json` | exit 0 | Atlas 14 coverage (by hand); outside the grid |
 | 1 Build | `waterledger build-state ST --out build-report --no-checks` | exit 0; `build-report/ST_build.json` has all eight stages | a build error |
-| 2 Runs | `waterledger era5 run ST --part k/n --workers 6`, k = 1..n | `waterledger era5 cells ST --json` prints `"complete": true` | Andrew starts each part |
+| 2 Runs | `waterledger era5 run ST --part k/n --workers 10`, k = 1..n | `waterledger era5 cells ST --json` prints `"complete": true` | Andrew starts each part |
 | 3 ERA5 check | `waterledger era5 check ST` | exit 0; `CACHE/era5/check/ST/check.json` has `"verdict": "pass"` | a fail: Andrew decides the method |
 | 4 Fold cells | `waterledger snapshot ST --out snapshot` (format 3) | not built: stop | format 3 not built |
 | 5 Snapshot checks | `waterledger snapshot ...` then `waterledger check-snapshot ST --dir snapshot` | exit 0; the manifest has `checks` | a coverage or sample failure; the checks by hand |

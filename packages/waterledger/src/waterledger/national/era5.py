@@ -1,5 +1,5 @@
 """Model 1.8's cooling runs: the cooling Monte Carlo on each place's ERA5 cell (design 0004), corrected near the shore by quantile
-mapping (design 0005), one result file per cell. `waterledger era5 run ST --part k/n --workers 6` runs one part by hand.
+mapping (design 0005), one result file per cell. `waterledger era5 run ST --part k/n --workers 10` runs one part by hand.
 
     state_cells(ST)         {cell: {"cell": era5.cell's record, "places": [geoid, ...]}} for every place in the state's snapshot
     part(cells, k, n)       the k-th of n parts: the cells in id order, cut into n runs of near-equal size
@@ -20,6 +20,16 @@ from waterledger_data.config import CACHE
 
 RUN_MODEL = "1.8"           # model 1.7's cooling on ERA5 cell weather, corrected near the shore: what these runs are for
 SEED, MW = 7, 100.0
+
+
+def default_workers():
+    """Cells at once: the machine's performance cores where macOS reports them (10 on Andrew's M3 Max), else every core. With the runs
+    worked in hour blocks a cell takes about as long with nine others as alone; on efficiency cores too, every run slows (0004, section 3)."""
+    import subprocess
+    try:
+        return int(subprocess.run(["sysctl", "-n", "hw.perflevel0.physicalcpu"], capture_output=True, text=True, timeout=5).stdout)
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return os.cpu_count() or 1
 RUNS = os.path.join(CACHE, "era5", "runs", f"model{RUN_MODEL}")
 ANCHORS = os.path.join(CACHE, "era5", "anchors")
 R2_RUNS = f"runs/era5/model{RUN_MODEL}"

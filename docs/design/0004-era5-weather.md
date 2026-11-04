@@ -126,23 +126,41 @@ hypercube draws plus the central run, every design, 1995-2024 hourly, 262,992 ho
 | 12 | 935 s | 924-934 s | 78 s per cell |
 
 Twelve at once is no faster than six: past six processes the runs share memory bandwidth, not cores (each process holds
-about 1.2 GB). **Six workers** is the setting. A profile on five years and 20 draws puts 72% of the time in the hourly
-heat balance, solved three times for every draw (at average load, at the peak day's load and at full capacity). No
-change that keeps the numbers identical removes a large share of it.
+about 1.2 GB). A profile on five years and 20 draws puts 72% of the time in the hourly heat balance, solved three times for
+every draw (at average load, at the peak day's load and at full capacity).
+
+**Nov 4: the hours worked in blocks.** Each step of a draw's heat balance was one NumPy operation over all 262,992 hours,
+writing a 2.1 MB array, so six runs at once waited on memory. `cooling.run_location` now works 4,096 hours at a time
+(`HOUR_BLOCK`), and the in-between arrays stay in each core's cache. The results are the same to the bit: every step is the
+same calculation on each hour, and the statistics are taken over the same whole series. Tested, and checked on all 480
+values of 10 cells, old against new, two of them also against Michigan part 1's stored results (41.75_-83.50, corrected; 42.00_-85.00, land). Measured on
+the same Mac, the same cells, old (1b60ae0) against new:
+
+| Cells at once | Old: each cell | Old: throughput | New: each cell | New: throughput |
+|---|---|---|---|---|
+| 1 | 325-392 s | 358 s per cell | 280-281 s | 281 s per cell |
+| 6 | 438-441 s | 74 s per cell | 287-288 s | 48 s per cell |
+| 8 | 541-544 s | 68 s per cell | 292-294 s | 37 s per cell |
+| 10 | 654-662 s | 67 s per cell | 307-310 s | 31 s per cell |
+| 12 | | | 680-686 s | 58 s per cell |
+
+With blocks a cell takes about as long with ten others as alone, so the runs are no longer waiting on memory. Ten is the
+Mac's performance cores; at twelve the runs spill onto its efficiency cores and all slow down. **Ten workers** is the
+setting (`--workers 10`; the default is the machine's performance cores where macOS reports them).
 
 Model 1.6 took about 116 s per cell; model 1.7 takes 362 s alone, about three times as long. From the code (not
 profiled): twice the draws (400 against 200), and model 1.7's peak day at peak load, a further pass over every hour for
 every draw.
 
-**The four states at six workers, about 26 hours of machine time** (1,233 cells with the land rule x 77 s; 28 hours for
-the 1,294 nearest cells before it):
+**The four states: about 26 hours at six workers before, about 10.6 hours at ten workers with blocks** (1,233 cells with
+the land rule x 77 s, and x 31 s):
 
-| State | Cells | Hours at six workers |
-|---|---|---|
-| Michigan | 272 | 5.8 |
-| Ohio | 203 | 4.3 |
-| Virginia | 148 | 3.2 |
-| Texas | 616 | 13.2 |
+| State | Cells | Hours at six workers, before | Hours at ten workers, with blocks |
+|---|---|---|---|
+| Michigan | 272 | 5.8 | 2.3 |
+| Ohio | 203 | 4.3 | 1.7 |
+| Virginia | 148 | 3.2 | 1.3 |
+| Texas | 616 | 13.2 | 5.3 |
 
 Fetching is separate and smaller. From Open-Meteo's open copy, the 21 cells of the station check took 183 s with 16
 threads (about 8 MB of JSON per cell). Reading cell by cell, all 1,233 would take about 3 hours [estimate, linear].
@@ -151,8 +169,9 @@ columns, but that was not measured. From CDS it is one request per cell; the que
 
 **How to split them.** Nothing is scheduled; Andrew starts each part by hand.
 
-- Seven parts of 2.9 to 4.4 hours, each started by hand on an evening or overnight: Michigan in two (136 cells each),
-  Ohio, Virginia, and Texas in three (205-206 cells each): `waterledger era5 run TX --part 1/3 --workers 6`.
+- Seven parts, each started by hand: Michigan in two (136 cells each), Ohio, Virginia, and Texas in three (205-206 cells
+  each): `waterledger era5 run TX --part 1/3 --workers 10`. At ten workers with blocks a part takes 1.2 to 1.8 hours
+  (2.9 to 4.4 at six before).
 - A cell's results are written the moment it finishes (`CACHE/era5/runs/model1.8/<cell>.json`), so a stopped part
   resumes where it stopped, as the state builds do now (0003, decision 4). Fetching and running are separate steps, so a
   CDS outage never stops a run that has its weather.
@@ -234,7 +253,7 @@ snapshot exactly (Findlay, every statistic). In short:
     and checked against their checksums, so a part can restart elsewhere.
   - **Failures.** A failed upload warns and keeps the local file; it never stops the run.
   - **No credentials in the package.** It needs no wrangler to install. wrangler calls take about 2-3 s each, small
-    against 77 s a cell.
+    against a cell finishing every 31 s or so at ten workers.
 
 ### Package API (the plan; see "Built" above for what exists)
 
