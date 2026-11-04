@@ -87,7 +87,8 @@ They are validated, round-trip through JSON, and are described in
 | Texas | 1,481 cities, towns and counties | NOAA stations, 10 climate divisions | [waterledger.org/methods/tx](https://waterledger.org/methods/tx/), [brief](docs/methods/tx.pdf) |
 
 Planned (model 1.8, not yet built): every place takes its cooling weather from its nearest ERA5 grid cell, about 10 km
-away, in place of regions and division stations ([design 0004](docs/design/0004-era5-weather.md)).
+away, or, where that cell is mostly water, the nearest cell that is at least half land (189 places), in place of regions
+and division stations ([design 0004](docs/design/0004-era5-weather.md)).
 
 Michigan has its own layers (state-reported water use, domestic wells, trout streams, lake-source cooling, state rules)
 and matches [waterledger.org/mi](https://waterledger.org/mi/) exactly. The other states use national datasets only

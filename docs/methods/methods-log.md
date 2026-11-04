@@ -1111,7 +1111,7 @@ On Oct 29 the single-station design added scatter without a consistent direction
 - Grouping cells into regions: decided against, so a place's numbers are its own cell's.
 
 **Open.**
-- **The rule for water cells:** keep the nearest cell, or take the nearest cell that is at least half land.
+- **The rule for water cells:** decided Nov 3, the nearest cell that is at least half land (next entry).
 - **Quantile mapping:** its stations, its method and whether it applies by season.
 - **The CDS time-series dataset's queue in practice**, and its experimental status.
 - **Valley and ridge cells**, such as Roanoke's, where ERA5's cell averages unlike terrain.
@@ -1125,3 +1125,50 @@ On Oct 29 the single-station design added scatter without a consistent direction
   components' humidity conversion, released with this change).
 - Alduchov, O. A. and Eskridge, R. E. (1996). Improved Magnus form approximation of saturation vapor pressure. Journal of
   Applied Meteorology 35(4): 601-609 (relative humidity from dew point, for stations and ERA5 alike).
+
+## Nov 3, 2026: the nearest land cell where a place's nearest ERA5 cell is mostly water (model 1.8, not built)
+
+**Decision (Andrew, Nov 3, 2026: "use b nearest land cell").** A place whose nearest ERA5 cell has a land-sea mask under
+0.5 takes the nearest cell, by great-circle distance from its Census internal point, whose mask is at least 0.5. Every
+place records the cell it uses, that cell's distance and land fraction, and whether the rule moved it; a moved place also
+records its nearest cell. Design 0004, decision 3; prototype `era5-check/land_rule.py`, every place in
+`era5-check/cell_assignment.csv`.
+
+**Why.** A cell that is mostly lake or sea carries air moderated by the water: cooler summer afternoons and a lower design
+dry-bulb than the land a data center would stand on. On the station check, the one such place (Lorain, 0.40) ran 10% below
+Cleveland-Hopkins for the hybrid average and 39% below for assist, and 26% above on the hybrid peak day.
+
+**What it does.**
+- **189 places move** (Michigan 116, Ohio 35, Virginia 23, Texas 15), a median 17.8 km; 165 move 30 km or less. Cells for
+  the four states fall from 1,294 to 1,233, and run time from about 28 to about 26 hours at six workers.
+- **Virginia's Eastern Shore** moves farthest and not all one way. Cape Charles, Cheriton, Eastville and Northampton County
+  (43-52 km) and Nassawadox (57 km) cross the Chesapeake to western-shore cells by Yorktown and on the Middle Peninsula. Exmore,
+  Belle Haven, Painter, Wachapreague, Keller, Melfa, Onley, Onancock, Accomac, Parksley, Accomack County and Tangier go up
+  the peninsula to 38.00, -75.75 at the Maryland line (25-53 km), and Bloxom and Chincoteague to 38.00, -75.50 (14-22 km).
+  The plan's first draft said "50-63 km, across the bay"; it measured in grid steps, and most of the shore goes north.
+- **Michigan's island townships**: Isle Royale (Houghton and Eagle Harbor townships) to the Ontario shore, 55-60 km; Beaver
+  Island, North Manitou (Leland township), Drummond Island and the Garden Peninsula's tip, 37-44 km.
+- **On the station check** (model 1.7, 400 draws, seed 7) only Lorain moves, to a cell 0.59 land 16 km east: hybrid average
+  -10% to -8% against the station, assist -39% to -35%, hybrid peak day +26% to +18%. Virginia Beach (0.51), Cleveland
+  (0.65), Port Huron (0.75) and Toledo (0.78) are at least half land and don't change.
+
+**Alternatives considered.**
+- (a) The nearest cell for every place, with its land fraction shown. Recommended in the plan's draft, not chosen.
+- A stricter threshold. Run only as a sensitivity: on the nearest cell at least 90% land (17-52 km away), Lorain's and
+  Virginia Beach's hybrid averages come within 2% of their stations, Cleveland's and Toledo's within 6%; Port Huron's,
+  against a station 80 km away, stays 31% low. It would move far more places (777 more sit on cells 50-90% land) and
+  further from their own shore.
+- Blending the nearest cells by land fraction: not considered further, since cells are not grouped (Nov 1 decision).
+
+**Open.**
+- The 777 places on cells 50-90% land keep the shore bias the check shows (Cleveland, Port Huron, Toledo, Virginia Beach):
+  quantile mapping against shore stations, or a stricter threshold, is the question for the next model version.
+- Island places whose land cell is in another country (Isle Royale to Ontario) are kept by the rule as decided.
+
+**References.**
+- Hersbach, H., Bell, B., Berrisford, P., et al. (2020). The ERA5 global reanalysis. Quarterly Journal of the Royal
+  Meteorological Society 146(730): 1999-2049. doi:10.1002/qj.3803 (the land-sea mask is ERA5's invariant field `lsm`).
+- Hersbach, H., et al. (2023). ERA5 hourly data on single levels from 1940 to present. C3S Climate Data Store.
+  doi:10.24381/cds.adbb2d47. Land-sea mask read from Google's ARCO-ERA5 copy (gs://gcp-public-data-arco-era5); hourly
+  series from Open-Meteo's open-data copy (s3://openmeteo/data/copernicus_era5), CC-BY 4.0.
+- U.S. Census Bureau, TIGERweb internal points (INTPTLAT, INTPTLON), as carried in the 2026-11-02.2 snapshots' places.

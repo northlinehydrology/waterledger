@@ -152,8 +152,9 @@ Beach (0.51), Cleveland (0.65), Port Huron (0.75) and Toledo (0.78):
 Their air is moderated by the water, and an airport on the shore isn't. Two of them go the other way on the peak day:
 Lorain's hybrid peak is 26% above the station and Virginia Beach's 8%. This is consistent with the lower design dry-bulb: a
 hybrid is fully evaporative at the design dry-bulb plus an offset (`physics.hybrid_full`), so a lower one makes it run wetter on
-its hottest days. These are the 189 places (MI 116, OH 35, VA 23, TX 15) that design 0004 asks a decision on, and the case
-quantile mapping is for.
+its hottest days. Of the five, only Lorain is among the 189 places (MI 116, OH 35, VA 23, TX 15) whose nearest cell is
+mostly water, which the land rule of Nov 3 moves (below); the other four are on cells half to nine-tenths land. Both kinds
+are the case quantile mapping is for.
 
 **Against what is published today**, ERA5 moves the hybrid average by -21% to +60% (median -5%) and the assist average by -50%
 to +83% (median -8%), across these 21 places. Towers move by 2% or less. The largest moves are where today's point is far
@@ -162,6 +163,76 @@ away (Bristol, Ironwood) or where the cell is part water (Port Huron, Lorain, Vi
 **The weather source still matters, less than on Oct 29.** On Oct 29 (model 1.2), Grand Rapids airport gave Gaines Township a
 hybrid average 23% above the ERA5 point 11 km away. Here ERA5 at Gaines's own cell is 3% below the airport. The model
 changed between the two checks (1.2 to 1.7), so the two numbers aren't directly comparable.
+
+## The land rule (added Nov 3, 2026)
+
+On Nov 3 Andrew decided that a place whose nearest cell is mostly water (land-sea mask under 0.5) takes the nearest cell,
+by great-circle distance, that is at least half land ([design 0004](../design/0004-era5-weather.md), decision 3). The rule
+moves 189 places in the four states, and every place's cell is listed in
+[era5-check/cell_assignment.csv](era5-check/cell_assignment.csv) (from `land_rule.py`).
+
+**Virginia's Eastern Shore moves farthest.** Its 19 places sit on mostly-sea cells. Five go across the Chesapeake to the
+western shore: Cape Charles, Cheriton, Eastville and Northampton County to 37.25, -76.50 by Yorktown (43-52 km, land 0.51)
+and Nassawadox to 37.50, -76.50 (57 km, land 0.68). The rest go north up the peninsula: Exmore, Belle Haven, Painter,
+Wachapreague, Keller, Melfa, Onley, Onancock, Accomac, Parksley, Accomack County and Tangier to 38.00, -75.75 at the
+Maryland line (25-53 km, land 0.67), and Bloxom and Chincoteague to 38.00, -75.50 (14-22 km, land 0.58). Hampton Roads'
+four moved places (Norfolk, Hampton, Poquoson, Mathews County) go 19-22 km and stay on their side of the bay. Elsewhere the
+farthest moves are Michigan's island townships (Isle Royale to the Ontario shore, 55-60 km; Beaver Island, North Manitou,
+Drummond Island and the Garden Peninsula's tip, 37-44 km); 165 of the 189 move 30 km or less.
+
+**Of this check's five part-water places, only Lorain moves.** Lorain's nearest cell is 0.40 land; Virginia Beach (0.51),
+Cleveland (0.65), Port Huron (0.75) and Toledo (0.78) are at least half land and keep their cells, so their numbers don't
+change. The five were rerun the same way as above (`land_rule_check.py`), on the rule's cell and, as a sensitivity only, on
+the nearest cell at least 90% land, which is not the rule.
+
+| Place | Station (km) | Nearest cell (km, land) | Land rule (km, land) | At least 90% land (sensitivity) (km, land) |
+|---|---|---|---|---|
+| Lorain city, OH | Cleveland-Hopkins Intl (28) | 41.50, -82.25 (9, 0.40) | 41.50, -82.00 (16, 0.59) | 41.25, -82.00 (26, 0.93) |
+| Virginia Beach city, VA | Oceana Nas (4) | 36.75, -76.00 (4, 0.51) | 36.75, -76.00 (4, 0.51) | 36.50, -76.50 (52, 0.99) |
+| Cleveland city, OH | Cleveland-Hopkins Intl (16) | 41.50, -81.75 (6, 0.65) | 41.50, -81.75 (6, 0.65) | 41.25, -81.75 (26, 0.94) |
+| Port Huron city, MI | Detroit City (80) | 43.00, -82.50 (5, 0.75) | 43.00, -82.50 (5, 0.75) | 43.00, -82.75 (26, 0.98) |
+| Toledo city, OH | Toledo Express (20) | 41.75, -83.50 (12, 0.78) | 41.75, -83.50 (12, 0.78) | 41.75, -83.75 (17, 0.93) |
+
+#### Against the nearest station, average day (p50, per 100 MW): nearest cell / land rule / at least 90% land
+
+| Place | Towers | Hybrid | Assist |
+|---|---|---|---|
+| Lorain city | -0% / -0% / -0% | -10% / -8% / -2% | -39% / -35% / -12% |
+| Virginia Beach city | -0% / -0% / +0% | -10% / -10% / +1% | -44% / -44% / -0% |
+| Cleveland city | -0% / -0% / -0% | -11% / -11% / -6% | -27% / -27% / -13% |
+| Port Huron city | -1% / -1% / -1% | -39% / -39% / -31% | -52% / -52% / -34% |
+| Toledo city | +0% / +0% / -0% | -6% / -6% / -3% | -11% / -11% / -5% |
+
+#### Against the nearest station, 1-in-10 peak day (p50, per 100 MW): nearest cell / land rule / at least 90% land
+
+| Place | Towers | Hybrid | Assist |
+|---|---|---|---|
+| Lorain city | +1% / +0% / -0% | +26% / +18% / +1% | -19% / -22% / -7% |
+| Virginia Beach city | -2% / -2% / -1% | +8% / +8% / -12% | -30% / -30% / -15% |
+| Cleveland city | -0% / -0% / -1% | +4% / +4% / -3% | -16% / -16% / -8% |
+| Port Huron city | -3% / -3% / -2% | -6% / -6% / -11% | -23% / -23% / -16% |
+| Toledo city | +0% / +0% / -0% | +1% / +1% / -2% | -6% / -6% / -7% |
+
+| Place | Design dry-bulb, station (C) | Nearest cell | Land rule | At least 90% land |
+|---|---|---|---|---|
+| Lorain city | 32.2 | 29.6 | 29.9 | 31.4 |
+| Virginia Beach city | 33.9 | 30.9 | 30.9 | 33.9 |
+| Cleveland city | not run | 30.7 | 30.7 | 31.5 |
+| Port Huron city | 32.2 | 30.2 | 30.2 | 31.4 |
+| Toledo city | 32.8 | 32.2 | 32.2 | 32.5 |
+
+- **Lorain** moves 16 km east to a cell 0.59 land. The gap to Cleveland-Hopkins narrows a little: hybrid average
+  -10% to -8%, assist -39% to -35%, hybrid peak day +26% to +18%, design dry-bulb 0.3 C warmer. The new cell is still
+  41% lake.
+- **Virginia Beach, Cleveland, Port Huron and Toledo** don't change under the rule.
+- **The sensitivity** shows where the bias sits. On the nearest cell at least 90% land (17-52 km away), Lorain's and
+  Virginia Beach's hybrid averages come within 2% of the station and Virginia Beach's design dry-bulb matches it; Cleveland
+  and Toledo come within 6% for hybrid. Port Huron stays 31-34% low, but its station is Detroit City, 80 km south, so that
+  comparison says as much about the station as the cell.
+
+The rule removes the cells that are mostly water, and the larger gap is on shore cells that are half to nine-tenths land:
+777 places stay on them (Michigan 462, Ohio 172, Virginia 56, Texas 87). Quantile mapping, or a stricter threshold, is what
+would address those; neither is decided.
 
 ## Limits
 
