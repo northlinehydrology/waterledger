@@ -25,17 +25,22 @@ def test_bmi_daily_run(tmp_path):
     assert m.get_time_step() == 86400 and m.get_end_time() == len(temps) * 86400
     evap = []
     while m.get_current_time() < m.get_end_time():
+        m.update()
         w, r, e = (m.get_value(n, np.empty(1))[0] for n in (WITHDRAWN, RETURNED, EVAP))
         assert w == r and 0 < e < w
         evap.append(e)
-        m.update()
     p = {k: (a + b) / 2 for k, (a, b) in lake.RANGES.items()}
     expected = lake.forced_evaporation_m3s(100, p["utilization"], p["heat_factor"], np.array(temps), 4.47 * lake.MPH_PER_MS)
     np.testing.assert_allclose(evap, expected, rtol=1e-12)
     assert np.argmax(evap) > 150        # more evaporation from warm summer water
+    m = LakeCoolingBmi()
+    m.initialize({"it_capacity_mw": 100})
     m.set_value(TEMP, np.array([20.0]))
+    m.update()
     warm = m.get_value(EVAP, np.empty(1))[0]
     m.set_value(TEMP, np.array([4.0]))
+    assert m.get_value(EVAP, np.empty(1))[0] == warm        # outputs change on update(), not on set_value
+    m.update()
     assert warm > m.get_value(EVAP, np.empty(1))[0]
     m.finalize()
 

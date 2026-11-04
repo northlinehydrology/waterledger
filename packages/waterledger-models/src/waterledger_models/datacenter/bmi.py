@@ -1,5 +1,7 @@
 """CSDMS Basic Model Interface (BMI 2.0) for the cooling water model, so a coupling framework can drive it hour by
 hour: set air temperature and humidity, call update(), read the water withdrawn, consumed and returned.
+update() computes the step from the current time to the next from the inputs set for it; outputs change only on update(), so a framework
+may set the next step's inputs before it reads this step's outputs.
 
 One data center is one scalar grid point. A run uses a single parameter set (the central values by default, any of
 them overridable in the configuration file); the Monte Carlo ensemble lives in waterledger_models.datacenter.ensemble.
@@ -87,9 +89,11 @@ class ScalarPointBmi(Bmi):
         initialize(config_file=None)
                           reads its settings (read_config takes a YAML path or a dict) and sets self._dt, self._end and self._time
         _compute()        reads the inputs in self._values and writes the outputs; it has no side effects other than the outputs
-        _advance()        optional: loads the next step's inputs when the component reads forcing itself
-    set_value and set_value_at_indices take inputs only (an output raises KeyError) and then call _compute(); update() advances the clock one
-    step, calls _advance() and then _compute().
+        _advance()        optional: loads the inputs for the step starting at self._time when the component reads forcing itself
+    The order of a step: update() calls _advance(), then _compute() for the step from the current time to the next, then moves the clock
+    one step on. set_value and set_value_at_indices only store inputs (an output raises KeyError), so outputs change on update() alone and
+    always describe the last step taken; before the first update they are 0. A framework can set the next step's inputs before it reads
+    this step's outputs.
     """
 
     INPUTS: dict = {}
@@ -102,12 +106,12 @@ class ScalarPointBmi(Bmi):
         self._end = 365 * 86400.0
 
     def update(self):
-        self._time += self._dt
         self._advance()
         self._compute()
+        self._time += self._dt
 
     def _advance(self):
-        """Load the next forcing step, if the component reads forcing itself."""
+        """Load the inputs for the step starting now, if the component reads forcing itself."""
 
     def update_until(self, time):
         while self._time + self._dt <= time + 1e-9:
@@ -192,13 +196,11 @@ class ScalarPointBmi(Bmi):
         if name not in self.INPUTS:
             raise KeyError(f"{name} is not an input variable")
         self._values[name][:] = src
-        self._compute()
 
     def set_value_at_indices(self, name, inds, src):
         if name not in self.INPUTS:
             raise KeyError(f"{name} is not an input variable")
         self._values[name].put(inds, src)
-        self._compute()
 
     # ---------- grid: one scalar point ----------
     def get_grid_rank(self, grid):
@@ -291,11 +293,13 @@ class CoolingWaterBmi(ScalarPointBmi):
             self._forcing = (w["air_temperature"].values, w["relative_humidity"].values)
             self._params.setdefault("design_db", model.design_dry_bulb(self._forcing[0]))
             self._end = float(cfg.get("end_time", len(self._forcing[0]) * self._dt))
-            self._load_forcing()
         else:
             self._forcing = None
             self._end = float(cfg.get("end_time", 365 * 86400.0))
-        self._compute()
+        if self._design == "hybrid":
+            model.hybrid_full(self._params)          # a hybrid without a design dry-bulb stops here, not at the first step
+        for v in self._values.values():
+            v[:] = 0.0
 
     def _load_forcing(self):
         i = min(int(self._time // self._dt), len(self._forcing[0]) - 1)
@@ -386,10 +390,10 @@ class LakeCoolingBmi(ScalarPointBmi):
             with open(cfg["forcing"]) as f:
                 self._forcing = np.array([float(line) for line in f if line.strip()])
             self._end = float(cfg.get("end_time", len(self._forcing) * self._dt))
-            self._advance()
         else:
             self._end = float(cfg.get("end_time", 365 * 86400.0))
-        self._compute()
+        for name in self.OUTPUTS:
+            self._values[name][:] = 0.0
 
     def _advance(self):
         if self._forcing is not None:

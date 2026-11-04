@@ -2,6 +2,10 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## Unreleased
+
+- **BMI: outputs change on `update()`, not on `set_value`** (behavior change). `CoolingWaterBmi` and `LakeCoolingBmi` store inputs when they are set, and `update()` computes the step from the current time to the next from them, then moves the clock on. Outputs always describe the last step taken and read 0 before the first one, so a framework that sets the next step's inputs before reading this step's outputs gets this step's values. Code that set inputs and read outputs without calling `update()` must now call it in between (NextGen's order, set, update, read, is unchanged). With a forcing file, the outputs read at time t are for the hour from t - 1 h to t; they were for the hour from t. A hybrid campus without a design dry-bulb now stops at `initialize()`, and `initialize()` starts a component over, its inputs included.
+
 ## 3.9.0 (Nov 2, 2026)
 
 Model version 1.7: parity and defensibility for Michigan, Ohio, Virginia and Texas, with no Michigan leftovers in the shared method. Water taken on towers moves about 4% on average and 13% on the peak day. Hybrid moves most, down as much as 40% in hot places. Pollution loads change most of all. Every moved number is on the Water Ledger changelog and in the methods log.

@@ -47,8 +47,10 @@ def test_set_value_drives_the_model(tmp_path):
     out = np.empty(1)
     m.set_value(TEMP, np.array([30.0]))
     m.set_value(RH, np.array([50.0]))
+    m.update()
     hot = m.get_value(WITHDRAWN, out).copy()
     m.set_value(TEMP, np.array([0.0]))
+    m.update()
     cold = m.get_value(WITHDRAWN, out).copy()
     assert hot > cold > 0
     w, c, r = (m.get_value(n, np.empty(1))[0] for n in (WITHDRAWN, CONSUMED, RETURNED))
@@ -61,7 +63,8 @@ def test_set_value_drives_the_model(tmp_path):
     assert w == pytest.approx(gal * 100 * 1000 * p["utilization"] / 3600 / model.GAL_M3 + staff, rel=1e-12)
     ptr = m.get_value_ptr(WITHDRAWN)
     m.set_value(TEMP, np.array([25.0]))
-    assert ptr[0] == m.get_value(WITHDRAWN, np.empty(1))[0]     # the pointer stays live
+    m.update()
+    assert ptr[0] == m.get_value(WITHDRAWN, np.empty(1))[0] > cold     # the pointer stays live
     idx = m.get_value_at_indices(TEMP, np.empty(1), np.array([0]))
     assert idx[0] == 25.0
     m.set_value_at_indices(TEMP, np.array([0]), np.array([10.0]))
@@ -80,8 +83,8 @@ def test_forcing_file_and_update_until(tmp_path):
     assert m.get_end_time() == len(t) * 3600
     total = 0.0
     while m.get_current_time() < m.get_end_time():
-        total += m.get_value(WITHDRAWN, np.empty(1))[0] * 3600
         m.update()
+        total += m.get_value(WITHDRAWN, np.empty(1))[0] * 3600
     p = {**model.for_location(model.central_parameters(), t), "coc": 4.0}
     gal = model.hourly_rates(t, model.wet_bulb(t, rh), "hybrid", p, rh)[0]
     staff = model.staff_water(model.central_staff(), 50)[0] * 1e6 / 24     # gallons an hour
@@ -90,7 +93,40 @@ def test_forcing_file_and_update_until(tmp_path):
     m.initialize(write_config(tmp_path, design="hybrid", forcing=str(forcing)))
     m.update_until(5 * 3600)
     assert m.get_current_time() == 5 * 3600
-    assert m.get_value(TEMP, np.empty(1))[0] == pytest.approx(t[5])
+    assert m.get_value(TEMP, np.empty(1))[0] == pytest.approx(t[4])     # the inputs of the last step taken, hours 4 to 5
+
+
+def test_outputs_change_on_update_not_on_set_value(tmp_path):
+    """A framework that sets the next step's inputs before it reads this step's outputs gets this step's values."""
+    weather = [(31.0, 45.0), (12.0, 85.0), (24.0, 60.0)]
+    for design in model.DESIGNS:
+        cfg = {"design": design, "it_capacity_mw": 100, "parameters": {"design_db": 31.0} if design == "hybrid" else {}}
+        expected = []
+        for t, rh in weather:                 # each hour on its own
+            m = CoolingWaterBmi()
+            m.initialize(cfg)
+            m.set_value(TEMP, np.array([t]))
+            m.set_value(RH, np.array([rh]))
+            m.update()
+            expected.append({n: m.get_value(n, np.empty(1))[0] for n in OUTPUTS})
+        m = CoolingWaterBmi()
+        m.initialize(cfg)
+        assert all(m.get_value(n, np.empty(1))[0] == 0.0 for n in OUTPUTS)      # nothing before the first step
+        m.set_value(TEMP, np.array([weather[0][0]]))
+        m.set_value(RH, np.array([weather[0][1]]))
+        for i, want in enumerate(expected):
+            m.update()
+            if i + 1 < len(weather):          # next hour's inputs first
+                m.set_value(TEMP, np.array([weather[i + 1][0]]))
+                m.set_value_at_indices(RH, np.array([0]), np.array([weather[i + 1][1]]))
+            got = {n: m.get_value(n, np.empty(1))[0] for n in OUTPUTS}
+            assert got == want, (design, i)
+            assert m.get_current_time() == (i + 1) * 3600
+
+
+def test_hybrid_without_design_dry_bulb_stops_at_initialize():
+    with pytest.raises(ValueError, match="design dry-bulb"):
+        CoolingWaterBmi().initialize({"design": "hybrid"})
 
 
 def test_closed_loop_includes_staff_water_at_capacity(tmp_path):
@@ -99,12 +135,16 @@ def test_closed_loop_includes_staff_water_at_capacity(tmp_path):
     m.initialize(write_config(tmp_path, design="dry", it_capacity_mw=300))
     m.set_value(TEMP, np.array([20.0]))
     m.set_value(RH, np.array([60.0]))
+    m.update()
     w, c, r = (m.get_value(n, np.empty(1))[0] * 86400 * model.GAL_M3 for n in (WITHDRAWN, CONSUMED, RETURNED))  # gal/day
     topup = 300 * 7000 * 0.03 / 365
     staff, maint = (40 + 0.3 * 300) * 20, 1000 + 11 * 300          # people, and maintenance at the middle of its ranges
     assert w == pytest.approx(topup + staff + maint, rel=1e-9)
     assert c == pytest.approx(topup + 0.1 * staff + 0.09 * maint, rel=1e-9) and w == pytest.approx(c + r, rel=1e-12)
     m.initialize(write_config(tmp_path, design="dry", it_capacity_mw=300, parameters={"staff_gpcd": 30, "topup": 0.01}))
+    m.set_value(TEMP, np.array([20.0]))                              # initialize starts the component over, inputs included
+    m.set_value(RH, np.array([60.0]))
+    m.update()
     w2 = m.get_value(WITHDRAWN, np.empty(1))[0] * 86400 * model.GAL_M3
     assert w2 == pytest.approx(300 * 7000 * 0.01 / 365 + 130 * 30 + maint, rel=1e-9)
 
