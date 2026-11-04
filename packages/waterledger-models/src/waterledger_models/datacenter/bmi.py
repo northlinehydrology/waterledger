@@ -23,7 +23,7 @@ Configuration (a YAML file, or the same keys as a dict passed to initialize):
 Variables (all on the one scalar grid point, float64):
     input   atmosphere_bottom_air__temperature                         degC     air (dry-bulb) temperature
     input   atmosphere_bottom_air_water_vapor__relative_saturation     percent  relative humidity (humidity: relative)
-    input   atmosphere_bottom_air_water_vapor__specific_saturation     kg kg-1  specific humidity (humidity: specific)
+    input   atmosphere_bottom_air_water_vapor__mass_fraction           kg kg-1  specific humidity: water vapor over moist air (humidity: specific)
     input   land_surface_air__pressure                                 Pa       surface pressure (humidity: specific)
     output  data_center_cooling_water__withdrawal_volume_flux          m3 s-1   water taken: cooling makeup (evaporation,
                                                                                 drift, blowdown, loop top-ups) plus staff water
@@ -52,7 +52,7 @@ GAL_PER_M3 = model.GAL_M3
 INPUTS = {
     "atmosphere_bottom_air__temperature": "degC",
     "atmosphere_bottom_air_water_vapor__relative_saturation": "percent",
-    "atmosphere_bottom_air_water_vapor__specific_saturation": "kg kg-1",
+    "atmosphere_bottom_air_water_vapor__mass_fraction": "kg kg-1",
     "land_surface_air__pressure": "Pa",
 }
 HUMIDITY = ("relative", "specific")
@@ -312,7 +312,7 @@ class CoolingWaterBmi(ScalarPointBmi):
     def _compute(self):
         tdb = self._values["atmosphere_bottom_air__temperature"]
         if self._humidity == "specific":
-            rh = relative_humidity(tdb, self._values["atmosphere_bottom_air_water_vapor__specific_saturation"], self._values["land_surface_air__pressure"])
+            rh = relative_humidity(tdb, self._values["atmosphere_bottom_air_water_vapor__mass_fraction"], self._values["land_surface_air__pressure"])
         else:
             rh = self._values["atmosphere_bottom_air_water_vapor__relative_saturation"]
         twb = model.wet_bulb(tdb, rh)

@@ -161,7 +161,7 @@ def test_specific_humidity_and_pressure(tmp_path):
             rel.set_value(TEMP, np.array([t]))
             rel.set_value(RH, np.array([rh]))
             spec.set_value(TEMP, np.array([t]))
-            spec.set_value("atmosphere_bottom_air_water_vapor__specific_saturation", np.array([specific_humidity(t, rh, p)]))
+            spec.set_value("atmosphere_bottom_air_water_vapor__mass_fraction", np.array([specific_humidity(t, rh, p)]))
             spec.set_value("land_surface_air__pressure", np.array([p]))
             rel.update()
             spec.update()
