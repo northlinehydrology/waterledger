@@ -54,7 +54,7 @@ est.water.condensate.avg         # water a coil takes out of outside air; withdr
 est.electricity.avg_mw           # average power, MW, from the hourly heat balance at this place's weather
 est.electricity.peak_mw          # the 1-in-10-year hottest hour, every computer at capacity
 est.site.source, est.site.wastewater     # the choices, with defaults filled in
-site.estimate(weather="local")   # the model run at the place's own point on Open-Meteo's best match instead of its region's results (about 30 seconds)
+site.estimate(weather="local")   # the model run at the place's own point on Open-Meteo's best match instead of its ERA5 cell's results (about 30 seconds)
 est.comparisons                  # against what is already there: the water system's connections, the county's water, the sewer plant and its spare room, the utilities and the state; a very small water system gets no percent
 est.before_after                 # what changes at the place, today and after, as numbers
 est.site_loads                   # sediment, phosphorus and nitrogen in runoff from the finished site alone, typical wet ponds and no controls; construction and cooling water phosphorus beside them
@@ -71,6 +71,7 @@ ctx.supply.systems               # public water systems
 ctx.wastewater.plants            # sewer plants, nearest first
 ctx.receiving.downstream         # the path the water takes, with impaired waters and cleanup plans; a reach's .assessed says whether the state assessed it
 ctx.climate.design_storms_in     # NOAA Atlas 14 design storms
+ctx.climate.cell                 # the ERA5 cell the cooling weather comes from; .cell_land, .cell_moved, .weather_corrected
 ctx.energy.utilities             # electric utilities and their loads
 ```
 
@@ -81,16 +82,23 @@ They are validated, round-trip through JSON, and are described in
 
 | State | Places | Weather | Methods |
 |---|---|---|---|
-| Michigan | 1,541 cities and townships | Open-Meteo best match at eight regions | [waterledger.org/methods/mi](https://waterledger.org/methods/mi/), [brief](docs/methods/mi.pdf) |
-| Ohio | 2,318 cities, villages, townships and counties | NOAA stations, 10 climate divisions | [waterledger.org/methods/oh](https://waterledger.org/methods/oh/), [brief](docs/methods/oh.pdf) |
-| Virginia | 322 cities, towns and counties | NOAA stations, 6 climate divisions | [waterledger.org/methods/va](https://waterledger.org/methods/va/), [brief](docs/methods/va.pdf) |
-| Texas | 1,481 cities, towns and counties | NOAA stations, 10 climate divisions | [waterledger.org/methods/tx](https://waterledger.org/methods/tx/), [brief](docs/methods/tx.pdf) |
+| Michigan | 1,541 cities and townships | ERA5, each place's own cell (272 cells) | [waterledger.org/methods/mi](https://waterledger.org/methods/mi/), [brief](docs/methods/mi.pdf) |
+| Ohio | 2,318 cities, villages, townships and counties | ERA5, each place's own cell (203 cells) | [waterledger.org/methods/oh](https://waterledger.org/methods/oh/), [brief](docs/methods/oh.pdf) |
+| Virginia | 322 cities, towns and counties | ERA5, each place's own cell (148 cells) | [waterledger.org/methods/va](https://waterledger.org/methods/va/), [brief](docs/methods/va.pdf) |
+| Texas | 1,481 cities, towns and counties | ERA5, each place's own cell (616 cells) | [waterledger.org/methods/tx](https://waterledger.org/methods/tx/), [brief](docs/methods/tx.pdf) |
 
-Planned (model 1.8, not yet built): every place takes its cooling weather from its nearest ERA5 grid cell, about 10 km
-away, or, where that cell is mostly water, the nearest cell that is at least half land (189 places), in place of regions
-and division stations ([design 0004](docs/design/0004-era5-weather.md)). Where that cell is under 90% land, its
-temperature and dew point are corrected toward NOAA and Environment and Climate Change Canada stations near the shore
-within 100 km (619 places; [design 0005](docs/design/0005-era5-quantile-mapping.md)).
+**Model 1.8** (this release) changes where the cooling weather comes from. The cooling equations are unchanged.
+- **Each place's own ERA5 cell.** Every place takes its weather from its ERA5 grid cell (0.25 degrees, about 10 km
+  away), 1995-2024, in place of Michigan's eight regions and the other states' one NOAA station per climate division
+  ([design 0004](docs/design/0004-era5-weather.md)).
+- **The land rule.** Where a place's nearest cell is mostly water, it takes the nearest cell that is at least half land
+  (189 places).
+- **Shore correction.** Where a cell is under 90% land, its temperature and dew point are corrected toward NOAA and
+  Environment and Climate Change Canada stations near the shore within 100 km (619 places;
+  [design 0005](docs/design/0005-era5-quantile-mapping.md)).
+- **Faster runs.** The runs work 4,096 hours at a time with the same numbers to the bit, about 40 s a cell at ten workers.
+- **Snapshot format 3.** The snapshots carry each cell's results (`cells/`). Rainfall, road salt and golf stay with the
+  regions and division stations.
 
 Michigan has its own layers (state-reported water use, domestic wells, trout streams, lake-source cooling, state rules)
 and matches [waterledger.org/mi](https://waterledger.org/mi/) exactly. The other states use national datasets only
@@ -154,7 +162,7 @@ More in [examples/](examples/): a BMI coupling loop, eight Michigan locations in
 Three version numbers, each with one meaning:
 
 - **Package versions** (semver) change with the code: a major version for breaking changes.
-- **`waterledger_models.MODEL_VERSION`** (now 1.7) changes when the numbers change; the golden test fails until that is
+- **`waterledger_models.MODEL_VERSION`** (now 1.8) changes when the numbers change; the golden test fails until that is
   done deliberately. Every published estimate names the model version that produced it.
 - **The snapshot format version** (now 3, in each snapshot's manifest) changes when the structure of a state's data
   files does. Format 3 (model 1.8) carries cooling by ERA5 cell (`cells/`). The package still reads format 2, which the

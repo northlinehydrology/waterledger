@@ -330,8 +330,9 @@ snapshot exactly (Findlay, every statistic). In short:
   The peak day isn't held to closing: each flow's 1-in-10-year peak falls on its own days, up to 1% apart on 41.75_-83.50,
   and the estimate closes its middle peak itself.
 - **Cells across a state line** are in both states' snapshots, copied from the one run file, so the numbers are the same.
-- **Michigan is not built yet.** Its estimate reads its site files' regions, and the package matches waterledger.org/mi
-  exactly, so its move to cells goes with the site's.
+- **Michigan (built Nov 4, release 3.10.0).** Each place in its site data names its cell (`e`), and the site's
+  `data/cells/` hold the same records as the snapshot's `cells/`. The package's estimate reads the place's cell
+  (`scenario.cooling`), as the page will once its scripts load the cell file. Michigan's snapshot is format 3.
 
 ### The site
 

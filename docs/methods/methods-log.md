@@ -1416,3 +1416,36 @@ waterledger.org/mi exactly, so Michigan moves to cells with the site's own chang
 - Cell files listed in the manifest's `files`, so a download takes all of them: up to 616 files for Texas for one place.
   Not chosen.
 - Every cell in one file per state: simpler, but 3-9 MB for the page to load for one place.
+
+## Nov 4, 2026: Michigan on ERA5 cells, and model 1.8 (release 3.10.0, not yet published)
+
+**Decision (Andrew, Nov 4, 2026: "lets finish the current update").** Model 1.8 is every state's cooling on its places' ERA5
+cells, Michigan included, with the shore correction. `MODEL_VERSION` moves to 1.8 and the packages to 3.10.0. The cooling
+equations and parameters are model 1.7's: the golden test's numbers are unchanged, and only its version label moves.
+
+**Michigan.**
+- **Each place's cell.** Michigan's page data comes from the package (`waterledger build mi`). Each place now carries its
+  cell (`e`), the cell of the point Michigan's snapshot carries for it: its page position turned back into degrees and
+  rounded to five places. That is the point `waterledger era5 run MI` assigned the cell from, so no place can land on a
+  cell without a run. All 1,541 places fall on the 272 cells that were run.
+- **The cells' results.** They go in the site's `data/cells/<cell>.json`, the same records as a format 3 snapshot's
+  `cells/`.
+- **The regions.** The eight regions' Open-Meteo runs (best match at a hand-picked point each) are gone. The regions keep
+  their names and points, for road salt, golf and the map.
+- **The page.** It loads a place's cell file into its regions under the cell's id and reads cooling from there. The
+  package's estimate does the same (`scenario.cooling`), so the two stay identical. A place with no `e` (site data from
+  before 1.8) still reads its region.
+- **Validation.** The checks that read the West and Southeast regions now read each site's own cell. Grand Rapids stands
+  for West Michigan; Van Buren, Saline, Lowell and Gaines each have their own.
+- **Design PUE.** It is averaged over the state's cells.
+- **Source.** The `era5` source cites ERA5 itself (Hersbach et al. 2023, the open copy, the shore correction, ECCC's
+  attribution).
+- **Michigan's snapshot.** It is format 3 like the others. It refuses site files from before model 1.8, or whose cells
+  don't match their points.
+
+**Versions kept apart.** A 3.10 package reads the newest snapshot filed under model 1.8. Until those are published it reads
+the newest one of any model, and says so. A 3.9 package keeps reading model 1.7's. Format 3 snapshots are filed under 1.8
+(`latest-json --dir`).
+
+**Open.** The site's Ohio, Virginia and Texas pages must read cells (Northline's `engine/products/state_data.py` and the
+pages' scripts), and Michigan's page must load its place's cell. Both are Northline changes, made with this release.

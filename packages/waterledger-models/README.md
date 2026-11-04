@@ -24,5 +24,5 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
 - `weather`: hourly weather from the Open-Meteo archive, its best match (ERA5, ERA5-Land and, from 2017, IFS HRES); humidity
   conversions (Bolton 1980) and a record's design dry-bulb.
 
-`MODEL_VERSION` is Water Ledger's model version (1.7), which changes when the numbers do; the package version (semver)
+`MODEL_VERSION` is Water Ledger's model version (1.8), which changes when the numbers do; the package version (semver)
 changes with the code. They are independent.

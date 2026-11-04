@@ -2941,7 +2941,7 @@ wheels = [
 
 [[package]]
 name = "waterledger"
-version = "3.9.0"
+version = "3.10.0"
 source = { editable = "packages/waterledger" }
 dependencies = [
     { name = "openpyxl" },
@@ -2962,7 +2962,7 @@ requires-dist = [
 
 [[package]]
 name = "waterledger-data"
-version = "3.9.0"
+version = "3.10.0"
 source = { editable = "packages/waterledger-data" }
 dependencies = [
     { name = "geopandas" },
@@ -3011,7 +3011,7 @@ provides-extras = ["postgis", "era5", "r2"]
 
 [[package]]
 name = "waterledger-models"
-version = "3.9.0"
+version = "3.10.0"
 source = { editable = "packages/waterledger-models" }
 dependencies = [
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
