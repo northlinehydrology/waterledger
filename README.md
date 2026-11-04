@@ -156,8 +156,9 @@ Three version numbers, each with one meaning:
 - **Package versions** (semver) change with the code: a major version for breaking changes.
 - **`waterledger_models.MODEL_VERSION`** (now 1.7) changes when the numbers change; the golden test fails until that is
   done deliberately. Every published estimate names the model version that produced it.
-- **The snapshot format version** (now 2, in each snapshot's manifest) changes when the structure of a state's data
-  files does.
+- **The snapshot format version** (now 3, in each snapshot's manifest) changes when the structure of a state's data
+  files does. Format 3 (model 1.8) carries cooling by ERA5 cell (`cells/`). The package still reads format 2, which the
+  published model 1.7 snapshots are.
 
 ## Development
 
