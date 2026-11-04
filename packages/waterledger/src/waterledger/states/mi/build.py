@@ -557,6 +557,13 @@ def main(n=DRAWS):
     enr = pl.enrich(munis, bounds)
     cmap = build_map(cnt)
     places = build_places(cnt, munis, enr, cmap, great_lake_near(bounds), near_systems(munis, enr))
+    # a region's cooling, where the page has a region and no place (its starting view, the region menu, the methods page's table): the cell at the
+    # region's own point ("Grand Rapids area"), which its name describes; the cell most of its places use if no place shares that one
+    from waterledger import scenario as sc
+    from waterledger.national.cells import for_regions
+    pts = {rid: sc.lonlat(dict(zip(("x", "y"), proj(r["lon"], r["lat"])))) for rid, r in regions.items()}       # as the places' points are made
+    for rid, cid in for_regions(pts, [(p["r"], p["e"]) for p in places]).items():
+        regions[rid]["cell"] = cid
     storms = pl.county_design_storms(cnt)
     tracker_muni = {}
     for tid, (name, county) in TRACKER_MUNI.items():

@@ -44,6 +44,22 @@ def place_fields(c, corrected):
     return out
 
 
+def for_regions(points, place_cells):
+    """{region: cell} for a page's regions or climate divisions, where it shows one with no place chosen: the cell at the region's own point
+    (`points` {region: (lon, lat)}, already as the places' points are), if a place uses it, else the cell most of the region's places use.
+    `place_cells`: [(region, cell)] for every place."""
+    from collections import Counter
+
+    from waterledger_data import era5
+    used = {c for _, c in place_cells}
+    out = {}
+    for rid, (lon, lat) in points.items():
+        own = era5.cell(round(lat, 5), round(lon, 5))["id"]
+        mine = Counter(c for r, c in place_cells if r == rid)
+        out[rid] = own if own in used else mine.most_common(1)[0][0] if mine else None
+    return out
+
+
 def runs(ids, runs_dir=None):
     """{cell: its run file, read}; raises naming the cells with no run, which `waterledger era5 run` makes."""
     from waterledger.national import era5 as E

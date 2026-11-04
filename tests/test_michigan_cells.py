@@ -59,3 +59,10 @@ def test_michigans_cell_points_are_the_snapshots():
         x, y = B.proj(lon, lat)
         lo, la = sc.lonlat({"x": x, "y": y})
         assert B.cell_for(lon, lat) == era5.cell(round(la, 5), round(lo, 5))["id"]
+
+
+def test_a_regions_cell_is_its_own_points_if_a_place_uses_it_else_its_places_most_used():
+    from waterledger.national.cells import for_regions
+    place_cells = [("west", "43.00_-85.50"), ("west", "43.50_-86.25"), ("west", "43.50_-86.25"), ("up", "46.50_-87.50"), ("up", "46.75_-88.00"), ("up", "46.75_-88.00")]
+    got = for_regions({"west": (-85.52, 42.88), "up": (-89.9, 46.9), "none": (-84.0, 44.0)}, place_cells)
+    assert got == {"west": "43.00_-85.50", "up": "46.75_-88.00", "none": None}     # Grand Rapids's own cell; the U.P. point's cell, which no place uses
