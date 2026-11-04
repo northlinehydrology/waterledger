@@ -11,3 +11,8 @@ README = (pathlib.Path(__file__).parent.parent / "README.md").read_text()
 def test_readme_states_the_current_versions():
     assert re.search(r"MODEL_VERSION`\*\* \(now ([\d.]+)\)", README).group(1) == MODEL_VERSION
     assert int(re.search(r"snapshot format version\*\* \(now (\d+),", README).group(1)) == FORMAT
+
+
+def test_models_readme_states_the_model_version():
+    text = (pathlib.Path(__file__).parent.parent / "packages" / "waterledger-models" / "README.md").read_text()
+    assert re.search(r"model version \(([\d.]+)\)", text).group(1) == MODEL_VERSION

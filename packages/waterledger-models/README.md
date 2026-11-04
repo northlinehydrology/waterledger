@@ -14,11 +14,13 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
   or without evaporative assist; staff water at the campus's size.
 - `datacenter.lake`: lake-source (once-through) cooling with forced lake evaporation (USGS heat-balance method).
 - `datacenter.ensemble`: vectorized ensembles as xarray, dask across locations (`[ensemble]`).
-- `datacenter.bmi`: `CoolingWaterBmi` and `LakeCoolingBmi`, CSDMS BMI 2.0 with CSDMS Standard Names (`[bmi]`).
+- `datacenter.bmi`: `CoolingWaterBmi` and `LakeCoolingBmi`, CSDMS BMI 2.0 with CSDMS Standard Names (`[bmi]`), on the public
+  `ScalarPointBmi` base for components built on them.
 - `datacenter.stac`: ensemble results as zarr with a STAC catalog (`[stac]`).
-- `hydrology`: screening hydrology: SCS curve-number runoff, Theis drawdown and Glover stream depletion.
+- `hydrology`: screening hydrology: SCS curve-number runoff, Theis drawdown and Glover stream depletion (on arrays).
 - `runoff`: runoff, sediment, nutrients, road salt and fuel from a developed site.
-- `weather`: hourly weather from the Open-Meteo archive, its best match (ERA5, ERA5-Land and, from 2017, IFS HRES).
+- `weather`: hourly weather from the Open-Meteo archive, its best match (ERA5, ERA5-Land and, from 2017, IFS HRES); humidity
+  conversions (Bolton 1980) and a record's design dry-bulb.
 
-`MODEL_VERSION` is Water Ledger's model version (1.6), which changes when the numbers do; the package version (semver)
+`MODEL_VERSION` is Water Ledger's model version (1.7), which changes when the numbers do; the package version (semver)
 changes with the code. They are independent.
