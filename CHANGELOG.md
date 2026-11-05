@@ -12,6 +12,7 @@ Model 1.8 changes the cooling weather and nothing else in the model.
 
 Also seven changes from coupling the BMI components in NOAA's NextGen (the Water Ledger NextGen Michigan example). The station check is in [docs/methods/era5-station-check.md](docs/methods/era5-station-check.md).
 
+- **Beta, said plainly.** The README's new Stability section says the packages are beta despite the 3.x number. From here, a breaking change to the public API waits for 4.0. The classifiers say `Development Status :: 4 - Beta`.
 - **`MODEL_VERSION` 1.8 and package version 3.10.0.** A 3.10 package reads the newest snapshot filed under model 1.8. Until those are published it reads the newest 1.7 snapshot and says so; 3.9 packages keep reading 1.7.
 - **Michigan on ERA5 cells.**
   - `waterledger build mi` gives each place its cell (`e`) and writes the site's `data/cells/`, in place of the eight regions' Open-Meteo runs. The regions stay for salt, golf and the map, and the validation checks use each site's own cell.

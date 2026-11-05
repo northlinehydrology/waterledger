@@ -157,6 +157,13 @@ for a well's response at every step of a run.
 
 More in [examples/](examples/): a BMI coupling loop, eight Michigan locations in parallel, and a STAC catalog of results.
 
+## Stability
+
+The packages are in beta, whatever the 3.x number suggests. Within 3.x the API can still change in a minor release, and every such
+change is listed under **Breaking** in [CHANGELOG.md](CHANGELOG.md). The numbers are versioned separately, by `MODEL_VERSION`
+(below). From 3.10 on, a breaking change to the public API (`wl.place`, `Place`, `Context`, `Site`, `Estimate`, the BMI
+components and the command line) waits for 4.0 and does not ship in a 3.x minor release.
+
 ## Model version
 
 Three version numbers, each with one meaning:

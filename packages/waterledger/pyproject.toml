@@ -7,6 +7,7 @@ license = "BSD-3-Clause"
 authors = [{ name = "Northline Hydrology", email = "info@northlinehydrology.com" }]
 requires-python = ">=3.11"
 classifiers = [
+  "Development Status :: 4 - Beta",
   "Programming Language :: Python :: 3",
   "Intended Audience :: Science/Research",
   "Topic :: Scientific/Engineering :: Hydrology",
