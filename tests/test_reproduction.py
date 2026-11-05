@@ -71,6 +71,7 @@ def test_campus_at_300_mw_matches_water_ledger(weather):
             expected = REF["per_100mw"][design][key][q] * 3 + np.quantile(staff[flow], int(q[1:]) / 100) * k
             got = float(s[flow].sel(design=design, stat=stat, quantile=q))
             assert abs(got - expected) <= 3 * PUBLISHED, f"{design}/{key} {q}: {got} vs {expected}"
-    # the figures on the page: a 300 MW closed-loop campus takes about 6,900 gallons a day (staff water alone: 6,646 at seed 13's 400 draws; 6,888 over 100,000)
+    # the figures on the page: a 300 MW closed-loop campus takes about 7,200 gallons a day, nearly all staff water (about 6,900 at
+    # 400 draws since staff water moved to the Latin hypercube on Nov 1, 2026; it read 6,646 before), plus loop top-ups
     dry = s.sel(design="dry", stat="avg", quantile="p50")
-    assert round(float(dry["withdrawn"]) * 1e6, -2) == 6900
+    assert round(float(dry["withdrawn"]) * 1e6, -2) == 7200
