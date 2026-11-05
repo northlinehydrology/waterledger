@@ -2965,6 +2965,7 @@ name = "waterledger-data"
 version = "3.10.0"
 source = { editable = "packages/waterledger-data" }
 dependencies = [
+    { name = "certifi" },
     { name = "geopandas" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
@@ -2993,6 +2994,7 @@ r2 = [
 [package.metadata]
 requires-dist = [
     { name = "boto3", marker = "extra == 'r2'", specifier = ">=1.28" },
+    { name = "certifi", specifier = ">=2024.2" },
     { name = "fsspec", marker = "extra == 'era5'", specifier = ">=2023.1" },
     { name = "geopandas", specifier = ">=1.0" },
     { name = "numpy", specifier = ">=1.24" },

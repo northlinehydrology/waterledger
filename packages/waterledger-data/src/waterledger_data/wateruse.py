@@ -357,12 +357,26 @@ def twdb_report_url(listing, report=TWDB_REPORT_ID):
     return TWDB_SARA + "ReportViewer/ViewReport.aspx?" + urllib.parse.urlencode({"reportPath": m.group(1), "lc": m.group(2)})
 
 
+def twdb_tls():
+    """The TLS check for TWDB's servers. Since early Nov 2026 www3.twdb.texas.gov sends its own certificate twice and not the Entrust
+    intermediate that signed it ("Entrust OV TLS Issuing RSA CA 2", itself under Sectigo's Public Server Authentication Root R46).
+    Browsers fetch a missing intermediate; Python doesn't, so the download failed verification. This is certifi's roots plus that
+    public intermediate, shipped in tables/ (from its issuer link, http://crt.sectigo.com/EntrustOVTLSIssuingRSACA2.crt; valid to
+    Dec 2027): the chain is still verified in full, and nothing is trusted that the roots don't vouch for."""
+    import ssl
+
+    import certifi
+    ctx = ssl.create_default_context(cafile=certifi.where())
+    ctx.load_verify_locations(os.path.join(os.path.dirname(__file__), "tables", "entrust_ov_tls_issuing_rsa_ca2.pem"))
+    return ctx
+
+
 def fetch_twdb(year=None):
     """Download TWDB's county summary (report 7) for `year` (default: the newest TWDB offers) as CSV, saved as
     wateruse/twdb/county_<year>_<retrieved>.csv. The report sits behind an SSRS viewer (a session, a form post with the
     viewer's tokens, then the CSV export), so this breaks if TWDB changes the page: keep the dated copies."""
     import http.cookiejar
-    op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+    op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()), urllib.request.HTTPSHandler(context=twdb_tls()))
     op.addheaders = [("User-Agent", "Mozilla/5.0"), ("Referer", TWDB_SARA + "reports/list")]
     step = "the report list"
     try:

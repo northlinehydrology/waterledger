@@ -211,3 +211,14 @@ def test_golf_outside_the_survey_map_is_the_national_median():
 def test_every_state_has_a_golf_figure():
     from waterledger.states import FIPS
     assert all(wu.golf(s)["gpd"] > 0 and wu.golf(s)["note"] for s in FIPS.values())
+
+
+def test_twdb_tls_carries_the_intermediate_twdbs_server_leaves_out():
+    """TWDB's server sends its own certificate but not the Entrust intermediate that signed it (Nov 2026), so Python couldn't verify it and the
+    nightly's Texas download failed; twdb_tls adds that public intermediate to certifi's roots, and still verifies in full."""
+    import ssl
+
+    from waterledger_data import wateruse
+    ctx = wateruse.twdb_tls()
+    names = [dict(x[0] for x in c["subject"]).get("commonName") for c in ctx.get_ca_certs()]
+    assert "Entrust OV TLS Issuing RSA CA 2" in names and ctx.verify_mode == ssl.CERT_REQUIRED and ctx.check_hostname
