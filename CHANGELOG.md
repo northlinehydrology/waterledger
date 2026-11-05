@@ -14,6 +14,11 @@ Also seven changes from coupling the BMI components in NOAA's NextGen (the Water
 
 - **Beta, said plainly.** The README's new Stability section says the packages are beta despite the 3.x number. From here, a breaking change to the public API waits for 4.0. The classifiers say `Development Status :: 4 - Beta`.
 - **`MODEL_VERSION` 1.8 and package version 3.10.0.** A 3.10 package reads the newest snapshot filed under model 1.8. Until those are published it reads the newest 1.7 snapshot and says so; 3.9 packages keep reading 1.7.
+- **Shore stations near the water kept** (Nov 5, found at Galveston).
+  - `climate.isd_sites` gives a spanning station a linked fallback, used only if it fails the 85% rule.
+  - Pieces link within 8 km (was 5), and a year no piece lists is read from every piece.
+  - A station is judged a shore station by its own nearest cell (`shore_land`), not the land rule's.
+  - Stations that qualified before keep their records. 11 more shore stations qualify, and 8 more cells are corrected.
 - **Michigan on ERA5 cells.**
   - `waterledger build mi` gives each place its cell (`e`) and writes the site's `data/cells/`, in place of the eight regions' Open-Meteo runs. The regions stay for salt, golf and the map, and the validation checks use each site's own cell.
   - The package's Michigan estimate takes the place's cell. Site data from before 1.8, with no `e`, still reads by region.

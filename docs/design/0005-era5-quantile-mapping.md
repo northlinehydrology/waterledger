@@ -11,14 +11,37 @@ under them. The method ships as `waterledger_models.quantile_mapping`. Scripts a
 
 1. **The 90% land cutoff stays.** Cells under 90% land are corrected, and cells at least 90% land keep ERA5 as it is.
 2. **Shore stations only.** A shore cell is corrected only from stations that are themselves near water. The test chosen
-   is the cells' own: a station is a shore station when its own ERA5 cell is under 90% land. That is the cell the land
-   rule would give a place at the station. A shore cell with no shore station within 100 km stays uncorrected and is
-   flagged, as cells with no station were before.
+   is the cells' own: a station is a shore station when its own nearest ERA5 cell is under 90% land (Nov 5; it was the
+   cell the land rule would give a place at the station, see below). A shore cell with no shore station within 100 km
+   stays uncorrected and is flagged, as cells with no station were before.
 3. **More stations.** (a) ISD records are linked across a change of station ID, so a site whose record is split between
    IDs can still pass the 85% rule. (b) Environment and Climate Change Canada's hourly stations are added under the same
    completeness rule and quality checks.
 
 Ship it with ERA5 as model 1.8. The rest of the method is as proposed (sections 1-6).
+
+**Nov 5, 2026: two fixes before 1.8 shipped** (Andrew: "Fix it now and we will do it in the 1.8 release"). The local check
+found Galveston's cell uncorrected, though its airport (KGLS) is on the island.
+- **KGLS failed the 85% rule through a gap in the linking.** 722420-12923 spans 1995-2024 but has 82% of hours: 2000-2003
+  are under 722420-99999. Linking skipped any station that spans the period under one ID, and isd-history lists the old
+  piece 7 km away, past the 5 km link. Now:
+  - a spanning station also gets a linked fallback, used only if the station alone fails, so every station that qualified
+    before keeps its record exactly;
+  - the link is 8 km;
+  - a site is tried when its pieces cover half the period by isd-history's dates;
+  - a year no piece lists is read from every piece, since isd-history's dates end early (Hobby).
+- **The shore test used the land rule's cell,** which moves a station right on the water inland (Corpus Christi NAS). A
+  station is now judged by its own nearest cell.
+- **The effect.**
+  - 11 more shore stations qualify: KGLS, Corpus Christi NAS, Aransas County, Burke Lakefront, Selfridge, Tulip City,
+    Southwest Michigan Regional, Langley, Andrews, Salisbury and Sussex County.
+  - 58 shore cells take new stations: 8 newly corrected (Michigan 3 on the southwest Lake Michigan shore; Texas 5 at
+    Galveston, Freeport, Clear Lake and Corpus Christi Bay) and 50 corrected from a changed set. None loses its correction.
+  - Corrected cells: Michigan 58, Ohio 11, Virginia 16, Texas 18 (were 55, 11, 16, 13).
+  - Uncorrected shore cells: Michigan 17, Texas 7 (were 20 and 12).
+- **The rerun.** Those 58 cells were rerun, the earlier results kept in `CACHE/era5/runs/model1.8-before-nov5`.
+- **What wasn't redone.** The leave-one-out figures below are the Nov 4 prototype's, before the fixes; `waterledger era5
+  check ST` reruns them on the current rules.
 
 ## The problem
 

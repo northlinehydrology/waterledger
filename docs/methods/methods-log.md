@@ -1449,3 +1449,46 @@ the newest one of any model, and says so. A 3.9 package keeps reading model 1.7'
 
 **Open.** The site's Ohio, Virginia and Texas pages must read cells (Northline's `engine/products/state_data.py` and the
 pages' scripts), and Michigan's page must load its place's cell. Both are Northline changes, made with this release.
+
+## Nov 5, 2026: shore stations near the water kept, for model 1.8 (Galveston)
+
+**Decision (Andrew, Nov 5, 2026: "Fix it now and we will do it in the 1.8 release").** Two fixes to design 0005's stations,
+made before 1.8 shipped.
+
+**Why.** The local check found Galveston city's cell (29.25_-95.25, 89% land) uncorrected, "no shore station within 100 km",
+though Galveston's airport, Scholes Field (KGLS), is on the island. Two causes:
+- **KGLS failed the 85% rule through a gap in the linking.**
+  - 722420-12923 spans 1995-2024 under one ID but has 82.3% of hours: 2000-2003 are missing, and 1995-96 are at 65-69%.
+  - Those years are under 722420-99999, Galveston, 1973-2003.
+  - Linking left alone any station whose one ID spans the period, and isd-history lists the old piece 7 km away (its
+    position rounded to 0.1 degree), past the 5 km link.
+  - The land rule wasn't the cause: KGLS's land-rule cell is 67% land.
+- **The shore test used the land rule's cell.** For a station on the water the land rule moves it inland: Corpus Christi
+  NAS's nearest cell is under 90% land, its land-rule cell isn't. It was the only one lost that way.
+- **Hobby isn't the answer here, but shows the same gap.** Houston Hobby was never a candidate: isd-history lists 722435-12918
+  to 1997 and 722440-12918 from 2005, but 722435's files run to 2010. It is inland (its cell is 99% land) and not a shore
+  station either way.
+
+**What changed** (`climate.isd_sites`, `climate._isd_frame`, `quantile_mapping.is_shore_station`, `national.era5.candidates`):
+- **A linked fallback for spanning stations.** A station whose one ID spans the period also gets a linked fallback
+  (`+linked`), used only if the station alone fails the 85% rule. Every station that qualified before keeps its record:
+  checked, none changed.
+- **LINK_KM 5 to 8 km.** Austin's Camp Mabry and Bergstrom, sharing a USAF 17 km apart, stay separate.
+- **A looser first screen.** A site is tried when its pieces cover half the period by isd-history's dates (was 85%). A year
+  no piece lists is read from every piece. The 85% of hours still decides.
+- **The nearest-cell shore test.** A station is a shore station by its own nearest cell (`shore_land`), and keeps its
+  land-rule cell for comparison with ERA5.
+
+**What it does.**
+- **Stations.** 11 more shore stations qualify: KGLS, Corpus Christi NAS, Aransas County, Burke Lakefront (Cleveland),
+  Selfridge, Tulip City (Holland), Southwest Michigan Regional (Benton Harbor), Langley, Andrews, Salisbury and Sussex
+  County.
+- **Cells.** 58 shore cells take new stations: 8 newly corrected, 50 corrected from a changed set, none uncorrected that was
+  corrected. The 8 are Michigan 3, on the southwest Lake Michigan shore, and Texas 5: Galveston, Freeport, Clear Lake and
+  Corpus Christi Bay.
+- **Totals.** Corrected cells: Michigan 58, Ohio 11, Virginia 16, Texas 18. Uncorrected shore cells: Michigan 17, Texas 7.
+- **The rerun.** The 58 cells were rerun at three workers (another job had the machine). The earlier results are kept in
+  `CACHE/era5/runs/model1.8-before-nov5`, and the four snapshots were rebuilt.
+
+**Not redone.** The prototype's leave-one-out figures in 0005 are from before the fixes; `waterledger era5 check ST` gives
+them on the current rules.
