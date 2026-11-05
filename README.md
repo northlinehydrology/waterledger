@@ -54,7 +54,7 @@ est.water.condensate.avg         # water a coil takes out of outside air; withdr
 est.electricity.avg_mw           # average power, MW, from the hourly heat balance at this place's weather
 est.electricity.peak_mw          # the 1-in-10-year hottest hour, every computer at capacity
 est.site.source, est.site.wastewater     # the choices, with defaults filled in
-site.estimate(weather="local")   # the model run at the place's own point on Open-Meteo's best match instead of its region's results (about 30 seconds)
+site.estimate(weather="local")   # the model run at the place's own point on Open-Meteo's best match instead of its ERA5 cell's results (about 30 seconds)
 est.comparisons                  # against what is already there: the water system's connections, the county's water, the sewer plant and its spare room, the utilities and the state; a very small water system gets no percent
 est.before_after                 # what changes at the place, today and after, as numbers
 est.site_loads                   # sediment, phosphorus and nitrogen in runoff from the finished site alone, typical wet ponds and no controls; construction and cooling water phosphorus beside them
@@ -71,6 +71,7 @@ ctx.supply.systems               # public water systems
 ctx.wastewater.plants            # sewer plants, nearest first
 ctx.receiving.downstream         # the path the water takes, with impaired waters and cleanup plans; a reach's .assessed says whether the state assessed it
 ctx.climate.design_storms_in     # NOAA Atlas 14 design storms
+ctx.climate.cell                 # the ERA5 cell the cooling weather comes from; .cell_land, .cell_moved, .weather_corrected
 ctx.energy.utilities             # electric utilities and their loads
 ```
 
@@ -81,14 +82,29 @@ They are validated, round-trip through JSON, and are described in
 
 | State | Places | Weather | Methods |
 |---|---|---|---|
-| Michigan | 1,541 cities and townships | Open-Meteo best match at eight regions | [waterledger.org/methods/mi](https://waterledger.org/methods/mi/), [brief](docs/methods/mi.pdf) |
-| Ohio | 2,318 cities, villages, townships and counties | NOAA stations, 10 climate divisions | [waterledger.org/methods/oh](https://waterledger.org/methods/oh/), [brief](docs/methods/oh.pdf) |
-| Virginia | 322 cities, towns and counties | NOAA stations, 6 climate divisions | [waterledger.org/methods/va](https://waterledger.org/methods/va/), [brief](docs/methods/va.pdf) |
-| Texas | 1,481 cities, towns and counties | NOAA stations, 10 climate divisions | [waterledger.org/methods/tx](https://waterledger.org/methods/tx/), [brief](docs/methods/tx.pdf) |
+| Michigan | 1,541 cities and townships | ERA5, each place's own cell (272 cells) | [waterledger.org/methods/mi](https://waterledger.org/methods/mi/), [brief](docs/methods/mi.pdf) |
+| Ohio | 2,318 cities, villages, townships and counties | ERA5, each place's own cell (203 cells) | [waterledger.org/methods/oh](https://waterledger.org/methods/oh/), [brief](docs/methods/oh.pdf) |
+| Virginia | 322 cities, towns and counties | ERA5, each place's own cell (148 cells) | [waterledger.org/methods/va](https://waterledger.org/methods/va/), [brief](docs/methods/va.pdf) |
+| Texas | 1,481 cities, towns and counties | ERA5, each place's own cell (616 cells) | [waterledger.org/methods/tx](https://waterledger.org/methods/tx/), [brief](docs/methods/tx.pdf) |
+
+**Model 1.8** (this release) changes where the cooling weather comes from. The cooling equations are unchanged.
+- **Each place's own ERA5 cell.** Every place takes its weather from its ERA5 grid cell (0.25 degrees, about 10 km
+  away), 1995-2024, in place of Michigan's eight regions and the other states' one NOAA station per climate division
+  ([design 0004](docs/design/0004-era5-weather.md)).
+- **The land rule.** Where a place's nearest cell is mostly water, it takes the nearest cell that is at least half land
+  (189 places).
+- **Shore correction.** Where a cell is under 90% land, its temperature and dew point are corrected toward NOAA and
+  Environment and Climate Change Canada stations near the shore within 100 km (619 places;
+  [design 0005](docs/design/0005-era5-quantile-mapping.md)).
+- **Faster runs.** The runs work 4,096 hours at a time with the same numbers to the bit, about 40 s a cell at ten workers.
+- **Snapshot format 3.** The snapshots carry each cell's results (`cells/`). Rainfall, road salt and golf stay with the
+  regions and division stations.
 
 Michigan has its own layers (state-reported water use, domestic wells, trout streams, lake-source cooling, state rules)
 and matches [waterledger.org/mi](https://waterledger.org/mi/) exactly. The other states use national datasets only
 ([design 0002](docs/design/0002-national-tier.md)); any other state can be built locally with `waterledger build-state ST`.
+Adding a state from start to publication, step by step with what each step writes and how to tell it's done, is in
+[docs/add-a-state.md](docs/add-a-state.md).
 
 ### Data
 
@@ -124,25 +140,40 @@ physics.RANGES["switch_margin"], physics.SOURCES["switch_margin"]    # a paramet
 
 ```python
 from waterledger_models.datacenter import CoolingWaterBmi
+from waterledger_models.weather import design_dry_bulb
 
 m = CoolingWaterBmi()
-m.initialize("config.yaml")          # design, it_capacity_mw, forcing, parameter overrides
-m.set_value("atmosphere_bottom_air__temperature", ...)
-m.update()
+m.initialize({"design": "hybrid", "it_capacity_mw": 300,       # or a YAML file with the same keys
+              "humidity": "specific",                            # NextGen's AORC: specific humidity and pressure, converted inside
+              "parameters": {"design_db": design_dry_bulb(t2m)}})   # a hybrid's 0.4% design dry-bulb, from the place's hourly record
+m.set_value("atmosphere_bottom_air__temperature", ...)           # this hour's inputs
+m.update()                                                       # computes the hour; outputs change only here
 m.get_value("data_center_cooling_water__withdrawal_volume_flux", ...)
 ```
 
+A component of your own at one point can build on `waterledger_models.datacenter.ScalarPointBmi`, which supplies every BMI
+function but `initialize()`; its docstring has the contract. `waterledger_models.hydrology.stream_depletion` takes arrays,
+for a well's response at every step of a run.
+
 More in [examples/](examples/): a BMI coupling loop, eight Michigan locations in parallel, and a STAC catalog of results.
+
+## Stability
+
+The packages are in beta, whatever the 3.x number suggests. Within 3.x the API can still change in a minor release, and every such
+change is listed under **Breaking** in [CHANGELOG.md](CHANGELOG.md). The numbers are versioned separately, by `MODEL_VERSION`
+(below). From 3.10 on, a breaking change to the public API (`wl.place`, `Place`, `Context`, `Site`, `Estimate`, the BMI
+components and the command line) waits for 4.0 and does not ship in a 3.x minor release.
 
 ## Model version
 
 Three version numbers, each with one meaning:
 
 - **Package versions** (semver) change with the code: a major version for breaking changes.
-- **`waterledger_models.MODEL_VERSION`** (now 1.7) changes when the numbers change; the golden test fails until that is
+- **`waterledger_models.MODEL_VERSION`** (now 1.8) changes when the numbers change; the golden test fails until that is
   done deliberately. Every published estimate names the model version that produced it.
-- **The snapshot format version** (now 2, in each snapshot's manifest) changes when the structure of a state's data
-  files does.
+- **The snapshot format version** (now 3, in each snapshot's manifest) changes when the structure of a state's data
+  files does. Format 3 (model 1.8) carries cooling by ERA5 cell (`cells/`). The package still reads format 2, which the
+  published model 1.7 snapshots are.
 
 ## Development
 
@@ -162,6 +193,31 @@ asked) publishes a state's snapshot.
 
 Paths (download cache, site output) come from `WATERLEDGER_CACHE` / `WATERLEDGER_SITE` or a `waterledger.toml` (see
 `waterledger_data.config`).
+
+### Model 1.8's ERA5 runs
+
+Model 1.8's cooling numbers come from one run per ERA5 cell, about 13 to 14 hours at ten workers for the four states, in seven parts
+started by hand ([design 0004](docs/design/0004-era5-weather.md), section 3). Each part fetches its cells from Open-Meteo's open
+copy of ERA5, corrects the shore cells ([design 0005](docs/design/0005-era5-quantile-mapping.md)), runs them and writes
+`CACHE/era5/runs/model1.8/<cell>.json` as each finishes, so a stopped part resumes where it stopped:
+
+```bash
+uv sync                                              # the workspace includes waterledger-data[era5] (omfiles, s3fs) for the open copy
+uv run waterledger era5 cells TX --part 1/3           # what a part holds, and how much of it is done
+uv run waterledger era5 run TX --part 1/3 --workers 10
+```
+
+Saving to R2 is optional and off unless set up. With it on, each raw cell series goes to the private bucket `waterledger-raw` at
+`era5/<cell>/<fetch date>.npz` (with its request and checksum) and each result to `runs/era5/model1.8/<cell>.json` as it
+finishes. A file R2 already has with the same checksum is skipped. Before a part starts, whatever R2 has and this machine
+doesn't is pulled, so a part can be restarted on another machine. A failed upload warns and keeps the local file; it never
+stops the run.
+
+| Setting | R2 through |
+|---|---|
+| `WATERLEDGER_R2=wrangler` | the wrangler login on this machine (`npx wrangler login`) |
+| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | R2's S3 API, with a token limited to the bucket (`uv sync --extra r2` for boto3) |
+| `WATERLEDGER_R2=off`, or `--no-r2` | nothing: off |
 
 ## Contributing and project standards
 

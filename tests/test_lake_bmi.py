@@ -25,19 +25,38 @@ def test_bmi_daily_run(tmp_path):
     assert m.get_time_step() == 86400 and m.get_end_time() == len(temps) * 86400
     evap = []
     while m.get_current_time() < m.get_end_time():
+        m.update()
         w, r, e = (m.get_value(n, np.empty(1))[0] for n in (WITHDRAWN, RETURNED, EVAP))
         assert w == r and 0 < e < w
         evap.append(e)
-        m.update()
     p = {k: (a + b) / 2 for k, (a, b) in lake.RANGES.items()}
     expected = lake.forced_evaporation_m3s(100, p["utilization"], p["heat_factor"], np.array(temps), 4.47 * lake.MPH_PER_MS)
     np.testing.assert_allclose(evap, expected, rtol=1e-12)
     assert np.argmax(evap) > 150        # more evaporation from warm summer water
+    m = LakeCoolingBmi()
+    m.initialize({"it_capacity_mw": 100})
     m.set_value(TEMP, np.array([20.0]))
+    m.update()
     warm = m.get_value(EVAP, np.empty(1))[0]
     m.set_value(TEMP, np.array([4.0]))
+    assert m.get_value(EVAP, np.empty(1))[0] == warm        # outputs change on update(), not on set_value
+    m.update()
     assert warm > m.get_value(EVAP, np.empty(1))[0]
     m.finalize()
+
+
+def test_bmi_configuration_as_a_dict(tmp_path):
+    temps = REF["Lake Michigan"]["temps"][:10]
+    (tmp_path / "t.csv").write_text("\n".join(str(t) for t in temps))
+    cfg = {"it_capacity_mw": 100, "forcing": str(tmp_path / "t.csv"), "wind_speed": 4.47}
+    (tmp_path / "c.yaml").write_text(yaml.safe_dump(cfg))
+    a, b = LakeCoolingBmi(), LakeCoolingBmi()
+    a.initialize(str(tmp_path / "c.yaml"))
+    b.initialize(cfg)
+    for _ in range(5):
+        a.update()
+        b.update()
+    assert a.get_value(EVAP, np.empty(1))[0] == b.get_value(EVAP, np.empty(1))[0] > 0
 
 
 def test_bmi_rejects_unknown_parameters(tmp_path):

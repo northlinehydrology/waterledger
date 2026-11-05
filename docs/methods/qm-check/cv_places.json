@@ -1,0 +1,1316 @@
+{
+ "runs": [
+  {
+   "geoid": "4805000",
+   "way": "lapse",
+   "cell": "30.25_-97.75",
+   "cell_land": 0.9959867596626282,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.7235063320172495,
+   "towers.withdrawn_peak_1in10": 0.9326865528313757,
+   "hybrid.withdrawn_avg": 0.10923963229365666,
+   "hybrid.withdrawn_peak_1in10": 0.6061801766298592,
+   "assist.withdrawn_avg": 0.1517996110514928,
+   "assist.withdrawn_peak_1in10": 0.7220712012274422,
+   "design_db": 38.1,
+   "rh_max": 100.0,
+   "td_over_t": 4
+  },
+  {
+   "geoid": "4865000",
+   "way": "lapse",
+   "cell": "29.50_-98.50",
+   "cell_land": 0.9919277429580688,
+   "corrected": true,
+   "anchors": [
+    [
+     "Hondo Municipal Airport",
+     67.1,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.726116043040117,
+   "towers.withdrawn_peak_1in10": 0.9291491761006552,
+   "hybrid.withdrawn_avg": 0.11422836092831429,
+   "hybrid.withdrawn_peak_1in10": 0.5765464691864803,
+   "assist.withdrawn_avg": 0.1630574251437011,
+   "assist.withdrawn_peak_1in10": 0.6845052100932323,
+   "design_db": 38.430916839599604,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "4863500",
+   "way": "lapse",
+   "cell": "30.50_-97.75",
+   "cell_land": 0.974043607711792,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.7211881454316629,
+   "towers.withdrawn_peak_1in10": 0.9316401406144441,
+   "hybrid.withdrawn_avg": 0.10618040817756058,
+   "hybrid.withdrawn_peak_1in10": 0.613616695506974,
+   "assist.withdrawn_avg": 0.1479999804708557,
+   "assist.withdrawn_peak_1in10": 0.7217985789907929,
+   "design_db": 38.0,
+   "rh_max": 100.0,
+   "td_over_t": 9
+  },
+  {
+   "geoid": "4819000",
+   "way": "lapse",
+   "cell": "32.75_-96.75",
+   "cell_land": 0.9672073721885681,
+   "corrected": true,
+   "anchors": [
+    [
+     "Fort Worth Naval Air Station Jrb/Carswell Field",
+     65.5,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.7206313300165179,
+   "towers.withdrawn_peak_1in10": 0.9561030520755254,
+   "hybrid.withdrawn_avg": 0.1163187960024056,
+   "hybrid.withdrawn_peak_1in10": 0.6808537276263276,
+   "assist.withdrawn_avg": 0.18034807383092333,
+   "assist.withdrawn_peak_1in10": 0.8317048469848038,
+   "design_db": 39.60164250488281,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "4824000",
+   "way": "lapse",
+   "cell": "31.75_-106.50",
+   "cell_land": 0.999664306640625,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.700763816090705,
+   "towers.withdrawn_peak_1in10": 0.9045897756536114,
+   "hybrid.withdrawn_avg": 0.09934306874158182,
+   "hybrid.withdrawn_peak_1in10": 0.6047994242796181,
+   "assist.withdrawn_avg": 0.1733732941390539,
+   "assist.withdrawn_peak_1in10": 0.7849499087367022,
+   "design_db": 38.4,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "4803000",
+   "way": "lapse",
+   "cell": "35.25_-101.75",
+   "cell_land": 0.9972838163375854,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6803628017309471,
+   "towers.withdrawn_peak_1in10": 0.8912612880427313,
+   "hybrid.withdrawn_avg": 0.0663967602151476,
+   "hybrid.withdrawn_peak_1in10": 0.5550908850765721,
+   "assist.withdrawn_avg": 0.10219963308212232,
+   "assist.withdrawn_peak_1in10": 0.6837497871587528,
+   "design_db": 36.8,
+   "rh_max": 100.0,
+   "td_over_t": 11
+  },
+  {
+   "geoid": "4835000",
+   "way": "lapse",
+   "cell": "29.75_-95.50",
+   "cell_land": 0.9973448514938354,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.7312238094862479,
+   "towers.withdrawn_peak_1in10": 0.9298223329472131,
+   "hybrid.withdrawn_avg": 0.11103541239360978,
+   "hybrid.withdrawn_peak_1in10": 0.5843243972939289,
+   "assist.withdrawn_avg": 0.12572563850751917,
+   "assist.withdrawn_peak_1in10": 0.6388561532160952,
+   "design_db": 36.45,
+   "rh_max": 100.0,
+   "td_over_t": 11
+  },
+  {
+   "geoid": "4845000",
+   "way": "lapse",
+   "cell": "33.50_-102.00",
+   "cell_land": 0.997665286064148,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6881129288050489,
+   "towers.withdrawn_peak_1in10": 0.8992578082989386,
+   "hybrid.withdrawn_avg": 0.07591318253195817,
+   "hybrid.withdrawn_peak_1in10": 0.5707560612613995,
+   "assist.withdrawn_avg": 0.1193576538537269,
+   "assist.withdrawn_peak_1in10": 0.7147838475122588,
+   "design_db": 37.3,
+   "rh_max": 100.0,
+   "td_over_t": 1
+  },
+  {
+   "geoid": "5182000",
+   "way": "lapse",
+   "cell": "36.75_-76.00",
+   "cell_land": 0.5116811394691467,
+   "corrected": true,
+   "anchors": [
+    [
+     "Norfolk International Airport",
+     24.3,
+     0.65
+    ],
+    [
+     "Norfolk Nas",
+     33.1,
+     0.35
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6910137295542738,
+   "towers.withdrawn_peak_1in10": 0.9419151338230434,
+   "hybrid.withdrawn_avg": 0.058311145327920755,
+   "hybrid.withdrawn_peak_1in10": 0.6938304709705205,
+   "assist.withdrawn_avg": 0.06244677921982057,
+   "assist.withdrawn_peak_1in10": 0.6314235356261932,
+   "design_db": 34.199893423177215,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "5109816",
+   "way": "lapse",
+   "cell": "36.50_-82.25",
+   "cell_land": 0.9832298159599304,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6708354580933615,
+   "towers.withdrawn_peak_1in10": 0.8573646638986623,
+   "hybrid.withdrawn_avg": 0.035177930019843213,
+   "hybrid.withdrawn_peak_1in10": 0.45144194167523954,
+   "assist.withdrawn_avg": 0.03803558432624202,
+   "assist.withdrawn_peak_1in10": 0.37571503517625343,
+   "design_db": 31.15,
+   "rh_max": 100.0,
+   "td_over_t": 11
+  },
+  {
+   "geoid": "51107",
+   "way": "lapse",
+   "cell": "39.00_-77.75",
+   "cell_land": 0.9960630536079407,
+   "corrected": true,
+   "anchors": [
+    [
+     "Etrn Wv Rgnl/Shpherd Fd Ap",
+     48.9,
+     0.42
+    ],
+    [
+     "Ronald Reagan Washington Natl Ap",
+     64.2,
+     0.244
+    ],
+    [
+     "Quantico Mcaf",
+     67.3,
+     0.222
+    ],
+    [
+     "Baltimore-Washington Intl Airport",
+     94.0,
+     0.114
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6708346709656481,
+   "towers.withdrawn_peak_1in10": 0.9103619229930238,
+   "hybrid.withdrawn_avg": 0.040619250396493,
+   "hybrid.withdrawn_peak_1in10": 0.6053123564273206,
+   "assist.withdrawn_avg": 0.04875657868632328,
+   "assist.withdrawn_peak_1in10": 0.5644021180186996,
+   "design_db": 33.25748089845555,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "5167000",
+   "way": "lapse",
+   "cell": "37.50_-77.50",
+   "cell_land": 0.9812918901443481,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6836116883112644,
+   "towers.withdrawn_peak_1in10": 0.922539275126713,
+   "hybrid.withdrawn_avg": 0.054780980551690256,
+   "hybrid.withdrawn_peak_1in10": 0.6247265826082227,
+   "assist.withdrawn_avg": 0.06814564182126424,
+   "assist.withdrawn_peak_1in10": 0.6367346067708691,
+   "design_db": 34.85179999999964,
+   "rh_max": 100.0,
+   "td_over_t": 4
+  },
+  {
+   "geoid": "5168000",
+   "way": "lapse",
+   "cell": "37.25_-80.00",
+   "cell_land": 0.9988707900047302,
+   "corrected": true,
+   "anchors": [
+    [
+     "Lynchburg Rgnl/Preston Glenn Fld Ap",
+     70.7,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6669547997041586,
+   "towers.withdrawn_peak_1in10": 0.8690473640698935,
+   "hybrid.withdrawn_avg": 0.03395531000332476,
+   "hybrid.withdrawn_peak_1in10": 0.4692501019167039,
+   "assist.withdrawn_avg": 0.038770055395484816,
+   "assist.withdrawn_peak_1in10": 0.42577725241440967,
+   "design_db": 32.13308123168945,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3944856",
+   "way": "lapse",
+   "cell": "41.50_-82.00",
+   "cell_land": 0.5864068269729614,
+   "corrected": true,
+   "anchors": [
+    [
+     "Akron-Canton Regional Airport",
+     79.7,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6650137792686366,
+   "towers.withdrawn_peak_1in10": 0.9085983358544891,
+   "hybrid.withdrawn_avg": 0.035836662973239036,
+   "hybrid.withdrawn_peak_1in10": 0.5896226415426702,
+   "assist.withdrawn_avg": 0.03998236913676943,
+   "assist.withdrawn_peak_1in10": 0.475896483891182,
+   "design_db": 32.7914520980835,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3977000",
+   "way": "lapse",
+   "cell": "41.75_-83.50",
+   "cell_land": 0.7815909385681152,
+   "corrected": true,
+   "anchors": [
+    [
+     "Detroit Metro Wayne County Airport",
+     55.3,
+     0.454
+    ],
+    [
+     "Findlay Airport",
+     83.0,
+     0.201
+    ],
+    [
+     "Detroit City Airport",
+     83.5,
+     0.199
+    ],
+    [
+     "Jakson Co-Rynolds Fld Arpt",
+     97.5,
+     0.146
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6600207157775382,
+   "towers.withdrawn_peak_1in10": 0.9025469883526143,
+   "hybrid.withdrawn_avg": 0.033381962313485294,
+   "hybrid.withdrawn_peak_1in10": 0.5863486159837334,
+   "assist.withdrawn_avg": 0.039385839567089465,
+   "assist.withdrawn_peak_1in10": 0.5409180999362206,
+   "design_db": 32.480195215044276,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3915000",
+   "way": "lapse",
+   "cell": "39.25_-84.50",
+   "cell_land": 0.9863733053207397,
+   "corrected": true,
+   "anchors": [
+    [
+     "Cincinnati/Northern Kentucky Intl Ap",
+     27.3,
+     0.888
+    ],
+    [
+     "J.M.Cox Dayton International Airport",
+     76.8,
+     0.112
+    ]
+   ],
+   "towers.withdrawn_avg": 0.671574289128041,
+   "towers.withdrawn_peak_1in10": 0.9072281919835845,
+   "hybrid.withdrawn_avg": 0.04392828078863918,
+   "hybrid.withdrawn_peak_1in10": 0.5752193458694201,
+   "assist.withdrawn_avg": 0.05001284595282142,
+   "assist.withdrawn_peak_1in10": 0.5019830905564844,
+   "design_db": 33.05945510086279,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3916000",
+   "way": "lapse",
+   "cell": "41.50_-81.75",
+   "cell_land": 0.6492148637771606,
+   "corrected": true,
+   "anchors": [
+    [
+     "Akron-Canton Regional Airport",
+     69.6,
+     0.645
+    ],
+    [
+     "Youngstown-Warren Regional Airport",
+     93.8,
+     0.355
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6626432279593633,
+   "towers.withdrawn_peak_1in10": 0.8997576001312109,
+   "hybrid.withdrawn_avg": 0.03355884634711009,
+   "hybrid.withdrawn_peak_1in10": 0.5573605069136207,
+   "assist.withdrawn_avg": 0.03718248857979359,
+   "assist.withdrawn_peak_1in10": 0.4535446323279394,
+   "design_db": 32.348514913038116,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3918000",
+   "way": "lapse",
+   "cell": "40.00_-83.00",
+   "cell_land": 0.9936215281486511,
+   "corrected": true,
+   "anchors": [
+    [
+     "Zanesville Municipal Arpt",
+     94.5,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6634988002440831,
+   "towers.withdrawn_peak_1in10": 0.8903378196106405,
+   "hybrid.withdrawn_avg": 0.03439065967191055,
+   "hybrid.withdrawn_peak_1in10": 0.5327775219058188,
+   "assist.withdrawn_avg": 0.0368385728541661,
+   "assist.withdrawn_peak_1in10": 0.4217312955051523,
+   "design_db": 32.0309841440836,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "2614765820",
+   "way": "lapse",
+   "cell": "43.00_-82.50",
+   "cell_land": 0.7500801086425781,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6528854584590431,
+   "towers.withdrawn_peak_1in10": 0.8886943252362095,
+   "hybrid.withdrawn_avg": 0.02163546219720335,
+   "hybrid.withdrawn_peak_1in10": 0.605582256069982,
+   "assist.withdrawn_avg": 0.020263584328195215,
+   "assist.withdrawn_peak_1in10": 0.4474172681200763,
+   "design_db": 30.2,
+   "rh_max": 100.0,
+   "td_over_t": 3
+  },
+  {
+   "geoid": "2605341060",
+   "way": "lapse",
+   "cell": "46.50_-90.25",
+   "cell_land": 0.9106557369232178,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6375737457209255,
+   "towers.withdrawn_peak_1in10": 0.8755819451950972,
+   "hybrid.withdrawn_avg": 0.017011732368803517,
+   "hybrid.withdrawn_peak_1in10": 0.5298214756016011,
+   "assist.withdrawn_avg": 0.01978884578339198,
+   "assist.withdrawn_peak_1in10": 0.4485830728361488,
+   "design_db": 30.8,
+   "rh_max": 100.0,
+   "td_over_t": 27
+  },
+  {
+   "geoid": "2608131240",
+   "way": "lapse",
+   "cell": "42.75_-85.50",
+   "cell_land": 0.9788656234741211,
+   "corrected": true,
+   "anchors": [
+    [
+     "Capital City Airport",
+     73.5,
+     0.517
+    ],
+    [
+     "Muskegon County Airport",
+     76.1,
+     0.483
+    ]
+   ],
+   "towers.withdrawn_avg": 0.653209395399019,
+   "towers.withdrawn_peak_1in10": 0.8968870411456138,
+   "hybrid.withdrawn_avg": 0.025219575454264315,
+   "hybrid.withdrawn_peak_1in10": 0.6181760396730693,
+   "assist.withdrawn_avg": 0.02707517991953421,
+   "assist.withdrawn_peak_1in10": 0.4414343649898311,
+   "design_db": 31.070569545294372,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "4805000",
+   "way": "bias",
+   "cell": "30.25_-97.75",
+   "cell_land": 0.9959867596626282,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.7235063320172495,
+   "towers.withdrawn_peak_1in10": 0.9326865528313757,
+   "hybrid.withdrawn_avg": 0.10923963229365666,
+   "hybrid.withdrawn_peak_1in10": 0.6061801766298592,
+   "assist.withdrawn_avg": 0.1517996110514928,
+   "assist.withdrawn_peak_1in10": 0.7220712012274422,
+   "design_db": 38.1,
+   "rh_max": 100.0,
+   "td_over_t": 4
+  },
+  {
+   "geoid": "4865000",
+   "way": "bias",
+   "cell": "29.50_-98.50",
+   "cell_land": 0.9919277429580688,
+   "corrected": true,
+   "anchors": [
+    [
+     "Hondo Municipal Airport",
+     67.1,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.7185770730842562,
+   "towers.withdrawn_peak_1in10": 0.9146332928127774,
+   "hybrid.withdrawn_avg": 0.09750836936649313,
+   "hybrid.withdrawn_peak_1in10": 0.5451001920931968,
+   "assist.withdrawn_avg": 0.1290813393372448,
+   "assist.withdrawn_peak_1in10": 0.6268505167558818,
+   "design_db": 37.16198347107437,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "4863500",
+   "way": "bias",
+   "cell": "30.50_-97.75",
+   "cell_land": 0.974043607711792,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.7211881454316629,
+   "towers.withdrawn_peak_1in10": 0.9316401406144441,
+   "hybrid.withdrawn_avg": 0.10618040817756058,
+   "hybrid.withdrawn_peak_1in10": 0.613616695506974,
+   "assist.withdrawn_avg": 0.1479999804708557,
+   "assist.withdrawn_peak_1in10": 0.7217985789907929,
+   "design_db": 38.0,
+   "rh_max": 100.0,
+   "td_over_t": 9
+  },
+  {
+   "geoid": "4819000",
+   "way": "bias",
+   "cell": "32.75_-96.75",
+   "cell_land": 0.9672073721885681,
+   "corrected": true,
+   "anchors": [
+    [
+     "Fort Worth Naval Air Station Jrb/Carswell Field",
+     65.5,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.7217132795093346,
+   "towers.withdrawn_peak_1in10": 0.9543176654526647,
+   "hybrid.withdrawn_avg": 0.11789017974870913,
+   "hybrid.withdrawn_peak_1in10": 0.6840780772190052,
+   "assist.withdrawn_avg": 0.177409888937772,
+   "assist.withdrawn_peak_1in10": 0.8280828602656962,
+   "design_db": 39.2,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "4824000",
+   "way": "bias",
+   "cell": "31.75_-106.50",
+   "cell_land": 0.999664306640625,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.700763816090705,
+   "towers.withdrawn_peak_1in10": 0.9045897756536114,
+   "hybrid.withdrawn_avg": 0.09934306874158182,
+   "hybrid.withdrawn_peak_1in10": 0.6047994242796181,
+   "assist.withdrawn_avg": 0.1733732941390539,
+   "assist.withdrawn_peak_1in10": 0.7849499087367022,
+   "design_db": 38.4,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "4803000",
+   "way": "bias",
+   "cell": "35.25_-101.75",
+   "cell_land": 0.9972838163375854,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6803628017309471,
+   "towers.withdrawn_peak_1in10": 0.8912612880427313,
+   "hybrid.withdrawn_avg": 0.0663967602151476,
+   "hybrid.withdrawn_peak_1in10": 0.5550908850765721,
+   "assist.withdrawn_avg": 0.10219963308212232,
+   "assist.withdrawn_peak_1in10": 0.6837497871587528,
+   "design_db": 36.8,
+   "rh_max": 100.0,
+   "td_over_t": 11
+  },
+  {
+   "geoid": "4835000",
+   "way": "bias",
+   "cell": "29.75_-95.50",
+   "cell_land": 0.9973448514938354,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.7312238094862479,
+   "towers.withdrawn_peak_1in10": 0.9298223329472131,
+   "hybrid.withdrawn_avg": 0.11103541239360978,
+   "hybrid.withdrawn_peak_1in10": 0.5843243972939289,
+   "assist.withdrawn_avg": 0.12572563850751917,
+   "assist.withdrawn_peak_1in10": 0.6388561532160952,
+   "design_db": 36.45,
+   "rh_max": 100.0,
+   "td_over_t": 11
+  },
+  {
+   "geoid": "4845000",
+   "way": "bias",
+   "cell": "33.50_-102.00",
+   "cell_land": 0.997665286064148,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6881129288050489,
+   "towers.withdrawn_peak_1in10": 0.8992578082989386,
+   "hybrid.withdrawn_avg": 0.07591318253195817,
+   "hybrid.withdrawn_peak_1in10": 0.5707560612613995,
+   "assist.withdrawn_avg": 0.1193576538537269,
+   "assist.withdrawn_peak_1in10": 0.7147838475122588,
+   "design_db": 37.3,
+   "rh_max": 100.0,
+   "td_over_t": 1
+  },
+  {
+   "geoid": "5182000",
+   "way": "bias",
+   "cell": "36.75_-76.00",
+   "cell_land": 0.5116811394691467,
+   "corrected": true,
+   "anchors": [
+    [
+     "Norfolk International Airport",
+     24.3,
+     0.65
+    ],
+    [
+     "Norfolk Nas",
+     33.1,
+     0.35
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6901981606006244,
+   "towers.withdrawn_peak_1in10": 0.9264511798330863,
+   "hybrid.withdrawn_avg": 0.056424311264089776,
+   "hybrid.withdrawn_peak_1in10": 0.7563536819500765,
+   "assist.withdrawn_avg": 0.0429802680831894,
+   "assist.withdrawn_peak_1in10": 0.5312437661547174,
+   "design_db": 31.604543653973497,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "5109816",
+   "way": "bias",
+   "cell": "36.50_-82.25",
+   "cell_land": 0.9832298159599304,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6708354580933615,
+   "towers.withdrawn_peak_1in10": 0.8573646638986623,
+   "hybrid.withdrawn_avg": 0.035177930019843213,
+   "hybrid.withdrawn_peak_1in10": 0.45144194167523954,
+   "assist.withdrawn_avg": 0.03803558432624202,
+   "assist.withdrawn_peak_1in10": 0.37571503517625343,
+   "design_db": 31.15,
+   "rh_max": 100.0,
+   "td_over_t": 11
+  },
+  {
+   "geoid": "51107",
+   "way": "bias",
+   "cell": "39.00_-77.75",
+   "cell_land": 0.9960630536079407,
+   "corrected": true,
+   "anchors": [
+    [
+     "Etrn Wv Rgnl/Shpherd Fd Ap",
+     48.9,
+     0.42
+    ],
+    [
+     "Ronald Reagan Washington Natl Ap",
+     64.2,
+     0.244
+    ],
+    [
+     "Quantico Mcaf",
+     67.3,
+     0.222
+    ],
+    [
+     "Baltimore-Washington Intl Airport",
+     94.0,
+     0.114
+    ]
+   ],
+   "towers.withdrawn_avg": 0.673054865186164,
+   "towers.withdrawn_peak_1in10": 0.9149620605394646,
+   "hybrid.withdrawn_avg": 0.04467725103972574,
+   "hybrid.withdrawn_peak_1in10": 0.6036011554060032,
+   "assist.withdrawn_avg": 0.054065360835688275,
+   "assist.withdrawn_peak_1in10": 0.5766579653471517,
+   "design_db": 33.68753455813623,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "5167000",
+   "way": "bias",
+   "cell": "37.50_-77.50",
+   "cell_land": 0.9812918901443481,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6836116883112644,
+   "towers.withdrawn_peak_1in10": 0.922539275126713,
+   "hybrid.withdrawn_avg": 0.054780980551690256,
+   "hybrid.withdrawn_peak_1in10": 0.6247265826082227,
+   "assist.withdrawn_avg": 0.06814564182126424,
+   "assist.withdrawn_peak_1in10": 0.6367346067708691,
+   "design_db": 34.85179999999964,
+   "rh_max": 100.0,
+   "td_over_t": 4
+  },
+  {
+   "geoid": "5168000",
+   "way": "bias",
+   "cell": "37.25_-80.00",
+   "cell_land": 0.9988707900047302,
+   "corrected": true,
+   "anchors": [
+    [
+     "Lynchburg Rgnl/Preston Glenn Fld Ap",
+     70.7,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6658293911543749,
+   "towers.withdrawn_peak_1in10": 0.8641663403684959,
+   "hybrid.withdrawn_avg": 0.031986785094485326,
+   "hybrid.withdrawn_peak_1in10": 0.45399713154684107,
+   "assist.withdrawn_avg": 0.035007288011302054,
+   "assist.withdrawn_peak_1in10": 0.3903198763516251,
+   "design_db": 31.6,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3944856",
+   "way": "bias",
+   "cell": "41.50_-82.00",
+   "cell_land": 0.5864068269729614,
+   "corrected": true,
+   "anchors": [
+    [
+     "Akron-Canton Regional Airport",
+     79.7,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6602779987906682,
+   "towers.withdrawn_peak_1in10": 0.8926622870126238,
+   "hybrid.withdrawn_avg": 0.027376064422654785,
+   "hybrid.withdrawn_peak_1in10": 0.6584837848252876,
+   "assist.withdrawn_avg": 0.023433445604058398,
+   "assist.withdrawn_peak_1in10": 0.3741320462944908,
+   "design_db": 30.083333333333336,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3977000",
+   "way": "bias",
+   "cell": "41.75_-83.50",
+   "cell_land": 0.7815909385681152,
+   "corrected": true,
+   "anchors": [
+    [
+     "Detroit Metro Wayne County Airport",
+     55.3,
+     0.454
+    ],
+    [
+     "Findlay Airport",
+     83.0,
+     0.201
+    ],
+    [
+     "Detroit City Airport",
+     83.5,
+     0.199
+    ],
+    [
+     "Jakson Co-Rynolds Fld Arpt",
+     97.5,
+     0.146
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6608903184763875,
+   "towers.withdrawn_peak_1in10": 0.908156225715355,
+   "hybrid.withdrawn_avg": 0.03322412857453004,
+   "hybrid.withdrawn_peak_1in10": 0.5898128026196305,
+   "assist.withdrawn_avg": 0.03903527314515162,
+   "assist.withdrawn_peak_1in10": 0.5462752763662536,
+   "design_db": 32.73770766016384,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3915000",
+   "way": "bias",
+   "cell": "39.25_-84.50",
+   "cell_land": 0.9863733053207397,
+   "corrected": true,
+   "anchors": [
+    [
+     "Cincinnati/Northern Kentucky Intl Ap",
+     27.3,
+     0.888
+    ],
+    [
+     "J.M.Cox Dayton International Airport",
+     76.8,
+     0.112
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6700830173783141,
+   "towers.withdrawn_peak_1in10": 0.9033551017655865,
+   "hybrid.withdrawn_avg": 0.04289685965044508,
+   "hybrid.withdrawn_peak_1in10": 0.5789774640170141,
+   "assist.withdrawn_avg": 0.04907896950276054,
+   "assist.withdrawn_peak_1in10": 0.5037399357894615,
+   "design_db": 32.82719318977145,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3916000",
+   "way": "bias",
+   "cell": "41.50_-81.75",
+   "cell_land": 0.6492148637771606,
+   "corrected": true,
+   "anchors": [
+    [
+     "Akron-Canton Regional Airport",
+     69.6,
+     0.645
+    ],
+    [
+     "Youngstown-Warren Regional Airport",
+     93.8,
+     0.355
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6586573215131235,
+   "towers.withdrawn_peak_1in10": 0.8891980238541503,
+   "hybrid.withdrawn_avg": 0.02676988721021075,
+   "hybrid.withdrawn_peak_1in10": 0.5838665232509641,
+   "assist.withdrawn_avg": 0.026212595380579323,
+   "assist.withdrawn_peak_1in10": 0.3999084876943562,
+   "design_db": 30.777367789580733,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3918000",
+   "way": "bias",
+   "cell": "40.00_-83.00",
+   "cell_land": 0.9936215281486511,
+   "corrected": true,
+   "anchors": [
+    [
+     "Zanesville Municipal Arpt",
+     94.5,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6633039732871777,
+   "towers.withdrawn_peak_1in10": 0.8903282844748013,
+   "hybrid.withdrawn_avg": 0.036459373098552704,
+   "hybrid.withdrawn_peak_1in10": 0.5678457578554951,
+   "assist.withdrawn_avg": 0.038201898965421754,
+   "assist.withdrawn_peak_1in10": 0.42543478252692657,
+   "design_db": 31.45000000000001,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "2614765820",
+   "way": "bias",
+   "cell": "43.00_-82.50",
+   "cell_land": 0.7500801086425781,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6528854584590431,
+   "towers.withdrawn_peak_1in10": 0.8886943252362095,
+   "hybrid.withdrawn_avg": 0.02163546219720335,
+   "hybrid.withdrawn_peak_1in10": 0.605582256069982,
+   "assist.withdrawn_avg": 0.020263584328195215,
+   "assist.withdrawn_peak_1in10": 0.4474172681200763,
+   "design_db": 30.2,
+   "rh_max": 100.0,
+   "td_over_t": 3
+  },
+  {
+   "geoid": "2605341060",
+   "way": "bias",
+   "cell": "46.50_-90.25",
+   "cell_land": 0.9106557369232178,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6375737457209255,
+   "towers.withdrawn_peak_1in10": 0.8755819451950972,
+   "hybrid.withdrawn_avg": 0.017011732368803517,
+   "hybrid.withdrawn_peak_1in10": 0.5298214756016011,
+   "assist.withdrawn_avg": 0.01978884578339198,
+   "assist.withdrawn_peak_1in10": 0.4485830728361488,
+   "design_db": 30.8,
+   "rh_max": 100.0,
+   "td_over_t": 27
+  },
+  {
+   "geoid": "2608131240",
+   "way": "bias",
+   "cell": "42.75_-85.50",
+   "cell_land": 0.9788656234741211,
+   "corrected": true,
+   "anchors": [
+    [
+     "Capital City Airport",
+     73.5,
+     0.517
+    ],
+    [
+     "Muskegon County Airport",
+     76.1,
+     0.483
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6545734855337408,
+   "towers.withdrawn_peak_1in10": 0.906529033028417,
+   "hybrid.withdrawn_avg": 0.028794787383375903,
+   "hybrid.withdrawn_peak_1in10": 0.6089979229807574,
+   "assist.withdrawn_avg": 0.03333038005746466,
+   "assist.withdrawn_peak_1in10": 0.48663117781228105,
+   "design_db": 32.20889620000244,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "5182000",
+   "way": "lapse_shore",
+   "cell": "36.75_-76.00",
+   "cell_land": 0.5116811394691467,
+   "corrected": true,
+   "anchors": [
+    [
+     "Norfolk International Airport",
+     24.3,
+     0.59
+    ],
+    [
+     "Norfolk Nas",
+     33.1,
+     0.317
+    ],
+    [
+     "Nwpt News/Wimburg Intl Apt",
+     61.1,
+     0.093
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6907836903728085,
+   "towers.withdrawn_peak_1in10": 0.9419656712101023,
+   "hybrid.withdrawn_avg": 0.058359052880525716,
+   "hybrid.withdrawn_peak_1in10": 0.6934994608110181,
+   "assist.withdrawn_avg": 0.06278164518814511,
+   "assist.withdrawn_peak_1in10": 0.6305116266349655,
+   "design_db": 34.20815388538399,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3944856",
+   "way": "lapse_shore",
+   "cell": "41.50_-82.00",
+   "cell_land": 0.5864068269729614,
+   "corrected": true,
+   "anchors": [
+    [
+     "Lorain County Rgnl Airport",
+     22.7,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6605559208962994,
+   "towers.withdrawn_peak_1in10": 0.9063011755241901,
+   "hybrid.withdrawn_avg": 0.031570124232227874,
+   "hybrid.withdrawn_peak_1in10": 0.5966968949183313,
+   "assist.withdrawn_avg": 0.034503783502165625,
+   "assist.withdrawn_peak_1in10": 0.4596827533911845,
+   "design_db": 32.151673330960136,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3977000",
+   "way": "lapse_shore",
+   "cell": "41.75_-83.50",
+   "cell_land": 0.7815909385681152,
+   "corrected": true,
+   "anchors": [
+    [
+     "Detroit Metro Wayne County Airport",
+     55.3,
+     0.501
+    ],
+    [
+     "Windsor A",
+     73.9,
+     0.28
+    ],
+    [
+     "Detroit City Airport",
+     83.5,
+     0.219
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6589143966132431,
+   "towers.withdrawn_peak_1in10": 0.9000874387466349,
+   "hybrid.withdrawn_avg": 0.031453862026137355,
+   "hybrid.withdrawn_peak_1in10": 0.5897509708822433,
+   "assist.withdrawn_avg": 0.036813624252391396,
+   "assist.withdrawn_peak_1in10": 0.5376838148677754,
+   "design_db": 32.23890915123155,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3916000",
+   "way": "lapse_shore",
+   "cell": "41.50_-81.75",
+   "cell_land": 0.6492148637771606,
+   "corrected": true,
+   "anchors": [
+    [
+     "Lorain County Rgnl Airport",
+     39.7,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6595731420985853,
+   "towers.withdrawn_peak_1in10": 0.8976843690575631,
+   "hybrid.withdrawn_avg": 0.03048145035336622,
+   "hybrid.withdrawn_peak_1in10": 0.5664257754441768,
+   "assist.withdrawn_avg": 0.03345830621812,
+   "assist.withdrawn_peak_1in10": 0.4571675255771334,
+   "design_db": 32.0109500635612,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "2614765820",
+   "way": "lapse_shore",
+   "cell": "43.00_-82.50",
+   "cell_land": 0.7500801086425781,
+   "corrected": true,
+   "anchors": [
+    [
+     "Windsor A",
+     88.5,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6569389522977561,
+   "towers.withdrawn_peak_1in10": 0.9019841660195593,
+   "hybrid.withdrawn_avg": 0.028130143147657355,
+   "hybrid.withdrawn_peak_1in10": 0.6228951948653583,
+   "assist.withdrawn_avg": 0.031421567441736076,
+   "assist.withdrawn_peak_1in10": 0.5412824168606762,
+   "design_db": 31.780617732425334,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "5182000",
+   "way": "lapse_shore_isd",
+   "cell": "36.75_-76.00",
+   "cell_land": 0.5116811394691467,
+   "corrected": true,
+   "anchors": [
+    [
+     "Norfolk International Airport",
+     24.3,
+     0.65
+    ],
+    [
+     "Norfolk Nas",
+     33.1,
+     0.35
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6910137295542738,
+   "towers.withdrawn_peak_1in10": 0.9419151338230434,
+   "hybrid.withdrawn_avg": 0.058311145327920755,
+   "hybrid.withdrawn_peak_1in10": 0.6938304709705205,
+   "assist.withdrawn_avg": 0.06244677921982057,
+   "assist.withdrawn_peak_1in10": 0.6314235356261932,
+   "design_db": 34.199893423177215,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3944856",
+   "way": "lapse_shore_isd",
+   "cell": "41.50_-82.00",
+   "cell_land": 0.5864068269729614,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6608117807078481,
+   "towers.withdrawn_peak_1in10": 0.8935109912226943,
+   "hybrid.withdrawn_avg": 0.02801931440598236,
+   "hybrid.withdrawn_peak_1in10": 0.6716495953293314,
+   "assist.withdrawn_avg": 0.023303813538264197,
+   "assist.withdrawn_peak_1in10": 0.3667901107176652,
+   "design_db": 29.85,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3977000",
+   "way": "lapse_shore_isd",
+   "cell": "41.75_-83.50",
+   "cell_land": 0.7815909385681152,
+   "corrected": true,
+   "anchors": [
+    [
+     "Detroit Metro Wayne County Airport",
+     55.3,
+     0.695
+    ],
+    [
+     "Detroit City Airport",
+     83.5,
+     0.305
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6595332270977591,
+   "towers.withdrawn_peak_1in10": 0.9007757472949325,
+   "hybrid.withdrawn_avg": 0.0325351580661936,
+   "hybrid.withdrawn_peak_1in10": 0.5897789253212853,
+   "assist.withdrawn_avg": 0.03859110080091502,
+   "assist.withdrawn_peak_1in10": 0.5433903773636339,
+   "design_db": 32.38510144493897,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3916000",
+   "way": "lapse_shore_isd",
+   "cell": "41.50_-81.75",
+   "cell_land": 0.6492148637771606,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6596444566266975,
+   "towers.withdrawn_peak_1in10": 0.8898172740926338,
+   "hybrid.withdrawn_avg": 0.027129915948566855,
+   "hybrid.withdrawn_peak_1in10": 0.5869750769974051,
+   "assist.withdrawn_avg": 0.026025365541380432,
+   "assist.withdrawn_peak_1in10": 0.395074107730005,
+   "design_db": 30.7,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "2614765820",
+   "way": "lapse_shore_isd",
+   "cell": "43.00_-82.50",
+   "cell_land": 0.7500801086425781,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6528854584590431,
+   "towers.withdrawn_peak_1in10": 0.8886943252362095,
+   "hybrid.withdrawn_avg": 0.02163546219720335,
+   "hybrid.withdrawn_peak_1in10": 0.605582256069982,
+   "assist.withdrawn_avg": 0.020263584328195215,
+   "assist.withdrawn_peak_1in10": 0.4474172681200763,
+   "design_db": 30.2,
+   "rh_max": 100.0,
+   "td_over_t": 3
+  },
+  {
+   "geoid": "5182000",
+   "way": "lapse_shore_linked",
+   "cell": "36.75_-76.00",
+   "cell_land": 0.5116811394691467,
+   "corrected": true,
+   "anchors": [
+    [
+     "Norfolk International Airport",
+     24.3,
+     0.59
+    ],
+    [
+     "Norfolk Nas",
+     33.1,
+     0.317
+    ],
+    [
+     "Nwpt News/Wimburg Intl Apt",
+     61.1,
+     0.093
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6907836903728085,
+   "towers.withdrawn_peak_1in10": 0.9419656712101023,
+   "hybrid.withdrawn_avg": 0.058359052880525716,
+   "hybrid.withdrawn_peak_1in10": 0.6934994608110181,
+   "assist.withdrawn_avg": 0.06278164518814511,
+   "assist.withdrawn_peak_1in10": 0.6305116266349655,
+   "design_db": 34.20815388538399,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3944856",
+   "way": "lapse_shore_linked",
+   "cell": "41.50_-82.00",
+   "cell_land": 0.5864068269729614,
+   "corrected": true,
+   "anchors": [
+    [
+     "Lorain County Rgnl Airport",
+     22.7,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6605559208962994,
+   "towers.withdrawn_peak_1in10": 0.9063011755241901,
+   "hybrid.withdrawn_avg": 0.031570124232227874,
+   "hybrid.withdrawn_peak_1in10": 0.5966968949183313,
+   "assist.withdrawn_avg": 0.034503783502165625,
+   "assist.withdrawn_peak_1in10": 0.4596827533911845,
+   "design_db": 32.151673330960136,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3977000",
+   "way": "lapse_shore_linked",
+   "cell": "41.75_-83.50",
+   "cell_land": 0.7815909385681152,
+   "corrected": true,
+   "anchors": [
+    [
+     "Detroit Metro Wayne County Airport",
+     55.3,
+     0.695
+    ],
+    [
+     "Detroit City Airport",
+     83.5,
+     0.305
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6595332270977591,
+   "towers.withdrawn_peak_1in10": 0.9007757472949325,
+   "hybrid.withdrawn_avg": 0.0325351580661936,
+   "hybrid.withdrawn_peak_1in10": 0.5897789253212853,
+   "assist.withdrawn_avg": 0.03859110080091502,
+   "assist.withdrawn_peak_1in10": 0.5433903773636339,
+   "design_db": 32.38510144493897,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "3916000",
+   "way": "lapse_shore_linked",
+   "cell": "41.50_-81.75",
+   "cell_land": 0.6492148637771606,
+   "corrected": true,
+   "anchors": [
+    [
+     "Lorain County Rgnl Airport",
+     39.7,
+     1.0
+    ]
+   ],
+   "towers.withdrawn_avg": 0.6595731420985853,
+   "towers.withdrawn_peak_1in10": 0.8976843690575631,
+   "hybrid.withdrawn_avg": 0.03048145035336622,
+   "hybrid.withdrawn_peak_1in10": 0.5664257754441768,
+   "assist.withdrawn_avg": 0.03345830621812,
+   "assist.withdrawn_peak_1in10": 0.4571675255771334,
+   "design_db": 32.0109500635612,
+   "rh_max": 100.0,
+   "td_over_t": 0
+  },
+  {
+   "geoid": "2614765820",
+   "way": "lapse_shore_linked",
+   "cell": "43.00_-82.50",
+   "cell_land": 0.7500801086425781,
+   "corrected": false,
+   "anchors": [],
+   "towers.withdrawn_avg": 0.6528854584590431,
+   "towers.withdrawn_peak_1in10": 0.8886943252362095,
+   "hybrid.withdrawn_avg": 0.02163546219720335,
+   "hybrid.withdrawn_peak_1in10": 0.605582256069982,
+   "assist.withdrawn_avg": 0.020263584328195215,
+   "assist.withdrawn_peak_1in10": 0.4474172681200763,
+   "design_db": 30.2,
+   "rh_max": 100.0,
+   "td_over_t": 3
+  }
+ ]
+}

@@ -16,7 +16,7 @@ from waterledger.national.snapshot import DOWNSTREAM_HUCS, FORMAT, _write
 SITE_FILES = ("places", "estimates", "waters", "power")
 
 
-def write(out, date=None):
+def write(out, date=None, runs_dir=None):
     import datetime
 
     import geopandas as gpd
@@ -27,7 +27,6 @@ def write(out, date=None):
     from waterledger.national.data import FILES
     from waterledger_data import energy, power
     from waterledger_data import places as pl
-    from waterledger_models import MODEL_VERSION
     date = date or datetime.date.today().isoformat()
     folder = os.path.join(out, "MI", date)
     os.makedirs(os.path.join(folder, "michigan"), exist_ok=True)
@@ -37,12 +36,21 @@ def write(out, date=None):
     for n in SITE_FILES:
         _write(os.path.join(folder, "michigan", n + ".json"), sc.data(n))
 
+    if not all(r.get("e") for r in P["places"]):
+        raise ValueError("Michigan's site files are from before model 1.8 (no place names its ERA5 cell): rebuild them with `waterledger build mi` first")
     places = []
     for r in P["places"]:
         p = sc.place(r["g"])
         lon, lat = sc.lonlat(r)
         places.append({"geoid": r["g"], "name": r["n"], "base": p["base"], "kind": r["k"], "level": "place" if r["k"] == "city" else "township",
                        "county": r["c"], "county_fips": r["cf"], "lat": round(lat, 5), "lon": round(lon, 5), "division": r["r"]})
+    # format 3: each place's ERA5 cell and the cells' results, as every state's (national.cells); the site's own cells/ are the same records
+    from waterledger.national import cells
+    at, cell_files, weather, correction = cells.write(folder, places, runs_dir)
+    bad = [r["g"] for r in P["places"] if at[r["g"]]["cell"] != r["e"]]
+    if bad:
+        raise ValueError(f"{len(bad)} Michigan places' cells in the site files differ from their points' (first: {bad[:3]}): rebuild the site files")
+    places = [{**q, **at[q["geoid"]]} for q in places]
     _write(os.path.join(folder, "places.json"), {"places": places})
     bounds = pl.boundaries(pl.counties())
     from waterledger_data.census import _polygon
@@ -85,8 +93,8 @@ def write(out, date=None):
     _write(os.path.join(folder, "receiving.json"), {"by_place": sheds, "reaches": {c: {"n": H[c]["n"], "i": H[c].get("i", []), "a": H[c].get("a", 0)} for c in used},
                                                      "downstream": paths, "great_lakes": {r["g"]: r["gl"] for r in P["places"] if r.get("gl")}, "attains": {"organization": "21MICH", "cycle": W.get("cycle")}})
 
-    divisions = {k: {"name": v["name"], "station": v["station"], "station_id": None, "lat": v["lat"], "lon": v["lon"], "share_observed": None,
-                     "per_100mw": v["per_100mw"]} for k, v in E["regions"].items()}
+    divisions = {k: {"name": v["name"], "station": v["station"], "station_id": None, "lat": v["lat"], "lon": v["lon"], "share_observed": None}
+                 for k, v in E["regions"].items()}          # format 3: the regions' names and points; cooling is by cell
     _write(os.path.join(folder, "climate.json"), {"divisions": divisions, "staff_runs": E["staff"]["runs"],
                                                    "design_storms_in": {k: {str(a): b for a, b in v.items()} for k, v in E["county_storms_in"].items()},
                                                    "rain_in": W["rain_in"], "lake_source": E["lake_source"]})
@@ -109,12 +117,14 @@ def write(out, date=None):
         data = open(os.path.join(folder, name), "rb").read()
         files[name] = {"bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
     _write(os.path.join(folder, "manifest.json"), {
-        "format": FORMAT, "state": "MI", "fips": "26", "date": date, "model_version": MODEL_VERSION,
+        "format": FORMAT, "state": "MI", "fips": "26", "date": date, "model_version": E["model_version"],
         "data_generated": {n: sc.data(n).get("generated") or sc.data(n).get("updated") for n in SITE_FILES},
         "packages": {"waterledger": waterledger.__version__, "waterledger-data": waterledger_data.__version__, "waterledger-models": waterledger_models.__version__},
         "sources": {"places": "Census TIGERweb county subdivisions (Michigan's 1,541 cities and townships)", "supply": "EPA CWS service areas, SDWIS",
                     "wastewater": "EPA CWNS 2022, ECHO (with state-permitted plants)", "receiving": "USGS WBD, EPA ATTAINS (Michigan 2026 Integrated Report)",
-                    "climate": "Open-Meteo best match at eight Michigan regions, Atlas 14, Climate at a Glance", "energy": "MPSC territories, EIA-861",
+                    "climate": "NOAA Atlas 14, Climate at a Glance; the eight Michigan regions' names, for salt and golf", "energy": "MPSC territories, EIA-861",
+                    "cooling_weather": "Copernicus ERA5 (Open-Meteo's open copy), corrected near the shore toward NOAA ISD and ECCC stations (designs 0004, 0005)",
                     "wateruse": wu_source, "michigan": "Water Ledger Michigan's site files, carried as published"},
-        "water_use_years": wu_years, "files": files, "inputs": inputs, "checks": None})
+        "water_use_years": wu_years, "files": files, "inputs": inputs, "checks": None,
+        "cells": cell_files, "cell_rule": {"land_at_least": 0.5}, "weather": weather, "correction": correction})
     return folder

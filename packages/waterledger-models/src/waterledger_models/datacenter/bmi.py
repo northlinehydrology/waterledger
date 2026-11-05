@@ -1,22 +1,30 @@
 """CSDMS Basic Model Interface (BMI 2.0) for the cooling water model, so a coupling framework can drive it hour by
 hour: set air temperature and humidity, call update(), read the water withdrawn, consumed and returned.
+update() computes the step from the current time to the next from the inputs set for it; outputs change only on update(), so a framework
+may set the next step's inputs before it reads this step's outputs.
 
 One data center is one scalar grid point. A run uses a single parameter set (the central values by default, any of
 them overridable in the configuration file); the Monte Carlo ensemble lives in waterledger_models.datacenter.ensemble.
 
-Configuration (YAML):
+Configuration (a YAML file, or the same keys as a dict passed to initialize):
     design: dry | assist | hybrid | towers      (default towers)
     it_capacity_mw: 100                          (IT capacity, MW; sets the cooling load and the staff on site)
     time_step: 3600                              (seconds; the model is calibrated hourly)
     end_time: 31536000                           (seconds; default one year)
-    forcing: path/to/open_meteo.json             (optional; otherwise inputs come from set_value each step)
+    humidity: relative | specific                (default relative: which humidity inputs the component reads)
+    forcing: path/to/open_meteo.json             (optional; otherwise inputs come from set_value each step; relative humidity)
     parameters: {coc: 5, utilization: 0.8, staff_gpcd: 20, ...}
                                                  (optional overrides of the central values: model.PARAMETERS and
                                                   model.STAFF_PARAMETERS)
+    parameters: {design_db: 31.0}                (hybrid: the place's 0.4% design dry-bulb, C. A forcing file supplies it; when the
+                                                  framework supplies the weather, compute it once from the place's hourly record
+                                                  with waterledger_models.weather.design_dry_bulb)
 
 Variables (all on the one scalar grid point, float64):
     input   atmosphere_bottom_air__temperature                         degC     air (dry-bulb) temperature
-    input   atmosphere_bottom_air_water_vapor__relative_saturation     percent  relative humidity
+    input   atmosphere_bottom_air_water_vapor__relative_saturation     percent  relative humidity (humidity: relative)
+    input   atmosphere_bottom_air_water_vapor__mass_fraction           kg kg-1  specific humidity: water vapor over moist air (humidity: specific)
+    input   land_surface_air__pressure                                 Pa       surface pressure (humidity: specific)
     output  data_center_cooling_water__withdrawal_volume_flux          m3 s-1   water taken: cooling makeup (evaporation,
                                                                                 drift, blowdown, loop top-ups) plus staff water
     output  data_center_cooling_water__consumption_volume_flux         m3 s-1   water evaporated or lost: evaporation, drift, loop top-ups,
@@ -27,22 +35,26 @@ Variables (all on the one scalar grid point, float64):
     output  atmosphere_bottom_air__wet_bulb_temperature                degC     wet-bulb temperature (Stull 2011)
     output  data_center__electric_power                                MW       facility electricity: computers at the run's utilization, cooling
                                                                                 and losses (hour's PUE x IT power)
-Staff water is a constant flow at the configured capacity (it follows the people on site, not the weather or the
+With humidity: specific the component takes specific humidity and surface pressure, the pair NextGen's AORC and NWM forcing carries, and
+converts them to relative humidity each step (waterledger_models.weather.relative_humidity, Bolton 1980); the relative humidity input is then
+not read. Staff water is a constant flow at the configured capacity (it follows the people on site, not the weather or the
 IT load); withdrawal plus condensate always equals consumption plus return.
 """
 import numpy as np
-import yaml
 from bmipy import Bmi
 
 from waterledger_models.datacenter import lake, physics as model
-from waterledger_models.weather import from_open_meteo_json
+from waterledger_models.weather import from_open_meteo_json, relative_humidity
 
 GAL_PER_M3 = model.GAL_M3
 
 INPUTS = {
     "atmosphere_bottom_air__temperature": "degC",
     "atmosphere_bottom_air_water_vapor__relative_saturation": "percent",
+    "atmosphere_bottom_air_water_vapor__mass_fraction": "kg kg-1",
+    "land_surface_air__pressure": "Pa",
 }
+HUMIDITY = ("relative", "specific")
 OUTPUTS = {
     "data_center_cooling_water__withdrawal_volume_flux": "m3 s-1",
     "data_center_cooling_water__consumption_volume_flux": "m3 s-1",
@@ -53,10 +65,43 @@ OUTPUTS = {
 }
 
 
-class _ScalarPointBmi(Bmi):
-    """BMI plumbing shared by the components here: one point (a 'scalar' grid), float64 values held in 1-element
-    arrays so get_value_ptr stays live, inputs set with set_value, and a fixed time step. Subclasses define INPUTS,
-    OUTPUTS, _name, initialize() and _compute()."""
+def read_config(config):
+    """A component's configuration: a path to a YAML file, or the same settings as a dict (a framework that runs several campuses need not
+    write a file for each), or None for the defaults. The dict is copied, so the component never changes the caller's."""
+    if config is None:
+        return {}
+    if isinstance(config, dict):
+        return dict(config)
+    try:                                    # only a YAML file needs pyyaml, so the components import with bmipy alone (Basin Ledger, Nov 4, 2026)
+        import yaml
+    except ImportError as e:
+        raise ImportError(f"reading {config} needs pyyaml: pip install 'waterledger-models[bmi]', or pass the settings as a dict") from e
+    with open(config) as f:
+        return yaml.safe_load(f) or {}
+
+
+class ScalarPointBmi(Bmi):
+    """BMI 2.0 plumbing for a component at one point, shared by the components here and public for components built on them (such as a
+    NextGen catchment component that steps several campuses). It supplies every BMI function except initialize().
+
+    The grid: one node on grid 0, of type "scalar" (rank 0, size 1); the grid shape, spacing, origin and coordinates raise NotImplementedError.
+    Values: every input and output is a float64 held in a 1-element array made at construction, so get_value_ptr returns a live view that
+    stays valid for the component's life; a subclass writes into it (self._values[name][0] = x) and never replaces the array.
+    Time: in seconds from 0 (get_start_time), a fixed step self._dt, and self._end; update_until steps whole steps up to the time asked.
+
+    A subclass defines:
+        INPUTS, OUTPUTS   dicts of standard name -> units, in the order get_input_var_names and get_output_var_names report
+        _name             the component name
+        initialize(config_file=None)
+                          reads its settings (read_config takes a YAML path or a dict) and sets self._dt, self._end and self._time
+        _compute()        reads the inputs in self._values and writes the outputs; it has no side effects other than the outputs
+        _advance()        optional: loads the inputs for the step starting at self._time when the component reads forcing itself,
+                          through self._force(name, value), which leaves alone any input set since the last update
+    The order of a step: update() calls _advance(), then _compute() for the step from the current time to the next, then moves the clock
+    one step on. set_value and set_value_at_indices only store inputs (an output raises KeyError), so outputs change on update() alone and
+    always describe the last step taken; before the first update they are 0. A framework can set the next step's inputs before it reads
+    this step's outputs. An input set with set_value wins over a forcing file for the step it was set for.
+    """
 
     INPUTS: dict = {}
     OUTPUTS: dict = {}
@@ -66,14 +111,21 @@ class _ScalarPointBmi(Bmi):
         self._time = 0.0
         self._dt = 3600.0
         self._end = 365 * 86400.0
+        self._set = set()          # inputs set since the last update, which a forcing file does not overwrite
 
     def update(self):
-        self._time += self._dt
         self._advance()
         self._compute()
+        self._set.clear()
+        self._time += self._dt
 
     def _advance(self):
-        """Load the next forcing step, if the component reads forcing itself."""
+        """Load the inputs for the step starting now, if the component reads forcing itself."""
+
+    def _force(self, name, value):
+        """An input from the component's own forcing, unless the framework set it for this step."""
+        if name not in self._set:
+            self._values[name][0] = value
 
     def update_until(self, time):
         while self._time + self._dt <= time + 1e-9:
@@ -158,13 +210,13 @@ class _ScalarPointBmi(Bmi):
         if name not in self.INPUTS:
             raise KeyError(f"{name} is not an input variable")
         self._values[name][:] = src
-        self._compute()
+        self._set.add(name)
 
     def set_value_at_indices(self, name, inds, src):
         if name not in self.INPUTS:
             raise KeyError(f"{name} is not an input variable")
         self._values[name].put(inds, src)
-        self._compute()
+        self._set.add(name)
 
     # ---------- grid: one scalar point ----------
     def get_grid_rank(self, grid):
@@ -214,7 +266,10 @@ class _ScalarPointBmi(Bmi):
 
     def get_grid_nodes_per_face(self, grid, nodes_per_face):
         raise NotImplementedError("scalar grid has no faces")
-class CoolingWaterBmi(_ScalarPointBmi):
+_ScalarPointBmi = ScalarPointBmi      # its name through 3.9.0, kept so components built on it keep working
+
+
+class CoolingWaterBmi(ScalarPointBmi):
     """BMI 2.0 wrapper around waterledger_models.datacenter.physics: hourly cooling-tower, hybrid and closed-loop water use."""
 
     INPUTS = INPUTS
@@ -225,19 +280,22 @@ class CoolingWaterBmi(_ScalarPointBmi):
     def __init__(self):
         super().__init__()
         self._design = "towers"
+        self._humidity = "relative"
         self._mw = 100.0
         self._params = {**model.central_parameters(), **model.central_staff()}
         self._forcing = None
 
     # ---------- control ----------
     def initialize(self, config_file=None):
-        cfg = {}
-        if config_file:
-            with open(config_file) as f:
-                cfg = yaml.safe_load(f) or {}
+        cfg = read_config(config_file)
         self._design = cfg.get("design", "towers")
         if self._design not in model.DESIGNS:
             raise ValueError(f"design must be one of {model.DESIGNS}")
+        self._humidity = cfg.get("humidity", "relative")
+        if self._humidity not in HUMIDITY:
+            raise ValueError(f"humidity must be one of {HUMIDITY}")
+        if self._humidity == "specific" and cfg.get("forcing"):
+            raise ValueError("a forcing file carries relative humidity: use humidity: relative with it")
         self._mw = float(cfg.get("it_capacity_mw", 100.0))
         self._dt = float(cfg.get("time_step", 3600.0))
         self._params = {**model.central_parameters(), **model.central_staff(),
@@ -251,20 +309,26 @@ class CoolingWaterBmi(_ScalarPointBmi):
             self._forcing = (w["air_temperature"].values, w["relative_humidity"].values)
             self._params.setdefault("design_db", model.design_dry_bulb(self._forcing[0]))
             self._end = float(cfg.get("end_time", len(self._forcing[0]) * self._dt))
-            self._load_forcing()
         else:
             self._forcing = None
             self._end = float(cfg.get("end_time", 365 * 86400.0))
-        self._compute()
+        if self._design == "hybrid":
+            model.hybrid_full(self._params)          # a hybrid without a design dry-bulb stops here, not at the first step
+        for v in self._values.values():
+            v[:] = 0.0
+        self._set.clear()
 
     def _load_forcing(self):
         i = min(int(self._time // self._dt), len(self._forcing[0]) - 1)
-        self._values["atmosphere_bottom_air__temperature"][0] = self._forcing[0][i]
-        self._values["atmosphere_bottom_air_water_vapor__relative_saturation"][0] = self._forcing[1][i]
+        self._force("atmosphere_bottom_air__temperature", self._forcing[0][i])
+        self._force("atmosphere_bottom_air_water_vapor__relative_saturation", self._forcing[1][i])
 
     def _compute(self):
         tdb = self._values["atmosphere_bottom_air__temperature"]
-        rh = self._values["atmosphere_bottom_air_water_vapor__relative_saturation"]
+        if self._humidity == "specific":
+            rh = relative_humidity(tdb, self._values["atmosphere_bottom_air_water_vapor__mass_fraction"], self._values["land_surface_air__pressure"])
+        else:
+            rh = self._values["atmosphere_bottom_air_water_vapor__relative_saturation"]
         twb = model.wet_bulb(tdb, rh)
         w, c, r = model.hourly_rates(tdb, twb, self._design, self._params, rh)
         kwh_per_s = self._mw * 1000.0 * self._params["utilization"] / 3600.0     # IT energy per second of model time
@@ -301,12 +365,12 @@ LAKE_OUTPUTS = {
 }
 
 
-class LakeCoolingBmi(_ScalarPointBmi):
+class LakeCoolingBmi(ScalarPointBmi):
     """BMI 2.0 wrapper around waterledger_models.datacenter.lake: once-through lake cooling, daily by default. Inputs are the
     lake's natural surface temperature and wind speed; outputs the water drawn and returned and the extra
     evaporation the returned heat causes.
 
-    Configuration (YAML):
+    Configuration (a YAML file, or the same keys as a dict):
         it_capacity_mw: 100
         time_step: 86400                         (seconds)
         end_time: 31536000
@@ -327,10 +391,7 @@ class LakeCoolingBmi(_ScalarPointBmi):
         self._forcing = None
 
     def initialize(self, config_file=None):
-        cfg = {}
-        if config_file:
-            with open(config_file) as f:
-                cfg = yaml.safe_load(f) or {}
+        cfg = read_config(config_file)
         self._mw = float(cfg.get("it_capacity_mw", 100.0))
         self._dt = float(cfg.get("time_step", 86400.0))
         self._params = {**{k: (a + b) / 2 for k, (a, b) in lake.RANGES.items()},
@@ -346,15 +407,16 @@ class LakeCoolingBmi(_ScalarPointBmi):
             with open(cfg["forcing"]) as f:
                 self._forcing = np.array([float(line) for line in f if line.strip()])
             self._end = float(cfg.get("end_time", len(self._forcing) * self._dt))
-            self._advance()
         else:
             self._end = float(cfg.get("end_time", 365 * 86400.0))
-        self._compute()
+        for name in self.OUTPUTS:
+            self._values[name][:] = 0.0
+        self._set.clear()
 
     def _advance(self):
         if self._forcing is not None:
             i = min(int(self._time // self._dt), len(self._forcing) - 1)
-            self._values["lake_water_surface__temperature"][0] = self._forcing[i]
+            self._force("lake_water_surface__temperature", self._forcing[i])
 
     def _compute(self):
         p = self._params

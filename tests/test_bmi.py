@@ -26,7 +26,7 @@ def test_information_and_variables(tmp_path):
     m = CoolingWaterBmi()
     m.initialize(write_config(tmp_path, design="towers", it_capacity_mw=100))
     assert m.get_component_name()
-    assert m.get_input_item_count() == len(m.get_input_var_names()) == 2
+    assert m.get_input_item_count() == len(m.get_input_var_names()) == 4
     assert m.get_output_item_count() == len(m.get_output_var_names()) == 6
     for name in list(INPUTS) + list(OUTPUTS):
         assert m.get_var_grid(name) == 0
@@ -47,8 +47,10 @@ def test_set_value_drives_the_model(tmp_path):
     out = np.empty(1)
     m.set_value(TEMP, np.array([30.0]))
     m.set_value(RH, np.array([50.0]))
+    m.update()
     hot = m.get_value(WITHDRAWN, out).copy()
     m.set_value(TEMP, np.array([0.0]))
+    m.update()
     cold = m.get_value(WITHDRAWN, out).copy()
     assert hot > cold > 0
     w, c, r = (m.get_value(n, np.empty(1))[0] for n in (WITHDRAWN, CONSUMED, RETURNED))
@@ -61,7 +63,8 @@ def test_set_value_drives_the_model(tmp_path):
     assert w == pytest.approx(gal * 100 * 1000 * p["utilization"] / 3600 / model.GAL_M3 + staff, rel=1e-12)
     ptr = m.get_value_ptr(WITHDRAWN)
     m.set_value(TEMP, np.array([25.0]))
-    assert ptr[0] == m.get_value(WITHDRAWN, np.empty(1))[0]     # the pointer stays live
+    m.update()
+    assert ptr[0] == m.get_value(WITHDRAWN, np.empty(1))[0] > cold     # the pointer stays live
     idx = m.get_value_at_indices(TEMP, np.empty(1), np.array([0]))
     assert idx[0] == 25.0
     m.set_value_at_indices(TEMP, np.array([0]), np.array([10.0]))
@@ -80,8 +83,8 @@ def test_forcing_file_and_update_until(tmp_path):
     assert m.get_end_time() == len(t) * 3600
     total = 0.0
     while m.get_current_time() < m.get_end_time():
-        total += m.get_value(WITHDRAWN, np.empty(1))[0] * 3600
         m.update()
+        total += m.get_value(WITHDRAWN, np.empty(1))[0] * 3600
     p = {**model.for_location(model.central_parameters(), t), "coc": 4.0}
     gal = model.hourly_rates(t, model.wet_bulb(t, rh), "hybrid", p, rh)[0]
     staff = model.staff_water(model.central_staff(), 50)[0] * 1e6 / 24     # gallons an hour
@@ -90,7 +93,40 @@ def test_forcing_file_and_update_until(tmp_path):
     m.initialize(write_config(tmp_path, design="hybrid", forcing=str(forcing)))
     m.update_until(5 * 3600)
     assert m.get_current_time() == 5 * 3600
-    assert m.get_value(TEMP, np.empty(1))[0] == pytest.approx(t[5])
+    assert m.get_value(TEMP, np.empty(1))[0] == pytest.approx(t[4])     # the inputs of the last step taken, hours 4 to 5
+
+
+def test_outputs_change_on_update_not_on_set_value(tmp_path):
+    """A framework that sets the next step's inputs before it reads this step's outputs gets this step's values."""
+    weather = [(31.0, 45.0), (12.0, 85.0), (24.0, 60.0)]
+    for design in model.DESIGNS:
+        cfg = {"design": design, "it_capacity_mw": 100, "parameters": {"design_db": 31.0} if design == "hybrid" else {}}
+        expected = []
+        for t, rh in weather:                 # each hour on its own
+            m = CoolingWaterBmi()
+            m.initialize(cfg)
+            m.set_value(TEMP, np.array([t]))
+            m.set_value(RH, np.array([rh]))
+            m.update()
+            expected.append({n: m.get_value(n, np.empty(1))[0] for n in OUTPUTS})
+        m = CoolingWaterBmi()
+        m.initialize(cfg)
+        assert all(m.get_value(n, np.empty(1))[0] == 0.0 for n in OUTPUTS)      # nothing before the first step
+        m.set_value(TEMP, np.array([weather[0][0]]))
+        m.set_value(RH, np.array([weather[0][1]]))
+        for i, want in enumerate(expected):
+            m.update()
+            if i + 1 < len(weather):          # next hour's inputs first
+                m.set_value(TEMP, np.array([weather[i + 1][0]]))
+                m.set_value_at_indices(RH, np.array([0]), np.array([weather[i + 1][1]]))
+            got = {n: m.get_value(n, np.empty(1))[0] for n in OUTPUTS}
+            assert got == want, (design, i)
+            assert m.get_current_time() == (i + 1) * 3600
+
+
+def test_hybrid_without_design_dry_bulb_stops_at_initialize():
+    with pytest.raises(ValueError, match="design dry-bulb"):
+        CoolingWaterBmi().initialize({"design": "hybrid"})
 
 
 def test_closed_loop_includes_staff_water_at_capacity(tmp_path):
@@ -99,14 +135,78 @@ def test_closed_loop_includes_staff_water_at_capacity(tmp_path):
     m.initialize(write_config(tmp_path, design="dry", it_capacity_mw=300))
     m.set_value(TEMP, np.array([20.0]))
     m.set_value(RH, np.array([60.0]))
+    m.update()
     w, c, r = (m.get_value(n, np.empty(1))[0] * 86400 * model.GAL_M3 for n in (WITHDRAWN, CONSUMED, RETURNED))  # gal/day
     topup = 300 * 7000 * 0.03 / 365
     staff, maint = (40 + 0.3 * 300) * 20, 1000 + 11 * 300          # people, and maintenance at the middle of its ranges
     assert w == pytest.approx(topup + staff + maint, rel=1e-9)
     assert c == pytest.approx(topup + 0.1 * staff + 0.09 * maint, rel=1e-9) and w == pytest.approx(c + r, rel=1e-12)
     m.initialize(write_config(tmp_path, design="dry", it_capacity_mw=300, parameters={"staff_gpcd": 30, "topup": 0.01}))
+    m.set_value(TEMP, np.array([20.0]))                              # initialize starts the component over, inputs included
+    m.set_value(RH, np.array([60.0]))
+    m.update()
     w2 = m.get_value(WITHDRAWN, np.empty(1))[0] * 86400 * model.GAL_M3
     assert w2 == pytest.approx(300 * 7000 * 0.01 / 365 + 130 * 30 + maint, rel=1e-9)
+
+
+def test_specific_humidity_and_pressure(tmp_path):
+    """NextGen's forcing carries specific humidity and pressure: the component converts them and gives what relative humidity gives."""
+    from waterledger_models.weather import specific_humidity
+    for design in model.DESIGNS:
+        params = {"design_db": 31.0} if design == "hybrid" else {}
+        rel, spec = CoolingWaterBmi(), CoolingWaterBmi()
+        rel.initialize(write_config(tmp_path, design=design, parameters=params))
+        spec.initialize(write_config(tmp_path, design=design, humidity="specific", parameters=params))
+        for t, rh, p in ((30.0, 60.0, 98000.0), (5.0, 85.0, 101325.0), (-10.0, 40.0, 95000.0)):
+            rel.set_value(TEMP, np.array([t]))
+            rel.set_value(RH, np.array([rh]))
+            spec.set_value(TEMP, np.array([t]))
+            spec.set_value("atmosphere_bottom_air_water_vapor__mass_fraction", np.array([specific_humidity(t, rh, p)]))
+            spec.set_value("land_surface_air__pressure", np.array([p]))
+            rel.update()
+            spec.update()
+            for name in OUTPUTS:
+                assert spec.get_value(name, np.empty(1))[0] == pytest.approx(rel.get_value(name, np.empty(1))[0], rel=1e-9), (design, name)
+            w, c, r, n = (spec.get_value(k, np.empty(1))[0] for k in (WITHDRAWN, CONSUMED, RETURNED, "data_center_cooling_water__condensate_volume_flux"))
+            assert w + n == pytest.approx(c + r, rel=1e-12)
+
+
+def test_configuration_as_a_dict(tmp_path):
+    cfg = {"design": "hybrid", "it_capacity_mw": 50, "end_time": 7200, "parameters": {"design_db": 31.0, "coc": 4}}
+    from_file, from_dict = CoolingWaterBmi(), CoolingWaterBmi()
+    from_file.initialize(write_config(tmp_path, **cfg))
+    from_dict.initialize(cfg)
+    assert cfg["parameters"] == {"design_db": 31.0, "coc": 4}       # the caller's dict is left as it was
+    for m in (from_file, from_dict):
+        m.set_value(TEMP, np.array([29.0]))
+        m.set_value(RH, np.array([55.0]))
+        m.update()
+    assert from_dict.get_end_time() == 7200
+    for name in OUTPUTS:
+        assert from_dict.get_value(name, np.empty(1))[0] == from_file.get_value(name, np.empty(1))[0]
+    m = CoolingWaterBmi()
+    m.initialize()                                                   # no configuration: towers at 100 MW
+    assert m._design == "towers" and m._mw == 100.0
+
+
+def test_the_components_import_and_run_without_pyyaml(tmp_path):
+    """pyyaml is in the [bmi] extra but was imported with the module, so a framework with bmipy alone couldn't import the components
+    (Basin Ledger, Nov 4, 2026). Only a YAML file needs it; a dict configuration runs without, and a file says what to install."""
+    import subprocess, sys
+    code = f"""
+import sys; sys.modules["yaml"] = None                               # as if pyyaml weren't installed
+import numpy as np
+from waterledger_models.datacenter.bmi import CoolingWaterBmi, LakeCoolingBmi
+m = CoolingWaterBmi(); m.initialize({{"design": "towers", "it_capacity_mw": 50}})
+m.set_value("atmosphere_bottom_air__temperature", np.array([25.0])); m.set_value("atmosphere_bottom_air_water_vapor__relative_saturation", np.array([60.0])); m.update()
+assert m.get_value("data_center_cooling_water__withdrawal_volume_flux", np.empty(1))[0] > 0
+try:
+    CoolingWaterBmi().initialize({str(write_config(tmp_path, design="towers"))!r})
+except ImportError as e:
+    assert "waterledger-models[bmi]" in str(e); print("ok")
+"""
+    got = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=120)
+    assert got.returncode == 0 and got.stdout.strip() == "ok", got.stderr[-2000:]
 
 
 def test_bad_configuration(tmp_path):
@@ -115,6 +215,10 @@ def test_bad_configuration(tmp_path):
         m.initialize(write_config(tmp_path, design="spray-pond"))
     with pytest.raises(ValueError):
         m.initialize(write_config(tmp_path, parameters={"not_a_parameter": 1}))
+    with pytest.raises(ValueError):
+        m.initialize(write_config(tmp_path, humidity="dew point"))
+    with pytest.raises(ValueError):
+        m.initialize(write_config(tmp_path, humidity="specific", forcing="weather.json"))
 
 
 def test_condensate_output_in_humid_air(tmp_path):
@@ -126,3 +230,66 @@ def test_condensate_output_in_humid_air(tmp_path):
     w, c, r, n = (m.get_value(k, np.empty(1))[0] for k in (WITHDRAWN, CONSUMED, RETURNED, "data_center_cooling_water__condensate_volume_flux"))
     assert n > 0 and w + n == pytest.approx(c + r, rel=1e-12)
     assert "data_center_cooling_water__condensate_volume_flux" in m.get_output_var_names()
+
+
+def test_a_component_on_the_public_base():
+    """A component built on ScalarPointBmi gets every BMI function but initialize(); the old private name still works."""
+    from waterledger_models.datacenter import ScalarPointBmi
+    from waterledger_models.datacenter.bmi import _ScalarPointBmi, read_config
+    assert _ScalarPointBmi is ScalarPointBmi and issubclass(CoolingWaterBmi, ScalarPointBmi)
+
+    class Doubler(ScalarPointBmi):
+        INPUTS = {"x": "m"}
+        OUTPUTS = {"y": "m"}
+        _name = "doubler"
+
+        def initialize(self, config_file=None):
+            cfg = read_config(config_file)
+            self._dt, self._end, self._time = float(cfg.get("time_step", 60)), float(cfg.get("end_time", 600)), 0.0
+
+        def _compute(self):
+            self._values["y"][0] = 2 * self._values["x"][0]
+
+    m = Doubler()
+    m.initialize({"time_step": 60})
+    ptr = m.get_value_ptr("y")
+    m.set_value("x", np.array([1.5]))
+    m.update_until(300)
+    assert m.get_current_time() == 300 and m.get_end_time() == 600 and m.get_time_step() == 60
+    assert ptr[0] == 3.0 and m.get_value("y", np.empty(1))[0] == 3.0
+    assert m.get_input_var_names() == ("x",) and m.get_output_var_names() == ("y",) and m.get_component_name() == "doubler"
+    assert m.get_grid_type(m.get_var_grid("y")) == "scalar" and m.get_var_type("x") == "float64"
+    with pytest.raises(KeyError):
+        m.set_value("y", np.array([1.0]))
+
+
+def test_update_path_gives_the_set_value_paths_hours(tmp_path):
+    """Hour by hour, set, update, read gives what 3.9.0 gave on set_value for the same inputs (its _compute on those inputs), with no
+    step's shift; a framework's set_value wins over a forcing file for that step."""
+    time, t, rh = synthetic_weather(3)
+    for design in model.DESIGNS:
+        cfg = {"design": design, "it_capacity_mw": 300, "parameters": {"design_db": 30.0}}
+        new, old = CoolingWaterBmi(), CoolingWaterBmi()
+        new.initialize(cfg)
+        old.initialize(cfg)
+        for k in range(len(t)):
+            for m in (new, old):
+                m.set_value(TEMP, np.array([t[k]]))
+                m.set_value(RH, np.array([rh[k]]))
+            old._compute()                                       # what 3.9.0's set_value did
+            new.update()
+            for name in OUTPUTS:
+                assert new.get_value(name, np.empty(1))[0] == old.get_value(name, np.empty(1))[0], (design, k, name)
+    forcing = tmp_path / "weather.json"
+    forcing.write_text(json.dumps({"hourly": {"time": [str(x) for x in time.astype("datetime64[m]")],
+                                              "temperature_2m": t.tolist(), "relative_humidity_2m": rh.tolist()}}))
+    a, b = CoolingWaterBmi(), CoolingWaterBmi()
+    a.initialize({"forcing": str(forcing)})
+    b.initialize({"forcing": str(forcing)})
+    a.update()
+    b.set_value(TEMP, np.array([35.0]))                          # this step only
+    b.update()
+    assert b.get_value(TEMP, np.empty(1))[0] == 35.0 and b.get_value(WITHDRAWN, np.empty(1))[0] > a.get_value(WITHDRAWN, np.empty(1))[0]
+    a.update()
+    b.update()                                                   # the next step is the file's again
+    assert b.get_value(TEMP, np.empty(1))[0] == t[1] and b.get_value(WITHDRAWN, np.empty(1))[0] == a.get_value(WITHDRAWN, np.empty(1))[0]

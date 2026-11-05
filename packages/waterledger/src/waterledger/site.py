@@ -85,10 +85,11 @@ class Site(BaseModel):
         """The BMI component that runs this site step by step, and its configuration: (entry point, config dict). With `path`,
         the config is also written there as YAML. `forcing` is an optional weather file (Open-Meteo JSON for the hourly
         cooling component, a daily lake-temperature CSV for the lake-source one); without it, inputs come through set_value, and a hybrid
-        needs `design_db`, the location's 0.4% design dry-bulb in C, which a forcing file otherwise supplies.
+        needs `design_db`, the location's 0.4% design dry-bulb in C, which a forcing file otherwise supplies
+        (waterledger_models.weather.design_dry_bulb computes it from the place's hourly record).
 
             entry, cfg = site.to_bmi_config("site.yaml")
-            m = CoolingWaterBmi(); m.initialize("site.yaml")
+            m = CoolingWaterBmi(); m.initialize(cfg)      # or m.initialize("site.yaml")
         """
         f = self.facility
         if f.cooling == "lake":

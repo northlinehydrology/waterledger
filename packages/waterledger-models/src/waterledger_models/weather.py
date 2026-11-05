@@ -27,6 +27,50 @@ def from_open_meteo_json(payload):
                              "longitude": payload.get("longitude")})
 
 
+def design_dry_bulb(record):
+    """The 0.4% design dry-bulb, C, of an hourly weather record: the temperature exceeded in 0.4% of its hours (ASHRAE's definition), which a
+    hybrid campus needs as design_db. `record` is a Dataset with air_temperature (as from_open_meteo_json gives), a DataArray, or an array
+    of hourly temperatures in C. Water Ledger computes it this way from each location's whole hourly record (physics.design_dry_bulb).
+
+    For a coupling framework that supplies the weather itself (NextGen's AORC, for example), compute it once from the forcing for the place
+    before the run and pass it in the component's parameters. Use a long record (Water Ledger uses 1995-2024): at Michigan's eight
+    regions one year's value fell 1.9 to 2.8 C below to 0.8 to 1.5 C above the 30 years' in 80% of years, and up to 4.6 C off.
+    AORC's temperature is in K, so subtract 273.15 first.
+
+        from waterledger_models.weather import design_dry_bulb
+        CoolingWaterBmi().initialize({"design": "hybrid", "parameters": {"design_db": design_dry_bulb(t2m_k - 273.15)}})
+    """
+    from waterledger_models.datacenter.physics import design_dry_bulb as from_hours
+    if hasattr(record, "data_vars"):
+        record = record["air_temperature"]
+    return from_hours(getattr(record, "values", record))
+
+
+EPSILON = 0.622        # ratio of the molar masses of water vapor and dry air (Bolton 1980; 0.378 = 1 - EPSILON)
+
+
+def saturation_vapor_pressure(t_c):
+    """Saturation vapor pressure over water, Pa, at air temperature t_c (C): Bolton (1980) eq. 10, within 0.1% from -30 to 35 C."""
+    t_c = np.asarray(t_c, dtype=float)
+    return 611.2 * np.exp(17.67 * t_c / (t_c + 243.5))
+
+
+def relative_humidity(t_c, q, p):
+    """Relative humidity, percent, from air temperature (C), specific humidity (kg kg-1) and surface pressure (Pa), the pair NextGen's AORC and NWM
+    forcing carries: vapor pressure e = q p / (0.622 + 0.378 q) over saturation (Bolton 1980). Kept within 0-100: a reanalysis can be slightly
+    supersaturated, and a negative q from interpolation is read as dry air."""
+    q = np.clip(np.asarray(q, dtype=float), 0.0, None)
+    e = q * np.asarray(p, dtype=float) / (EPSILON + (1 - EPSILON) * q)
+    return np.clip(100.0 * e / saturation_vapor_pressure(t_c), 0.0, 100.0)
+
+
+def specific_humidity(t_c, rh, p):
+    """Specific humidity, kg kg-1, from air temperature (C), relative humidity (percent) and surface pressure (Pa): the inverse of
+    relative_humidity, q = 0.622 e / (p - 0.378 e) with e = rh/100 x saturation vapor pressure (Bolton 1980)."""
+    e = np.clip(np.asarray(rh, dtype=float), 0.0, 100.0) / 100.0 * saturation_vapor_pressure(t_c)
+    return EPSILON * e / (np.asarray(p, dtype=float) - (1 - EPSILON) * e)
+
+
 def local_standard_offset(lon):
     """Hours from UTC to local standard time at a longitude, the same rule the NOAA station records use, for any place. No daylight time, so every day has 24 hours."""
     return round(lon / 15)

@@ -212,7 +212,8 @@ def switch_point(p):
 def hybrid_full(p):
     """Dry-bulb at which a hybrid is fully evaporative, C: the location's design dry-bulb plus the run's offset, and at least HYBRID_MIN_RAMP above the switch point."""
     if "design_db" not in p:
-        raise ValueError("the hybrid design needs the location's design dry-bulb: pass parameters through for_location(p, tdb), or set design_db (in a BMI configuration, under parameters, unless a forcing file supplies it)")
+        raise ValueError("the hybrid design needs the location's design dry-bulb: pass parameters through for_location(p, tdb), or set design_db (in a BMI configuration, under parameters, "
+                         "unless a forcing file supplies it; waterledger_models.weather.design_dry_bulb computes it from an hourly record)")
     return np.maximum(p["design_db"] + p["hybrid_full_offset"], switch_point(p) + HYBRID_MIN_RAMP)
 
 

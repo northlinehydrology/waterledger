@@ -491,7 +491,8 @@ Decision (Andrew): the packages are the standard, and waterledger.org is built o
   used here, with library access; metered water at an adiabatic site.
 - Landscape irrigation as an optional, climate-specific term.
 - Station distance: how far places are from their division's station, and how much a nearer station changes the
-  estimates ([station-distance-check.md](station-distance-check.md), in progress).
+  estimates ([station-distance-check.md](station-distance-check.md), Oct 29; rerun on model 1.7 with ERA5 at each place's cell,
+  [era5-station-check.md](era5-station-check.md), Nov 3). Superseded by the ERA5 decision below once it is built.
 - NOAA climate division names in the data.
 - Virginia's withdrawals by use type (published only in DEQ's dashboard; a bulk export to request).
 - The share of homes a utility serves, shown for Michigan, needs a national source.
@@ -1067,3 +1068,427 @@ Sediment, phosphorus and nitrogen leave `before_after` for `est.site_loads`. The
 ## Nov 2, 2026: citations checked for 3.9.0
 
 Corrected: `usgs_wu2015` to the revised release the code loads (Sleckman, Ross and Cook 2026, doi:10.5066/P14Q6AVK), not Dieter et al.'s; the Clark et al. DOI; CEAP's and CWP's links; the BMP Database report's title, with its Table 11 values named as retention ponds outside the Chesapeake. AP-42 was read directly at EPA's copy: Table 13.4-1, induced draft 0.020%, rated D. Hermantown's slides were read; its Oct 2025 slides are credited on the city's page to Mortenson and Minnesota Power, not Google. Crusoe's chart was read: about 2 million gallons a year at 200 MW, called illustrative, so about 19-20 gal/day per MW directly against the 23 this log worked out, with the range's top of 20 holding; the phrase "equipment washdowns" quoted above isn't in the post's text. Trane's DC-WPR004A could not be opened and is removed; the patent and EVAPCO carry the switch margin. The Gaines figure, Sun and News, still can't be located and stays labeled as not re-verified.
+
+## Nov 3, 2026: ERA5 at every place's nearest cell (decided Nov 1; model 1.8, not built)
+
+**Decision (Andrew, Nov 1, 2026).** Every place in every published state takes its cooling weather from its nearest ERA5 grid
+cell, 1995-2024. This replaces Michigan's eight regions (Open-Meteo's best match at a hand-picked point each) and the
+national tier's one NOAA ISD station per climate division. Cells are not grouped; each has its own results, in a file the
+page loads for its place. Distribution correction (quantile mapping of ERA5 to nearby stations) is a later, separate model
+version, with Andrew leading the method. The plan is [design 0004](../design/0004-era5-weather.md).
+
+**Why.** One source and one rule for every state, at about 10 km instead of the 58-115 km median distance to a division
+station (Ohio, Virginia, Texas) or 59 km to a Michigan region point ([station-distance-check.md](station-distance-check.md)).
+On Oct 29 the single-station design added scatter without a consistent direction, and Texas had 42% of people more than
+100 km from their station.
+
+**What was checked (Nov 3).**
+- **Source.** ERA5 has been CC-BY 4.0 since July 2, 2025, so commercial use with attribution is allowed (ECMWF, "CC-BY
+  licence to replace Licence to use Copernicus Products on 02 July 2025",
+  https://forum.ecmwf.int/t/cc-by-licence-to-replace-licence-to-use-copernicus-products-on-02-july-2025/13464).
+- **The build's source:** the Copernicus CDS `reanalysis-era5-single-levels-timeseries`, one request per cell. It needs a
+  free key and ECMWF labels it experimental.
+- **The no-key path:** Open-Meteo's open-data copy of ERA5 on AWS, anonymous, CC-BY 4.0.
+- **Not used:** Open-Meteo's API, whose free tier is non-commercial only (https://open-meteo.com/en/terms) and whose
+  historical data needs a paid plan.
+- **Cells.** 1,294 for the four states (Michigan 313, Ohio 211, Virginia 157, Texas 619), against an estimate of about 1,700.
+  Every place is within 18 km of its cell's center.
+- **Water cells.** 189 places have a nearest cell that ERA5's land-sea mask puts mostly over water: Michigan 116, Ohio 35,
+  Virginia 23, Texas 15.
+- **Run time.** Model 1.7 takes 362 s per cell alone on an M3 Max, against about 116 s on model 1.6. The machine tops out
+  at 77 s per cell with six runs at once: twelve are no faster. The four states take about 28 hours of runs.
+- **Against stations** ([era5-station-check.md](era5-station-check.md)), at the 21 places of the Oct 29 check:
+  - Towers are within 3% of the nearest qualifying station.
+  - On land cells, hybrid and assist are mostly within 9%, and ERA5 removes the far-station errors (Austin, Amarillo, El
+    Paso).
+  - On cells that are part lake or sea, hybrid and assist averages run 6-52% below the shore airports.
+
+**Alternatives considered.**
+- The nearest qualifying station per place, with ISD records linked by WBAN: options A and D of the Oct 29 check, cheap and
+  traceable to a named record. Not chosen, so that every state uses one source.
+- Stations interpolated by distance (option B): it blends across coasts and ridges.
+- ERA5-Land at 0.1 degree: 3,751 cells and no values over the sea.
+- Grouping cells into regions: decided against, so a place's numbers are its own cell's.
+
+**Open.**
+- **The rule for water cells:** decided Nov 3, the nearest cell that is at least half land (next entry).
+- **Quantile mapping:** its stations, its method and whether it applies by season.
+- **The CDS time-series dataset's queue in practice**, and its experimental status.
+- **Valley and ridge cells**, such as Roanoke's, where ERA5's cell averages unlike terrain.
+
+**References.**
+- Hersbach, H., Bell, B., Berrisford, P., et al. (2020). The ERA5 global reanalysis. Quarterly Journal of the Royal
+  Meteorological Society 146(730): 1999-2049. doi:10.1002/qj.3803.
+- Hersbach, H., et al. (2023). ERA5 hourly data on single levels from 1940 to present. Copernicus Climate Change Service (C3S)
+  Climate Data Store. doi:10.24381/cds.adbb2d47.
+- Bolton, D. (1980). The computation of equivalent potential temperature. Monthly Weather Review 108(7): 1046-1053 (the BMI
+  components' humidity conversion, released with this change).
+- Alduchov, O. A. and Eskridge, R. E. (1996). Improved Magnus form approximation of saturation vapor pressure. Journal of
+  Applied Meteorology 35(4): 601-609 (relative humidity from dew point, for stations and ERA5 alike).
+
+## Nov 3, 2026: the nearest land cell where a place's nearest ERA5 cell is mostly water (model 1.8, not built)
+
+**Decision (Andrew, Nov 3, 2026: "use b nearest land cell").** A place whose nearest ERA5 cell has a land-sea mask under
+0.5 takes the nearest cell, by great-circle distance from its Census internal point, whose mask is at least 0.5. Every
+place records the cell it uses, that cell's distance and land fraction, and whether the rule moved it; a moved place also
+records its nearest cell. Design 0004, decision 3; prototype `era5-check/land_rule.py`, every place in
+`era5-check/cell_assignment.csv`.
+
+**Why.** A cell that is mostly lake or sea carries air moderated by the water: cooler summer afternoons and a lower design
+dry-bulb than the land a data center would stand on. On the station check, the one such place (Lorain, 0.40) ran 10% below
+Cleveland-Hopkins for the hybrid average and 39% below for assist, and 26% above on the hybrid peak day.
+
+**What it does.**
+- **189 places move** (Michigan 116, Ohio 35, Virginia 23, Texas 15), a median 17.8 km; 165 move 30 km or less. Cells for
+  the four states fall from 1,294 to 1,233, and run time from about 28 to about 26 hours at six workers.
+- **Virginia's Eastern Shore** moves farthest and not all one way. Cape Charles, Cheriton, Eastville and Northampton County
+  (43-52 km) and Nassawadox (57 km) cross the Chesapeake to western-shore cells by Yorktown and on the Middle Peninsula. Exmore,
+  Belle Haven, Painter, Wachapreague, Keller, Melfa, Onley, Onancock, Accomac, Parksley, Accomack County and Tangier go up
+  the peninsula to 38.00, -75.75 at the Maryland line (25-53 km), and Bloxom and Chincoteague to 38.00, -75.50 (14-22 km).
+  The plan's first draft said "50-63 km, across the bay"; it measured in grid steps, and most of the shore goes north.
+- **Michigan's island townships**: Isle Royale (Houghton and Eagle Harbor townships) to the Ontario shore, 55-60 km; Beaver
+  Island, North Manitou (Leland township), Drummond Island and the Garden Peninsula's tip, 37-44 km.
+- **On the station check** (model 1.7, 400 draws, seed 7) only Lorain moves, to a cell 0.59 land 16 km east: hybrid average
+  -10% to -8% against the station, assist -39% to -35%, hybrid peak day +26% to +18%. Virginia Beach (0.51), Cleveland
+  (0.65), Port Huron (0.75) and Toledo (0.78) are at least half land and don't change.
+
+**Alternatives considered.**
+- (a) The nearest cell for every place, with its land fraction shown. Recommended in the plan's draft, not chosen.
+- A stricter threshold. Run only as a sensitivity: on the nearest cell at least 90% land (17-52 km away), Lorain's and
+  Virginia Beach's hybrid averages come within 2% of their stations, Cleveland's and Toledo's within 6%; Port Huron's,
+  against a station 80 km away, stays 31% low. It would move far more places (777 more sit on cells 50-90% land) and
+  further from their own shore.
+- Blending the nearest cells by land fraction: not considered further, since cells are not grouped (Nov 1 decision).
+
+**Open.**
+- The 777 places on cells 50-90% land keep the shore bias the check shows (Cleveland, Port Huron, Toledo, Virginia Beach).
+  Andrew asked for quantile mapping now (Nov 3) and decided it on Nov 4: cells under 90% land are corrected toward shore
+  stations, in model 1.8 ([design 0005](../design/0005-era5-quantile-mapping.md); entry of Nov 4 below).
+- Island places whose land cell is in another country (Isle Royale to Ontario) are kept by the rule as decided.
+
+**References.**
+- Hersbach, H., Bell, B., Berrisford, P., et al. (2020). The ERA5 global reanalysis. Quarterly Journal of the Royal
+  Meteorological Society 146(730): 1999-2049. doi:10.1002/qj.3803 (the land-sea mask is ERA5's invariant field `lsm`).
+- Hersbach, H., et al. (2023). ERA5 hourly data on single levels from 1940 to present. C3S Climate Data Store.
+  doi:10.24381/cds.adbb2d47. Land-sea mask read from Google's ARCO-ERA5 copy (gs://gcp-public-data-arco-era5); hourly
+  series from Open-Meteo's open-data copy (s3://openmeteo/data/copernicus_era5), CC-BY 4.0.
+- U.S. Census Bureau, TIGERweb internal points (INTPTLAT, INTPTLON), as carried in the 2026-11-02.2 snapshots' places.
+
+## Nov 4, 2026: quantile mapping of ERA5 to shore stations (model 1.8, not built)
+
+**Decision (Andrew, Nov 4, 2026: "Yes to all three").** Model 1.8 corrects the hourly temperature and dew point of every
+ERA5 cell under 90% land toward the shore stations within 100 km, and leaves cells at least 90% land as ERA5 gives them.
+
+- **Shore stations only.** A shore station is one whose own cell, the land rule's cell at the station, is under 90% land.
+  A shore cell with no shore station within 100 km stays uncorrected and is flagged.
+- **More stations.** ISD records split across a change of station ID are linked and held to the snapshots' 85% rule as
+  one site. Environment and Climate Change Canada's hourly stations are added under the same rule and screens.
+
+The method was proposed and prototyped the same day. It is design 0005
+([0005-era5-quantile-mapping.md](../design/0005-era5-quantile-mapping.md)), and the code is
+`waterledger_models.quantile_mapping`, `climate.isd_sites`, `climate.eccc_sites` and `climate.eccc_hourly`. The scripts
+and results are in `qm-check/`.
+
+**Why.** After the land rule (Nov 3), 777 places still sit on cells 50-90% land. At the station check's five shoreline
+places those cells run 15% low on the hybrid average day and 34% low on assist, with design dry-bulbs 2-3 C low. Held-out
+stations show ERA5 inland to be as close as any correction, so only shore cells are corrected.
+
+The proposal corrected shore cells from any station. Where the only near stations are inland it overshot: Lorain +18%
+and Cleveland +10% on the hybrid average day, from Akron-Canton; Palacios +3.0 C and Muskegon +1.4 C on the design
+dry-bulb. Requiring a shore station removes that. Linking and Canadian stations bring back some of the cells the
+requirement leaves without a station.
+
+**Method.**
+- **What is corrected.** T and the dew-point depression D = T - Td, each by an additive delta at the hour's own quantile.
+  D is kept at or above 0, so Td never passes T and RH stays at or below 100%.
+- **Bins.** Empirical quantiles (99 per bin) by calendar month (fitted on it and the months either side) and 3-hour block
+  of local standard time.
+- **Carrying it.** The shore stations' quantiles are averaged with 1/d^2 weights (d at least 5 km, at most 4 stations),
+  their temperature moved to the cell's ERA5 elevation at 6.5 C per km, and the cell is mapped onto them.
+- **Period.** The pairs are fitted on 1995-2024, each station's on its own kept hours and its cell's on the same hours.
+  ERA5's sequence and trend are kept.
+- **Stations.** 106 of 207 candidates qualify: 88 ISD under one ID, 13 linked ISD sites (of 66) and 5 ECCC sites (of 9).
+  27 of them are shore stations.
+- **Linking ISD.** Pieces sharing a USAF or a WBAN within 5 km, together covering 85% of the days, with a WBAN among them;
+  an hour both report is the newer piece's.
+- **Linking ECCC.** Pieces within 5 km sharing the first word of their names. A value flagged "M" is left out.
+- **Sarnia (Port Huron's neighbor) fails at 79.8% of hours**: Sarnia Airport reported 43% of hours in 1995-2004.
+
+**What it does.**
+- **Coverage.** 94 of the 126 shore cells and 619 of their 777 places are corrected: Michigan 353 of 462, Ohio 172 of
+  172, Virginia 56 of 56, Texas 38 of 87. 158 places in 32 cells stay uncorrected: Lake Michigan's southwest shore, the
+  Thumb's Saginaw Bay side, the Upper Peninsula's shores, Galveston Bay, and the Gulf shore from Freeport to South Padre.
+- **What each change does.** Requiring a shore station alone would leave 176 uncorrected. Linking adds no cells but
+  supplies Lorain County Regional, Lorain's and Cleveland's anchor once Cleveland-Hopkins is held out. ECCC adds 4 cells
+  (18 places): the Thumb's Lake Huron shore from Goderich and Isle Royale from Thunder Bay. The proposal (any station)
+  would have corrected 711.
+- **Weather, held out at 106 stations.** At the 16 shore stations the rule corrects, the design dry-bulb error is 0.23 C
+  (median absolute; mean -0.04 C), against 1.18 C (mean -1.34 C) uncorrected and 0.28 C (+0.05 C) under the proposal. The
+  mean dew point is 0.16 C against 0.42 C. The 0.4% wet bulb is 0.28 C against 0.22 C: it rises about 0.3 C on average.
+  On cells at least 90% land no correction beats ERA5 (design dry-bulb 0.42 C uncorrected, 0.45 C with lapse).
+- **The five shoreline places, through the cooling model** (model 1.7, 400 draws, seed 7, each place's reference
+  station held out), mean difference from the station:
+  - hybrid average day -15% to -4%;
+  - assist -34% to -8%;
+  - hybrid peak +5% to +1%, assist peak -19% to -3%;
+  - towers 2% or less.
+- **The five, place by place:**
+  - Lorain: hybrid average -8% to +4%, assist -35% to -4%, from Lorain County Regional at 23 km.
+  - Cleveland: hybrid average -11% to -0%, assist -27% to -7%, from the same station at 40 km.
+  - Port Huron: hybrid average -39% to -21%, assist -52% to -25%, design dry-bulb -2.0 to -0.4 C, from Windsor A at
+    88 km. Its reference, Detroit City, is 80 km away.
+  - Virginia Beach: hybrid average +5%, assist +2%.
+  - Toledo: hybrid average -7%, assist -9%.
+- **Physical.** No corrected hour has Td above T, and RH is at most 100%. The model's mass and energy balance tests pass
+  unchanged, since the correction is outside the model.
+
+**Alternatives considered.**
+- **Any station within 100 km** (the proposal). Overshoots where only inland stations are near.
+- **Weighting stations by how alike their cells' land fractions are.** Softer than a cutoff, but it still lets an
+  inland station anchor a shore cell when it is the only one.
+- **Distance from the shoreline as the shore-station test.** It needs a shoreline dataset and a second threshold. The
+  cell test is the one the cells already get.
+- **"bias"** (carrying ERA5's own error from station cells) and **"target"** without elevation. Both did worse on the
+  held-out stations (0005, prototype).
+- **Parametric quantiles, seasons, hourly bins, and T with RH or the wet bulb as the corrected pair.** See 0005,
+  section 1-2.
+- **Detrending or quantile delta mapping.** Not needed for a historical period corrected against itself.
+
+**Open.**
+- The 0.4% wet bulb rises about 0.3 C where cells are corrected: the margins are matched, not their joint distribution.
+  A joint correction is the next refinement. Towers barely move.
+- Sarnia fails the 85% rule on its 1995-2004 record and is whole over 2006-2024.
+- The cell test counts inland-lake stations as shore stations (Roscommon County, Detroit City, Detroit Metro: 0.88-0.89),
+  and misses stations on the water in mostly-land cells (Corpus Christi NAS, 0.96).
+- Goderich corrects the Thumb's Lake Huron shore from 83-88 km across the lake.
+- 158 shore places stay uncorrected. Single-ID ISD sites that start after 1995, which the span test excludes, are the
+  likeliest source of more stations.
+
+**References.**
+- Cannon, A. J., Sobie, S. R. and Murdock, T. Q. (2015). Bias correction of GCM precipitation by quantile mapping: how
+  well do methods preserve changes in quantiles and extremes? Journal of Climate 28(17): 6938-6959.
+  doi:10.1175/JCLI-D-14-00754.1.
+- Maraun, D. (2016). Bias correcting climate change simulations: a critical review. Current Climate Change Reports 2(4):
+  211-220. doi:10.1007/s40641-016-0050-x.
+- Themeßl, M. J., Gobiet, A. and Leuprecht, A. (2011). Empirical-statistical downscaling and error correction of daily
+  precipitation from regional climate models. International Journal of Climatology 31(10): 1530-1544. doi:10.1002/joc.2168.
+- Hersbach, H., et al. (2020). The ERA5 global reanalysis. QJRMS 146(730): 1999-2049. doi:10.1002/qj.3803.
+- NOAA NCEI, Integrated Surface Database, ISD-Lite and isd-history.csv, fetched Oct 29 and Nov 4, 2026.
+- Environment and Climate Change Canada, Historical Climate Data, hourly observations via MSC GeoMet-OGC-API
+  (api.weather.gc.ca, collection climate-hourly) and the Station Inventory (Sep 30, 2026), fetched Nov 4, 2026. Licence:
+  ECCC Data Servers End-use Licence, version 2.1 (https://eccc-msc.github.io/open-data/licence/readme_en/). "Contains
+  information licenced under the Data Server End-use Licence of Environment and Climate Change Canada."
+- Alduchov, O. A. and Eskridge, R. E. (1996). Improved Magnus form approximation of saturation vapor pressure. Journal of
+  Applied Meteorology 35(4): 601-609.
+- Dunn, R. J. H., Willett, K. M., Thorne, P. W., et al. (2012). HadISD: a quality-controlled global synoptic report
+  database for selected variables at long-term stations from 1973-2011. Climate of the Past 8: 1649-1679 (the neighbor
+  check the screens follow).
+
+## Nov 4, 2026: the cooling runs worked in blocks of hours (model 1.8's runs; the numbers unchanged)
+
+**Decision.** `cooling.run_location` works each draw's hourly heat balance 4,096 hours at a time (`HOUR_BLOCK`) rather than
+over all 262,992 hours of a 30-year record at once, and takes the statistics over the whole series as before. Andrew asked on
+Nov 4 for the in-between arrays to stop going out to memory, in 64-bit and with the same numbers ("this is the best middle
+ground ... It stays in 64-bit"). The ERA5 runs use ten workers, the Mac's performance cores. No model parameter or equation
+changes, so the model version doesn't either.
+
+**Why.** On Nov 3 a cell took 362 s alone, 77 s per cell at six at once and no better at twelve (0004, section 3). That
+pattern points to memory. The working idea was that each step wrote a 400-draw x 263,000-hour array (about 840 MB), but the
+code doesn't: `run_location` loops over the draws one at a time. Each step of one draw's heat balance writes a 263,000-hour
+array, 2.1 MB, and a draw has a few hundred such steps, three times over (the average load, the peak day's load, and every
+computer at capacity). A profile on five years and 20 draws put 70% of the time in the heat balance (`physics._loop` alone,
+60%). Over 30 years those 2.1 MB arrays outrun each core's share of the cache, so with several runs at once the steps wait
+on memory. Blocking the draws, as first suggested, would have made the arrays larger, not smaller, so the hours are blocked.
+
+**The test of the idea, before the change** (one process, 30 years, 4 draws, Nov 4, with Michigan part 1's six workers
+loading memory): 7.5 s whole, 4.1 s by blocks. By block size: 1,024 hours 5.95 s (Python's cost per operation shows), 2,048
+4.57 s, **4,096 3.97 s**, 8,192 4.28 s, 16,384 4.29 s, 32,768 4.62 s.
+
+**Same numbers, to the bit.**
+- **Why they can't move.** Every step of the heat balance is the same calculation on each hour, so working the hours in
+  blocks changes no value. The statistics (daily totals by `bincount`, means, quantiles, years' maxima) are taken over the
+  full hourly series assembled from the blocks, in the same order as before. `daily_stats` now takes the years' and months'
+  runs of days as slices: the same values in the same order as the masks it used.
+- **Tests.** `tests/test_cooling_blocks.py` checks whole runs (default blocks, and 1,000-hour blocks that don't divide the
+  record), every hourly series, and the grouped statistics, all bitwise.
+- **Real cells.** Both reference cells from Michigan part 1, rerun in full (400 draws, 1995-2024), match all 480 stored
+  values exactly: 41.75_-83.50 (78% land, corrected toward Detroit Metro, Windsor A and Detroit City) and 42.00_-85.00
+  (98% land). Ten cells, old code (1b60ae0) against new, match all 480 values in every run.
+- **Unchanged.** The golden test and the mass and energy balance tests pass unchanged.
+
+**Timings** (Andrew's Mac, Apple M3 Max, 10 performance and 4 efficiency cores, 96 GB; full cells, 400 draws, the same
+cells for old and new; Nov 4):
+
+| Cells at once | Old: each cell | Old: throughput | New: each cell | New: throughput |
+|---|---|---|---|---|
+| 1 | 325-392 s | 358 s per cell | 280-281 s | 281 s per cell |
+| 6 | 438-441 s | 74 s per cell | 287-288 s | 48 s per cell |
+| 8 | 541-544 s | 68 s per cell | 292-294 s | 37 s per cell |
+| 10 | 654-662 s | 67 s per cell | 307-310 s | 31 s per cell |
+
+- **The runs no longer wait on memory.** The old code's cells slow as more run at once (358 to 660 s). The new ones hardly
+  slow at all (281 to 309 s at ten).
+- **Ten workers is the setting,** the Mac's performance cores, and `waterledger era5` defaults to the performance cores
+  where macOS reports them.
+- **More than ten was not measured.** A first figure for twelve (58 s a cell) is left out: that run overlapped Michigan
+  part 1, restarted at 10:07 on the new code with ten workers, so 22 runs shared the machine.
+- **The timings are short tests,** one batch each. Over a long run the rate is slower: Michigan part 1, on the new code at
+  ten workers with nothing else running, went from 68 to 98 cells between 10:30 and 10:50, about 40 s a cell. The cause
+  was not measured. The likely parts are the Mac slowing as it heats over hours, and the main process's work between cells
+  (each cell's weather and correction, and R2 uploads through wrangler).
+- **The four states.** About 13 to 14 hours of runs at the long-run rate (1,233 cells x 38-40 s; 10.6 hours at the short
+  tests' 31 s), against about 26 hours before. The seven parts take about 1.4 to 2.3 hours each.
+
+**Alternatives considered.**
+- **Numba**, fusing a draw's hours into one compiled loop. It would remove the in-between arrays and Python's cost per
+  operation altogether, and likely run several times faster again. But its exp, arctan and powers are LLVM's rather than
+  NumPy's, so results would agree to about 1e-15 per hour rather than to the bit, and it adds a compiled dependency. Not
+  needed: blocking took memory out of the way.
+- **float32.** Ruled out by Andrew ("It stays in 64-bit").
+- **Blocking the draws.** Larger arrays, the wrong way (above).
+
+**Open.** None for the numbers. Michigan part 1's 38 cells finished on the old code are identical to what the new code
+gives, so a part can restart on the new code and keep them.
+
+## Nov 4, 2026: snapshot format 3, cooling by ERA5 cell in the state snapshots (model 1.8; built, not yet written for a state)
+
+**Decision (Andrew, Nov 4, 2026: "yes").** Model 1.8's cell results go into the state snapshots as snapshot format 3 (design
+0004, section 5), and the package reads them. A place's cooling estimate takes its ERA5 cell's results per 100 MW, the cell
+its places.json entry names. Rainfall, road salt and golf stay with the climate divisions' stations.
+
+**What a format 3 snapshot carries** (`waterledger.national.cells`, `national.snapshot.write`):
+- **`cells/<cell>.json`** for every cell the state's places use, from the cell's run (`CACHE/era5/runs/model1.8`). It has:
+  - `per_100mw`, in the structure the divisions and regions carry;
+  - the cell's center, land fraction and ERA5 elevation;
+  - the 0.4% design dry-bulb, period (1995-2024), hours, draws and seed;
+  - the weather's source (Open-Meteo's open copy, fetch date, checksum), its citation, licence and attribution;
+  - design 0005's correction block: method qm-1, whether it was applied and why, the stations (id, name, source, km,
+    weight, elevation), and the change to the design dry-bulb, summer afternoon and mean dew point.
+- **`cells/index.json`**: every cell's center, land fraction, places, the places the land rule moved there, whether it
+  was corrected, and its file's checksum.
+- **`places.json`**: each place gains `cell`, `cell_km`, `cell_land`, `cell_moved` (with `nearest_cell`, `nearest_km` and
+  `nearest_land` when moved) and `weather_corrected`.
+- **`manifest.json`**:
+  - `format: 3` and `model_version` 1.8 (the runs', not the writing package's);
+  - `cells`, every cell file's size and checksum;
+  - `cell_rule`, land at least 0.5;
+  - `weather`: ERA5's dataset, DOI, citation, CC-BY 4.0 licence, attribution, copy, period and first and last fetch dates;
+  - `correction`: method, rule, the stations used, with source, ISD parts, share observed and the first and last dates
+    their files were downloaded, and ISD's citation. Where a Canadian station is used it also has ECCC's licence (Data
+    Servers End-use Licence 2.1) and attribution ("Contains information licenced under the Data Server End-use Licence of
+    Environment and Climate Change Canada.").
+- **`climate.json`**: its divisions keep their stations (name, station, id, share observed, screens) but no cooling results
+  (`climate.division_stations`).
+
+**Reading it.**
+- **Cell files are fetched on demand.** Each is fetched the first time a place needs it and checked against the manifest's
+  checksum; a mismatch is refused. A snapshot download stays the size it was, and the page, likewise, loads one cell file
+  per place.
+- **The estimate.** It reads the place's cell in a format 3 snapshot and its division in format 2 (`provider._cooling`).
+  `Climate` gains `cell`, `cell_km`, `cell_land`, `cell_moved` and `weather_corrected`, and lists `era5` among its
+  sources.
+- **Tested.** An estimate from a format 3 snapshot equals the one computed straight from the cell's run file, for every
+  design. The test uses Michigan part 1's real runs, read and not rerun: 41.75_-83.50, corrected; 42.00_-85.00, land;
+  43.50_-83.50, where the land rule moved Akron township from 43.75_-83.50.
+
+**Checking it** (check-snapshot, `build.checks`, besides format 2's checks):
+- every place on a cell with results (`era5_cell`, 100%);
+- each cell's central run closing on the average day and over the year: withdrawn + condensate = consumed + returned, to
+  1e-9 (measured: within 2e-16);
+- each corrected cell naming its stations, and every one of them in the manifest's stations.
+
+The peak day isn't held to closing, since each flow's 1-in-10-year peak is taken on its own days (up to 1% apart on
+41.75_-83.50, assist). `scenario.cooling_estimate` closes the estimate's middle peak by taking consumed as what is left, as
+before.
+
+**Model versions kept apart.** A format 3 manifest says model 1.8, and `waterledger latest-json --dir` files the snapshot
+under the model its manifest gives (the `build-state` workflow passes `--dir`). Before this, latest-json filed a snapshot
+under the writing package's `MODEL_VERSION`, so a format 3 snapshot written by a package still at 1.7 would have reached
+model 1.7 packages, which can't read it. `MODEL_VERSION` itself moves to 1.8 with the release.
+
+**Across state lines.** A cell shared by two states is in both snapshots, copied from its one run file, so both states'
+places in it get the same numbers.
+
+**Not built.** Michigan: its estimate reads its site files' eight regions (`estimates.json`), and the package matches
+waterledger.org/mi exactly, so Michigan moves to cells with the site's own change.
+
+**Alternatives considered.**
+- Cell files listed in the manifest's `files`, so a download takes all of them: up to 616 files for Texas for one place.
+  Not chosen.
+- Every cell in one file per state: simpler, but 3-9 MB for the page to load for one place.
+
+## Nov 4, 2026: Michigan on ERA5 cells, and model 1.8 (release 3.10.0, not yet published)
+
+**Decision (Andrew, Nov 4, 2026: "lets finish the current update").** Model 1.8 is every state's cooling on its places' ERA5
+cells, Michigan included, with the shore correction. `MODEL_VERSION` moves to 1.8 and the packages to 3.10.0. The cooling
+equations and parameters are model 1.7's: the golden test's numbers are unchanged, and only its version label moves.
+
+**Michigan.**
+- **Each place's cell.** Michigan's page data comes from the package (`waterledger build mi`). Each place now carries its
+  cell (`e`), the cell of the point Michigan's snapshot carries for it: its page position turned back into degrees and
+  rounded to five places. That is the point `waterledger era5 run MI` assigned the cell from, so no place can land on a
+  cell without a run. All 1,541 places fall on the 272 cells that were run.
+- **The cells' results.** They go in the site's `data/cells/<cell>.json`, the same records as a format 3 snapshot's
+  `cells/`.
+- **The regions.** The eight regions' Open-Meteo runs (best match at a hand-picked point each) are gone. The regions keep
+  their names and points, for road salt, golf and the map.
+- **The page.** It loads a place's cell file into its regions under the cell's id and reads cooling from there. The
+  package's estimate does the same (`scenario.cooling`), so the two stay identical. A place with no `e` (site data from
+  before 1.8) still reads its region.
+- **Validation.** The checks that read the West and Southeast regions now read each site's own cell. Grand Rapids stands
+  for West Michigan; Van Buren, Saline, Lowell and Gaines each have their own.
+- **Design PUE.** It is averaged over the state's cells.
+- **Source.** The `era5` source cites ERA5 itself (Hersbach et al. 2023, the open copy, the shore correction, ECCC's
+  attribution).
+- **Michigan's snapshot.** It is format 3 like the others. It refuses site files from before model 1.8, or whose cells
+  don't match their points.
+
+**Versions kept apart.** A 3.10 package reads the newest snapshot filed under model 1.8. Until those are published it reads
+the newest one of any model, and says so. A 3.9 package keeps reading model 1.7's. Format 3 snapshots are filed under 1.8
+(`latest-json --dir`).
+
+**Open.** The site's Ohio, Virginia and Texas pages must read cells (Northline's `engine/products/state_data.py` and the
+pages' scripts), and Michigan's page must load its place's cell. Both are Northline changes, made with this release.
+
+## Nov 5, 2026: shore stations near the water kept, for model 1.8 (Galveston)
+
+**Decision (Andrew, Nov 5, 2026: "Fix it now and we will do it in the 1.8 release").** Two fixes to design 0005's stations,
+made before 1.8 shipped.
+
+**Why.** The local check found Galveston city's cell (29.25_-95.25, 89% land) uncorrected, "no shore station within 100 km",
+though Galveston's airport, Scholes Field (KGLS), is on the island. Two causes:
+- **KGLS failed the 85% rule through a gap in the linking.**
+  - 722420-12923 spans 1995-2024 under one ID but has 82.3% of hours: 2000-2003 are missing, and 1995-96 are at 65-69%.
+  - Those years are under 722420-99999, Galveston, 1973-2003.
+  - Linking left alone any station whose one ID spans the period, and isd-history lists the old piece 7 km away (its
+    position rounded to 0.1 degree), past the 5 km link.
+  - The land rule wasn't the cause: KGLS's land-rule cell is 67% land.
+- **The shore test used the land rule's cell.** For a station on the water the land rule moves it inland: Corpus Christi
+  NAS's nearest cell is under 90% land, its land-rule cell isn't. It was the only one lost that way.
+- **Hobby isn't the answer here, but shows the same gap.** Houston Hobby was never a candidate: isd-history lists 722435-12918
+  to 1997 and 722440-12918 from 2005, but 722435's files run to 2010. It is inland (its cell is 99% land) and not a shore
+  station either way.
+
+**What changed** (`climate.isd_sites`, `climate._isd_frame`, `quantile_mapping.is_shore_station`, `national.era5.candidates`):
+- **A linked fallback for spanning stations.** A station whose one ID spans the period also gets a linked fallback
+  (`+linked`), used only if the station alone fails the 85% rule. Every station that qualified before keeps its record:
+  checked, none changed.
+- **LINK_KM 5 to 8 km.** Austin's Camp Mabry and Bergstrom, sharing a USAF 17 km apart, stay separate.
+- **A looser first screen.** A site is tried when its pieces cover half the period by isd-history's dates (was 85%). A year
+  no piece lists is read from every piece. The 85% of hours still decides.
+- **The nearest-cell shore test.** A station is a shore station by its own nearest cell (`shore_land`), and keeps its
+  land-rule cell for comparison with ERA5.
+
+**What it does.**
+- **Stations.** 11 more shore stations qualify: KGLS, Corpus Christi NAS, Aransas County, Burke Lakefront (Cleveland),
+  Selfridge, Tulip City (Holland), Southwest Michigan Regional (Benton Harbor), Langley, Andrews, Salisbury and Sussex
+  County.
+- **Cells.** 58 shore cells take new stations: 8 newly corrected, 50 corrected from a changed set, none uncorrected that was
+  corrected. The 8 are Michigan 3, on the southwest Lake Michigan shore, and Texas 5: Galveston, Freeport, Clear Lake and
+  Corpus Christi Bay.
+- **Totals.** Corrected cells: Michigan 58, Ohio 11, Virginia 16, Texas 18. Uncorrected shore cells: Michigan 17, Texas 7.
+- **The rerun.** The 58 cells were rerun at three workers (another job had the machine). The earlier results are kept in
+  `CACHE/era5/runs/model1.8-before-nov5`, and the four snapshots were rebuilt.
+
+**Not redone.** The prototype's leave-one-out figures in 0005 are from before the fixes; `waterledger era5 check ST` gives
+them on the current rules.

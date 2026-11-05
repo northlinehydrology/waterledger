@@ -104,10 +104,37 @@ def pue_by_design(regions, lake=None):
     return out
 
 
+def cell(cid):
+    """An ERA5 cell's results (model 1.8, design 0004): the site's data/cells/<cell>.json, else Michigan's format 3 snapshot's
+    (data.waterledger.org, fetched when needed and checked), else the file waterledger.org publishes."""
+    name = f"cells/{cid}"
+    if name not in _cache and not os.path.exists(os.path.join(DATA, name + ".json")):
+        try:
+            from waterledger.national.data import SnapshotData, fetch_snapshot
+            sd = SnapshotData("MI", fetch_snapshot("MI"))
+            if sd.format() >= 3:
+                _cache[name] = sd.cell(cid)
+        except Exception:                                               # noqa: BLE001  no snapshot reachable: the published file
+            pass
+    return data(name)
+
+
+def cooling(p, D=None):
+    """(D, the key its regions are read by) for a place's cooling. Model 1.8 site data names the place's ERA5 cell (p["e"]), whose results
+    come from cells/ and stand in D's regions under the cell's id, as the page loads them; before, the place's region's (p["r"]). The
+    region stays the place's for rainfall, road salt and golf."""
+    D = D or data("estimates")
+    cid = p.get("e")
+    if not cid:
+        return D, p["r"]
+    return {**D, "regions": {**D.get("regions", {}), cid: cell(cid)}}, cid
+
+
 def estimate(p, mw, cool, dest, region=None):
     """Water taken, evaporated or lost, and sent out (MGD, lo/mid/hi), as on the page."""
     D = data("estimates")
-    region = region or p["r"]
+    if region is None:
+        D, region = cooling(p, D)
     if cool == "lake":
         return lake_estimate(D, p["gl"]["lake"], region, mw, dest)
     return cooling_estimate(D, region, cool, mw, dest)

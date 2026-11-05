@@ -76,6 +76,9 @@ def brief(state):
     levels = collections.Counter(p["level"] for p in places)
     cov = (m.get("checks") or {}).get("coverage", {})
     divs = clim["divisions"]
+    ncell = len(m.get("cells", {})) - 1 if m.get("cells") else 0                 # model 1.8: cells/index.json is listed too
+    corr = m.get("correction", {})
+    shore = sorted({a["name"].title() for a in corr.get("anchors", [])})
     att = rec.get("attains") or {}
     agency = AGENCIES.get(att.get("organization"), att.get("organization", ""))
     out = os.path.join(HERE, f"{state.lower()}.pdf")
@@ -100,25 +103,27 @@ def brief(state):
              f"{len(plants):,} plants" + (f"; {pct(cov.get('sewer_plant_within_40km'))} of places have one within 40 km" if cov else "")],
             ["Receiving waters", f"USGS Watershed Boundary Dataset; EPA ATTAINS ({agency}, {att.get('cycle', '')} report)",
              f"{len(rec['downstream']):,} watersheds with a downstream path; {len(rec['reaches']):,} watersheds on those paths"],
-            ["Climate", "Open-Meteo best match (ERA5, ERA5-Land and, from 2017, IFS HRES), 1995-2024, at eight Michigan regions; Atlas 14 design storms; Climate at a Glance rainfall" if mi else
-             "NOAA ISD station records, 1995-2024, one station per NOAA climate division; Atlas 14 design storms; Climate at a Glance rainfall",
-             f"{len(divs)} {'regions' if mi else 'climate divisions'}"],
+            ["Climate", "Copernicus ERA5, 1995-2024, at each place's 0.25-degree cell (the nearest at least half land), corrected near the shore toward NOAA "
+             "and Environment and Climate Change Canada stations; " + ("eight Michigan regions" if mi else "NOAA stations by climate division") +
+             " for rainfall and road salt; Atlas 14 design storms; Climate at a Glance rainfall",
+             f"{ncell} cells, {corr.get('cells_corrected', 0)} corrected near the shore; {len(divs)} {'regions' if mi else 'climate divisions'}"],
             ["Energy", "MPSC territories; EIA-861 sales and peaks" if mi else
              "HIFLD retail service territories (PNNL copy); EIA-861 sales and peaks; EIA-923 plant reports for power-plant water",
              f"{len(en['loads'])} utilities with loads; grid regions: {', '.join(sorted(en['grid_water']))}"]]
     S += [Paragraph("Data", H2), table(rows, [1.0, 3.6, 2.4])]
 
     S += [Paragraph("Overall method (all states)", H2),
-          Paragraph("<b>Weather.</b> Hourly NOAA station records, 1995-2024, one station per NOAA climate division. Hybrid and assist "
-                    "estimates depend on the hottest hours and so on the weather source: in tests against Open-Meteo best match at eight sites, "
-                    "station records gave cooling tower estimates within about 1%, and hybrid and assist estimates 4-50% higher (2-5 times "
-                    "higher at the coolest sites).", BODY),
+          Paragraph("<b>Weather (model 1.8).</b> Each place takes its hourly temperature and dew point, 1995-2024, from its own ERA5 grid "
+                    "cell (0.25 degrees, about 10 km away), or the nearest cell at least half land where its own is mostly water. Where the cell "
+                    "is under 90% land, its weather is corrected month by month and by time of day toward the weather stations near the shore "
+                    "within 100 km, since ERA5 runs cool beside lakes and the sea; on land ERA5 is used as it is. Hybrid and assist estimates "
+                    "depend most on the hottest hours, and so on this.", BODY),
           Paragraph("<b>Cooling water.</b> Hourly temperature and humidity drive the heat rejected by the campus under four "
                     "cooling designs: cooling towers; hybrid, evaporative in warm weather only; dry coolers with adiabatic pre-cooling above "
                     "a switch temperature (20-30 C, assumed); and closed loop with no evaporative cooling. Evaporation is the heat load "
                     "times the evaporative fraction of Rutberg et al. (2011), as used in the USGS cooling tower method. Blowdown is evaporation "
                     "divided by cycles of concentration minus one (DOE FEMP).", BODY),
-          Paragraph("<b>Uncertainty.</b> Each estimate is 200 Monte Carlo runs, sampling 17 cooling parameters from published or estimated "
+          Paragraph("<b>Uncertainty.</b> Each estimate is 400 Monte Carlo runs, sampling 17 cooling parameters from published or estimated "
                     "ranges; estimated ranges are marked [A]. We report the 10th, 50th and 90th percentiles. The peak day is the 1-in-10-year "
                     "maximum day, taken as the 90th percentile of the annual maximum daily withdrawal.", BODY),
           Paragraph("<b>Other water.</b> Staff use, 10-30 gallons a person a day, scaled to the number of people on site; maintenance and "
@@ -140,8 +145,8 @@ def brief(state):
 
     S += [Paragraph(f"What is specific to {name}", H2)]
     if mi:
-        S += [Paragraph("<b>Weather.</b> Open-Meteo best match, a reanalysis-based record, at eight Michigan climate regions instead of station records. Michigan stays on "
-                        "it until a reviewed model update.", BODY),
+        S += [Paragraph(f"<b>Weather.</b> {ncell} ERA5 cells for its 1,541 places; {corr.get('cells_corrected', 0)} shore cells corrected toward "
+                        f"{len(shore)} stations: {', '.join(shore)}. Michigan's eight regions stay for road salt and golf.", BODY),
               Paragraph("<b>Places and electricity.</b> Cities and townships only (county subdivisions); utility territories from the "
                         "Michigan Public Service Commission.", BODY),
               Paragraph("<b>State layers.</b> EGLE reported water use by county and sector, domestic wells (EGLE Wellogic), designated "
@@ -152,7 +157,9 @@ def brief(state):
         n = collections.Counter(v["station"] for v in divs.values())
         st = "; ".join(f"{k.title()}" + (f" ({c} divisions)" if c > 1 else "") for k, c in n.items())
         S += [Paragraph(f"{name} follows the overall method with national data throughout. What is particular to it:", BODY),
-              Paragraph(f"<b>Weather.</b> {len(divs)} NOAA climate divisions, with these stations: {st}.", BODY),
+              Paragraph(f"<b>Weather.</b> {ncell} ERA5 cells; {corr.get('cells_corrected', 0)} shore cells corrected toward "
+                        f"{len(shore)} stations: {', '.join(shore) or 'none'}. Rainfall and road salt come from {len(divs)} NOAA climate divisions, "
+                        f"with these stations: {st}.", BODY),
               Paragraph("<b>Places.</b> " + "; ".join(f"{levels[k]:,} {w}" for k, w in (("place", "cities, towns and villages"),
                         ("township", "townships that are governments"), ("county", "counties")) if levels.get(k)) +
                         ". Counties are included so that unincorporated land is covered.", BODY),

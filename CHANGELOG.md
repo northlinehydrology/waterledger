@@ -2,6 +2,51 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.10.0 (Nov 5, 2026; model 1.8)
+
+Model 1.8 changes the cooling weather and nothing else in the model.
+- **Each place's own ERA5 cell.** Every place in every state, Michigan included, takes its cooling weather from its ERA5 grid cell, 1995-2024 ([design 0004](docs/design/0004-era5-weather.md)). The nearest cell that is at least half land is used where the nearest is mostly water.
+- **Shore correction.** Cells under 90% land are corrected toward NOAA and ECCC stations near the shore ([design 0005](docs/design/0005-era5-quantile-mapping.md)).
+- **Snapshots.** They carry each cell's results as format 3.
+- **The same equations.** The cooling equations and parameters are model 1.7's; the golden numbers are unchanged, with only the version label moving to 1.8.
+
+Also seven changes from coupling the BMI components in NOAA's NextGen (the Water Ledger NextGen Michigan example). The station check is in [docs/methods/era5-station-check.md](docs/methods/era5-station-check.md).
+
+- **Beta, said plainly.** The README's new Stability section says the packages are beta despite the 3.x number. From here, a breaking change to the public API waits for 4.0. The classifiers say `Development Status :: 4 - Beta`.
+- **`MODEL_VERSION` 1.8 and package version 3.10.0.** A 3.10 package reads the newest snapshot filed under model 1.8. Until those are published it reads the newest 1.7 snapshot and says so; 3.9 packages keep reading 1.7.
+- **Shore stations near the water kept** (Nov 5, found at Galveston).
+  - `climate.isd_sites` gives a spanning station a linked fallback, used only if it fails the 85% rule.
+  - Pieces link within 8 km (was 5), and a year no piece lists is read from every piece.
+  - A station is judged a shore station by its own nearest cell (`shore_land`), not the land rule's.
+  - Stations that qualified before keep their records. 11 more shore stations qualify, and 8 more cells are corrected.
+- **Michigan on ERA5 cells.**
+  - `waterledger build mi` gives each place its cell (`e`) and writes the site's `data/cells/`, in place of the eight regions' Open-Meteo runs. The regions stay for salt, golf and the map, and the validation checks use each site's own cell.
+  - The package's Michigan estimate takes the place's cell. Site data from before 1.8, with no `e`, still reads by region.
+  - Michigan's snapshot is format 3.
+
+- **BMI: outputs change on `update()`, not on `set_value`** (behavior change). `CoolingWaterBmi` and `LakeCoolingBmi` store inputs when they are set, and `update()` computes the step from the current time to the next from them, then moves the clock on. Outputs always describe the last step taken and read 0 before the first one, so a framework that sets the next step's inputs before reading this step's outputs gets this step's values. Code that set inputs and read outputs without calling `update()` must now call it in between (NextGen's order, set, update, read, is unchanged). With a forcing file, the outputs read at time t are for the hour from t - 1 h to t; they were for the hour from t. An input set with `set_value` wins over a forcing file for the step it was set for; the file's value returns the next step. With the same inputs, each hour's outputs are identical to 3.9.0's (checked against the 3.9.0 component over 1,440 hours in every design, and in `tests/test_bmi.py`). A hybrid campus without a design dry-bulb now stops at `initialize()`, and `initialize()` starts a component over, its inputs included.
+- **BMI: specific humidity and surface pressure.** `CoolingWaterBmi` with `humidity: specific` takes `atmosphere_bottom_air_water_vapor__mass_fraction` (kg kg-1) and `land_surface_air__pressure` (Pa), what NextGen's AORC and NWM forcing carry, and converts them inside (Bolton 1980). `waterledger_models.weather` has `relative_humidity`, `specific_humidity` and `saturation_vapor_pressure`; the round trip is tested and stays within 0-100%.
+- **BMI: settings without a file.** `initialize()` takes a dict as well as a YAML path, in both components (`bmi.read_config`).
+- **BMI: the components import without pyyaml** (a bug in 3.9.0, found by Basin Ledger). `datacenter.bmi` imported yaml as it loaded, though pyyaml is only in the `[bmi]` extra, so with bmipy alone the components wouldn't import. yaml is now imported only to read a YAML file; a dict configuration needs none, and a file without pyyaml says to install `waterledger-models[bmi]`.
+- **BMI: a public base.** `ScalarPointBmi` is the shared base for components at one point, with its contract in the docstring. `_ScalarPointBmi` stays as an alias.
+- **BMI: the design dry-bulb.** `waterledger_models.weather.design_dry_bulb` gives a hybrid's 0.4% design dry-bulb from any hourly record (Dataset, DataArray or array), the value a forcing file gives the component, for frameworks that supply the weather. Use a long record: one Michigan year is up to 4.6 C off its 30 years.
+- **`hydrology.stream_depletion` takes arrays** (numpy, with `hydrology.erfc` within 1e-13 of `math.erfc`) and gives the scalar form's values; at t = 0 the share is 0. Ten years of hourly well responses are one 6 ms call.
+- **The BMI example runs again.** `examples/bmi_coupling.py` gives its hybrid a design dry-bulb (it failed under 3.9.0), and every example now runs in the tests (`tests/test_examples.py`; on synthetic weather offline, downloading under `-m live`).
+- **Snapshot format 3** (design 0004, section 5): cooling by ERA5 cell in the state snapshots, national tier.
+  - `waterledger snapshot ST` writes `cells/<cell>.json` from the cells' runs, plus `cells/index.json`, each place's cell fields and `weather_corrected`. The manifest gains `cells`, `cell_rule`, `weather` and `correction`, with ERA5's attribution, ISD's citation, and ECCC's licence and attribution where a Canadian station is used. `climate.json`'s divisions keep only their stations.
+  - The package reads a place's cell from a format 3 snapshot, fetching the cell's file when needed, and its division from format 2. `Climate` gains `cell`, `cell_km`, `cell_land`, `cell_moved` and `weather_corrected`.
+  - `check-snapshot` adds three checks: a cell with results for every place, each cell's central run closing, and each corrected cell's stations in the manifest.
+  - `latest-json --dir` files a snapshot under its manifest's model, so model 1.7 packages keep reading format 2. Michigan's snapshot is not yet on cells.
+- **`waterledger era5 check ST`**: design 0005's leave-one-station-out check for any state, with a pass or fail against the four states' worst plus a margin (`era5_check.CRITERIA`). It writes `check.json` and `check.md` and exits 1 on a fail. `era5 cells ST --json` says when every cell is done, and a state not yet published takes its local build's places. `docs/add-a-state.md` gives the steps from preflight to publishing.
+- **Cooling runs worked 4,096 hours at a time** (`cooling.HOUR_BLOCK`): the same numbers to the bit, and no longer waiting on memory. A cell takes 31 s at ten workers in short tests (74 s at six before) and about 40 s over a long run. `waterledger era5` defaults to the performance cores. Ctrl-C stops a part cleanly, and a restart uploads finished results R2 doesn't have.
+- **Model 1.8's ERA5 runs** (design 0004; the four states run from Nov 4, 2026): `waterledger era5 cells|fetch|run ST --part k/n --workers 10`.
+  - `waterledger_data.era5`: `cell` is the land rule on ERA5's land-sea mask, shipped for the lower 48. `fetch` reads Open-Meteo's open copy into a raw cache with each cell's request and checksum (`waterledger-data[era5]`). `hourly` gives local standard time.
+  - `waterledger.national.era5`: the state's cells and parts, the shore stations for quantile mapping, and the runs, one result file per cell as it finishes.
+  - `waterledger_data.r2`: optional saving to the private R2 bucket `waterledger-raw`, through wrangler (`WATERLEDGER_R2=wrangler`) or R2's S3 API with credentials from the environment. Each file is skipped when R2 has it with the same checksum. Before a part starts, what R2 has is pulled, so it can resume on another machine. A failed upload warns and never stops the run. Off unless set up.
+- **Quantile mapping** (`waterledger_models.quantile_mapping`, for model 1.8). It corrects an ERA5 cell's hourly temperature and dew-point depression toward the shore stations within 100 km, month by month and by 3-hour block, at the cell's elevation, for cells under 90% land. The dew point never passes the temperature, and each hour keeps its rank. `correct()` returns the corrected series and what it did (`applied`, `reason`, `stations`).
+- **Stations across a change of ID.** `climate.isd_sites` links ISD pieces that share a USAF or WBAN within 5 km. `climate.eccc_sites` and `eccc_hourly` read Environment and Climate Change Canada's hourly records (MSC GeoMet, ECCC Data Servers End-use Licence 2.1; `climate.ECCC_ATTRIBUTION`), linked by place and name. Both go through `climate.screened_hourly`, the 85% rule and screens `isd_hourly` applies. `isd_stations` and `isd_hourly` are unchanged.
+- **`__version__` matches each package.** 3.9.0 shipped with `__version__` 3.8.1, so every model 1.7 snapshot's manifest records packages 3.8.1 (2026-11-02 in Michigan, Virginia and Texas; 2026-11-02.2 in all four). The dated snapshots stay as they are; a test now holds `__version__` to `pyproject.toml`.
+
 ## 3.9.0 (Nov 2, 2026)
 
 Model version 1.7: parity and defensibility for Michigan, Ohio, Virginia and Texas, with no Michigan leftovers in the shared method. Water taken on towers moves about 4% on average and 13% on the peak day. Hybrid moves most, down as much as 40% in hot places. Pollution loads change most of all. Every moved number is on the Water Ledger changelog and in the methods log.

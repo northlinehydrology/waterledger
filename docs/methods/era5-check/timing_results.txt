@@ -1,0 +1,4 @@
+model 1.7 hours 262992
+alone 361.9 s
+6 at once: wall 460 s, each 457-459 s, 76.7 s per cell
+12 at once: wall 935 s, each 924-934 s, 78.0 s per cell

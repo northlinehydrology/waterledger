@@ -1,0 +1,1785 @@
+[
+ {
+  "name": "Austin city",
+  "state": "TX",
+  "geoid": "4805000",
+  "land": 0.9959867596626282,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": -0.36614656835720627,
+    "towers.withdrawn_peak_1in10": 0.17980602990930183,
+    "hybrid.withdrawn_avg": -1.8572784454392255,
+    "hybrid.withdrawn_peak_1in10": -1.6782395001101125,
+    "assist.withdrawn_avg": -2.4051629950056608,
+    "assist.withdrawn_peak_1in10": -2.9969582429477115,
+    "design_db": 0.30000000000000426
+   },
+   "bias": {
+    "towers.withdrawn_avg": -0.36614656835720627,
+    "towers.withdrawn_peak_1in10": 0.17980602990930183,
+    "hybrid.withdrawn_avg": -1.8572784454392255,
+    "hybrid.withdrawn_peak_1in10": -1.6782395001101125,
+    "assist.withdrawn_avg": -2.4051629950056608,
+    "assist.withdrawn_peak_1in10": -2.9969582429477115,
+    "design_db": 0.30000000000000426
+   },
+   "lapse": {
+    "towers.withdrawn_avg": -0.36614656835720627,
+    "towers.withdrawn_peak_1in10": 0.17980602990930183,
+    "hybrid.withdrawn_avg": -1.8572784454392255,
+    "hybrid.withdrawn_peak_1in10": -1.6782395001101125,
+    "assist.withdrawn_avg": -2.4051629950056608,
+    "assist.withdrawn_peak_1in10": -2.9969582429477115,
+    "design_db": 0.30000000000000426
+   },
+   "shore": {
+    "towers.withdrawn_avg": -0.36614656835720627,
+    "towers.withdrawn_peak_1in10": 0.17980602990930183,
+    "hybrid.withdrawn_avg": -1.8572784454392255,
+    "hybrid.withdrawn_peak_1in10": -1.6782395001101125,
+    "assist.withdrawn_avg": -2.4051629950056608,
+    "assist.withdrawn_peak_1in10": -2.9969582429477115,
+    "design_db": 0.30000000000000426
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.36614656835720627,
+    "towers.withdrawn_peak_1in10": 0.17980602990930183,
+    "hybrid.withdrawn_avg": -1.8572784454392255,
+    "hybrid.withdrawn_peak_1in10": -1.6782395001101125,
+    "assist.withdrawn_avg": -2.4051629950056608,
+    "assist.withdrawn_peak_1in10": -2.9969582429477115,
+    "design_db": 0.30000000000000426
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.36614656835720627,
+    "towers.withdrawn_peak_1in10": 0.17980602990930183,
+    "hybrid.withdrawn_avg": -1.8572784454392255,
+    "hybrid.withdrawn_peak_1in10": -1.6782395001101125,
+    "assist.withdrawn_avg": -2.4051629950056608,
+    "assist.withdrawn_peak_1in10": -2.9969582429477115,
+    "design_db": 0.30000000000000426
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.36614656835720627,
+    "towers.withdrawn_peak_1in10": 0.17980602990930183,
+    "hybrid.withdrawn_avg": -1.8572784454392255,
+    "hybrid.withdrawn_peak_1in10": -1.6782395001101125,
+    "assist.withdrawn_avg": -2.4051629950056608,
+    "assist.withdrawn_peak_1in10": -2.9969582429477115,
+    "design_db": 0.30000000000000426
+   }
+  },
+  "corrected": false,
+  "anchors": [],
+  "decided_corrected": false,
+  "decided_anchors": [],
+  "station": "San Antonio International Airport",
+  "station_km": 109.5
+ },
+ {
+  "name": "San Antonio city",
+  "state": "TX",
+  "geoid": "4865000",
+  "land": 0.9919277429580688,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": -0.2025469841063443,
+    "towers.withdrawn_peak_1in10": -0.4906015394350316,
+    "hybrid.withdrawn_avg": -1.3377513205451774,
+    "hybrid.withdrawn_peak_1in10": -5.112729392954107,
+    "assist.withdrawn_avg": -4.55798371479974,
+    "assist.withdrawn_peak_1in10": -8.100117009016827,
+    "design_db": -0.04999999999999716
+   },
+   "bias": {
+    "towers.withdrawn_avg": -1.0449534292275797,
+    "towers.withdrawn_peak_1in10": -1.759293532939954,
+    "hybrid.withdrawn_avg": -12.396842217028448,
+    "hybrid.withdrawn_peak_1in10": -11.585346070864444,
+    "assist.withdrawn_avg": -17.011168963196866,
+    "assist.withdrawn_peak_1in10": -15.788904544404547,
+    "design_db": -0.6380165289256254
+   },
+   "lapse": {
+    "towers.withdrawn_avg": -0.006763997611258787,
+    "towers.withdrawn_peak_1in10": -0.200143390035179,
+    "hybrid.withdrawn_avg": 2.6246792014549936,
+    "hybrid.withdrawn_peak_1in10": -6.484794379833292,
+    "assist.withdrawn_avg": 4.832698312747619,
+    "assist.withdrawn_peak_1in10": -8.043573314207153,
+    "design_db": 0.6309168395996068
+   },
+   "shore": {
+    "towers.withdrawn_avg": -0.2025469841063443,
+    "towers.withdrawn_peak_1in10": -0.4906015394350316,
+    "hybrid.withdrawn_avg": -1.3377513205451774,
+    "hybrid.withdrawn_peak_1in10": -5.112729392954107,
+    "assist.withdrawn_avg": -4.55798371479974,
+    "assist.withdrawn_peak_1in10": -8.100117009016827,
+    "design_db": -0.04999999999999716
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.2025469841063443,
+    "towers.withdrawn_peak_1in10": -0.4906015394350316,
+    "hybrid.withdrawn_avg": -1.3377513205451774,
+    "hybrid.withdrawn_peak_1in10": -5.112729392954107,
+    "assist.withdrawn_avg": -4.55798371479974,
+    "assist.withdrawn_peak_1in10": -8.100117009016827,
+    "design_db": -0.04999999999999716
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.2025469841063443,
+    "towers.withdrawn_peak_1in10": -0.4906015394350316,
+    "hybrid.withdrawn_avg": -1.3377513205451774,
+    "hybrid.withdrawn_peak_1in10": -5.112729392954107,
+    "assist.withdrawn_avg": -4.55798371479974,
+    "assist.withdrawn_peak_1in10": -8.100117009016827,
+    "design_db": -0.04999999999999716
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.2025469841063443,
+    "towers.withdrawn_peak_1in10": -0.4906015394350316,
+    "hybrid.withdrawn_avg": -1.3377513205451774,
+    "hybrid.withdrawn_peak_1in10": -5.112729392954107,
+    "assist.withdrawn_avg": -4.55798371479974,
+    "assist.withdrawn_peak_1in10": -8.100117009016827,
+    "design_db": -0.04999999999999716
+   }
+  },
+  "corrected": true,
+  "anchors": [
+   [
+    "Hondo Municipal Airport",
+    67.1,
+    1.0
+   ]
+  ],
+  "decided_corrected": false,
+  "decided_anchors": [],
+  "station": "San Antonio International Airport",
+  "station_km": 10.1
+ },
+ {
+  "name": "Round Rock city",
+  "state": "TX",
+  "geoid": "4863500",
+  "land": 0.974043607711792,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": 0.39006444689155817,
+    "towers.withdrawn_peak_1in10": -1.1179761895158569,
+    "hybrid.withdrawn_avg": 0.5341604418462875,
+    "hybrid.withdrawn_peak_1in10": -1.353531675790265,
+    "assist.withdrawn_avg": -4.655497468156833,
+    "assist.withdrawn_peak_1in10": -4.044018170182917,
+    "design_db": -0.8999999999999986
+   },
+   "bias": {
+    "towers.withdrawn_avg": 0.39006444689155817,
+    "towers.withdrawn_peak_1in10": -1.1179761895158569,
+    "hybrid.withdrawn_avg": 0.5341604418462875,
+    "hybrid.withdrawn_peak_1in10": -1.353531675790265,
+    "assist.withdrawn_avg": -4.655497468156833,
+    "assist.withdrawn_peak_1in10": -4.044018170182917,
+    "design_db": -0.8999999999999986
+   },
+   "lapse": {
+    "towers.withdrawn_avg": 0.39006444689155817,
+    "towers.withdrawn_peak_1in10": -1.1179761895158569,
+    "hybrid.withdrawn_avg": 0.5341604418462875,
+    "hybrid.withdrawn_peak_1in10": -1.353531675790265,
+    "assist.withdrawn_avg": -4.655497468156833,
+    "assist.withdrawn_peak_1in10": -4.044018170182917,
+    "design_db": -0.8999999999999986
+   },
+   "shore": {
+    "towers.withdrawn_avg": 0.39006444689155817,
+    "towers.withdrawn_peak_1in10": -1.1179761895158569,
+    "hybrid.withdrawn_avg": 0.5341604418462875,
+    "hybrid.withdrawn_peak_1in10": -1.353531675790265,
+    "assist.withdrawn_avg": -4.655497468156833,
+    "assist.withdrawn_peak_1in10": -4.044018170182917,
+    "design_db": -0.8999999999999986
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": 0.39006444689155817,
+    "towers.withdrawn_peak_1in10": -1.1179761895158569,
+    "hybrid.withdrawn_avg": 0.5341604418462875,
+    "hybrid.withdrawn_peak_1in10": -1.353531675790265,
+    "assist.withdrawn_avg": -4.655497468156833,
+    "assist.withdrawn_peak_1in10": -4.044018170182917,
+    "design_db": -0.8999999999999986
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": 0.39006444689155817,
+    "towers.withdrawn_peak_1in10": -1.1179761895158569,
+    "hybrid.withdrawn_avg": 0.5341604418462875,
+    "hybrid.withdrawn_peak_1in10": -1.353531675790265,
+    "assist.withdrawn_avg": -4.655497468156833,
+    "assist.withdrawn_peak_1in10": -4.044018170182917,
+    "design_db": -0.8999999999999986
+   },
+   "decided": {
+    "towers.withdrawn_avg": 0.39006444689155817,
+    "towers.withdrawn_peak_1in10": -1.1179761895158569,
+    "hybrid.withdrawn_avg": 0.5341604418462875,
+    "hybrid.withdrawn_peak_1in10": -1.353531675790265,
+    "assist.withdrawn_avg": -4.655497468156833,
+    "assist.withdrawn_peak_1in10": -4.044018170182917,
+    "design_db": -0.8999999999999986
+   }
+  },
+  "corrected": false,
+  "anchors": [],
+  "decided_corrected": false,
+  "decided_anchors": [],
+  "station": "Waco Regional Airport",
+  "station_km": 128.1
+ },
+ {
+  "name": "Dallas city",
+  "state": "TX",
+  "geoid": "4819000",
+  "land": 0.9672073721885681,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": -0.052575445965497014,
+    "towers.withdrawn_peak_1in10": -0.19334672885157334,
+    "hybrid.withdrawn_avg": -2.5358745589000087,
+    "hybrid.withdrawn_peak_1in10": -0.9970937057997453,
+    "assist.withdrawn_avg": -8.220430394519562,
+    "assist.withdrawn_peak_1in10": -3.933464535638953,
+    "design_db": -0.5499999999999972
+   },
+   "bias": {
+    "towers.withdrawn_avg": 0.7388629270822067,
+    "towers.withdrawn_peak_1in10": 0.5296128610729145,
+    "hybrid.withdrawn_avg": 9.249297761442365,
+    "hybrid.withdrawn_peak_1in10": 0.8092845874744015,
+    "assist.withdrawn_avg": 9.0045657383516,
+    "assist.withdrawn_peak_1in10": -0.14760560048530103,
+    "design_db": 0.30000000000000426
+   },
+   "lapse": {
+    "towers.withdrawn_avg": 0.5878412336404626,
+    "towers.withdrawn_peak_1in10": 0.7176888367160794,
+    "hybrid.withdrawn_avg": 7.793090203159414,
+    "hybrid.withdrawn_peak_1in10": 0.3341277500865658,
+    "assist.withdrawn_avg": 10.80985162322856,
+    "assist.withdrawn_peak_1in10": 0.28914301941740383,
+    "design_db": 0.7016425048828125
+   },
+   "shore": {
+    "towers.withdrawn_avg": -0.052575445965497014,
+    "towers.withdrawn_peak_1in10": -0.19334672885157334,
+    "hybrid.withdrawn_avg": -2.5358745589000087,
+    "hybrid.withdrawn_peak_1in10": -0.9970937057997453,
+    "assist.withdrawn_avg": -8.220430394519562,
+    "assist.withdrawn_peak_1in10": -3.933464535638953,
+    "design_db": -0.5499999999999972
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.052575445965497014,
+    "towers.withdrawn_peak_1in10": -0.19334672885157334,
+    "hybrid.withdrawn_avg": -2.5358745589000087,
+    "hybrid.withdrawn_peak_1in10": -0.9970937057997453,
+    "assist.withdrawn_avg": -8.220430394519562,
+    "assist.withdrawn_peak_1in10": -3.933464535638953,
+    "design_db": -0.5499999999999972
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.052575445965497014,
+    "towers.withdrawn_peak_1in10": -0.19334672885157334,
+    "hybrid.withdrawn_avg": -2.5358745589000087,
+    "hybrid.withdrawn_peak_1in10": -0.9970937057997453,
+    "assist.withdrawn_avg": -8.220430394519562,
+    "assist.withdrawn_peak_1in10": -3.933464535638953,
+    "design_db": -0.5499999999999972
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.052575445965497014,
+    "towers.withdrawn_peak_1in10": -0.19334672885157334,
+    "hybrid.withdrawn_avg": -2.5358745589000087,
+    "hybrid.withdrawn_peak_1in10": -0.9970937057997453,
+    "assist.withdrawn_avg": -8.220430394519562,
+    "assist.withdrawn_peak_1in10": -3.933464535638953,
+    "design_db": -0.5499999999999972
+   }
+  },
+  "corrected": true,
+  "anchors": [
+   [
+    "Fort Worth Naval Air Station Jrb/Carswell Field",
+    65.5,
+    1.0
+   ]
+  ],
+  "decided_corrected": false,
+  "decided_anchors": [],
+  "station": "Dallas/Ft Worth International Ap",
+  "station_km": 26.5
+ },
+ {
+  "name": "El Paso city",
+  "state": "TX",
+  "geoid": "4824000",
+  "land": 0.999664306640625,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": -0.48622464680226907,
+    "towers.withdrawn_peak_1in10": -1.494259810378351,
+    "hybrid.withdrawn_avg": -2.267234209741986,
+    "hybrid.withdrawn_peak_1in10": -6.942654592187147,
+    "assist.withdrawn_avg": -5.775783983188532,
+    "assist.withdrawn_peak_1in10": -4.907716874317192,
+    "design_db": -0.5
+   },
+   "bias": {
+    "towers.withdrawn_avg": -0.48622464680226907,
+    "towers.withdrawn_peak_1in10": -1.494259810378351,
+    "hybrid.withdrawn_avg": -2.267234209741986,
+    "hybrid.withdrawn_peak_1in10": -6.942654592187147,
+    "assist.withdrawn_avg": -5.775783983188532,
+    "assist.withdrawn_peak_1in10": -4.907716874317192,
+    "design_db": -0.5
+   },
+   "lapse": {
+    "towers.withdrawn_avg": -0.48622464680226907,
+    "towers.withdrawn_peak_1in10": -1.494259810378351,
+    "hybrid.withdrawn_avg": -2.267234209741986,
+    "hybrid.withdrawn_peak_1in10": -6.942654592187147,
+    "assist.withdrawn_avg": -5.775783983188532,
+    "assist.withdrawn_peak_1in10": -4.907716874317192,
+    "design_db": -0.5
+   },
+   "shore": {
+    "towers.withdrawn_avg": -0.48622464680226907,
+    "towers.withdrawn_peak_1in10": -1.494259810378351,
+    "hybrid.withdrawn_avg": -2.267234209741986,
+    "hybrid.withdrawn_peak_1in10": -6.942654592187147,
+    "assist.withdrawn_avg": -5.775783983188532,
+    "assist.withdrawn_peak_1in10": -4.907716874317192,
+    "design_db": -0.5
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.48622464680226907,
+    "towers.withdrawn_peak_1in10": -1.494259810378351,
+    "hybrid.withdrawn_avg": -2.267234209741986,
+    "hybrid.withdrawn_peak_1in10": -6.942654592187147,
+    "assist.withdrawn_avg": -5.775783983188532,
+    "assist.withdrawn_peak_1in10": -4.907716874317192,
+    "design_db": -0.5
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.48622464680226907,
+    "towers.withdrawn_peak_1in10": -1.494259810378351,
+    "hybrid.withdrawn_avg": -2.267234209741986,
+    "hybrid.withdrawn_peak_1in10": -6.942654592187147,
+    "assist.withdrawn_avg": -5.775783983188532,
+    "assist.withdrawn_peak_1in10": -4.907716874317192,
+    "design_db": -0.5
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.48622464680226907,
+    "towers.withdrawn_peak_1in10": -1.494259810378351,
+    "hybrid.withdrawn_avg": -2.267234209741986,
+    "hybrid.withdrawn_peak_1in10": -6.942654592187147,
+    "assist.withdrawn_avg": -5.775783983188532,
+    "assist.withdrawn_peak_1in10": -4.907716874317192,
+    "design_db": -0.5
+   }
+  },
+  "corrected": false,
+  "anchors": [],
+  "decided_corrected": false,
+  "decided_anchors": [],
+  "station": "El Paso International Airport",
+  "station_km": 6.5
+ },
+ {
+  "name": "Amarillo city",
+  "state": "TX",
+  "geoid": "4803000",
+  "land": 0.9972838163375854,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": 0.2746294126027893,
+    "towers.withdrawn_peak_1in10": 0.006756501890636812,
+    "hybrid.withdrawn_avg": 5.290138940082456,
+    "hybrid.withdrawn_peak_1in10": 1.447070427330055,
+    "assist.withdrawn_avg": 1.499329543701955,
+    "assist.withdrawn_peak_1in10": -0.7861994816145579,
+    "design_db": -0.4000000000000057
+   },
+   "bias": {
+    "towers.withdrawn_avg": 0.2746294126027893,
+    "towers.withdrawn_peak_1in10": 0.006756501890636812,
+    "hybrid.withdrawn_avg": 5.290138940082456,
+    "hybrid.withdrawn_peak_1in10": 1.447070427330055,
+    "assist.withdrawn_avg": 1.499329543701955,
+    "assist.withdrawn_peak_1in10": -0.7861994816145579,
+    "design_db": -0.4000000000000057
+   },
+   "lapse": {
+    "towers.withdrawn_avg": 0.2746294126027893,
+    "towers.withdrawn_peak_1in10": 0.006756501890636812,
+    "hybrid.withdrawn_avg": 5.290138940082456,
+    "hybrid.withdrawn_peak_1in10": 1.447070427330055,
+    "assist.withdrawn_avg": 1.499329543701955,
+    "assist.withdrawn_peak_1in10": -0.7861994816145579,
+    "design_db": -0.4000000000000057
+   },
+   "shore": {
+    "towers.withdrawn_avg": 0.2746294126027893,
+    "towers.withdrawn_peak_1in10": 0.006756501890636812,
+    "hybrid.withdrawn_avg": 5.290138940082456,
+    "hybrid.withdrawn_peak_1in10": 1.447070427330055,
+    "assist.withdrawn_avg": 1.499329543701955,
+    "assist.withdrawn_peak_1in10": -0.7861994816145579,
+    "design_db": -0.4000000000000057
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": 0.2746294126027893,
+    "towers.withdrawn_peak_1in10": 0.006756501890636812,
+    "hybrid.withdrawn_avg": 5.290138940082456,
+    "hybrid.withdrawn_peak_1in10": 1.447070427330055,
+    "assist.withdrawn_avg": 1.499329543701955,
+    "assist.withdrawn_peak_1in10": -0.7861994816145579,
+    "design_db": -0.4000000000000057
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": 0.2746294126027893,
+    "towers.withdrawn_peak_1in10": 0.006756501890636812,
+    "hybrid.withdrawn_avg": 5.290138940082456,
+    "hybrid.withdrawn_peak_1in10": 1.447070427330055,
+    "assist.withdrawn_avg": 1.499329543701955,
+    "assist.withdrawn_peak_1in10": -0.7861994816145579,
+    "design_db": -0.4000000000000057
+   },
+   "decided": {
+    "towers.withdrawn_avg": 0.2746294126027893,
+    "towers.withdrawn_peak_1in10": 0.006756501890636812,
+    "hybrid.withdrawn_avg": 5.290138940082456,
+    "hybrid.withdrawn_peak_1in10": 1.447070427330055,
+    "assist.withdrawn_avg": 1.499329543701955,
+    "assist.withdrawn_peak_1in10": -0.7861994816145579,
+    "design_db": -0.4000000000000057
+   }
+  },
+  "corrected": false,
+  "anchors": [],
+  "decided_corrected": false,
+  "decided_anchors": [],
+  "station": "Amarillo Rick Husband Intl Airport",
+  "station_km": 10.5
+ },
+ {
+  "name": "Houston city",
+  "state": "TX",
+  "geoid": "4835000",
+  "land": 0.9973448514938354,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": 0.028502559677034967,
+    "towers.withdrawn_peak_1in10": -0.6748714357594054,
+    "hybrid.withdrawn_avg": -1.4088200338094548,
+    "hybrid.withdrawn_peak_1in10": -1.4703486387018683,
+    "assist.withdrawn_avg": -5.601635262180116,
+    "assist.withdrawn_peak_1in10": -1.570650615260727,
+    "design_db": null
+   },
+   "bias": {
+    "towers.withdrawn_avg": 0.028502559677034967,
+    "towers.withdrawn_peak_1in10": -0.6748714357594054,
+    "hybrid.withdrawn_avg": -1.4088200338094548,
+    "hybrid.withdrawn_peak_1in10": -1.4703486387018683,
+    "assist.withdrawn_avg": -5.601635262180116,
+    "assist.withdrawn_peak_1in10": -1.570650615260727,
+    "design_db": null
+   },
+   "lapse": {
+    "towers.withdrawn_avg": 0.028502559677034967,
+    "towers.withdrawn_peak_1in10": -0.6748714357594054,
+    "hybrid.withdrawn_avg": -1.4088200338094548,
+    "hybrid.withdrawn_peak_1in10": -1.4703486387018683,
+    "assist.withdrawn_avg": -5.601635262180116,
+    "assist.withdrawn_peak_1in10": -1.570650615260727,
+    "design_db": null
+   },
+   "shore": {
+    "towers.withdrawn_avg": 0.028502559677034967,
+    "towers.withdrawn_peak_1in10": -0.6748714357594054,
+    "hybrid.withdrawn_avg": -1.4088200338094548,
+    "hybrid.withdrawn_peak_1in10": -1.4703486387018683,
+    "assist.withdrawn_avg": -5.601635262180116,
+    "assist.withdrawn_peak_1in10": -1.570650615260727,
+    "design_db": null
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": 0.028502559677034967,
+    "towers.withdrawn_peak_1in10": -0.6748714357594054,
+    "hybrid.withdrawn_avg": -1.4088200338094548,
+    "hybrid.withdrawn_peak_1in10": -1.4703486387018683,
+    "assist.withdrawn_avg": -5.601635262180116,
+    "assist.withdrawn_peak_1in10": -1.570650615260727,
+    "design_db": null
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": 0.028502559677034967,
+    "towers.withdrawn_peak_1in10": -0.6748714357594054,
+    "hybrid.withdrawn_avg": -1.4088200338094548,
+    "hybrid.withdrawn_peak_1in10": -1.4703486387018683,
+    "assist.withdrawn_avg": -5.601635262180116,
+    "assist.withdrawn_peak_1in10": -1.570650615260727,
+    "design_db": null
+   },
+   "decided": {
+    "towers.withdrawn_avg": 0.028502559677034967,
+    "towers.withdrawn_peak_1in10": -0.6748714357594054,
+    "hybrid.withdrawn_avg": -1.4088200338094548,
+    "hybrid.withdrawn_peak_1in10": -1.4703486387018683,
+    "assist.withdrawn_avg": -5.601635262180116,
+    "assist.withdrawn_peak_1in10": -1.570650615260727,
+    "design_db": null
+   }
+  },
+  "corrected": false,
+  "anchors": [],
+  "decided_corrected": false,
+  "decided_anchors": [],
+  "station": "G Bush Intercontinental Ap/Houston Ap",
+  "station_km": 22.2
+ },
+ {
+  "name": "Lubbock city",
+  "state": "TX",
+  "geoid": "4845000",
+  "land": 0.997665286064148,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": -0.03600432802610687,
+    "towers.withdrawn_peak_1in10": -1.0201487002124199,
+    "hybrid.withdrawn_avg": -1.512256597755235,
+    "hybrid.withdrawn_peak_1in10": -4.461802791871894,
+    "assist.withdrawn_avg": -5.425257229947689,
+    "assist.withdrawn_peak_1in10": -4.774253162894404,
+    "design_db": null
+   },
+   "bias": {
+    "towers.withdrawn_avg": -0.03600432802610687,
+    "towers.withdrawn_peak_1in10": -1.0201487002124199,
+    "hybrid.withdrawn_avg": -1.512256597755235,
+    "hybrid.withdrawn_peak_1in10": -4.461802791871894,
+    "assist.withdrawn_avg": -5.425257229947689,
+    "assist.withdrawn_peak_1in10": -4.774253162894404,
+    "design_db": null
+   },
+   "lapse": {
+    "towers.withdrawn_avg": -0.03600432802610687,
+    "towers.withdrawn_peak_1in10": -1.0201487002124199,
+    "hybrid.withdrawn_avg": -1.512256597755235,
+    "hybrid.withdrawn_peak_1in10": -4.461802791871894,
+    "assist.withdrawn_avg": -5.425257229947689,
+    "assist.withdrawn_peak_1in10": -4.774253162894404,
+    "design_db": null
+   },
+   "shore": {
+    "towers.withdrawn_avg": -0.03600432802610687,
+    "towers.withdrawn_peak_1in10": -1.0201487002124199,
+    "hybrid.withdrawn_avg": -1.512256597755235,
+    "hybrid.withdrawn_peak_1in10": -4.461802791871894,
+    "assist.withdrawn_avg": -5.425257229947689,
+    "assist.withdrawn_peak_1in10": -4.774253162894404,
+    "design_db": null
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.03600432802610687,
+    "towers.withdrawn_peak_1in10": -1.0201487002124199,
+    "hybrid.withdrawn_avg": -1.512256597755235,
+    "hybrid.withdrawn_peak_1in10": -4.461802791871894,
+    "assist.withdrawn_avg": -5.425257229947689,
+    "assist.withdrawn_peak_1in10": -4.774253162894404,
+    "design_db": null
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.03600432802610687,
+    "towers.withdrawn_peak_1in10": -1.0201487002124199,
+    "hybrid.withdrawn_avg": -1.512256597755235,
+    "hybrid.withdrawn_peak_1in10": -4.461802791871894,
+    "assist.withdrawn_avg": -5.425257229947689,
+    "assist.withdrawn_peak_1in10": -4.774253162894404,
+    "design_db": null
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.03600432802610687,
+    "towers.withdrawn_peak_1in10": -1.0201487002124199,
+    "hybrid.withdrawn_avg": -1.512256597755235,
+    "hybrid.withdrawn_peak_1in10": -4.461802791871894,
+    "assist.withdrawn_avg": -5.425257229947689,
+    "assist.withdrawn_peak_1in10": -4.774253162894404,
+    "design_db": null
+   }
+  },
+  "corrected": false,
+  "anchors": [],
+  "decided_corrected": false,
+  "decided_anchors": [],
+  "station": "Lubbock International Airport",
+  "station_km": 13.1
+ },
+ {
+  "name": "Virginia Beach city",
+  "state": "VA",
+  "geoid": "5182000",
+  "land": 0.5116811394691467,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": -0.1388072240583349,
+    "towers.withdrawn_peak_1in10": -2.0397491433246873,
+    "hybrid.withdrawn_avg": -9.719470617729408,
+    "hybrid.withdrawn_peak_1in10": 7.619012137398817,
+    "assist.withdrawn_avg": -43.70758030836127,
+    "assist.withdrawn_peak_1in10": -30.06207059101288,
+    "design_db": -3.0
+   },
+   "bias": {
+    "towers.withdrawn_avg": 0.2943710161832369,
+    "towers.withdrawn_peak_1in10": -0.749649699239352,
+    "hybrid.withdrawn_avg": 1.0777602787963803,
+    "hybrid.withdrawn_peak_1in10": 13.402229704306091,
+    "assist.withdrawn_avg": -30.255509790029222,
+    "assist.withdrawn_peak_1in10": -15.801884956040613,
+    "design_db": -2.2954563460265014
+   },
+   "lapse": {
+    "towers.withdrawn_avg": 0.41288332162809915,
+    "towers.withdrawn_peak_1in10": 0.9069976060342988,
+    "hybrid.withdrawn_avg": 4.457809709920824,
+    "hybrid.withdrawn_peak_1in10": 4.027949255146601,
+    "assist.withdrawn_avg": 1.3329831612765242,
+    "assist.withdrawn_peak_1in10": 0.07585007338106742,
+    "design_db": 0.2998934231772168
+   },
+   "shore": {
+    "towers.withdrawn_avg": 0.41288332162809915,
+    "towers.withdrawn_peak_1in10": 0.9069976060342988,
+    "hybrid.withdrawn_avg": 4.457809709920824,
+    "hybrid.withdrawn_peak_1in10": 4.027949255146601,
+    "assist.withdrawn_avg": 1.3329831612765242,
+    "assist.withdrawn_peak_1in10": 0.07585007338106742,
+    "design_db": 0.2998934231772168
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": 0.41288332162809915,
+    "towers.withdrawn_peak_1in10": 0.9069976060342988,
+    "hybrid.withdrawn_avg": 4.457809709920824,
+    "hybrid.withdrawn_peak_1in10": 4.027949255146601,
+    "assist.withdrawn_avg": 1.3329831612765242,
+    "assist.withdrawn_peak_1in10": 0.07585007338106742,
+    "design_db": 0.2998934231772168
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": 0.3794557694682288,
+    "towers.withdrawn_peak_1in10": 0.9124116564214857,
+    "hybrid.withdrawn_avg": 4.543630662082432,
+    "hybrid.withdrawn_peak_1in10": 3.9783199731874275,
+    "assist.withdrawn_avg": 1.8763733561505624,
+    "assist.withdrawn_peak_1in10": -0.06868059793159187,
+    "design_db": 0.30815388538399446
+   },
+   "decided": {
+    "towers.withdrawn_avg": 0.3794557694682288,
+    "towers.withdrawn_peak_1in10": 0.9124116564214857,
+    "hybrid.withdrawn_avg": 4.543630662082432,
+    "hybrid.withdrawn_peak_1in10": 3.9783199731874275,
+    "assist.withdrawn_avg": 1.8763733561505624,
+    "assist.withdrawn_peak_1in10": -0.06868059793159187,
+    "design_db": 0.30815388538399446
+   }
+  },
+  "corrected": true,
+  "anchors": [
+   [
+    "Norfolk International Airport",
+    24.3,
+    0.65
+   ],
+   [
+    "Norfolk Nas",
+    33.1,
+    0.35
+   ]
+  ],
+  "decided_corrected": true,
+  "decided_anchors": [
+   [
+    "Norfolk International Airport",
+    24.3,
+    0.59
+   ],
+   [
+    "Norfolk Nas",
+    33.1,
+    0.317
+   ],
+   [
+    "Nwpt News/Wimburg Intl Apt",
+    61.1,
+    0.093
+   ]
+  ],
+  "station": "Oceana Nas",
+  "station_km": 4.2
+ },
+ {
+  "name": "Bristol city",
+  "state": "VA",
+  "geoid": "5109816",
+  "land": 0.9832298159599304,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": 0.10008547624336117,
+    "towers.withdrawn_peak_1in10": 0.48208318865063937,
+    "hybrid.withdrawn_avg": 8.164390469682804,
+    "hybrid.withdrawn_peak_1in10": 10.544142367703358,
+    "assist.withdrawn_avg": 8.880723296157278,
+    "assist.withdrawn_peak_1in10": 14.951098770644,
+    "design_db": 0.04999999999999716
+   },
+   "bias": {
+    "towers.withdrawn_avg": 0.10008547624336117,
+    "towers.withdrawn_peak_1in10": 0.48208318865063937,
+    "hybrid.withdrawn_avg": 8.164390469682804,
+    "hybrid.withdrawn_peak_1in10": 10.544142367703358,
+    "assist.withdrawn_avg": 8.880723296157278,
+    "assist.withdrawn_peak_1in10": 14.951098770644,
+    "design_db": 0.04999999999999716
+   },
+   "lapse": {
+    "towers.withdrawn_avg": 0.10008547624336117,
+    "towers.withdrawn_peak_1in10": 0.48208318865063937,
+    "hybrid.withdrawn_avg": 8.164390469682804,
+    "hybrid.withdrawn_peak_1in10": 10.544142367703358,
+    "assist.withdrawn_avg": 8.880723296157278,
+    "assist.withdrawn_peak_1in10": 14.951098770644,
+    "design_db": 0.04999999999999716
+   },
+   "shore": {
+    "towers.withdrawn_avg": 0.10008547624336117,
+    "towers.withdrawn_peak_1in10": 0.48208318865063937,
+    "hybrid.withdrawn_avg": 8.164390469682804,
+    "hybrid.withdrawn_peak_1in10": 10.544142367703358,
+    "assist.withdrawn_avg": 8.880723296157278,
+    "assist.withdrawn_peak_1in10": 14.951098770644,
+    "design_db": 0.04999999999999716
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": 0.10008547624336117,
+    "towers.withdrawn_peak_1in10": 0.48208318865063937,
+    "hybrid.withdrawn_avg": 8.164390469682804,
+    "hybrid.withdrawn_peak_1in10": 10.544142367703358,
+    "assist.withdrawn_avg": 8.880723296157278,
+    "assist.withdrawn_peak_1in10": 14.951098770644,
+    "design_db": 0.04999999999999716
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": 0.10008547624336117,
+    "towers.withdrawn_peak_1in10": 0.48208318865063937,
+    "hybrid.withdrawn_avg": 8.164390469682804,
+    "hybrid.withdrawn_peak_1in10": 10.544142367703358,
+    "assist.withdrawn_avg": 8.880723296157278,
+    "assist.withdrawn_peak_1in10": 14.951098770644,
+    "design_db": 0.04999999999999716
+   },
+   "decided": {
+    "towers.withdrawn_avg": 0.10008547624336117,
+    "towers.withdrawn_peak_1in10": 0.48208318865063937,
+    "hybrid.withdrawn_avg": 8.164390469682804,
+    "hybrid.withdrawn_peak_1in10": 10.544142367703358,
+    "assist.withdrawn_avg": 8.880723296157278,
+    "assist.withdrawn_peak_1in10": 14.951098770644,
+    "design_db": 0.04999999999999716
+   }
+  },
+  "corrected": false,
+  "anchors": [],
+  "decided_corrected": false,
+  "decided_anchors": [],
+  "station": "Asheville Regional Airport",
+  "station_km": 136.2
+ },
+ {
+  "name": "Loudoun County",
+  "state": "VA",
+  "geoid": "51107",
+  "land": 0.9960630536079407,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": -0.05554617633388714,
+    "towers.withdrawn_peak_1in10": -0.3586755517393958,
+    "hybrid.withdrawn_avg": -4.654144587448295,
+    "hybrid.withdrawn_peak_1in10": -2.4256217280215098,
+    "assist.withdrawn_avg": -0.24867926184345412,
+    "assist.withdrawn_peak_1in10": -1.5799422914379635,
+    "design_db": null
+   },
+   "bias": {
+    "towers.withdrawn_avg": -0.12044921674599918,
+    "towers.withdrawn_peak_1in10": 0.05435323540921022,
+    "hybrid.withdrawn_avg": -6.043407560597647,
+    "hybrid.withdrawn_peak_1in10": -0.041645875192941606,
+    "assist.withdrawn_avg": -6.669071367617363,
+    "assist.withdrawn_peak_1in10": -2.6271710554575667,
+    "design_db": null
+   },
+   "lapse": {
+    "towers.withdrawn_avg": -0.4499201304364764,
+    "towers.withdrawn_peak_1in10": -0.44868815488808833,
+    "hybrid.withdrawn_avg": -14.577413205126478,
+    "hybrid.withdrawn_peak_1in10": 0.2417346918182739,
+    "assist.withdrawn_avg": -15.833415418017038,
+    "assist.withdrawn_peak_1in10": -4.696658684515775,
+    "design_db": null
+   },
+   "shore": {
+    "towers.withdrawn_avg": -0.05554617633388714,
+    "towers.withdrawn_peak_1in10": -0.3586755517393958,
+    "hybrid.withdrawn_avg": -4.654144587448295,
+    "hybrid.withdrawn_peak_1in10": -2.4256217280215098,
+    "assist.withdrawn_avg": -0.24867926184345412,
+    "assist.withdrawn_peak_1in10": -1.5799422914379635,
+    "design_db": null
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.05554617633388714,
+    "towers.withdrawn_peak_1in10": -0.3586755517393958,
+    "hybrid.withdrawn_avg": -4.654144587448295,
+    "hybrid.withdrawn_peak_1in10": -2.4256217280215098,
+    "assist.withdrawn_avg": -0.24867926184345412,
+    "assist.withdrawn_peak_1in10": -1.5799422914379635,
+    "design_db": null
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.05554617633388714,
+    "towers.withdrawn_peak_1in10": -0.3586755517393958,
+    "hybrid.withdrawn_avg": -4.654144587448295,
+    "hybrid.withdrawn_peak_1in10": -2.4256217280215098,
+    "assist.withdrawn_avg": -0.24867926184345412,
+    "assist.withdrawn_peak_1in10": -1.5799422914379635,
+    "design_db": null
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.05554617633388714,
+    "towers.withdrawn_peak_1in10": -0.3586755517393958,
+    "hybrid.withdrawn_avg": -4.654144587448295,
+    "hybrid.withdrawn_peak_1in10": -2.4256217280215098,
+    "assist.withdrawn_avg": -0.24867926184345412,
+    "assist.withdrawn_peak_1in10": -1.5799422914379635,
+    "design_db": null
+   }
+  },
+  "corrected": true,
+  "anchors": [
+   [
+    "Etrn Wv Rgnl/Shpherd Fd Ap",
+    48.9,
+    0.42
+   ],
+   [
+    "Ronald Reagan Washington Natl Ap",
+    64.2,
+    0.244
+   ],
+   [
+    "Quantico Mcaf",
+    67.3,
+    0.222
+   ],
+   [
+    "Baltimore-Washington Intl Airport",
+    94.0,
+    0.114
+   ]
+  ],
+  "decided_corrected": false,
+  "decided_anchors": [],
+  "station": "Washington Dulles International Ap",
+  "station_km": 23.2
+ },
+ {
+  "name": "Richmond city",
+  "state": "VA",
+  "geoid": "5167000",
+  "land": 0.9812918901443481,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": 0.052173497514229616,
+    "towers.withdrawn_peak_1in10": -0.659963549617093,
+    "hybrid.withdrawn_avg": -2.2050550673373026,
+    "hybrid.withdrawn_peak_1in10": 1.0500235157448135,
+    "assist.withdrawn_avg": -1.2923606238375296,
+    "assist.withdrawn_peak_1in10": 2.4452213317594396,
+    "design_db": null
+   },
+   "bias": {
+    "towers.withdrawn_avg": 0.052173497514229616,
+    "towers.withdrawn_peak_1in10": -0.659963549617093,
+    "hybrid.withdrawn_avg": -2.2050550673373026,
+    "hybrid.withdrawn_peak_1in10": 1.0500235157448135,
+    "assist.withdrawn_avg": -1.2923606238375296,
+    "assist.withdrawn_peak_1in10": 2.4452213317594396,
+    "design_db": null
+   },
+   "lapse": {
+    "towers.withdrawn_avg": 0.052173497514229616,
+    "towers.withdrawn_peak_1in10": -0.659963549617093,
+    "hybrid.withdrawn_avg": -2.2050550673373026,
+    "hybrid.withdrawn_peak_1in10": 1.0500235157448135,
+    "assist.withdrawn_avg": -1.2923606238375296,
+    "assist.withdrawn_peak_1in10": 2.4452213317594396,
+    "design_db": null
+   },
+   "shore": {
+    "towers.withdrawn_avg": 0.052173497514229616,
+    "towers.withdrawn_peak_1in10": -0.659963549617093,
+    "hybrid.withdrawn_avg": -2.2050550673373026,
+    "hybrid.withdrawn_peak_1in10": 1.0500235157448135,
+    "assist.withdrawn_avg": -1.2923606238375296,
+    "assist.withdrawn_peak_1in10": 2.4452213317594396,
+    "design_db": null
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": 0.052173497514229616,
+    "towers.withdrawn_peak_1in10": -0.659963549617093,
+    "hybrid.withdrawn_avg": -2.2050550673373026,
+    "hybrid.withdrawn_peak_1in10": 1.0500235157448135,
+    "assist.withdrawn_avg": -1.2923606238375296,
+    "assist.withdrawn_peak_1in10": 2.4452213317594396,
+    "design_db": null
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": 0.052173497514229616,
+    "towers.withdrawn_peak_1in10": -0.659963549617093,
+    "hybrid.withdrawn_avg": -2.2050550673373026,
+    "hybrid.withdrawn_peak_1in10": 1.0500235157448135,
+    "assist.withdrawn_avg": -1.2923606238375296,
+    "assist.withdrawn_peak_1in10": 2.4452213317594396,
+    "design_db": null
+   },
+   "decided": {
+    "towers.withdrawn_avg": 0.052173497514229616,
+    "towers.withdrawn_peak_1in10": -0.659963549617093,
+    "hybrid.withdrawn_avg": -2.2050550673373026,
+    "hybrid.withdrawn_peak_1in10": 1.0500235157448135,
+    "assist.withdrawn_avg": -1.2923606238375296,
+    "assist.withdrawn_peak_1in10": 2.4452213317594396,
+    "design_db": null
+   }
+  },
+  "corrected": false,
+  "anchors": [],
+  "decided_corrected": false,
+  "decided_anchors": [],
+  "station": "Richmond International Airport",
+  "station_km": 13.7
+ },
+ {
+  "name": "Roanoke city",
+  "state": "VA",
+  "geoid": "5168000",
+  "land": 0.9988707900047302,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": -0.8572024241778609,
+    "towers.withdrawn_peak_1in10": -2.283811116512968,
+    "hybrid.withdrawn_avg": -17.219422662936967,
+    "hybrid.withdrawn_peak_1in10": -13.504992525871195,
+    "assist.withdrawn_avg": -21.74652428212478,
+    "assist.withdrawn_peak_1in10": -22.28406987322161,
+    "design_db": null
+   },
+   "bias": {
+    "towers.withdrawn_avg": -1.554369686550583,
+    "towers.withdrawn_peak_1in10": -3.079920393177593,
+    "hybrid.withdrawn_avg": -30.13534844349418,
+    "hybrid.withdrawn_peak_1in10": -17.89889548585517,
+    "assist.withdrawn_avg": -37.67837409958123,
+    "assist.withdrawn_peak_1in10": -30.346261137751185,
+    "design_db": null
+   },
+   "lapse": {
+    "towers.withdrawn_avg": -1.3879733761511304,
+    "towers.withdrawn_peak_1in10": -2.532491983155849,
+    "hybrid.withdrawn_avg": -25.835750768075393,
+    "hybrid.withdrawn_peak_1in10": -15.140539479903047,
+    "assist.withdrawn_avg": -30.979718059969507,
+    "assist.withdrawn_peak_1in10": -24.018787281941567,
+    "design_db": null
+   },
+   "shore": {
+    "towers.withdrawn_avg": -0.8572024241778609,
+    "towers.withdrawn_peak_1in10": -2.283811116512968,
+    "hybrid.withdrawn_avg": -17.219422662936967,
+    "hybrid.withdrawn_peak_1in10": -13.504992525871195,
+    "assist.withdrawn_avg": -21.74652428212478,
+    "assist.withdrawn_peak_1in10": -22.28406987322161,
+    "design_db": null
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.8572024241778609,
+    "towers.withdrawn_peak_1in10": -2.283811116512968,
+    "hybrid.withdrawn_avg": -17.219422662936967,
+    "hybrid.withdrawn_peak_1in10": -13.504992525871195,
+    "assist.withdrawn_avg": -21.74652428212478,
+    "assist.withdrawn_peak_1in10": -22.28406987322161,
+    "design_db": null
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.8572024241778609,
+    "towers.withdrawn_peak_1in10": -2.283811116512968,
+    "hybrid.withdrawn_avg": -17.219422662936967,
+    "hybrid.withdrawn_peak_1in10": -13.504992525871195,
+    "assist.withdrawn_avg": -21.74652428212478,
+    "assist.withdrawn_peak_1in10": -22.28406987322161,
+    "design_db": null
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.8572024241778609,
+    "towers.withdrawn_peak_1in10": -2.283811116512968,
+    "hybrid.withdrawn_avg": -17.219422662936967,
+    "hybrid.withdrawn_peak_1in10": -13.504992525871195,
+    "assist.withdrawn_avg": -21.74652428212478,
+    "assist.withdrawn_peak_1in10": -22.28406987322161,
+    "design_db": null
+   }
+  },
+  "corrected": true,
+  "anchors": [
+   [
+    "Lynchburg Rgnl/Preston Glenn Fld Ap",
+    70.7,
+    1.0
+   ]
+  ],
+  "decided_corrected": false,
+  "decided_anchors": [],
+  "station": "Roanoke Regional/Woodrum Field Ap",
+  "station_km": 4.5
+ },
+ {
+  "name": "Lorain city",
+  "state": "OH",
+  "geoid": "3944856",
+  "land": 0.5864068269729614,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": -0.02390466697225202,
+    "towers.withdrawn_peak_1in10": 0.09498743734648318,
+    "hybrid.withdrawn_avg": -8.108795432718408,
+    "hybrid.withdrawn_peak_1in10": 18.479975935877313,
+    "assist.withdrawn_avg": -34.963624824988,
+    "assist.withdrawn_peak_1in10": -22.054405257869412,
+    "design_db": -2.3500000000000014
+   },
+   "bias": {
+    "towers.withdrawn_avg": -0.1046620526560571,
+    "towers.withdrawn_peak_1in10": -8.809958538247287e-05,
+    "hybrid.withdrawn_avg": -10.218376522012818,
+    "hybrid.withdrawn_peak_1in10": 16.15750760932293,
+    "assist.withdrawn_avg": -34.60184714204095,
+    "assist.withdrawn_peak_1in10": -20.494189978416077,
+    "design_db": -2.116666666666667
+   },
+   "lapse": {
+    "towers.withdrawn_avg": 0.6118276564627712,
+    "towers.withdrawn_peak_1in10": 1.785137403286896,
+    "hybrid.withdrawn_avg": 17.528718960358812,
+    "hybrid.withdrawn_peak_1in10": 4.010300708913728,
+    "assist.withdrawn_avg": 11.582954236014853,
+    "assist.withdrawn_peak_1in10": 1.1315010647598767,
+    "design_db": 0.5914520980834936
+   },
+   "shore": {
+    "towers.withdrawn_avg": 0.6118276564627712,
+    "towers.withdrawn_peak_1in10": 1.785137403286896,
+    "hybrid.withdrawn_avg": 17.528718960358812,
+    "hybrid.withdrawn_peak_1in10": 4.010300708913728,
+    "assist.withdrawn_avg": 11.582954236014853,
+    "assist.withdrawn_peak_1in10": 1.1315010647598767,
+    "design_db": 0.5914520980834936
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.02390466697225202,
+    "towers.withdrawn_peak_1in10": 0.09498743734648318,
+    "hybrid.withdrawn_avg": -8.108795432718408,
+    "hybrid.withdrawn_peak_1in10": 18.479975935877313,
+    "assist.withdrawn_avg": -34.963624824988,
+    "assist.withdrawn_peak_1in10": -22.054405257869412,
+    "design_db": -2.3500000000000014
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.0626144261776207,
+    "towers.withdrawn_peak_1in10": 1.5277995119105325,
+    "hybrid.withdrawn_avg": 3.5363214818258992,
+    "hybrid.withdrawn_peak_1in10": 5.258209403478875,
+    "assist.withdrawn_avg": -3.706704264533911,
+    "assist.withdrawn_peak_1in10": -2.3140358509933567,
+    "design_db": -0.04832666903986649
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.0626144261776207,
+    "towers.withdrawn_peak_1in10": 1.5277995119105325,
+    "hybrid.withdrawn_avg": 3.5363214818258992,
+    "hybrid.withdrawn_peak_1in10": 5.258209403478875,
+    "assist.withdrawn_avg": -3.706704264533911,
+    "assist.withdrawn_peak_1in10": -2.3140358509933567,
+    "design_db": -0.04832666903986649
+   }
+  },
+  "corrected": true,
+  "anchors": [
+   [
+    "Akron-Canton Regional Airport",
+    79.7,
+    1.0
+   ]
+  ],
+  "decided_corrected": true,
+  "decided_anchors": [
+   [
+    "Lorain County Rgnl Airport",
+    22.7,
+    1.0
+   ]
+  ],
+  "station": "Cleveland-Hopkins International Ap",
+  "station_km": 27.6
+ },
+ {
+  "name": "Toledo city",
+  "state": "OH",
+  "geoid": "3977000",
+  "land": 0.7815909385681152,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": 0.07038704980319999,
+    "towers.withdrawn_peak_1in10": 0.123760374364279,
+    "hybrid.withdrawn_avg": -6.149088829770921,
+    "hybrid.withdrawn_peak_1in10": 0.9424769821096746,
+    "assist.withdrawn_avg": -11.162704622661156,
+    "assist.withdrawn_peak_1in10": -6.078812585822324,
+    "design_db": -0.5499999999999972
+   },
+   "bias": {
+    "towers.withdrawn_avg": 0.21159660219398635,
+    "towers.withdrawn_peak_1in10": 0.46332633950454394,
+    "hybrid.withdrawn_avg": -1.9239047161666134,
+    "hybrid.withdrawn_peak_1in10": 1.0976332380106868,
+    "assist.withdrawn_avg": -3.0886621691961547,
+    "assist.withdrawn_peak_1in10": -1.0542077258686278,
+    "design_db": -0.06229233983615501
+   },
+   "lapse": {
+    "towers.withdrawn_avg": 0.07973769546620879,
+    "towers.withdrawn_peak_1in10": -0.15718654994338888,
+    "hybrid.withdrawn_avg": -1.4579867979267358,
+    "hybrid.withdrawn_peak_1in10": 0.5038498063380414,
+    "assist.withdrawn_avg": -2.2183246971814508,
+    "assist.withdrawn_peak_1in10": -2.0245428099454066,
+    "design_db": -0.3198047849557213
+   },
+   "shore": {
+    "towers.withdrawn_avg": 0.07973769546620879,
+    "towers.withdrawn_peak_1in10": -0.15718654994338888,
+    "hybrid.withdrawn_avg": -1.4579867979267358,
+    "hybrid.withdrawn_peak_1in10": 0.5038498063380414,
+    "assist.withdrawn_avg": -2.2183246971814508,
+    "assist.withdrawn_peak_1in10": -2.0245428099454066,
+    "design_db": -0.3198047849557213
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": 0.005819198613687959,
+    "towers.withdrawn_peak_1in10": -0.35312725195602024,
+    "hybrid.withdrawn_avg": -3.9577138820496516,
+    "hybrid.withdrawn_peak_1in10": 1.0918264554722334,
+    "assist.withdrawn_avg": -4.19139138406166,
+    "assist.withdrawn_peak_1in10": -1.5767439448676202,
+    "design_db": -0.41489855506102913
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": 0.005819198613687959,
+    "towers.withdrawn_peak_1in10": -0.35312725195602024,
+    "hybrid.withdrawn_avg": -3.9577138820496516,
+    "hybrid.withdrawn_peak_1in10": 1.0918264554722334,
+    "assist.withdrawn_avg": -4.19139138406166,
+    "assist.withdrawn_peak_1in10": -1.5767439448676202,
+    "design_db": -0.41489855506102913
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.08801481460414262,
+    "towers.withdrawn_peak_1in10": -0.4292702814831517,
+    "hybrid.withdrawn_avg": -7.149649923854118,
+    "hybrid.withdrawn_peak_1in10": 1.0870348883629921,
+    "assist.withdrawn_avg": -8.604262523448035,
+    "assist.withdrawn_peak_1in10": -2.6103626564272564,
+    "design_db": -0.5610908487684441
+   }
+  },
+  "corrected": true,
+  "anchors": [
+   [
+    "Detroit Metro Wayne County Airport",
+    55.3,
+    0.454
+   ],
+   [
+    "Findlay Airport",
+    83.0,
+    0.201
+   ],
+   [
+    "Detroit City Airport",
+    83.5,
+    0.199
+   ],
+   [
+    "Jakson Co-Rynolds Fld Arpt",
+    97.5,
+    0.146
+   ]
+  ],
+  "decided_corrected": true,
+  "decided_anchors": [
+   [
+    "Detroit Metro Wayne County Airport",
+    55.3,
+    0.501
+   ],
+   [
+    "Windsor A",
+    73.9,
+    0.28
+   ],
+   [
+    "Detroit City Airport",
+    83.5,
+    0.219
+   ]
+  ],
+  "station": "Toledo Express Airport",
+  "station_km": 20.4
+ },
+ {
+  "name": "Cincinnati city",
+  "state": "OH",
+  "geoid": "3915000",
+  "land": 0.9863733053207397,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": 0.10952512527293568,
+    "towers.withdrawn_peak_1in10": -0.32164654153289396,
+    "hybrid.withdrawn_avg": 3.252226788769974,
+    "hybrid.withdrawn_peak_1in10": 7.958181886100069,
+    "assist.withdrawn_avg": 3.894154299204833,
+    "assist.withdrawn_peak_1in10": 3.29971495772603,
+    "design_db": null
+   },
+   "bias": {
+    "towers.withdrawn_avg": -0.0737035780086992,
+    "towers.withdrawn_peak_1in10": -0.20104943338781212,
+    "hybrid.withdrawn_avg": -2.9267336255551557,
+    "hybrid.withdrawn_peak_1in10": 7.904458426937655,
+    "assist.withdrawn_avg": -1.61280991504551,
+    "assist.withdrawn_peak_1in10": 3.5109885570172805,
+    "design_db": null
+   },
+   "lapse": {
+    "towers.withdrawn_avg": 0.14868269211643081,
+    "towers.withdrawn_peak_1in10": 0.22683361996578277,
+    "hybrid.withdrawn_avg": -0.592683541049488,
+    "hybrid.withdrawn_peak_1in10": 7.204055166667311,
+    "assist.withdrawn_avg": 0.2593051831093929,
+    "assist.withdrawn_peak_1in10": 3.14998325668876,
+    "design_db": null
+   },
+   "shore": {
+    "towers.withdrawn_avg": 0.10952512527293568,
+    "towers.withdrawn_peak_1in10": -0.32164654153289396,
+    "hybrid.withdrawn_avg": 3.252226788769974,
+    "hybrid.withdrawn_peak_1in10": 7.958181886100069,
+    "assist.withdrawn_avg": 3.894154299204833,
+    "assist.withdrawn_peak_1in10": 3.29971495772603,
+    "design_db": null
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": 0.10952512527293568,
+    "towers.withdrawn_peak_1in10": -0.32164654153289396,
+    "hybrid.withdrawn_avg": 3.252226788769974,
+    "hybrid.withdrawn_peak_1in10": 7.958181886100069,
+    "assist.withdrawn_avg": 3.894154299204833,
+    "assist.withdrawn_peak_1in10": 3.29971495772603,
+    "design_db": null
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": 0.10952512527293568,
+    "towers.withdrawn_peak_1in10": -0.32164654153289396,
+    "hybrid.withdrawn_avg": 3.252226788769974,
+    "hybrid.withdrawn_peak_1in10": 7.958181886100069,
+    "assist.withdrawn_avg": 3.894154299204833,
+    "assist.withdrawn_peak_1in10": 3.29971495772603,
+    "design_db": null
+   },
+   "decided": {
+    "towers.withdrawn_avg": 0.10952512527293568,
+    "towers.withdrawn_peak_1in10": -0.32164654153289396,
+    "hybrid.withdrawn_avg": 3.252226788769974,
+    "hybrid.withdrawn_peak_1in10": 7.958181886100069,
+    "assist.withdrawn_avg": 3.894154299204833,
+    "assist.withdrawn_peak_1in10": 3.29971495772603,
+    "design_db": null
+   }
+  },
+  "corrected": true,
+  "anchors": [
+   [
+    "Cincinnati/Northern Kentucky Intl Ap",
+    27.3,
+    0.888
+   ],
+   [
+    "J.M.Cox Dayton International Airport",
+    76.8,
+    0.112
+   ]
+  ],
+  "decided_corrected": false,
+  "decided_anchors": [],
+  "station": "Cina Muni Apt/Lukn Fd Apt",
+  "station_km": 8.6
+ },
+ {
+  "name": "Cleveland city",
+  "state": "OH",
+  "geoid": "3916000",
+  "land": 0.6492148637771606,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": -0.20051245004876206,
+    "towers.withdrawn_peak_1in10": -0.3187988208668391,
+    "hybrid.withdrawn_avg": -11.02563680892079,
+    "hybrid.withdrawn_peak_1in10": 3.543266431229286,
+    "assist.withdrawn_avg": -27.36830670924939,
+    "assist.withdrawn_peak_1in10": -16.043847981671576,
+    "design_db": null
+   },
+   "bias": {
+    "towers.withdrawn_avg": -0.34985893130479173,
+    "towers.withdrawn_peak_1in10": -0.38816992592372035,
+    "hybrid.withdrawn_avg": -12.206374994267588,
+    "hybrid.withdrawn_peak_1in10": 2.9949129808067854,
+    "assist.withdrawn_avg": -26.845784932026007,
+    "assist.withdrawn_peak_1in10": -15.01650670250375,
+    "design_db": null
+   },
+   "lapse": {
+    "towers.withdrawn_avg": 0.2531802010044659,
+    "towers.withdrawn_peak_1in10": 0.79475973602674,
+    "hybrid.withdrawn_avg": 10.05846788549023,
+    "hybrid.withdrawn_peak_1in10": -1.6807872647424782,
+    "assist.withdrawn_avg": 3.769036481750754,
+    "assist.withdrawn_peak_1in10": -3.618431697265534,
+    "design_db": null
+   },
+   "shore": {
+    "towers.withdrawn_avg": 0.2531802010044659,
+    "towers.withdrawn_peak_1in10": 0.79475973602674,
+    "hybrid.withdrawn_avg": 10.05846788549023,
+    "hybrid.withdrawn_peak_1in10": -1.6807872647424782,
+    "assist.withdrawn_avg": 3.769036481750754,
+    "assist.withdrawn_peak_1in10": -3.618431697265534,
+    "design_db": null
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.20051245004876206,
+    "towers.withdrawn_peak_1in10": -0.3187988208668391,
+    "hybrid.withdrawn_avg": -11.02563680892079,
+    "hybrid.withdrawn_peak_1in10": 3.543266431229286,
+    "assist.withdrawn_avg": -27.36830670924939,
+    "assist.withdrawn_peak_1in10": -16.043847981671576,
+    "design_db": null
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.21130182800678243,
+    "towers.withdrawn_peak_1in10": 0.5625073739293107,
+    "hybrid.withdrawn_avg": -0.03405688860892431,
+    "hybrid.withdrawn_peak_1in10": -0.08166057007676919,
+    "assist.withdrawn_avg": -6.624426412048489,
+    "assist.withdrawn_peak_1in10": -2.8485402505110113,
+    "design_db": null
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.21130182800678243,
+    "towers.withdrawn_peak_1in10": 0.5625073739293107,
+    "hybrid.withdrawn_avg": -0.03405688860892431,
+    "hybrid.withdrawn_peak_1in10": -0.08166057007676919,
+    "assist.withdrawn_avg": -6.624426412048489,
+    "assist.withdrawn_peak_1in10": -2.8485402505110113,
+    "design_db": null
+   }
+  },
+  "corrected": true,
+  "anchors": [
+   [
+    "Akron-Canton Regional Airport",
+    69.6,
+    0.645
+   ],
+   [
+    "Youngstown-Warren Regional Airport",
+    93.8,
+    0.355
+   ]
+  ],
+  "decided_corrected": true,
+  "decided_anchors": [
+   [
+    "Lorain County Rgnl Airport",
+    39.7,
+    1.0
+   ]
+  ],
+  "station": "Cleveland-Hopkins International Ap",
+  "station_km": 16.5
+ },
+ {
+  "name": "Columbus city",
+  "state": "OH",
+  "geoid": "3918000",
+  "land": 0.9936215281486511,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": -0.3832421923063545,
+    "towers.withdrawn_peak_1in10": -1.4363886387139702,
+    "hybrid.withdrawn_avg": -8.72083494062057,
+    "hybrid.withdrawn_peak_1in10": 0.42273324967507797,
+    "assist.withdrawn_avg": -15.345793296894373,
+    "assist.withdrawn_peak_1in10": -3.545800135550614,
+    "design_db": null
+   },
+   "bias": {
+    "towers.withdrawn_avg": -0.5776947538209787,
+    "towers.withdrawn_peak_1in10": -1.6410032292982546,
+    "hybrid.withdrawn_avg": -11.016697435683575,
+    "hybrid.withdrawn_peak_1in10": 1.028398013549836,
+    "assist.withdrawn_avg": -20.65608478611878,
+    "assist.withdrawn_peak_1in10": -11.076167764653388,
+    "design_db": null
+   },
+   "lapse": {
+    "towers.withdrawn_avg": -0.5484922373885204,
+    "towers.withdrawn_peak_1in10": -1.6399498353855013,
+    "hybrid.withdrawn_avg": -16.065631005226212,
+    "hybrid.withdrawn_peak_1in10": -5.210774596521084,
+    "assist.withdrawn_avg": -23.48766212415242,
+    "assist.withdrawn_peak_1in10": -11.850265868842113,
+    "design_db": null
+   },
+   "shore": {
+    "towers.withdrawn_avg": -0.3832421923063545,
+    "towers.withdrawn_peak_1in10": -1.4363886387139702,
+    "hybrid.withdrawn_avg": -8.72083494062057,
+    "hybrid.withdrawn_peak_1in10": 0.42273324967507797,
+    "assist.withdrawn_avg": -15.345793296894373,
+    "assist.withdrawn_peak_1in10": -3.545800135550614,
+    "design_db": null
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.3832421923063545,
+    "towers.withdrawn_peak_1in10": -1.4363886387139702,
+    "hybrid.withdrawn_avg": -8.72083494062057,
+    "hybrid.withdrawn_peak_1in10": 0.42273324967507797,
+    "assist.withdrawn_avg": -15.345793296894373,
+    "assist.withdrawn_peak_1in10": -3.545800135550614,
+    "design_db": null
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.3832421923063545,
+    "towers.withdrawn_peak_1in10": -1.4363886387139702,
+    "hybrid.withdrawn_avg": -8.72083494062057,
+    "hybrid.withdrawn_peak_1in10": 0.42273324967507797,
+    "assist.withdrawn_avg": -15.345793296894373,
+    "assist.withdrawn_peak_1in10": -3.545800135550614,
+    "design_db": null
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.3832421923063545,
+    "towers.withdrawn_peak_1in10": -1.4363886387139702,
+    "hybrid.withdrawn_avg": -8.72083494062057,
+    "hybrid.withdrawn_peak_1in10": 0.42273324967507797,
+    "assist.withdrawn_avg": -15.345793296894373,
+    "assist.withdrawn_peak_1in10": -3.545800135550614,
+    "design_db": null
+   }
+  },
+  "corrected": true,
+  "anchors": [
+   [
+    "Zanesville Municipal Arpt",
+    94.5,
+    1.0
+   ]
+  ],
+  "decided_corrected": false,
+  "decided_anchors": [],
+  "station": "Port Columbus International Airport",
+  "station_km": 9.2
+ },
+ {
+  "name": "Port Huron city",
+  "state": "MI",
+  "geoid": "2614765820",
+  "land": 0.7500801086425781,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": -1.1590648661182978,
+    "towers.withdrawn_peak_1in10": -2.8348632035466226,
+    "hybrid.withdrawn_avg": -39.273588882809904,
+    "hybrid.withdrawn_peak_1in10": -5.542286440469535,
+    "assist.withdrawn_avg": -51.5586809602669,
+    "assist.withdrawn_peak_1in10": -23.13188893571757,
+    "design_db": -2.0000000000000036
+   },
+   "bias": {
+    "towers.withdrawn_avg": -1.1590648661182978,
+    "towers.withdrawn_peak_1in10": -2.8348632035466226,
+    "hybrid.withdrawn_avg": -39.273588882809904,
+    "hybrid.withdrawn_peak_1in10": -5.542286440469535,
+    "assist.withdrawn_avg": -51.5586809602669,
+    "assist.withdrawn_peak_1in10": -23.13188893571757,
+    "design_db": -2.0000000000000036
+   },
+   "lapse": {
+    "towers.withdrawn_avg": -1.1590648661182978,
+    "towers.withdrawn_peak_1in10": -2.8348632035466226,
+    "hybrid.withdrawn_avg": -39.273588882809904,
+    "hybrid.withdrawn_peak_1in10": -5.542286440469535,
+    "assist.withdrawn_avg": -51.5586809602669,
+    "assist.withdrawn_peak_1in10": -23.13188893571757,
+    "design_db": -2.0000000000000036
+   },
+   "shore": {
+    "towers.withdrawn_avg": -1.1590648661182978,
+    "towers.withdrawn_peak_1in10": -2.8348632035466226,
+    "hybrid.withdrawn_avg": -39.273588882809904,
+    "hybrid.withdrawn_peak_1in10": -5.542286440469535,
+    "assist.withdrawn_avg": -51.5586809602669,
+    "assist.withdrawn_peak_1in10": -23.13188893571757,
+    "design_db": -2.0000000000000036
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -1.1590648661182978,
+    "towers.withdrawn_peak_1in10": -2.8348632035466226,
+    "hybrid.withdrawn_avg": -39.273588882809904,
+    "hybrid.withdrawn_peak_1in10": -5.542286440469535,
+    "assist.withdrawn_avg": -51.5586809602669,
+    "assist.withdrawn_peak_1in10": -23.13188893571757,
+    "design_db": -2.0000000000000036
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -1.1590648661182978,
+    "towers.withdrawn_peak_1in10": -2.8348632035466226,
+    "hybrid.withdrawn_avg": -39.273588882809904,
+    "hybrid.withdrawn_peak_1in10": -5.542286440469535,
+    "assist.withdrawn_avg": -51.5586809602669,
+    "assist.withdrawn_peak_1in10": -23.13188893571757,
+    "design_db": -2.0000000000000036
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.545402674095441,
+    "towers.withdrawn_peak_1in10": -1.3818223085526604,
+    "hybrid.withdrawn_avg": -21.044319645232267,
+    "hybrid.withdrawn_peak_1in10": -2.8418430288343677,
+    "assist.withdrawn_avg": -24.884850156754368,
+    "assist.withdrawn_peak_1in10": -7.005473634908432,
+    "design_db": -0.4193822675746688
+   }
+  },
+  "corrected": false,
+  "anchors": [],
+  "decided_corrected": true,
+  "decided_anchors": [
+   [
+    "Windsor A",
+    88.5,
+    1.0
+   ]
+  ],
+  "station": "Detroit City Airport",
+  "station_km": 80.4
+ },
+ {
+  "name": "Ironwood city",
+  "state": "MI",
+  "geoid": "2605341060",
+  "land": 0.9106557369232178,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": 0.4085733864992669,
+    "towers.withdrawn_peak_1in10": 1.8305621492632485,
+    "hybrid.withdrawn_avg": 41.37510076191877,
+    "hybrid.withdrawn_peak_1in10": 2.2282298575694304,
+    "assist.withdrawn_avg": 84.07071642630397,
+    "assist.withdrawn_peak_1in10": 15.868519935443715,
+    "design_db": 1.8000000000000007
+   },
+   "bias": {
+    "towers.withdrawn_avg": 0.4085733864992669,
+    "towers.withdrawn_peak_1in10": 1.8305621492632485,
+    "hybrid.withdrawn_avg": 41.37510076191877,
+    "hybrid.withdrawn_peak_1in10": 2.2282298575694304,
+    "assist.withdrawn_avg": 84.07071642630397,
+    "assist.withdrawn_peak_1in10": 15.868519935443715,
+    "design_db": 1.8000000000000007
+   },
+   "lapse": {
+    "towers.withdrawn_avg": 0.4085733864992669,
+    "towers.withdrawn_peak_1in10": 1.8305621492632485,
+    "hybrid.withdrawn_avg": 41.37510076191877,
+    "hybrid.withdrawn_peak_1in10": 2.2282298575694304,
+    "assist.withdrawn_avg": 84.07071642630397,
+    "assist.withdrawn_peak_1in10": 15.868519935443715,
+    "design_db": 1.8000000000000007
+   },
+   "shore": {
+    "towers.withdrawn_avg": 0.4085733864992669,
+    "towers.withdrawn_peak_1in10": 1.8305621492632485,
+    "hybrid.withdrawn_avg": 41.37510076191877,
+    "hybrid.withdrawn_peak_1in10": 2.2282298575694304,
+    "assist.withdrawn_avg": 84.07071642630397,
+    "assist.withdrawn_peak_1in10": 15.868519935443715,
+    "design_db": 1.8000000000000007
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": 0.4085733864992669,
+    "towers.withdrawn_peak_1in10": 1.8305621492632485,
+    "hybrid.withdrawn_avg": 41.37510076191877,
+    "hybrid.withdrawn_peak_1in10": 2.2282298575694304,
+    "assist.withdrawn_avg": 84.07071642630397,
+    "assist.withdrawn_peak_1in10": 15.868519935443715,
+    "design_db": 1.8000000000000007
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": 0.4085733864992669,
+    "towers.withdrawn_peak_1in10": 1.8305621492632485,
+    "hybrid.withdrawn_avg": 41.37510076191877,
+    "hybrid.withdrawn_peak_1in10": 2.2282298575694304,
+    "assist.withdrawn_avg": 84.07071642630397,
+    "assist.withdrawn_peak_1in10": 15.868519935443715,
+    "design_db": 1.8000000000000007
+   },
+   "decided": {
+    "towers.withdrawn_avg": 0.4085733864992669,
+    "towers.withdrawn_peak_1in10": 1.8305621492632485,
+    "hybrid.withdrawn_avg": 41.37510076191877,
+    "hybrid.withdrawn_peak_1in10": 2.2282298575694304,
+    "assist.withdrawn_avg": 84.07071642630397,
+    "assist.withdrawn_peak_1in10": 15.868519935443715,
+    "design_db": 1.8000000000000007
+   }
+  },
+  "corrected": false,
+  "anchors": [],
+  "decided_corrected": false,
+  "decided_anchors": [],
+  "station": "Houghton County Memo Arpt",
+  "station_km": 149.9
+ },
+ {
+  "name": "Gaines charter township",
+  "state": "MI",
+  "geoid": "2608131240",
+  "land": 0.9788656234741211,
+  "err": {
+   "none": {
+    "towers.withdrawn_avg": -0.03402545731532314,
+    "towers.withdrawn_peak_1in10": -0.38430954032890874,
+    "hybrid.withdrawn_avg": -3.0732170886102583,
+    "hybrid.withdrawn_peak_1in10": -0.49414782663912415,
+    "assist.withdrawn_avg": -4.906898052922104,
+    "assist.withdrawn_peak_1in10": -8.012347151959265,
+    "design_db": -0.25
+   },
+   "bias": {
+    "towers.withdrawn_avg": -0.03379627670672125,
+    "towers.withdrawn_peak_1in10": 0.4925283913006284,
+    "hybrid.withdrawn_avg": 0.13729541368563414,
+    "hybrid.withdrawn_peak_1in10": 1.003459388086303,
+    "assist.withdrawn_avg": 3.013552591328583,
+    "assist.withdrawn_peak_1in10": -0.049574838091615,
+    "design_db": 0.5088962000024431
+   },
+   "lapse": {
+    "towers.withdrawn_avg": -0.24211958236788345,
+    "towers.withdrawn_peak_1in10": -0.576326667642546,
+    "hybrid.withdrawn_avg": -12.29592898715406,
+    "hybrid.withdrawn_peak_1in10": 2.525667431183898,
+    "assist.withdrawn_avg": -16.319271914933566,
+    "assist.withdrawn_peak_1in10": -9.332664092413257,
+    "design_db": -0.6294304547056271
+   },
+   "shore": {
+    "towers.withdrawn_avg": -0.03402545731532314,
+    "towers.withdrawn_peak_1in10": -0.38430954032890874,
+    "hybrid.withdrawn_avg": -3.0732170886102583,
+    "hybrid.withdrawn_peak_1in10": -0.49414782663912415,
+    "assist.withdrawn_avg": -4.906898052922104,
+    "assist.withdrawn_peak_1in10": -8.012347151959265,
+    "design_db": -0.25
+   },
+   "shore_isd": {
+    "towers.withdrawn_avg": -0.03402545731532314,
+    "towers.withdrawn_peak_1in10": -0.38430954032890874,
+    "hybrid.withdrawn_avg": -3.0732170886102583,
+    "hybrid.withdrawn_peak_1in10": -0.49414782663912415,
+    "assist.withdrawn_avg": -4.906898052922104,
+    "assist.withdrawn_peak_1in10": -8.012347151959265,
+    "design_db": -0.25
+   },
+   "shore_linked": {
+    "towers.withdrawn_avg": -0.03402545731532314,
+    "towers.withdrawn_peak_1in10": -0.38430954032890874,
+    "hybrid.withdrawn_avg": -3.0732170886102583,
+    "hybrid.withdrawn_peak_1in10": -0.49414782663912415,
+    "assist.withdrawn_avg": -4.906898052922104,
+    "assist.withdrawn_peak_1in10": -8.012347151959265,
+    "design_db": -0.25
+   },
+   "decided": {
+    "towers.withdrawn_avg": -0.03402545731532314,
+    "towers.withdrawn_peak_1in10": -0.38430954032890874,
+    "hybrid.withdrawn_avg": -3.0732170886102583,
+    "hybrid.withdrawn_peak_1in10": -0.49414782663912415,
+    "assist.withdrawn_avg": -4.906898052922104,
+    "assist.withdrawn_peak_1in10": -8.012347151959265,
+    "design_db": -0.25
+   }
+  },
+  "corrected": true,
+  "anchors": [
+   [
+    "Capital City Airport",
+    73.5,
+    0.517
+   ],
+   [
+    "Muskegon County Airport",
+    76.1,
+    0.483
+   ]
+  ],
+  "decided_corrected": false,
+  "decided_anchors": [],
+  "station": "Gerald R Ford International Airport",
+  "station_km": 10.8
+ }
+]

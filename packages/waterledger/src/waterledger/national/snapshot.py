@@ -1,13 +1,19 @@
 """Write a state's snapshot (design 0003): the files the package and waterledger.org read, plus a manifest.
 
     <out>/<ST>/<date>/manifest.json   what the snapshot is: state, date, format and model versions, sources, files with
-                                      sizes and checksums, and the build's statewide checks
-                      places.json     every place: Census ID, name, kind, level, county, point, climate division
+                                      sizes and checksums, and the build's statewide checks; format 3 adds "cells" (each cell
+                                      file's size and checksum, read when a place needs it), "cell_rule", "weather" (ERA5, its
+                                      citation, licence and fetch dates) and "correction" (0005's method, the stations, ISD's
+                                      citation and, where a Canadian station is used, ECCC's licence and attribution)
+                      places.json     every place: Census ID, name, kind, level, county, point, climate division; format 3: its
+                                      ERA5 cell, distance, land fraction, whether the land rule moved it, and weather_corrected
+                      cells/          format 3: cells/<cell>.json, each cell's cooling results per 100 MW and how its weather was
+                                      made; cells/index.json, every cell's center, land fraction and places (national.cells)
                       places.parquet  the same places with boundaries (GeoParquet, for point lookups and maps in Python)
                       supply.json     water systems, and the ones serving each place with their shares
                       wastewater.json sewer plants
                       receiving.json  each place's watersheds; impairments and TMDLs by HUC12; each place's downstream path; places on a Great Lake
-                      climate.json    climate divisions (station, what its screens removed, cooling results per 100 MW), staff water draws, design
+                      climate.json    climate divisions (station, what its screens removed; in format 2 cooling results per 100 MW), staff water draws, design
                                       storms and rainfall by county, lake-source results for the state's Great Lakes
                       energy.json     utilities by place, their loads, grid region and power-plant water per kWh
                       wateruse.json   water use by county: USGS's 2015 estimates ("national") and the state's own reported
@@ -24,7 +30,9 @@ from waterledger import states
 from waterledger_data.config import CACHE
 
 SNAPSHOT_ID = r"\d{4}-\d{2}-\d{2}(\.\d+)?"    # a date, with .2, .3 ... for another snapshot of a state built the same day; a published snapshot never changes
-FORMAT = 2              # 2 (Oct 30, 2026): adds wateruse.json and inputs/; readers treat a format 1 snapshot as having no water use
+FORMAT = 3              # 2 (Oct 30, 2026): adds wateruse.json and inputs/; readers treat a format 1 snapshot as having no water use.
+                        # 3 (model 1.8, Nov 4, 2026): cooling by ERA5 cell (cells/, the places' cell fields, the manifest's cells, weather and
+                        # correction); climate.json's divisions keep their stations, for rainfall, salt and golf, but no cooling results
 WATERUSE_FORMAT = 1
 DOWNSTREAM_HUCS = 25
 
@@ -99,9 +107,11 @@ def _oldest_download():
     return datetime.date.fromtimestamp(min(times)).isoformat() if times else None
 
 
-def write(state, out, date=None, checks=None):
-    """Write the snapshot for `state` under out/<ST>/<date>/ from the cached layers; returns the snapshot folder."""
-    from waterledger.national import climate as nc
+def write(state, out, date=None, checks=None, runs_dir=None):
+    """Write the snapshot for `state` under out/<ST>/<date>/ from the cached layers and the ERA5 cells' runs (`runs_dir`, default
+    CACHE/era5/runs/model1.8; every cell the state's places use must have one); returns the snapshot folder."""
+    from waterledger.national import cells, climate as nc
+    from waterledger_data import era5
     from waterledger_data import divisions, energy, greatlakes, power as pw, receiving, supply, wastewater
     from waterledger_models import MODEL_VERSION
     from waterledger_models.datacenter import cooling as cw
@@ -117,10 +127,12 @@ def write(state, out, date=None, checks=None):
     cd = divisions.county_divisions()
 
     pl.to_parquet(os.path.join(folder, "places.parquet"))
-    _write(os.path.join(folder, "places.json"), {"places": [
-        {"geoid": r.geoid, "name": r.name, "base": r.base, "kind": r.kind.lower(), "level": r.level, "county": r.county,
-         "county_fips": r.county_fips, "lat": round(float(r.lat), 5), "lon": round(float(r.lon), 5), "division": cd.get(r.county_fips)}
-        for r in pl.itertuples()]})
+    rows = [{"geoid": r.geoid, "name": r.name, "base": r.base, "kind": r.kind.lower(), "level": r.level, "county": r.county,
+             "county_fips": r.county_fips, "lat": round(float(r.lat), 5), "lon": round(float(r.lon), 5), "division": cd.get(r.county_fips)}
+            for r in pl.itertuples()]
+    # each place's ERA5 cell, from the same rounded point era5 run used (design 0004); the cells' results go in cells/
+    at, cell_files, weather, correction = cells.write(folder, rows, runs_dir)
+    _write(os.path.join(folder, "places.json"), {"places": [{**r, **at[r["geoid"]]} for r in rows]})
 
     sy = supply.water_systems(state)
     by = supply.systems_by_place(state, pl)
@@ -142,8 +154,9 @@ def write(state, out, date=None, checks=None):
                                                      "attains": dict(zip(("organization", "cycle"), receiving.organization(state)))})
 
     storms, rain = nc.storms_and_rain(state)
-    _write(os.path.join(folder, "climate.json"), {"divisions": nc.division_runs(state), "staff_runs": cw.staff_runs(200),
-                                                   "design_storms_in": storms, "rain_in": rain, "rain_from": nc.rain_from(state), "salt_events": nc.salt_events(nc.division_runs(state)),
+    divs = nc.division_stations(state)            # format 3: the divisions' stations, for rainfall, salt and golf; cooling is by cell
+    _write(os.path.join(folder, "climate.json"), {"divisions": divs, "staff_runs": cw.staff_runs(200),
+                                                   "design_storms_in": storms, "rain_in": rain, "rain_from": nc.rain_from(state), "salt_events": nc.salt_events(divs),
                                                    "lake_source": nc.lake_source(sorted({v["lake"] for v in shore.values()}))})
 
     us = energy.utilities_by_place(state, pl)
@@ -161,12 +174,16 @@ def write(state, out, date=None, checks=None):
             continue
         data = open(os.path.join(folder, name), "rb").read()
         files[name] = {"bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
+    from waterledger.national.era5 import RUN_MODEL
     manifest = {"format": FORMAT, "state": state, "fips": next(f for f, s in states.FIPS.items() if s == state), "date": date,
-                "model_version": MODEL_VERSION, "packages": {"waterledger": waterledger.__version__, "waterledger-data": waterledger_data.__version__,
+                "model_version": RUN_MODEL,                 # the cooling numbers are the cell runs' (model 1.8), whatever MODEL_VERSION the writing package has
+                "package_model_version": MODEL_VERSION, "packages": {"waterledger": waterledger.__version__, "waterledger-data": waterledger_data.__version__,
                                                               "waterledger-models": waterledger_models.__version__},
                 "sources": {"places": "Census TIGERweb", "supply": "EPA CWS service areas, SDWIS", "wastewater": "EPA CWNS 2022, ECHO",
                             "receiving": "USGS WBD, EPA ATTAINS (assessments by HUC12), Natural Earth 1:50m lakes", "climate": "NOAA ISD, NCEI climate divisions, Atlas 14, Climate at a Glance, NOAA GLERL",
+                            "cooling_weather": "Copernicus ERA5 (Open-Meteo's open copy), corrected near the shore toward NOAA ISD and ECCC stations (designs 0004, 0005)",
                             "energy": "HIFLD retail service territories (PNNL), EIA-861, Siddik et al. 2024", "wateruse": wu_source},
-                "water_use_years": wu_years, "inputs_downloaded_since": _oldest_download(), "files": files, "inputs": inputs, "checks": checks}
+                "water_use_years": wu_years, "inputs_downloaded_since": _oldest_download(), "files": files, "inputs": inputs, "checks": checks,
+                "cells": cell_files, "cell_rule": {"land_at_least": era5.LAND}, "weather": weather, "correction": correction}
     _write(os.path.join(folder, "manifest.json"), manifest)
     return folder

@@ -2,6 +2,7 @@
 Downloads 30 years of hourly ERA5 weather per location on first run (cached in .cache/)."""
 import shutil
 
+from waterledger_models import MODEL_VERSION
 from waterledger_models.datacenter import run_locations
 from waterledger_models.weather import fetch_open_meteo
 from waterledger_models.datacenter.stac import write_catalog
@@ -20,7 +21,7 @@ if __name__ == "__main__":
     shutil.rmtree("catalog", ignore_errors=True)
     cat = write_catalog(results, "catalog",
                         title="Data center cooling water, eight Michigan locations",
-                        description=("Ensemble statistics from waterledger-models (Water Ledger model 1.2) for a 100 MW (IT) campus under "
+                        description=(f"Ensemble statistics from waterledger-models (Water Ledger model {MODEL_VERSION}) for a 100 MW (IT) campus under "
                                      "four cooling designs, 200 Monte Carlo runs on 1995-2024 hourly ERA5 weather at each of eight Michigan "
                                      "locations. Cooling water, with the closed loop's top-ups; staff water does not scale with capacity, "
                                      "so it is not included here, and waterledger_models.datacenter.summarize() adds it at a campus's size."),

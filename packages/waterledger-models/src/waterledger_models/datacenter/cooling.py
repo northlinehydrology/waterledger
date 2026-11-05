@@ -85,18 +85,30 @@ def staff_q(runs, mw, part=None):
     return {"withdrawn": q(wc[:, 0]), "consumed": q(wc[:, 1]), "returned": q(wc[:, 0] - wc[:, 1])}
 
 
-def daily_stats(day_index, ndays, years, gal_per_kwh_hour, kw, months=None):
+def groups(labels):
+    """Each label's run of positions, in label order, for labels already sorted (a run's days, years or months): [slice]. A slice
+    picks the same values in the same order as `labels == label`, so a statistic over it is the same to the bit, without a pass over
+    every day per label."""
+    labels = np.asarray(labels)
+    cut = np.r_[0, np.flatnonzero(labels[1:] != labels[:-1]) + 1, len(labels)]
+    return [slice(a, b) for a, b in zip(cut[:-1], cut[1:])]
+
+
+def daily_stats(day_index, ndays, years, gal_per_kwh_hour, kw, months=None, by=None):
     """From hourly gal/kWh and IT kW, compute daily MGD and summary statistics: average day, 1-in-10-year peak day (90th percentile
     of annual maxima), record day, average year, and with `months` (each day's YYYY-MM) the highest month's average day, the highest
-    90 straight days' average and the highest calendar year."""
+    90 straight days' average and the highest calendar year. `by`: (groups(years), groups(months)) when the days are in order, which
+    gives the same numbers faster."""
     daily = np.bincount(day_index, weights=gal_per_kwh_hour * kw, minlength=ndays) / 1e6
-    ann_max = np.array([daily[years == y].max() for y in np.unique(years)])
+    in_years = [daily[s] for s in by[0]] if by else [daily[years == y] for y in np.unique(years)]
+    ann_max = np.array([d.max() for d in in_years])
     out = {"avg": float(daily.mean()), "peak_1in10": float(np.quantile(ann_max, 0.9)), "record": float(daily.max()),
            "annual_mg": float(daily.mean() * 365.25)}
     if months is not None:
-        out["max_month"] = float(max(daily[months == m].mean() for m in np.unique(months)))
+        in_months = [daily[s] for s in by[1]] if by else [daily[months == m] for m in np.unique(months)]
+        out["max_month"] = float(max(d.mean() for d in in_months))
         out["max_90day"] = float(np.convolve(daily, np.ones(90) / 90, "valid").max()) if len(daily) >= 90 else float(daily.mean())
-        out["worst_year_mg"] = float(max(daily[years == y].sum() for y in np.unique(years)))
+        out["worst_year_mg"] = float(max(d.sum() for d in in_years))
     return out
 
 
@@ -139,8 +151,31 @@ def run_locations(weather, n=DRAWS, seed=7, mw=100.0, workers=None):
         return {k: job.result() for k, job in jobs.items()}
 
 
-def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0):
-    """Monte Carlo for every design at one location, per `mw` MW of IT capacity.
+# Hours worked at a time (model 1.8, Nov 4, 2026). Each step of the heat balance is a NumPy operation over every hour of a run, and over
+# 30 years each step's result is 2.1 MB, so with six runs at once the steps wait on memory rather than the processor. Worked 4,096 hours
+# at a time, the in-between results stay in the processor's cache. Every step is the same calculation on each hour, so the results are
+# the same to the bit (tests/test_cooling_blocks.py). None works the whole record at once, as before.
+HOUR_BLOCK = 4096
+
+
+def _hourly_run(tdb, twb, rh, design, p, at_peak, block=HOUR_BLOCK):
+    """One run's hourly series, block by block: PUE; withdrawn, consumed, returned and condensate at the run's load and at its peak
+    load; and withdrawn with every computer at capacity."""
+    out = [np.empty_like(tdb) for _ in range(10)]
+    at_capacity = {**p, "utilization": 1.0}
+    for a in range(0, len(tdb), block or len(tdb)):
+        s = slice(a, a + (block or len(tdb)))
+        t, wb, h = tdb[s], twb[s], rh[s]
+        pue, heat = hourly_heat_power(t, wb, design, p, h)      # the slow part: once for the run's water and PUE
+        got = (pue, *hourly(t, wb, design, p, h, heat), hourly_water_with_air(t, wb, p, h)[1],
+               *hourly(t, wb, design, at_peak, h), hourly_water_with_air(t, wb, at_peak, h)[1], hourly(t, wb, design, at_capacity, h)[0])
+        for o, v in zip(out, got):
+            o[s] = v
+    return out
+
+
+def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=HOUR_BLOCK):
+    """Monte Carlo for every design at one location, per `mw` MW of IT capacity. `block`: hours worked at a time (HOUR_BLOCK).
 
     Returns {design: {stat: {"p10","p50","p90"}}} for withdrawn/consumed/returned average, peak and annual, and electricity,
     plus the central-parameter run. Peak = 1-in-10-year peak day (90th percentile of annual maxima) at the peak load, average load over the load factor; the record
@@ -157,6 +192,7 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0):
     months = np.array([d[:7] for d in uniq])
     hour_years = np.array([t[:4] for t in times])
     year_ends = np.r_[np.flatnonzero(hour_years[1:] != hour_years[:-1]) + 1, len(hour_years)]
+    by = (groups(years), groups(months))
     runs = sample(n, seed)
     out = {}
     for design in DESIGNS:
@@ -164,22 +200,19 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0):
         for p in runs + [central()]:
             p = for_location(p, tdb)
             kw = mw * 1000 * p["utilization"]
-            pue, heat = hourly_heat_power(tdb, twb, design, p, rh)      # the slow part: once for the run's water and PUE
-            w, c, r = hourly(tdb, twb, design, p, rh, heat)
-            for name, arr in (("withdrawn", w), ("consumed", c), ("returned", r), ("condensate", hourly_water_with_air(tdb, twb, p, rh)[1])):
-                s = daily_stats(day_index, len(uniq), years, arr, kw, months if name in ("withdrawn", "consumed") else None)
-                for stat, v in s.items():
-                    acc.setdefault(f"{name}_{stat}", []).append(v)
             # the peak day and the record day: the same weather at the peak load, average load over the load factor (model 1.7)
             at_peak = {**p, "utilization": float(peak_utilization(p))}
             kw_peak = mw * 1000 * at_peak["utilization"]
-            wp, cp, rp = hourly(tdb, twb, design, at_peak, rh)
-            for name, arr in (("withdrawn", wp), ("consumed", cp), ("returned", rp), ("condensate", hourly_water_with_air(tdb, twb, at_peak, rh)[1])):
-                s = daily_stats(day_index, len(uniq), years, arr, kw_peak)
+            pue, w, c, r, cond, wp, cp, rp, condp, at_capacity = _hourly_run(tdb, twb, rh, design, p, at_peak, block)
+            for name, arr in (("withdrawn", w), ("consumed", c), ("returned", r), ("condensate", cond)):
+                s = daily_stats(day_index, len(uniq), years, arr, kw, months if name in ("withdrawn", "consumed") else None, by)
+                for stat, v in s.items():
+                    acc.setdefault(f"{name}_{stat}", []).append(v)
+            for name, arr in (("withdrawn", wp), ("consumed", cp), ("returned", rp), ("condensate", condp)):
+                s = daily_stats(day_index, len(uniq), years, arr, kw_peak, by=by)
                 acc[f"{name}_peak_1in10"][-1], acc[f"{name}_record"][-1] = s["peak_1in10"], s["record"]
             # the upper case: every computer at capacity all day
-            at_capacity = hourly(tdb, twb, design, {**p, "utilization": 1.0}, rh)[0]
-            acc.setdefault("withdrawn_peak_full_capacity", []).append(daily_stats(day_index, len(uniq), years, at_capacity, mw * 1000.0)["peak_1in10"])
+            acc.setdefault("withdrawn_peak_full_capacity", []).append(daily_stats(day_index, len(uniq), years, at_capacity, mw * 1000.0, by=by)["peak_1in10"])
             # water use effectiveness: liters consumed per IT kWh (annual average), for comparison with LBNL/operators
             acc.setdefault("wue_l_per_kwh", []).append(float(np.average(c)) * 3.78541)          # consumed basis
             acc.setdefault("wue_makeup_l_per_kwh", []).append(float(np.average(w)) * 3.78541)   # LBNL/Lei basis (evaporation + drift + blowdown)

@@ -1,12 +1,13 @@
 [project]
 name = "waterledger-data"
-version = "3.9.0"
+version = "3.10.0"
 description = "Public U.S. water data for any place, fetched once and cached: Census places, EPA water systems and sewer plants, USGS watersheds, EPA ATTAINS, NOAA weather and design storms, EIA utilities"
 readme = "README.md"
 license = "BSD-3-Clause"
 authors = [{ name = "Northline Hydrology", email = "info@northlinehydrology.com" }]
 requires-python = ">=3.11"
 classifiers = [
+  "Development Status :: 4 - Beta",
   "Programming Language :: Python :: 3",
   "Intended Audience :: Science/Research",
   "Topic :: Scientific/Engineering :: Hydrology",
@@ -30,6 +31,8 @@ Issues = "https://github.com/northlinehydrology/waterledger/issues"
 
 [project.optional-dependencies]
 postgis = ["psycopg[binary]>=3.1"]      # mirror a region into PostGIS and trace with recursive SQL (waterledger_data.trace.postgis)
+era5 = ["omfiles>=1.2", "fsspec>=2023.1", "s3fs>=2023.1"]   # ERA5 cells from Open-Meteo's open copy on AWS (waterledger_data.era5.fetch)
+r2 = ["boto3>=1.28"]                    # the private raw store through R2's S3 API (waterledger_data.r2); wrangler needs none
 
 [project.scripts]
 waterledger-trace = "waterledger_data.trace.cli:main"

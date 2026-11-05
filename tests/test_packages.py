@@ -6,7 +6,7 @@ import numpy as np
 
 def test_import_as_wl():
     import waterledger as wl
-    assert wl.models.MODEL_VERSION == "1.7"
+    assert wl.models.MODEL_VERSION == "1.8"
     assert wl.models.datacenter.cooling.run_location
     assert wl.data.places.__name__ == "waterledger_data.places"
 
@@ -62,3 +62,12 @@ def test_utilities_with_no_control_area_get_one_from_eia861():
     from waterledger_data import power
     rto = power.utility_rtos(2025)
     assert {i: rto.get(i) for i in (44372, 8901, 3278, 40051, 16821, 5580)} == {44372: "ERCO", 8901: "ERCO", 3278: "ERCO", 40051: "ERCO", 16821: "MISO", 5580: "PJM"}
+
+
+def test_package_versions_match_their_pyproject():
+    """A snapshot's manifest records __version__; 3.9.0 shipped saying 3.8.1, so its snapshots name the wrong packages."""
+    import pathlib, tomllib
+    import waterledger, waterledger_data, waterledger_models
+    root = pathlib.Path(__file__).parent.parent / "packages"
+    for mod, name in ((waterledger, "waterledger"), (waterledger_data, "waterledger-data"), (waterledger_models, "waterledger-models")):
+        assert mod.__version__ == tomllib.loads((root / name / "pyproject.toml").read_text())["project"]["version"], name

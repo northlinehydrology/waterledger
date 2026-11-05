@@ -178,16 +178,31 @@ def _division(state, place):
     return d, runs
 
 
+def _cooling(state, place):
+    """(region, {region: results}) for an estimate's cooling: the place's ERA5 cell in a format 3 snapshot (model 1.8, design 0004), its
+    climate division's station before. Rainfall, salt and golf stay by division in both."""
+    sd = state_data(state)
+    if sd.format() < 3:
+        return _division(state, place)
+    c = sd.cell_of(place.geoid)
+    if c is None:
+        raise ValueError(f"{state}'s data has no ERA5 cell for {place.name} ({place.geoid})")
+    return c["cell"], {c["cell"]: sd.cell(c["cell"])}
+
+
 def _climate(state, place):
     from waterledger import context as cx
     sd = state_data(state)
     d, runs = _division(state, place)
-    return cx.Climate(provider="national", sources=["noaa_isd", "noaa_cag", "noaa_atlas14"], region=d, region_name=runs[d]["name"],
-                      station=runs[d]["station"], rain_in=sd.rain().get(place.county_fips), rain_from=sd.rain_from().get(place.county_fips), design_storms_in=sd.storms().get(place.county_fips, {}))
+    cell = sd.cell_of(place.geoid) if sd.format() >= 3 else None
+    extra = {} if cell is None else {k: cell[k] for k in ("cell", "cell_km", "cell_land", "cell_moved", "weather_corrected")}
+    return cx.Climate(provider="national", sources=["noaa_isd", "noaa_cag", "noaa_atlas14", *(["era5"] if cell else [])], region=d, region_name=runs[d]["name"],
+                      station=runs[d]["station"], rain_in=sd.rain().get(place.county_fips), rain_from=sd.rain_from().get(place.county_fips), design_storms_in=sd.storms().get(place.county_fips, {}),
+                      **extra)
 
 
 def estimate(state, site):
-    """Water use for a site anywhere: the cooling model at the place's climate division station, plus staff water, or lake-source cooling on a Great Lake within about 5 km, with the
+    """Water use for a site anywhere: the cooling model at the place's ERA5 cell (format 3) or climate division station (format 2), plus staff water, or lake-source cooling on a Great Lake within about 5 km, with the
     page's rules for the water source and wastewater (waterledger.scenario), on national data."""
     import datetime
 
@@ -195,7 +210,7 @@ def estimate(state, site):
     from waterledger.estimate import Estimate, electricity, water_use
     f, place = site.facility, site.place
     sd = state_data(state)
-    d, runs = _division(state, place)
+    d, runs = _cooling(state, place)
     D = {"regions": runs, "staff": {"runs": sd.staff_runs()}, "lake_source": sd.lake_source()}
     ctx = place.context()
     lake = ctx.receiving.great_lake

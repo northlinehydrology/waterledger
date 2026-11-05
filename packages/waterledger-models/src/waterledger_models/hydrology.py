@@ -6,6 +6,8 @@ Balmer 1954). Screening level: volumes and analytical solutions, not routed hydr
 """
 import math
 
+import numpy as np
+
 # Curve numbers for hydrologic soil group B (NRCS TR-55 Table 2-2): before, row crops, straight row, good condition (78; poor is 81, meadow 58);
 # after, lawn, the midpoint of open space in good and fair condition (61, 69) [estimate]; pavement
 CN_PRE_PERV, CN_POST_PERV, CN_IMP = 78, 65, 98
@@ -47,7 +49,35 @@ def theis_drawdown(q, transmissivity, storativity, r, t):
     return q / (4 * math.pi * transmissivity) * well_function(r * r * storativity / (4 * transmissivity * t))
 
 
+def erfc(x):
+    """The complementary error function on arrays (numpy has none): the Maclaurin series of erf below 1.5 and the Laplace continued
+    fraction above, within 1e-13 of math.erfc wherever the result is not subnormal."""
+    x = np.asarray(x, dtype=float)
+    a = np.abs(x)
+    out = np.empty_like(a)
+    near = a < 1.5
+    xs = a[near]
+    term, total = xs.copy(), xs.copy()
+    for n in range(1, 60):                      # erf(x) = 2/sqrt(pi) sum (-1)^n x^(2n+1) / (n! (2n+1))
+        term = term * -(xs * xs) / n
+        total += term / (2 * n + 1)
+    out[near] = 1.0 - 2.0 / math.sqrt(math.pi) * total
+    xl = a[~near]
+    f = xl.copy()
+    for k in range(200, 0, -1):                 # erfc(x) = exp(-x^2) / sqrt(pi) / (x + (1/2) / (x + 1 / (x + (3/2) / (x + ...))))
+        f = xl + (k / 2) / f
+    with np.errstate(invalid="ignore"):
+        out[~near] = np.where(np.isinf(xl), 0.0, np.exp(-xl * xl) / math.sqrt(math.pi) / f)
+    return np.where(x < 0, 2.0 - out, out)
+
+
 def stream_depletion(distance, transmissivity, storativity, t):
     """Share (0-1) of a well's pumping that comes from a fully penetrating stream at `distance` after time `t` (Glover and
-    Balmer 1954): erfc(sqrt(d^2 S / 4 T t)). Consistent units, as for theis_drawdown."""
-    return math.erfc(math.sqrt(distance * distance * storativity / (4 * transmissivity * t)))
+    Balmer 1954): erfc(sqrt(d^2 S / 4 T t)). Consistent units, as for theis_drawdown. Any argument can be an array (a well's
+    response at every step of a run in one call), and the result has their broadcast shape; scalars give a float. At t = 0
+    the share is 0."""
+    t = np.asarray(t, dtype=float)
+    with np.errstate(divide="ignore"):
+        u = np.sqrt(np.asarray(distance, dtype=float) ** 2 * storativity / (4 * np.asarray(transmissivity, dtype=float) * t))
+    share = erfc(u)
+    return float(share) if share.ndim == 0 else share

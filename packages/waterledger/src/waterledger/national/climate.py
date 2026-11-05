@@ -24,6 +24,24 @@ def climate_areas(state):
             + [{"geoid": r.county_fips, "lat": float(r.lat), "lon": float(r.lon)} for r in cities.itertuples()])
 
 
+def division_stations(state):
+    """{division id: {"name", "station", "station_id", "lat", "lon", "share_observed", "screen"}}: each climate division's NOAA station,
+    which model 1.8 keeps for rainfall, road salt and golf; its cooling comes from each place's ERA5 cell instead (snapshot format 3)."""
+    from waterledger_data import climate, divisions
+    from waterledger_data.config import CACHE
+    path = os.path.join(CACHE, "climate", f"{state}_division_station_records.json")
+    if os.path.exists(path):
+        return json.load(open(path))
+    fips = next(f for f, s in states.FIPS.items() if s == state)
+    stations = divisions.division_stations(fips, counties(state))
+    got = {d: climate.isd_hourly(s, divisions.FIRST, divisions.LAST) for d, s in stations.items()}
+    out = {d: {"name": f"{state} climate division {int(d[2:])}", "station": s["name"], "station_id": s["id"], "lat": s["lat"], "lon": s["lon"],
+               "share_observed": s["share_observed"], "screen": got[d][4]} for d, s in stations.items()}
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    json.dump(out, open(path, "w"))
+    return out
+
+
 def division_runs(state, n=DRAWS):
     """{division id: {"name", "station", "lat", "lon", "per_100mw"}}, per_100mw as cooling.run_location returns it."""
     from waterledger_data import climate, divisions

@@ -1,0 +1,473 @@
+{
+ "rows": [
+  {
+   "state": "OH",
+   "geoid": "3944856",
+   "name": "Lorain city",
+   "lat": 41.4388,
+   "lon": -82.17972,
+   "published": {
+    "point": "Findlay Airport",
+    "station_id": "725366-14825",
+    "km": 133.1,
+    "towers.withdrawn_avg": 0.6612313303866627,
+    "towers.withdrawn_peak_1in10": 0.8995475576386329,
+    "hybrid.withdrawn_avg": 0.034600229067408464,
+    "hybrid.withdrawn_peak_1in10": 0.5653219892943218,
+    "assist.withdrawn_avg": 0.04110436740370668,
+    "assist.withdrawn_peak_1in10": 0.5079958095680791
+   },
+   "nearest_station": {
+    "id": "725240-14820",
+    "name": "Cleveland-Hopkins International Ap",
+    "state": "OH",
+    "lat": 41.406,
+    "lon": -81.852,
+    "km": 27.6,
+    "share_observed": 1.0
+   },
+   "cells": {
+    "nearest": {
+     "cell": "41.50_-82.25",
+     "km": 9.0,
+     "land": 0.398
+    },
+    "rule": {
+     "cell": "41.50_-82.00",
+     "km": 16.4,
+     "land": 0.586
+    },
+    "land_0.9": {
+     "cell": "41.25_-82.00",
+     "km": 25.8,
+     "land": 0.932
+    }
+   },
+   "station": {
+    "towers.withdrawn_avg": 0.6609697833333411,
+    "towers.withdrawn_peak_1in10": 0.8926630734450904,
+    "hybrid.withdrawn_avg": 0.030491834923620974,
+    "hybrid.withdrawn_peak_1in10": 0.5668886999882881,
+    "assist.withdrawn_avg": 0.03583196861072585,
+    "assist.withdrawn_peak_1in10": 0.4705719571851704,
+    "design_db": 32.2,
+    "mean_t": 11.145402151128557,
+    "mean_rh": 69.79278844944695,
+    "hours": 262992
+   },
+   "era5": {
+    "nearest": {
+     "towers.withdrawn_avg": 0.660533999243957,
+     "towers.withdrawn_peak_1in10": 0.8986369602947726,
+     "hybrid.withdrawn_avg": 0.027327441584525533,
+     "hybrid.withdrawn_peak_1in10": 0.714142104608467,
+     "assist.withdrawn_avg": 0.021818699674722886,
+     "assist.withdrawn_peak_1in10": 0.3818442381370304,
+     "design_db": 29.6,
+     "mean_t": 11.00873657753848,
+     "mean_rh": 74.67216621484279,
+     "hours": 262992
+    },
+    "rule": {
+     "towers.withdrawn_avg": 0.6608117807078481,
+     "towers.withdrawn_peak_1in10": 0.8935109912226943,
+     "hybrid.withdrawn_avg": 0.02801931440598236,
+     "hybrid.withdrawn_peak_1in10": 0.6716495953293314,
+     "assist.withdrawn_avg": 0.023303813538264197,
+     "assist.withdrawn_peak_1in10": 0.3667901107176652,
+     "design_db": 29.85,
+     "mean_t": 11.101198325424345,
+     "mean_rh": 74.39709681147441,
+     "hours": 262992
+    },
+    "land_0.9": {
+     "towers.withdrawn_avg": 0.6596443488385821,
+     "towers.withdrawn_peak_1in10": 0.89018091936359,
+     "hybrid.withdrawn_avg": 0.029924221196619548,
+     "hybrid.withdrawn_peak_1in10": 0.5712209346160781,
+     "assist.withdrawn_avg": 0.03168202324774991,
+     "assist.withdrawn_peak_1in10": 0.4363196349287319,
+     "design_db": 31.35,
+     "mean_t": 10.886742942751109,
+     "mean_rh": 71.78006705945707,
+     "hours": 262992
+    }
+   }
+  },
+  {
+   "state": "VA",
+   "geoid": "5182000",
+   "name": "Virginia Beach city",
+   "lat": 36.77911,
+   "lon": -76.02845,
+   "published": {
+    "point": "Richmond International Airport",
+    "station_id": "724010-13740",
+    "km": 140.7,
+    "towers.withdrawn_avg": 0.68325521017117,
+    "towers.withdrawn_peak_1in10": 0.9286681463897903,
+    "hybrid.withdrawn_avg": 0.05601616790050859,
+    "hybrid.withdrawn_peak_1in10": 0.6182349700402422,
+    "assist.withdrawn_avg": 0.06903785993865148,
+    "assist.withdrawn_peak_1in10": 0.6215366597811942
+   },
+   "nearest_station": {
+    "id": "723075-13769",
+    "name": "Oceana Nas",
+    "state": "VA",
+    "lat": 36.817,
+    "lon": -76.033,
+    "km": 4.2,
+    "share_observed": 0.978
+   },
+   "cells": {
+    "nearest": {
+     "cell": "36.75_-76.00",
+     "km": 4.1,
+     "land": 0.512
+    },
+    "rule": {
+     "cell": "36.75_-76.00",
+     "km": 4.1,
+     "land": 0.512
+    },
+    "land_0.9": {
+     "cell": "36.50_-76.50",
+     "km": 52.3,
+     "land": 0.991
+    }
+   },
+   "station": {
+    "towers.withdrawn_avg": 0.6881723805708456,
+    "towers.withdrawn_peak_1in10": 0.9334487757732237,
+    "hybrid.withdrawn_avg": 0.05582267662882337,
+    "hybrid.withdrawn_peak_1in10": 0.6669654414399546,
+    "assist.withdrawn_avg": 0.061625324027452535,
+    "assist.withdrawn_peak_1in10": 0.6309449634084537,
+    "design_db": 33.9,
+    "mean_t": 16.07991574727481,
+    "mean_rh": 70.64681708244012,
+    "hours": 262992
+   },
+   "era5": {
+    "nearest": {
+     "towers.withdrawn_avg": 0.6872171475926391,
+     "towers.withdrawn_peak_1in10": 0.9144087623660146,
+     "hybrid.withdrawn_avg": 0.05039700797585478,
+     "hybrid.withdrawn_peak_1in10": 0.7177816193755203,
+     "assist.withdrawn_avg": 0.03469038603786587,
+     "assist.withdrawn_peak_1in10": 0.441269843118164,
+     "design_db": 30.9,
+     "mean_t": 15.966529400133844,
+     "mean_rh": 76.49621514690496,
+     "hours": 262992
+    },
+    "rule": {
+     "towers.withdrawn_avg": 0.6872171475926391,
+     "towers.withdrawn_peak_1in10": 0.9144087623660146,
+     "hybrid.withdrawn_avg": 0.05039700797585478,
+     "hybrid.withdrawn_peak_1in10": 0.7177816193755203,
+     "assist.withdrawn_avg": 0.03469038603786587,
+     "assist.withdrawn_peak_1in10": 0.441269843118164,
+     "design_db": 30.9,
+     "mean_t": 15.966529400133844,
+     "mean_rh": 76.49621514690496,
+     "hours": 262992
+    },
+    "land_0.9": {
+     "towers.withdrawn_avg": 0.6886492269696043,
+     "towers.withdrawn_peak_1in10": 0.9219285874361287,
+     "hybrid.withdrawn_avg": 0.056179809991704716,
+     "hybrid.withdrawn_peak_1in10": 0.5887500537715629,
+     "assist.withdrawn_avg": 0.061582449129763184,
+     "assist.withdrawn_peak_1in10": 0.5357002382805887,
+     "design_db": 33.85,
+     "mean_t": 16.119348497292695,
+     "mean_rh": 71.21053672483826,
+     "hours": 262992
+    }
+   }
+  },
+  {
+   "state": "OH",
+   "geoid": "3916000",
+   "name": "Cleveland city",
+   "lat": 41.47846,
+   "lon": -81.67944,
+   "published": {
+    "point": "Cleveland-Hopkins International Ap",
+    "station_id": "725240-14820",
+    "km": 16.5,
+    "towers.withdrawn_avg": 0.6609697833333411,
+    "towers.withdrawn_peak_1in10": 0.8926630734450904,
+    "hybrid.withdrawn_avg": 0.030491834923620974,
+    "hybrid.withdrawn_peak_1in10": 0.5668886999882881,
+    "assist.withdrawn_avg": 0.03583196861072585,
+    "assist.withdrawn_peak_1in10": 0.4705719571851704
+   },
+   "nearest_station": {
+    "id": "725240-14820",
+    "name": "Cleveland-Hopkins International Ap",
+    "state": "OH",
+    "lat": 41.406,
+    "lon": -81.852,
+    "km": 16.5,
+    "share_observed": 1.0
+   },
+   "cells": {
+    "nearest": {
+     "cell": "41.50_-81.75",
+     "km": 6.3,
+     "land": 0.649
+    },
+    "rule": {
+     "cell": "41.50_-81.75",
+     "km": 6.3,
+     "land": 0.649
+    },
+    "land_0.9": {
+     "cell": "41.25_-81.75",
+     "km": 26.1,
+     "land": 0.937
+    }
+   },
+   "station": {
+    "point": "Cleveland-Hopkins International Ap",
+    "station_id": "725240-14820",
+    "km": 16.5,
+    "towers.withdrawn_avg": 0.6609697833333411,
+    "towers.withdrawn_peak_1in10": 0.8926630734450904,
+    "hybrid.withdrawn_avg": 0.030491834923620974,
+    "hybrid.withdrawn_peak_1in10": 0.5668886999882881,
+    "assist.withdrawn_avg": 0.03583196861072585,
+    "assist.withdrawn_peak_1in10": 0.4705719571851704
+   },
+   "era5": {
+    "nearest": {
+     "towers.withdrawn_avg": 0.6596444566266975,
+     "towers.withdrawn_peak_1in10": 0.8898172740926338,
+     "hybrid.withdrawn_avg": 0.027129915948566855,
+     "hybrid.withdrawn_peak_1in10": 0.5869750769974051,
+     "assist.withdrawn_avg": 0.026025365541380432,
+     "assist.withdrawn_peak_1in10": 0.395074107730005,
+     "design_db": 30.7,
+     "mean_t": 10.894826078359797,
+     "mean_rh": 74.04332465381218,
+     "hours": 262992
+    },
+    "rule": {
+     "towers.withdrawn_avg": 0.6596444566266975,
+     "towers.withdrawn_peak_1in10": 0.8898172740926338,
+     "hybrid.withdrawn_avg": 0.027129915948566855,
+     "hybrid.withdrawn_peak_1in10": 0.5869750769974051,
+     "assist.withdrawn_avg": 0.026025365541380432,
+     "assist.withdrawn_peak_1in10": 0.395074107730005,
+     "design_db": 30.7,
+     "mean_t": 10.894826078359797,
+     "mean_rh": 74.04332465381218,
+     "hours": 262992
+    },
+    "land_0.9": {
+     "towers.withdrawn_avg": 0.6589816289712749,
+     "towers.withdrawn_peak_1in10": 0.8872255252622427,
+     "hybrid.withdrawn_avg": 0.028764833858287032,
+     "hybrid.withdrawn_peak_1in10": 0.5521708343858118,
+     "assist.withdrawn_avg": 0.031163113224707856,
+     "assist.withdrawn_peak_1in10": 0.43406014959204575,
+     "design_db": 31.45179999999964,
+     "mean_t": 10.76186652065462,
+     "mean_rh": 72.00793419758193,
+     "hours": 262992
+    }
+   }
+  },
+  {
+   "state": "MI",
+   "geoid": "2614765820",
+   "name": "Port Huron city",
+   "lat": 42.99333,
+   "lon": -82.43427,
+   "published": {
+    "point": "Ann Arbor area",
+    "station_id": null,
+    "km": 126.2,
+    "towers.withdrawn_avg": 0.65506,
+    "towers.withdrawn_peak_1in10": 0.89436,
+    "hybrid.withdrawn_avg": 0.02701,
+    "hybrid.withdrawn_peak_1in10": 0.58285,
+    "assist.withdrawn_avg": 0.02962,
+    "assist.withdrawn_peak_1in10": 0.47817
+   },
+   "nearest_station": {
+    "id": "725375-14822",
+    "name": "Detroit City Airport",
+    "state": "MI",
+    "lat": 42.407,
+    "lon": -83.009,
+    "km": 80.4,
+    "share_observed": 0.879
+   },
+   "cells": {
+    "nearest": {
+     "cell": "43.00_-82.50",
+     "km": 5.4,
+     "land": 0.75
+    },
+    "rule": {
+     "cell": "43.00_-82.50",
+     "km": 5.4,
+     "land": 0.75
+    },
+    "land_0.9": {
+     "cell": "43.00_-82.75",
+     "km": 25.7,
+     "land": 0.985
+    }
+   },
+   "station": {
+    "towers.withdrawn_avg": 0.6605415636494119,
+    "towers.withdrawn_peak_1in10": 0.9146226254977574,
+    "hybrid.withdrawn_avg": 0.03562776360264587,
+    "hybrid.withdrawn_peak_1in10": 0.6411146673461701,
+    "assist.withdrawn_avg": 0.04183119850963262,
+    "assist.withdrawn_peak_1in10": 0.5820583619466271,
+    "design_db": 32.2,
+    "mean_t": 10.948129328481906,
+    "mean_rh": 66.68773107815181,
+    "hours": 201624
+   },
+   "era5": {
+    "nearest": {
+     "towers.withdrawn_avg": 0.6528854584590431,
+     "towers.withdrawn_peak_1in10": 0.8886943252362095,
+     "hybrid.withdrawn_avg": 0.02163546219720335,
+     "hybrid.withdrawn_peak_1in10": 0.605582256069982,
+     "assist.withdrawn_avg": 0.020263584328195215,
+     "assist.withdrawn_peak_1in10": 0.4474172681200763,
+     "design_db": 30.2,
+     "mean_t": 9.492660613250592,
+     "mean_rh": 74.04037938165737,
+     "hours": 262992
+    },
+    "rule": {
+     "towers.withdrawn_avg": 0.6528854584590431,
+     "towers.withdrawn_peak_1in10": 0.8886943252362095,
+     "hybrid.withdrawn_avg": 0.02163546219720335,
+     "hybrid.withdrawn_peak_1in10": 0.605582256069982,
+     "assist.withdrawn_avg": 0.020263584328195215,
+     "assist.withdrawn_peak_1in10": 0.4474172681200763,
+     "design_db": 30.2,
+     "mean_t": 9.492660613250592,
+     "mean_rh": 74.04037938165737,
+     "hours": 262992
+    },
+    "land_0.9": {
+     "towers.withdrawn_avg": 0.6528626810200617,
+     "towers.withdrawn_peak_1in10": 0.8928059762463595,
+     "hybrid.withdrawn_avg": 0.02476094352098454,
+     "hybrid.withdrawn_peak_1in10": 0.5715553356937775,
+     "assist.withdrawn_avg": 0.027460426797479676,
+     "assist.withdrawn_peak_1in10": 0.4894293914748971,
+     "design_db": 31.35,
+     "mean_t": 9.426792830200156,
+     "mean_rh": 71.17277360214058,
+     "hours": 262992
+    }
+   }
+  },
+  {
+   "state": "OH",
+   "geoid": "3977000",
+   "name": "Toledo city",
+   "lat": 41.66407,
+   "lon": -83.58186,
+   "published": {
+    "point": "Findlay Airport",
+    "station_id": "725366-14825",
+    "km": 72.6,
+    "towers.withdrawn_avg": 0.6612313303866627,
+    "towers.withdrawn_peak_1in10": 0.8995475576386329,
+    "hybrid.withdrawn_avg": 0.034600229067408464,
+    "hybrid.withdrawn_peak_1in10": 0.5653219892943218,
+    "assist.withdrawn_avg": 0.04110436740370668,
+    "assist.withdrawn_peak_1in10": 0.5079958095680791
+   },
+   "nearest_station": {
+    "id": "725360-94830",
+    "name": "Toledo Express Airport",
+    "state": "OH",
+    "lat": 41.587,
+    "lon": -83.805,
+    "km": 20.4,
+    "share_observed": 0.995
+   },
+   "cells": {
+    "nearest": {
+     "cell": "41.75_-83.50",
+     "km": 11.7,
+     "land": 0.782
+    },
+    "rule": {
+     "cell": "41.75_-83.50",
+     "km": 11.7,
+     "land": 0.782
+    },
+    "land_0.9": {
+     "cell": "41.75_-83.75",
+     "km": 16.9,
+     "land": 0.928
+    }
+   },
+   "station": {
+    "towers.withdrawn_avg": 0.6594948497826032,
+    "towers.withdrawn_peak_1in10": 0.903967904314001,
+    "hybrid.withdrawn_avg": 0.0338758679965582,
+    "hybrid.withdrawn_peak_1in10": 0.5834091103112716,
+    "assist.withdrawn_avg": 0.04027936670661049,
+    "assist.withdrawn_peak_1in10": 0.5520955098856418,
+    "design_db": 32.8,
+    "mean_t": 10.689465789109297,
+    "mean_rh": 70.73230555116757,
+    "hours": 262992
+   },
+   "era5": {
+    "nearest": {
+     "towers.withdrawn_avg": 0.6599590487509692,
+     "towers.withdrawn_peak_1in10": 0.9050866583765129,
+     "hybrid.withdrawn_avg": 0.0317928107815939,
+     "hybrid.withdrawn_peak_1in10": 0.5889076068874862,
+     "assist.withdrawn_avg": 0.03578309997727304,
+     "assist.withdrawn_peak_1in10": 0.5185346585449535,
+     "design_db": 32.25,
+     "mean_t": 10.787481178134696,
+     "mean_rh": 72.81535034951553,
+     "hours": 262992
+    },
+    "rule": {
+     "towers.withdrawn_avg": 0.6599590487509692,
+     "towers.withdrawn_peak_1in10": 0.9050866583765129,
+     "hybrid.withdrawn_avg": 0.0317928107815939,
+     "hybrid.withdrawn_peak_1in10": 0.5889076068874862,
+     "assist.withdrawn_avg": 0.03578309997727304,
+     "assist.withdrawn_peak_1in10": 0.5185346585449535,
+     "design_db": 32.25,
+     "mean_t": 10.787481178134696,
+     "mean_rh": 72.81535034951553,
+     "hours": 262992
+    },
+    "land_0.9": {
+     "towers.withdrawn_avg": 0.6593596810753815,
+     "towers.withdrawn_peak_1in10": 0.9021240837040618,
+     "hybrid.withdrawn_avg": 0.0327882173482186,
+     "hybrid.withdrawn_peak_1in10": 0.5715350961775905,
+     "assist.withdrawn_avg": 0.038279593855182356,
+     "assist.withdrawn_peak_1in10": 0.5136168879847559,
+     "design_db": 32.5,
+     "mean_t": 10.673367630954553,
+     "mean_rh": 71.02058542132882,
+     "hours": 262992
+    }
+   }
+  }
+ ]
+}

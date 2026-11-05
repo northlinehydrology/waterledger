@@ -92,7 +92,38 @@ class SnapshotData:
         return self._json("climate").get("lake_source", {})
 
     def division_runs(self):
+        """The climate divisions: their stations, and in a format 2 snapshot their cooling results per 100 MW."""
         return self._json("climate")["divisions"]
+
+    def format(self):
+        """The snapshot's format: 3 carries cooling by ERA5 cell (model 1.8), 2 by climate division."""
+        return self.manifest.get("format", 1)
+
+    def cell_of(self, geoid):
+        """{"cell", "cell_km", "cell_land", "cell_moved", "weather_corrected", ...} for a place, from places.json; None before format 3."""
+        if not hasattr(self, "_cells_by_place"):
+            self._cells_by_place = {p["geoid"]: {k: v for k, v in p.items() if k.startswith(("cell", "nearest_")) or k == "weather_corrected"}
+                                    for p in self._json("places")["places"] if "cell" in p}
+        return self._cells_by_place.get(geoid)
+
+    def cell(self, cid):
+        """A cell's record (cells/<cell>.json): fetched the first time a place needs it and checked against the manifest's checksum."""
+        name = f"cells/{cid}.json"
+        if name not in self._j:
+            f = self.manifest.get("cells", {}).get(name)
+            if f is None:
+                raise KeyError(f"{self.state} snapshot {self.date} has no cell {cid}")
+            path = os.path.join(self.folder, name)
+            ok = os.path.exists(path) and hashlib.sha256(open(path, "rb").read()).hexdigest() == f["sha256"]
+            if not ok:
+                url = (os.environ.get("WATERLEDGER_DATA_URL") or DATA_URL).rstrip("/")
+                body = _get(f"{url}/{self.state}/{self.date}/{name}", timeout=120)
+                if hashlib.sha256(body).hexdigest() != f["sha256"]:
+                    raise DataUnavailable(f"{self.state} snapshot {self.date}: {name} does not match its manifest checksum")
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                open(path, "wb").write(body)
+            self._j[name] = json.load(open(path))
+        return self._j[name]
 
     def staff_runs(self):
         return self._json("climate")["staff_runs"]
@@ -198,8 +229,27 @@ class LiveData:
         return nc.lake_source(sorted({v["lake"] for v in self.great_lakes.values()}))
 
     def division_runs(self):
+        """The climate divisions' stations (format 3: cooling comes from each place's ERA5 cell)."""
         from waterledger.national import climate as nc
-        return nc.division_runs(self.state)
+        return nc.division_stations(self.state)
+
+    def format(self):
+        from waterledger.national.snapshot import FORMAT
+        return FORMAT
+
+    def cell_of(self, geoid):
+        """A place's cell fields, as a snapshot's places.json carries them, from its point rounded as there."""
+        from waterledger.national import cells
+        r = self._pl[self._pl.geoid == geoid]
+        if r.empty:
+            return None
+        c = cells.assign([{"geoid": geoid, "lat": round(float(r.lat.iloc[0]), 5), "lon": round(float(r.lon.iloc[0]), 5)}])[geoid]
+        return cells.place_fields(c, self.cell(c["id"])["correction"]["applied"])
+
+    def cell(self, cid):
+        """A cell's record from its run (CACHE/era5/runs/model1.8; `waterledger era5 run` makes them)."""
+        from waterledger.national import cells
+        return cells.record(cells.runs([cid])[cid])
 
     def staff_runs(self):
         from waterledger_models.datacenter import cooling as cw

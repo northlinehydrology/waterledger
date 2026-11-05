@@ -112,6 +112,11 @@ class Climate(_Category):
     rain_in: float | None = None                    # county mean annual precipitation, 1991-2020
     rain_from: str | None = None                    # the surrounding county whose record stands in, where NOAA has none for an independent city
     design_storms_in: dict[str, float] = {}         # 24-hour depths by return period in years (NOAA Atlas 14)
+    cell: str | None = None                         # model 1.8: the ERA5 cell the cooling weather comes from ("41.50_-82.00"); region and station describe rainfall and salt
+    cell_km: float | None = None                    # from the place's internal point to the cell's center
+    cell_land: float | None = None                  # the cell's ERA5 land-sea mask, 0 to 1
+    cell_moved: bool | None = None                  # true where the nearest cell is mostly water and the nearest at least half land is used (design 0004)
+    weather_corrected: bool | None = None           # true where the cell's weather was corrected toward shore stations (design 0005)
 
 
 class Utility(BaseModel):
