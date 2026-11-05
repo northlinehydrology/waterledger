@@ -101,26 +101,27 @@ def _elevations():
 
 
 def candidates(cells):
-    """The ISD (one ID or linked) and ECCC sites within R_KM of a shore cell in `cells` whose own cell is a shore cell: the stations that
-    could anchor them, before the 85% rule. `cells`: {id: {"cell": {lat, lon, land}}}."""
+    """The ISD (one ID or linked) and ECCC sites within R_KM of a shore cell in `cells` whose own nearest cell is a shore cell: the
+    stations that could anchor them, before the 85% rule. `cells`: {id: {"cell": {lat, lon, land}}}. A station keeps its land-rule
+    cell (`cell`, `cell_land`) as a place there would get it, and is judged a shore station by its nearest (`shore_land`; Nov 5)."""
     from waterledger_data import climate
     from waterledger_models import quantile_mapping as Q
     shore = [c["cell"] for c in cells.values() if c["cell"]["land"] < Q.SHORE_LAND]
     if not shore:
         return []
     elev = _elevations()
-    sites = [{**s, "source": "isd-linked" if "parts" in s else "isd", "elev_m": elev.get(s["id"])} for s in climate.isd_sites()]
+    sites = [{**s, "source": "isd-linked" if "parts" in s else "isd", "elev_m": elev.get(s.get("fallback_for", s["id"]))} for s in climate.isd_sites()]
     sites += [{**s, "source": "eccc"} for s in climate.eccc_sites()]
     out = []
     for s in sites:
         if not any(Q.km(c["lat"], c["lon"], s["lat"], s["lon"]) <= Q.R_KM for c in shore):
             continue
         try:
-            own = era5.cell(s["lat"], s["lon"])
+            own, near = era5.cell(s["lat"], s["lon"]), era5.cell(s["lat"], s["lon"], land=None)
         except ValueError:                                  # outside the shipped grid
             continue
-        if own["land"] < Q.SHORE_LAND:
-            out.append({**s, "cell": own["id"], "cell_land": own["land"]})
+        if near["land"] < Q.SHORE_LAND:
+            out.append({**s, "cell": own["id"], "cell_land": own["land"], "shore_land": near["land"]})
     return out
 
 
@@ -138,9 +139,9 @@ def anchor(site, store=None):
         if not meta["qualifies"]:
             return None
         if os.path.exists(q_path):
-            return {**meta, "qt": np.load(q_path)}
+            return {**meta, "shore_land": site.get("shore_land", meta["cell_land"]), "qt": np.load(q_path)}
     got = (climate.eccc_hourly if site["source"] == "eccc" else climate.isd_hourly)(site)
-    keep = ("id", "name", "state", "source", "lat", "lon", "elev_m", "cell", "cell_land", "parts")
+    keep = ("id", "name", "state", "source", "lat", "lon", "elev_m", "cell", "cell_land", "shore_land", "parts", "fallback_for")
     meta = {k: site[k] for k in keep if k in site} | {"qualifies": bool(got)}
     if got:
         times, t, rh, share, screen = got
@@ -154,16 +155,22 @@ def anchor(site, store=None):
         store.put(f"anchors/{site['id']}.json", meta_path)
         if got:
             store.put(f"anchors/{site['id']}.npy", q_path)
-    return {**meta, "qt": np.load(q_path)} if got else None
+    return {**meta, "shore_land": site.get("shore_land", meta["cell_land"]), "qt": np.load(q_path)} if got else None
 
 
 def anchors(cells, store=None):
-    """The qualified shore stations for `cells` (quantile_mapping's station records)."""
-    out = []
-    for s in candidates(cells):
+    """The qualified shore stations for `cells` (quantile_mapping's station records). A linked fallback (climate.isd_sites' "fallback_for")
+    is tried only where its station fails the 85% rule on its own ID, so a station that qualifies keeps its own record."""
+    out, failed = [], set()
+    cands = candidates(cells)
+    for s in [s for s in cands if "fallback_for" not in s] + [s for s in cands if "fallback_for" in s]:
+        if "fallback_for" in s and s["fallback_for"] not in failed:
+            continue
         a = anchor(s, store)
         if a:
             out.append(a)
+        else:
+            failed.add(s["id"])
     return out
 
 

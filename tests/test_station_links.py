@@ -40,9 +40,35 @@ def test_isd_pieces_are_not_joined_far_apart_without_a_wban_or_short_of_the_shar
         ("720001", "99999", "AWOS A", "US", "MI", "", "+44.000", "-084.000", "+0300.0", "19900101", "20051231"),
         ("720001", "99999", "AWOS A", "US", "MI", "", "+44.000", "-084.000", "+0300.0", "20060101", "20250827"),               # no WBAN
         ("725384", "99999", "ST CLAIR CO INTL", "US", "MI", "KPHN", "+42.917", "-082.533", "+0198.0", "19940718", "19971231"),
-        ("725384", "04888", "ST CLAIR COUNTY INTL ARPT", "US", "MI", "KPHN", "+42.911", "-082.529", "+0195.1", "20060101", "20250825"),  # 1998-2005 missing: 73%
+        ("725384", "04888", "ST CLAIR COUNTY INTL ARPT", "US", "MI", "KPHN", "+42.911", "-082.529", "+0195.1", "20060101", "20250825"),  # 1998-2005 not listed: 73%
+        ("720002", "12345", "SHORT A", "US", "TX", "", "+30.000", "-095.000", "+10.0", "20150101", "20250827"),
+        ("720002", "99999", "SHORT A", "US", "TX", "", "+30.000", "-095.000", "+10.0", "20120101", "20141231"),                # 2012-2024 only: 43%
     ])
-    assert climate.isd_sites() == []
+    # St Clair County is tried: isd-history's dates can end early, and the 85% of hours decides (LINK_SPAN_MIN, Nov 5); the others aren't
+    assert [s["id"] for s in climate.isd_sites()] == ["725384-04888"]
+
+
+def test_a_station_spanning_the_period_with_a_gap_gets_a_linked_fallback(raw):
+    """Galveston's airport spans 1995-2024 under 722420-12923 but is missing 2000-2003, which 722420-99999 has, listed 7 km away."""
+    _history(raw, [
+        ("722420", "12923", "SCHOLES INTL AT GLSTON APT", "US", "TX", "KGLS", "+29.270", "-094.864", "+0001.5", "19930101", "20250824"),
+        ("722420", "99999", "GALVESTON", "US", "TX", "KGLS", "+29.300", "-094.800", "+0016.0", "19730101", "20031231"),
+    ])
+    got = {s["id"]: s for s in climate.isd_sites()}
+    assert set(got) == {"722420-12923", "722420-12923+linked"} and "parts" not in got["722420-12923"]
+    fb = got["722420-12923+linked"]
+    assert fb["fallback_for"] == "722420-12923" and [p["id"] for p in fb["parts"]] == ["722420-12923", "722420-99999"]
+
+
+def test_a_year_no_piece_lists_is_read_from_every_piece(raw):
+    """Hobby: isd-history ends 722435-12918 in 1997 and starts 722440-12918 in 2005, but 722435's files run on."""
+    _lite(raw, "722435-12918", 2001, [(6, 1, 12, 300, 200)])
+    _lite(raw, "722435-12918", 2006, [(6, 1, 12, 999, 999)])                     # a listed year of the newer piece: not read from the older
+    _lite(raw, "722440-12918", 2006, [(6, 1, 12, 310, 210)])
+    site = {"id": "722440-12918", "parts": [{"id": "722440-12918", "begin": "20050101", "end": "20250827"},
+                                           {"id": "722435-12918", "begin": "19730101", "end": "19971231"}]}
+    f = climate._isd_frame(site, [2001, 2006])
+    assert list(f.index.strftime("%Y-%m-%d %H")) == ["2006-06-01 12", "2001-06-01 12"] and list(f["T"]) == [31.0, 30.0]
 
 
 def _lite(raw, sid, year, rows):

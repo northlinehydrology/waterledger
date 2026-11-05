@@ -58,7 +58,7 @@ def candidates(state, places):
     from waterledger_models.quantile_mapping import km
     pl = np.array([(float(p["lat"]), float(p["lon"])) for p in places])
     elev = _elevations()
-    sites = [{**s, "source": "isd-linked" if "parts" in s else "isd", "elev_m": elev.get(s["id"])} for s in climate.isd_sites()]
+    sites = [{**s, "source": "isd-linked" if "parts" in s else "isd", "elev_m": elev.get(s.get("fallback_for", s["id"]))} for s in climate.isd_sites()]
     sites += [{**s, "source": "eccc"} for s in climate.eccc_sites()]
     out = []
     for s in sites:
@@ -68,7 +68,7 @@ def candidates(state, places):
             c = era5.cell(s["lat"], s["lon"])
         except ValueError:
             continue
-        out.append({**s, "cell": c["id"], "cell_land": c["land"]})
+        out.append({**s, "cell": c["id"], "cell_land": c["land"], "shore_land": era5.cell(s["lat"], s["lon"], land=None)["land"]})
     return out
 
 
@@ -98,6 +98,20 @@ def record(site):
     meta |= {"share_observed": share, "screen": screen}
     json.dump(meta, open(meta_p, "w"), default=str)
     return {**site, **meta, "times": list(times), "t": t, "td": td}
+
+
+def qualified(cands):
+    """The candidates' records that pass the rule; a linked fallback (climate.isd_sites' "fallback_for") only where its station fails."""
+    out, failed = [], set()
+    for s in [s for s in cands if "fallback_for" not in s] + [s for s in cands if "fallback_for" in s]:
+        if "fallback_for" in s and s["fallback_for"] not in failed:
+            continue
+        r = record(s)
+        if r:
+            out.append(r)
+        else:
+            failed.add(s["id"])
+    return out
 
 
 # --- the two checks ---
@@ -263,7 +277,7 @@ def run_check(state, out=None, n=12, workers=6, draws=None, weather_only=False, 
     if stations is None:
         cands = candidates(state, places)
         _say(f"{state}: {len(cands)} candidate stations")
-        stations = [r for r in (record(s) for s in cands) if r]
+        stations = qualified(cands)
     for s in stations:
         s["qt"] = Q.fit(s["times"], s["t"], s["td"])
     _say(f"{state}: {len(stations)} stations qualify")

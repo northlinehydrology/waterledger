@@ -9,8 +9,8 @@ Bins: calendar month (fitted on that month and the months either side, applied t
 
 Which cells, from which stations (Andrew's decisions, Nov 4, 2026):
 - Only cells under SHORE_LAND (90%) land are corrected; cells at least 90% land keep ERA5 as it is.
-- A cell is corrected only from shore stations: stations whose own cell (the land rule's, as a place there would get) is itself under
-  SHORE_LAND land. A shore cell is corrected from the shore stations within R_KM of its center, at most K, weighted 1/d^2 (d at least
+- A cell is corrected only from shore stations: stations whose own nearest cell is under SHORE_LAND land (Nov 5: the nearest cell,
+  not the land rule's, which moves the stations right on the water inland, Corpus Christi NAS among them). A shore cell is corrected from the shore stations within R_KM of its center, at most K, weighted 1/d^2 (d at least
   5 km), and with no shore station that near it is left as it is and flagged.
 - The stations' quantiles are averaged and the cell mapped onto them, each station's temperature moved to the cell's ERA5 elevation at
   LAPSE (the "lapse" way of the prototype)."""
@@ -71,8 +71,9 @@ def km(a, b, c, d):
 
 
 def is_shore_station(station):
-    """A station anchors shore cells when its own cell (`cell_land`, the land rule's cell at the station) is under SHORE_LAND land."""
-    return station["cell_land"] < SHORE_LAND
+    """A station anchors shore cells when its own nearest cell is under SHORE_LAND land: `shore_land`, else `cell_land` for a record
+    that has only that (the prototype's, and tests')."""
+    return station.get("shore_land", station["cell_land"]) < SHORE_LAND
 
 
 def weights(lat, lon, stations, r_km=R_KM, k=K, shore_only=True):

@@ -79,7 +79,12 @@ def isd_stations(first=1995, last=2024):
 
 # Pieces of one site's record under different IDs: they share a USAF or a WBAN number and stand this close. A site that changed its ID
 # (most often WBAN 99999 until 2005, its own WBAN from 2006) has no single ID spanning the period. Quantile mapping, design 0005 (Nov 4, 2026). [A]
-LINK_KM = 5.0
+# 8 km (was 5, Nov 5): isd-history rounds old pieces' positions, to 0.1 degree for Galveston's 722420-99999, 7 km from its airport's
+# current fix; Austin's Camp Mabry and Bergstrom, which share a USAF, are 17 km apart and stay separate.
+LINK_KM = 8.0
+# The share of the period a site's pieces must cover by isd-history's dates to be tried at all. isd-history's END dates can be early
+# (Hobby's 722435-12918 says 1997, its files run to 2010), so this only screens out what can't come close; the 85% of hours decides.
+LINK_SPAN_MIN = 0.5
 
 
 def _span_share(parts, first, last):
@@ -95,9 +100,14 @@ def _span_share(parts, first, last):
 
 def isd_sites(first=1995, last=2024, min_share=0.85):
     """isd_stations, plus the US sites whose record covers first..last only across a change of station ID: pieces sharing a USAF or
-    a WBAN number within LINK_KM of each other, between them covering at least `min_share` of the days (the share isd_hourly then asks
-    of the hours), the newest open to the last year's fall, and at least one with a WBAN. A linked site is named after its newest piece and carries `parts` [{id, begin, end}], newest first, which _isd_frame
-    reads in turn; isd_stations' own stations are returned as they are."""
+    a WBAN number within LINK_KM of each other, between them covering at least LINK_SPAN_MIN of the days by isd-history's dates (the
+    85% of hours, isd_hourly's rule, then decides), the newest open to the last year's fall, and at least one with a WBAN. A linked site
+    is named after its newest piece and carries `parts` [{id, begin, end}], newest first, which _isd_frame reads in turn; isd_stations'
+    own stations are returned as they are.
+
+    Where one of isd_stations' stations is itself a piece of such a group, the linked site is also returned, as its "fallback_for": the
+    station with its other IDs filling its gaps, to be used only if the station alone fails the 85% rule (Galveston's 722420-12923 is
+    missing 2000-2003, which 722420-99999 has). Its id is the station's with "+linked". `min_share` is kept for callers; unused."""
     import csv
     path = _fetch(ISD_HISTORY, os.path.join(RAW, "isd", "isd-history.csv"))
     rows = [r for r in csv.DictReader(open(path)) if r["CTRY"] == "US" and r["LAT"] and r["BEGIN"] and r["END"] >= f"{first}0101"
@@ -125,15 +135,19 @@ def isd_sites(first=1995, last=2024, min_share=0.85):
     out = isd_stations(first, last)
     single = {s["id"] for s in out}
     for g in groups.values():
-        if len(g) < 2 or any(f"{r['USAF']}-{r['WBAN']}" in single for r in g) or all(r["WBAN"] == "99999" for r in g):
+        if len(g) < 2 or all(r["WBAN"] == "99999" for r in g):
             continue
         g = sorted(g, key=lambda r: (r["END"], r["BEGIN"]), reverse=True)
         parts = [{"id": f"{r['USAF']}-{r['WBAN']}", "begin": r["BEGIN"], "end": r["END"]} for r in g]
-        if parts[0]["end"] < f"{last}1001" or _span_share(parts, first, last) < min_share:
+        if parts[0]["end"] < f"{last}1001" or _span_share(parts, first, last) < LINK_SPAN_MIN:
             continue
         r = g[0]
-        out.append({"id": parts[0]["id"], "name": r["STATION NAME"].title(), "state": r["STATE"] or next((x["STATE"] for x in g if x["STATE"]), ""),
-                    "lat": float(r["LAT"]), "lon": float(r["LON"]), "parts": parts})
+        site = {"id": parts[0]["id"], "name": r["STATION NAME"].title(), "state": r["STATE"] or next((x["STATE"] for x in g if x["STATE"]), ""),
+                "lat": float(r["LAT"]), "lon": float(r["LON"]), "parts": parts}
+        spanning = [p["id"] for p in parts if p["id"] in single]
+        if spanning:
+            site |= {"id": spanning[0] + "+linked", "fallback_for": spanning[0]}
+        out.append(site)
     return out
 
 
@@ -159,15 +173,18 @@ def _km(a_lat, a_lon, b_lat, b_lon):
 
 def _isd_frame(station, years):
     """A station's reports with both temperature and dew point, in UTC, for `years`: a DataFrame indexed by hour, with T and Td (C).
-    A linked site (isd_sites) reads each of its `parts` for the years it was open, newest first; an hour two parts both report is the newer part's."""
+    A linked site (isd_sites) reads each of its `parts` for the years it was open, newest first; an hour two parts both report is the newer part's.
+    A year no part's isd-history dates cover is tried in every part, since those dates can end early (Hobby's 722435-12918: 1997 listed, files to 2010)."""
     import gzip
     import pandas as pd
     parts = station.get("parts") or [{"id": station["id"], "begin": "0", "end": "9"}]
+    listed = lambda part, y: part["begin"][:4] <= str(y) <= part["end"][:4]
+    uncovered = {y for y in years if not any(listed(p, y) for p in parts)}
     rows = []
     for part in parts:
         usaf, wban = part["id"].split("-")
         for y in years:
-            if not part["begin"][:4] <= str(y) <= part["end"][:4]:
+            if not listed(part, y) and y not in uncovered:
                 continue
             path = os.path.join(RAW, "isd", "lite", f"{part['id']}-{y}.gz")
             try:
