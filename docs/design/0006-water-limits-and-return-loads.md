@@ -77,11 +77,16 @@ as aliases.
 ### Return loads and return temperature
 
 - **Mass.** For each constituent, the mass in equals the mass out, every hour, and none leaves with evaporation:
-  - return load = intake concentration x (withdrawal - evaporation), in kg s-1;
+  - the mass taken in is intake concentration x withdrawal, and it leaves only as liquid, in blowdown and drift;
+  - return load = intake concentration x withdrawal x (1 - drift's share), in kg s-1, where drift's share is
+    drift / (blowdown + drift), about 0.1% for towers;
   - blowdown concentration = intake concentration x cycles of concentration;
   - drift leaves as liquid at the blowdown concentration, and its mass is reported as a separate output, since it doesn't
     reach the sewer;
-  - condensate carries none.
+  - condensate carries none, so the return column (blowdown plus condensate) is not the basis for loads.
+- **Results already published need no rerun for loads.** The return load is a constant multiple of withdrawal, so the
+  stored percentiles of withdrawn carry over exactly. The blowdown concentration is a range from the cycles' range.
+  (A note from the SWAT+ BMI session, Nov 4.)
 - **Temperature (proposed method).** Blowdown leaves at the tower's cold-water temperature, wet-bulb plus the approach
   (`tower_approach`). Pad bleed from assist leaves at the sump's temperature, about the wet-bulb. Condensate leaves at the
   coil's leaving-air dew point.
@@ -119,6 +124,17 @@ as aliases.
 - **The cap is met:** withdrawal is at most the limit in every hour, top-ups and staff water aside.
 - **Electricity follows:** it rises monotonically as the limit tightens, at fixed weather.
 - **Dry mode on a hot record** shows unremoved heat only above the dry and chiller capacity, and none in cool hours.
+
+## Reruns
+
+- **None for the limit or dry mode.** Both are off by default. The identity check (no limit set: rerun a few cells and
+  every stored value matches) proves it.
+- **None for return loads** (above).
+- **Return temperature depends on its basis.**
+  - A fixed basis, such as the tower's cold water at the design wet-bulb plus approach, needs no rerun.
+  - A temperature that follows the weather hour by hour needs new runs or new stored outputs, since the runs keep
+    percentiles, not the draws.
+  - That choice goes to Andrew with the method decision.
 
 ## Open
 
