@@ -1,7 +1,8 @@
 # 0006: Water limits, dry mode and return loads on the cooling component
 
-Status: **decided Nov 4, 2026, to build after v3.10.0 is tagged; not built.** Nothing here changes a model, parameter or
-snapshot in 3.10.0 (model 1.8).
+Status: **decided Nov 4, 2026; built Nov 5, 2026 on branch `water-limits`, for the release after 3.10.0; not released.** With no
+limit set nothing changes: every output of the cooling model and its BMI component is 3.10.0's to the bit. What was built, and where it
+departs from the proposal below, is under *As built*.
 
 Basin Ledger asked for these, so curtailment, drought rules and quality balances can drive the data center component
 (`~/repos/basin-ledger/docs/requests.md`, items 2-4, Nov 4):
@@ -79,7 +80,7 @@ as aliases.
 - **Mass.** For each constituent, the mass in equals the mass out, every hour, and none leaves with evaporation:
   - the mass taken in is intake concentration x withdrawal, and it leaves only as liquid, in blowdown and drift;
   - return load = intake concentration x withdrawal x (1 - drift's share), in kg s-1, where drift's share is
-    drift / (blowdown + drift), about 0.1% for towers;
+    drift / (blowdown + drift): a few percent for towers, not the 0.1% this note first said (see *As built*);
   - blowdown concentration = intake concentration x cycles of concentration;
   - drift leaves as liquid at the blowdown concentration, and its mass is reported as a separate output, since it doesn't
     reach the sewer;
@@ -142,3 +143,42 @@ as aliases.
 - **Whether a limit applies to the hour's mean flow or the step's.** The BMI step is the framework's.
 - **Whether a towers plant with a cap should be allowed to shed load** (the realistic answer), or report it only. The
   proposal reports it.
+
+## As built (Nov 5, 2026)
+
+In `waterledger_models.datacenter.physics` (`hourly_limited`, `dissolved_mass_split`, `blowdown_temperature`) and `CoolingWaterBmi`.
+Tests: `tests/test_water_limits.py` (physics) and the design 0006 section of `tests/test_bmi.py`.
+
+- **Drift's share of the dissolved mass is a few percent, not 0.1%.** Drift is 0.005-0.02% of the water *circulating* through the
+  tower, but blowdown is small beside that flow: drift's share of the liquid leaving is drift x circulation x (cycles - 1) /
+  evaporation, about 1.5-15% across the ranges and about 3% at the central values. The return load is still intake concentration x
+  withdrawal x (1 - drift's share); the share is larger than first written. Basin Ledger's requests.md carried the same 0.1% and is
+  corrected with this.
+- **Hybrid:** the limit scales the wet mode's share of the heat (`wet_frac`), and the hour's heat balance is solved again at that
+  share: the dry coolers take the rest, and air-cooled chillers above the loop's limit, as the model already does in dry hours.
+- **Assist:** the pads' evaporation is cut in proportion and the air reaches the coil that much warmer. (Scaling only the pads'
+  cooling would not cut the water: above the switch point plus the coil's rise the model evaporates the whole heat at any
+  depression.)
+- **Finding the share:** a fixed point on withdrawal, which is close to proportional to the wet duty; 12 iterations meet the limit to
+  better than 1e-9 in the tests.
+- **Towers:** a towers plant has no dry side and its chillers reject through the towers, so chillers can't help: the load the limit
+  can't cool is shed, and reported as heat not removed. The proposal's "straight to chillers" is out for that reason.
+- **Capacity [A]:** the dry coolers and chillers are sized for every computer at capacity (the hour's heat per IT kW over the run's
+  utilization), all dry, at the location's design dry-bulb, times 1 + `dry_capacity_margin` (0-20%, central 10%). Above the design
+  dry-bulb they lose `dry_derate_per_k` of it per K (1-2%, central 1.5%), a straight-line derating in place of the proposal's coil
+  approach scaling, to be checked against makers' derating tables. At these values a hybrid or assist plant in dry mode rarely
+  sheds load: it has the dry capacity of a dry design, by construction. Neither is sampled in the Monte Carlo.
+- **Shedding** scales the hour's cooling water (evaporation, drift, blowdown) and power by the share cooled. Loop top-ups,
+  humidifiers and condensate don't follow the load in the hour and stay.
+- **Dry mode** is a cooling limit of zero (`water_user__dry_mode_flag`). A hybrid or assist plant in dry mode draws the dry design's
+  electricity, hour by hour, which the tests hold.
+- **Dissolved mass:** blowdown carries the cooling makeup's mass to the sewer and drift to the air; top-ups (leaks), humidifiers and
+  pads without bleed leave theirs behind. Staff water's mass splits as its water does, the returned share to the sewer [A]. The BMI
+  reports the return's mass and the rest (`water_user_unreturned_water_<name>__mass_flux`), which add to the intake's every step.
+- **Return temperature:** built hour by hour in the BMI, where it costs nothing: blowdown at the wet-bulb plus `tower_approach`,
+  pad bleed at the wet-bulb, condensate at the 15 C indoor dew point limit, staff water at 20 C [A], mixed by flow. Nothing on the
+  site or in a snapshot carries a return temperature, so no rerun is needed; publishing one is the open method decision.
+- **Names:** `data_center__setpoint_lost_time` (hours, summed since initialize) for the proposal's `..._lost_hours`; the water-user
+  names are aliases (Basin Ledger request 5), condensate as the gain.
+- **Not built here:** the limit in the per-run builders (`cooling.py`) and the ensemble. A limit is a scenario for a coupled run;
+  Water Ledger's estimates don't use one.
