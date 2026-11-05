@@ -109,7 +109,7 @@ def test_dissolved_mass_closes(design):
 
 def test_blowdown_concentrates_by_the_cycles():
     """Towers: blowdown's concentration is the intake's times the cycles of concentration, and drift's share of the mass is drift's share of the liquid
-    leaving, drift x circulation x (cycles - 1) / evaporation: a few percent (about 1.5-15% across the ranges), since blowdown is small beside the flow
+    leaving, drift x circulation x (cycles - 1) / evaporation: a few percent (about 1-16% across the ranges), since blowdown is small beside the flow
     the drift share is taken of."""
     o = ph.hourly_limited(T, W, "towers", CENTRAL, np.inf, RH)
     sewer, drift, _ = ph.dissolved_mass_split(o)

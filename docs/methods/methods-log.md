@@ -1493,6 +1493,63 @@ though Galveston's airport, Scholes Field (KGLS), is on the island. Two causes:
 **Not redone.** The prototype's leave-one-out figures in 0005 are from before the fixes; `waterledger era5 check ST` gives
 them on the current rules.
 
+## Nov 5, 2026: water limits, dry mode and return water on the cooling model (design 0006; built, not released)
+
+**Decision** (Andrew, Nov 4). A rule that caps a campus's water doesn't cap its heat: the computers' heat has to go. So a
+limit takes evaporative duty away and the plant's dry side carries the rest, at the electricity that takes; heat the dry side
+can't carry is reported as heat not removed, never dropped. Dry mode is a limit of zero. Return loads follow from the mass
+balance. Off by default: with no limit, every output of `physics` and `CoolingWaterBmi` is 3.10.0's to the bit (checked over a
+synthetic year in all four designs, and held by `tests/test_water_limits.py`). Basin Ledger asked for it (its requests 2-5).
+Water Ledger's estimates don't use a limit, and no snapshot or estimate changes.
+
+**How each design meets a limit** (`physics.hourly_limited`).
+- **Hybrid.** The limit scales the wet mode's share of the heat, and the hour's heat balance (`hourly_heat_power`) is solved
+  again at that share. The dry coolers take the rest, with air-cooled chillers above the loop's limit, as the model does in
+  dry hours. The share is found by a fixed point on withdrawal, which is close to proportional to the wet duty; 12 iterations
+  meet the limit to better than one part in a billion.
+- **Assist.** The pads' evaporation is cut in proportion, and the air reaches the coil that much warmer. Scaling only the
+  pads' cooling would not have cut the water: above the switch point plus the coil's air rise, the model's pads evaporate the
+  whole heat at any depression.
+- **Towers.** A towers plant has nothing but evaporation, and its water-cooled chillers reject through the towers, so neither
+  dry coolers nor chillers can take the heat. The load the limit can't cool is shed and reported as heat not removed.
+- **Dry.** It evaporates nothing, so a limit takes nothing from it.
+- **Shedding** scales the hour's cooling water and power by the share of the load cooled. Loop top-ups, humidifier water and
+  condensate don't follow the load within the hour and stay. Top-ups, humidifiers and staff water come off a limit first; a
+  limit below them can't be met and isn't.
+
+At central values, 300 MW, 34 C and 40% RH: a hybrid held to half its water goes from a PUE of 1.17 to 1.23, and in dry mode to
+1.27, the dry design's own (the tests hold a dry-mode hybrid or assist plant to the dry design's electricity, hour by hour). An
+assist plant at half its water goes from 1.23 to 1.25. A towers plant at half its water sheds half its load.
+
+**Dry capacity [A].** The dry coolers and chillers of a hybrid or assist plant are sized for every computer at capacity (the
+hour's heat per IT kW over the run's utilization), all dry, at the location's 0.4% design dry-bulb, times 1 +
+`dry_capacity_margin` (0-20%, central 10%). Above the design dry-bulb they lose `dry_derate_per_k` per K (1-2%, central 1.5%), a
+straight line for air-cooled equipment's derating. No published sizing margin for large campuses was found, and makers'
+derating tables are still to be read for the range. Sized at nameplate, a hybrid in dry mode sheds nothing at central values
+until about 55 C. That is the design's claim (it has a dry design's dry side), not a finding about real hybrids, which may
+carry less. Neither parameter is sampled in the Monte Carlo: a limit is a scenario.
+
+**Dissolved mass** (`physics.dissolved_mass_split`). Evaporation takes only water, so the mass in the water taken for cooling
+leaves as liquid: blowdown to the sewer, drift to the air (Lei and Masanet, preprint rs-769999/v1, Eq. 7; DOE FEMP BMP #10).
+Top-ups leave through leaks and humidifier water through the air, so their mass stays behind as leakage and scale, as does
+the mass in pads without bleed. Staff water's mass splits as its water does: the returned share to the sewer, the rest not
+returned [A]. The BMI reports the return's mass and the rest, which add to the intake's every step.
+
+**A correction to design 0006: drift's share is a few percent, not 0.1%.** Drift is 0.005-0.02% of the water circulating
+through the tower, but blowdown is small beside that flow. Drift's share of the liquid leaving is drift x circulation x
+(cycles - 1) / evaporation: about 1% to 16% across the ranges (drift 0.005% at 3 cycles and a 6 C range, to 0.02% at 6 cycles
+and a 4 C range), and 3-6% at central values. The return load is intake concentration x withdrawal for cooling x (1 - drift's
+share), so the share matters for loads. Basin Ledger's requests.md said 0.1% and is corrected.
+
+**Return temperature, hourly in the BMI only.** Blowdown leaves the cold-water basin at the wet-bulb plus the tower's approach
+(`tower_approach`, 2.8-6.7 K, Lei and Masanet, Table 3), and assist's pad bleed at the sump's temperature, about the wet-bulb.
+Condensate leaves the dehumidifying coil at about the indoor dew point limit, 15 C (ASHRAE TC 9.9's recommended limit, as
+quoted secondhand) [A], and staff water at 20 C [A]. The return's temperature is these mixed by flow. The towers and evaporative
+chapters of the ASHRAE Handbook (HVAC Systems and Equipment) and Kroger (2004) are still to be read and cited by page. Nothing
+on the site or in a snapshot carries a return temperature, so nothing is rerun; publishing one is a method decision still open.
+
+**Not built:** the limit in the per-run builders (`cooling.py`) and the ensemble.
+
 ## Nov 6, 2026: Wisconsin's ERA5 check, and station correction for land cells (decided; a coming release)
 
 **Wisconsin's check.** `waterledger era5 check WI` (29 stations, 22 on land cells; [era5-checks/wi.md](era5-checks/wi.md))

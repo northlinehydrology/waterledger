@@ -151,7 +151,7 @@ Tests: `tests/test_water_limits.py` (physics) and the design 0006 section of `te
 
 - **Drift's share of the dissolved mass is a few percent, not 0.1%.** Drift is 0.005-0.02% of the water *circulating* through the
   tower, but blowdown is small beside that flow: drift's share of the liquid leaving is drift x circulation x (cycles - 1) /
-  evaporation, about 1.5-15% across the ranges and about 3% at the central values. The return load is still intake concentration x
+  evaporation, about 1-16% across the ranges and 3-6% at the central values. The return load is still intake concentration x
   withdrawal x (1 - drift's share); the share is larger than first written. Basin Ledger's requests.md carried the same 0.1% and is
   corrected with this.
 - **Hybrid:** the limit scales the wet mode's share of the heat (`wet_frac`), and the hour's heat balance is solved again at that
