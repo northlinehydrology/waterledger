@@ -29,6 +29,11 @@ Basin Ledger asked for these, so curtailment, drought rules and quality balances
    concentration times the cycles, and evaporation removes no dissolved solids.
 8. **Energy and water close every hour,** and tests hold them to it.
 
+**Release (Andrew, Nov 4, 2026, in the SWAT+ session).** 3.10.0 ships as it is; this comes in the release after, as one
+change: the limit, dry mode, and intake concentrations with return loads. With no limit set, the cooling model gives exactly
+3.10.0's numbers, held by a test. The return temperature (blowdown) assumption is decided on its own, as a method decision,
+so the proposal below is for that decision.
+
 ## Design (proposed)
 
 ### Inputs
