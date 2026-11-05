@@ -12,6 +12,7 @@ Model 1.8 changes the cooling weather and nothing else in the model.
 
 Also seven changes from coupling the BMI components in NOAA's NextGen (the Water Ledger NextGen Michigan example). The station check is in [docs/methods/era5-station-check.md](docs/methods/era5-station-check.md).
 
+- **Texas water use downloads again** (the nightly failure since Nov 4). TWDB's server stopped sending the intermediate certificate that signed its own, so Python couldn't verify it. `wateruse.twdb_tls` adds that public intermediate (shipped in `tables/`) to certifi's roots, still verifying in full; certifi is now a declared dependency.
 - **Beta, said plainly.** The README's new Stability section says the packages are beta despite the 3.x number. From here, a breaking change to the public API waits for 4.0. The classifiers say `Development Status :: 4 - Beta`.
 - **`MODEL_VERSION` 1.8 and package version 3.10.0.** A 3.10 package reads the newest snapshot filed under model 1.8. Until those are published it reads the newest 1.7 snapshot and says so; 3.9 packages keep reading 1.7.
 - **Shore stations near the water kept** (Nov 5, found at Galveston).
