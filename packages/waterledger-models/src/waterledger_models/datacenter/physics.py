@@ -276,12 +276,20 @@ def hourly_water_with_air(tdb, twb, p, rh=None):
 
 
 def _wet_share(tdb, design, p):
-    """Share of the heat going through evaporation: all of it for towers, none for dry and assist coils, a ramp for hybrid."""
+    """Share of the heat going through evaporation: all of it for towers, none for dry and assist coils, a ramp for hybrid. Under a water limit
+    (hourly_limited) "wet_frac" scales a hybrid's ramp down; a towers plant has no dry side to take the rest, so its share stays whole."""
     if design == "towers":
         return np.ones_like(tdb)
     if design == "hybrid":
-        return _ramp(tdb, switch_point(p), hybrid_full(p)) * np.ones_like(tdb)
+        ramp = _ramp(tdb, switch_point(p), hybrid_full(p)) * np.ones_like(tdb)
+        return ramp * p["wet_frac"] if "wet_frac" in p else ramp
     return np.zeros_like(tdb)
+
+
+def _pad_depression(tdb, twb, p):
+    """How far assist's pads cool the air ahead of the coil, K: the pads' effectiveness x the wet-bulb depression, scaled by "wet_frac" under a water limit."""
+    depr = p["assist_eff"] * np.maximum(tdb - twb, 0.0)
+    return depr * p["wet_frac"] if "wet_frac" in p else depr
 
 
 def _loop(load, supply, tdb, twb, coil_air, wet, design, p):
@@ -338,7 +346,7 @@ def hourly_heat_power(tdb, twb, design, p, rh=None):
     outside, latent = hourly_outside_air_heat(tdb, twb, p, rh)
     # supply air and the coil set the air loop's water temperature (Lei and Masanet); liquid-cooled heat goes to a warmer loop of its own
     air_water = p["supply_air"] + p["air_rise"] - p["air_rise"] / p["coil_eff"]
-    coil_air = tdb - (p["assist_eff"] * np.maximum(tdb - twb, 0.0) * (tdb >= switch_point(p)) if design == "assist" else 0.0)
+    coil_air = tdb - (_pad_depression(tdb, twb, p) * (tdb >= switch_point(p)) if design == "assist" else 0.0)
     wet = _wet_share(tdb, design, p)
     air_load = room + crah + outside                          # in rare, bitter hours outside air could cool more than the air loop carries; the rest comes off the liquid loop
     power, heat = q + crah + 0.0 * tdb, q + crah + outside + latent
@@ -355,6 +363,15 @@ def hourly_rates(tdb, twb, design, p, rh=None, heat=None):
     shaped (runs, 1). heat: hourly_heat_power's heat for these inputs, if already worked out. Mass closes: withdrawn + condensate = consumed + returned.
     Condensate comes out of the outside air, not the water system, and goes back with the blowdown (hourly_water_with_air).
     """
+    s = _rate_parts(tdb, twb, design, p, rh, heat)
+    withdrawn = s["evap"] + s["drift"] + s["blow"] + s["topup"] + s["humidify"]
+    consumed = s["evap"] + s["drift"] + s["topup"] + s["humidify"]
+    returned = s["blow"] + s["condensate"]
+    return withdrawn, consumed, returned
+
+
+def _rate_parts(tdb, twb, design, p, rh=None, heat=None):
+    """hourly_rates' flows one by one, gallons per IT kWh: {"evap", "drift", "blow", "topup", "humidify", "condensate"}."""
     if design not in DESIGNS:
         raise ValueError(f"design must be one of {DESIGNS}, not {design!r}")
     btu = KWH_BTU * (hourly_heat_power(tdb, twb, design, p, rh)[1] if heat is None else heat)
@@ -368,19 +385,137 @@ def hourly_rates(tdb, twb, design, p, rh=None, heat=None):
         # Water evaporated into the air ahead of the coil. The air cools by depr = effectiveness x wet-bulb depression; the fans slow until
         # it leaves the coil where it would at the switch point (on + rise), so air flow = heat / (cp x (on + rise - tdb + depr)), and
         # evaporation as a share of all the heat is depr over that same difference, at most 1. Pads have no tower drift.
+        # Under a water limit the pads' evaporation is cut in proportion, "wet_frac", and the air reaches the coil that much warmer (_pad_depression).
         depr = p["assist_eff"] * np.maximum(tdb - twb, 0.0)
         on = switch_point(p)
         share = np.clip(depr / np.maximum(on + p["assist_dt_air"] - tdb + depr, 1e-6), 0.0, 1.0)
         evap = btu * share / HFG / LB_GAL * (tdb >= on)
+        if "wet_frac" in p:
+            evap = evap * p["wet_frac"]
         drift = np.zeros_like(evap)
         blow = evap * p["assist_bleed"]
     # loop top-up, gal/day per MW of capacity, as gal per IT kWh
     topup = p["fill_gal_per_mw"] * p["topup"] / 365.0 / (24 * 1000 * p["utilization"]) * np.ones_like(evap_full)
     humidify, condensate = hourly_water_with_air(tdb, twb, p, rh)
-    withdrawn = evap + drift + blow + topup + humidify
-    consumed = evap + drift + topup + humidify
-    returned = blow + condensate
-    return withdrawn, consumed, returned
+    return {"evap": evap, "drift": drift, "blow": blow, "topup": topup, "humidify": humidify, "condensate": condensate}
+
+
+# Water limits (design 0006, Nov 2026). The heat a campus makes has to go whatever a rule allows it to take: a limit cuts the evaporative duty (a hybrid's wet
+# mode, assist's pads) and the dry coolers and chillers carry the rest, at the electricity they take that hour. Their capacity is finite [A]: sized for every
+# computer at capacity, all dry, at the location's design dry-bulb, with a margin, and falling as the air warms past that point (air-cooled equipment derates;
+# makers' derating tables to be read for the range). A towers plant has no dry side, so the heat a limit leaves it is heat not removed: IT load that would
+# have to be shed. Heat not removed is reported, never dropped. These are not sampled in the Monte Carlo; a limit is a scenario, set through the BMI.
+LIMITS = {"dry_capacity_margin": (0.0, 0.20), "dry_derate_per_k": (0.01, 0.02)}
+LIMIT_PARAMETERS = tuple(LIMITS)
+LIMIT_SOURCES = {"dry_capacity_margin": "Over the design load [A]; no published sizing margin for large campuses",
+                 "dry_derate_per_k": "Share of capacity lost per K above the design dry-bulb [A]; air-cooled equipment, makers' derating tables to be read"}
+CAPACITY_RH = 40.0         # %, the humidity at which dry capacity is worked out at the design dry-bulb [A]; it enters only through outside air's small latent heat
+
+
+def central_limits():
+    """The water limit parameters at the middle of their ranges."""
+    return {k: (a + b) / 2 for k, (a, b) in LIMITS.items()}
+
+
+def _dry_capacity(tdb, design, p):
+    """Heat the dry coolers and chillers can reject this hour, kW per kW of the hour's IT load: the all-dry heat at the design dry-bulb for every computer at
+    capacity, with the margin, less the derating for each K the air is above the design dry-bulb. No dry side for towers."""
+    if design == "towers":
+        return np.zeros_like(tdb)
+    if "design_db" not in p:
+        raise ValueError("a water limit on a dry-capable design needs the location's design dry-bulb (design_db) to size its dry coolers and chillers")
+    d = np.full_like(tdb, p["design_db"], dtype=float)
+    full = hourly_heat_power(d, wet_bulb(d, np.full_like(d, CAPACITY_RH)), design, {**p, "wet_frac": 0.0}, np.full_like(d, CAPACITY_RH))[1]
+    derate = np.clip(1.0 - p["dry_derate_per_k"] * np.maximum(tdb - p["design_db"], 0.0), 0.0, 1.0)
+    return full / p["utilization"] * (1.0 + p["dry_capacity_margin"]) * derate
+
+
+def hourly_limited(tdb, twb, design, p, limit, rh=None, iterations=12):
+    """Each hour under a cap on the cooling water, per IT kWh as in hourly_rates: limit is the most it may take for cooling, gallons per IT kWh (staff water
+    comes off a campus's limit before this), infinity for none. Returns a dict of arrays:
+      power, heat          facility power and the heat to be rejected, kW per IT kW, as hourly_heat_power gives them at the hour's wet share
+      removed, unremoved   heat rejected and heat not removed (the IT load that would be shed, as heat); removed + unremoved = heat
+      shed                 the share of the hour's load that couldn't be cooled, 0 to 1; power and the cooling water count only the load cooled
+      wet_frac             the share of the hour's evaporative duty kept, 0 to 1
+      evap, drift, blow, topup, humidify, condensate, withdrawn, consumed, returned
+                           as _rate_parts and hourly_rates give them, for the load cooled
+    Where the limit doesn't bind, every value is hourly_heat_power's and hourly_rates' to the bit. Top-ups and humidifier water don't depend on the
+    evaporative duty and come off the limit first; a limit below them can't be met and isn't.
+
+    Towers: the plant has nothing but evaporation, so the load the limit can't cool is shed. Hybrid and assist: the wet share or the pads' cooling is cut
+    until the water meets the limit (a fixed point on withdrawal, which is close to proportional to the wet duty), the dry side carries the rest at its
+    electricity, and heat beyond its capacity (_dry_capacity) is shed. Dry: it evaporates nothing, so a limit takes nothing from it."""
+    tdb = np.asarray(tdb, dtype=float)
+    power, heat = hourly_heat_power(tdb, twb, design, p, rh)
+    s = _rate_parts(tdb, twb, design, p, rh, heat)
+    base = {"power": power, "heat": heat, **s}
+    fixed = s["topup"] + s["humidify"]
+    cool = s["evap"] + s["drift"] + s["blow"]
+    room = np.maximum(limit - fixed, 0.0)
+    binding = cool > room * (1 + 1e-12)
+    ones = np.ones(np.broadcast(power, cool).shape)
+    out = {k: v * ones for k, v in base.items()}
+    out.update(removed=heat * ones, unremoved=0.0 * ones, shed=0.0 * ones, wet_frac=ones.copy())
+    if not binding.any():
+        return _totals(out)
+    if design == "towers":
+        frac = np.where(binding, room / np.maximum(cool, 1e-300), 1.0)
+        shed = 1.0 - frac
+        lim = base
+    else:
+        frac = ones.copy()
+        for _ in range(iterations):
+            q = {**p, "wet_frac": frac}
+            pw, ht = hourly_heat_power(tdb, twb, design, q, rh)
+            sp = _rate_parts(tdb, twb, design, q, rh, ht)
+            c = sp["evap"] + sp["drift"] + sp["blow"]
+            frac = np.where(binding, np.clip(frac * room / np.maximum(c, 1e-300), 0.0, 1.0), 1.0)
+        q = {**p, "wet_frac": frac}
+        pw, ht = hourly_heat_power(tdb, twb, design, q, rh)
+        sp = _rate_parts(tdb, twb, design, q, rh, ht)
+        wet = _wet_share(tdb, design, q) * ones
+        dry_heat = ht if design == "assist" else ht * (1.0 - wet)
+        shed = np.where(binding, np.clip((dry_heat - _dry_capacity(tdb, design, p)) / np.maximum(ht, 1e-300), 0.0, 1.0), 0.0)
+        lim = {"power": pw, "heat": ht, **sp}
+    keep = 1.0 - shed
+    for k in ("evap", "drift", "blow", "power"):
+        out[k] = np.where(binding, lim[k] * keep, out[k])
+    out["heat"] = np.where(binding, lim["heat"] * ones, out["heat"])
+    out["removed"] = np.where(binding, lim["heat"] * keep, out["removed"])
+    out["unremoved"] = np.where(binding, lim["heat"] * shed, 0.0)
+    out["shed"] = np.where(binding, shed, 0.0)
+    out["wet_frac"] = np.where(binding, frac, 1.0)
+    return _totals(out)
+
+
+def _totals(out):
+    out["withdrawn"] = out["evap"] + out["drift"] + out["blow"] + out["topup"] + out["humidify"]
+    out["consumed"] = out["evap"] + out["drift"] + out["topup"] + out["humidify"]
+    out["returned"] = out["blow"] + out["condensate"]
+    return out
+
+
+# Return water (design 0006). Evaporation takes only water, so the dissolved mass in what a campus takes for cooling leaves as liquid: in blowdown, to the
+# sewer, and in drift, to the air. Loop top-ups leave through small leaks and humidifier water through the air, so what they carry stays behind (leak and scale);
+# so does what once-through pads carry, since they have no bleed. Temperatures: blowdown at the cold-water basin's temperature, the wet-bulb plus the tower's
+# approach; assist's pad bleed at the sump's, about the wet-bulb; condensate at the dehumidifying coil's leaving dew point, the indoor high limit [A].
+CONDENSATE_C = DEW_HIGH
+STAFF_RETURN_C = 20.0      # C, staff and maintenance wastewater [A]
+
+
+def dissolved_mass_split(parts):
+    """Where the dissolved mass in the water taken for cooling goes, each as gallons of intake water per IT kWh whose mass goes there (multiply by the intake
+    concentration): (to the sewer in blowdown, to the air in drift, left behind in leaks and scale). They add up to the water taken for cooling."""
+    makeup = parts["evap"] + parts["drift"] + parts["blow"]
+    liquid = parts["blow"] + parts["drift"]
+    sewer = np.where(liquid > 0, makeup * parts["blow"] / np.where(liquid > 0, liquid, 1.0), 0.0)
+    drift = np.where(liquid > 0, makeup * parts["drift"] / np.where(liquid > 0, liquid, 1.0), 0.0)
+    return sewer, drift, makeup - sewer - drift + parts["topup"] + parts["humidify"]
+
+
+def blowdown_temperature(twb, design, p):
+    """C: the tower basin's cold water (wet-bulb plus approach) for towers and hybrid, the pads' sump (the wet-bulb) for assist."""
+    return twb + (p["tower_approach"] if design in ("towers", "hybrid") else 0.0)
 
 
 # Parameters that describe one plant move together in the draws; drawn independently, a site could pair a 99% UPS with the worst fans, or a 45 C liquid loop
