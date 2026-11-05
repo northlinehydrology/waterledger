@@ -152,6 +152,11 @@ m.update()                                                       # computes the 
 m.get_value("data_center_cooling_water__withdrawal_volume_flux", ...)
 ```
 
+Under a water rule, set `water_user_water__withdrawal_volume_flux_limit` (m3 s-1) or `water_user__dry_mode_flag` before
+`update()`. The heat still goes: a hybrid or assist plant moves it to dry coolers and chillers, at more electricity, and a towers
+plant sheds the load it can't cool. `data_center__unremoved_heat_power` reports what isn't removed. With intake concentrations
+set, the component reports the dissolved mass in its return and the return's temperature (design 0006).
+
 A component of your own at one point can build on `waterledger_models.datacenter.ScalarPointBmi`, which supplies every BMI
 function but `initialize()`; its docstring has the contract. `waterledger_models.hydrology.stream_depletion` takes arrays,
 for a well's response at every step of a run.
