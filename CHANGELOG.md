@@ -2,7 +2,7 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## 3.10.0 (model 1.8; unreleased)
+## 3.10.0 (Nov 5, 2026; model 1.8)
 
 Model 1.8 changes the cooling weather and nothing else in the model.
 - **Each place's own ERA5 cell.** Every place in every state, Michigan included, takes its cooling weather from its ERA5 grid cell, 1995-2024 ([design 0004](docs/design/0004-era5-weather.md)). The nearest cell that is at least half land is used where the nearest is mostly water.
