@@ -50,7 +50,7 @@ def checks(state, d, sample=SAMPLE, seed=1):
            "design_storms": sum(1 for f in pl.county_fips if f in storms) / n}
     errors = []
     cell = None
-    if d.format() >= 3:                     # model 1.8: every place has a cell with results, each cell's flows close, each corrected cell names its stations
+    if (d.format() if hasattr(d, "format") else 2) >= 3:                   # model 1.8: every place has a cell with results, each cell's flows close, each corrected cell names its stations
         from waterledger.national import cells
         cell = cells.check(d, list(pl.geoid))
         cov["era5_cell"] = cell["places_with_cell"]
