@@ -26,8 +26,8 @@ def test_information_and_variables(tmp_path):
     m = CoolingWaterBmi()
     m.initialize(write_config(tmp_path, design="towers", it_capacity_mw=100))
     assert m.get_component_name()
-    assert m.get_input_item_count() == len(m.get_input_var_names()) == 4
-    assert m.get_output_item_count() == len(m.get_output_var_names()) == 6
+    assert m.get_input_item_count() == len(m.get_input_var_names()) == len(INPUTS) == 9
+    assert m.get_output_item_count() == len(m.get_output_var_names()) == len(OUTPUTS) == 20
     for name in list(INPUTS) + list(OUTPUTS):
         assert m.get_var_grid(name) == 0
         assert m.get_var_type(name) == "float64"
@@ -293,3 +293,74 @@ def test_update_path_gives_the_set_value_paths_hours(tmp_path):
     a.update()
     b.update()                                                   # the next step is the file's again
     assert b.get_value(TEMP, np.empty(1))[0] == t[1] and b.get_value(WITHDRAWN, np.empty(1))[0] == a.get_value(WITHDRAWN, np.empty(1))[0]
+
+
+# ---------- water limits, dry mode and return water (design 0006) ----------
+from waterledger_models.datacenter import bmi as B
+
+
+def _hour(m, t, rh=40.0, **inputs):
+    m.set_value(TEMP, np.array([t]))
+    m.set_value(RH, np.array([rh]))
+    for k, v in inputs.items():
+        m.set_value(k, np.array([v]))
+    m.update()
+    return {k: m.get_value(k, np.empty(1))[0] for k in OUTPUTS}
+
+
+def _model(design, **params):
+    m = CoolingWaterBmi()
+    m.initialize({"design": design, "it_capacity_mw": 300, "parameters": {"design_db": 32.0, **params}})
+    return m
+
+
+@pytest.mark.parametrize("design", model.DESIGNS)
+def test_a_limit_is_met_and_the_books_close(design):
+    free = _hour(_model(design), 34.0)
+    staff = model.staff_water(model.central_staff(), 300)[0] * 1e6 / 86400 / model.GAL_M3
+    for share in (1.0, 0.6, 0.2, 0.0):
+        limit = staff + share * (free[WITHDRAWN] - staff)
+        o = _hour(_model(design), 34.0, **{B.LIMIT: limit})
+        floor = _hour(_model(design), 34.0, **{B.DRY_MODE: 1.0})[WITHDRAWN]       # staff water, loop top-ups and humidifiers: not cooling duty
+        assert o[WITHDRAWN] <= max(limit, floor) * (1 + 1e-9)
+        assert o[WITHDRAWN] + o["data_center_cooling_water__condensate_volume_flux"] == pytest.approx(o[CONSUMED] + o[RETURNED], rel=1e-12)
+        assert o["data_center__unremoved_heat_power"] >= 0
+        if design in ("assist", "hybrid"):
+            assert o["data_center__electric_power"] >= free["data_center__electric_power"] - 1e-9
+    if design == "towers":
+        assert o["data_center__unremoved_heat_power"] > 0 and o["data_center__setpoint_lost_time"] == 1.0
+
+
+def test_dry_mode_is_a_cooling_limit_of_zero():
+    a = _hour(_model("hybrid"), 34.0, **{B.DRY_MODE: 1.0})
+    b = _hour(_model("hybrid"), 34.0, **{B.LIMIT: 0.0})
+    dry = _hour(_model("dry"), 34.0)
+    assert a == b
+    assert a["data_center__electric_power"] == pytest.approx(dry["data_center__electric_power"], rel=1e-12)
+
+
+def test_no_limit_is_the_default():
+    m = _model("towers")
+    assert m.get_value(B.LIMIT, np.empty(1))[0] == np.inf and m.get_value(B.DRY_MODE, np.empty(1))[0] == 0
+
+
+@pytest.mark.parametrize("design", model.DESIGNS)
+def test_dissolved_mass_in_equals_mass_out(design):
+    c = {"dissolved_solids": 0.4, "chloride": 0.05, "phosphorus": 2e-5}
+    for t in (5.0, 34.0):
+        o = _hour(_model(design), t, **{B.INTAKE.format(k): v for k, v in c.items()})
+        for k, v in c.items():
+            assert o[B.RETURN_MASS.format(k)] + o[B.UNRETURNED_MASS.format(k)] == pytest.approx(v * o[WITHDRAWN], rel=1e-12)
+            assert o[B.RETURN_MASS.format(k)] > 0
+
+
+def test_return_water_is_warmer_than_the_wet_bulb_in_summer():
+    o = _hour(_model("towers"), 30.0, rh=50.0)
+    twb = o["atmosphere_bottom_air__wet_bulb_temperature"]
+    assert twb < o["water_user_return_water__temperature"] <= twb + model.central_parameters()["tower_approach"] + 1e-9
+
+
+def test_water_user_names_carry_the_same_values():
+    o = _hour(_model("hybrid"), 30.0)
+    for alias, name in B.ALIASES.items():
+        assert o[alias] == o[name]
