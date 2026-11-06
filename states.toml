@@ -1,0 +1,41 @@
+# The states built and published as snapshots (docs/add-a-state.md). The tests (tests/conftest.py) and the methods briefs
+# (docs/methods/build_briefs.py) read this list; adding a state means adding its table here, a known-place test and a README row.
+#   name     the state's name
+#   example  the brief's worked example, a place query wl.place() answers
+#   attains  the state's ATTAINS organization ID, and agency, the name the brief gives it
+#   places, subdivisions   what the state calls its Census places and its county subdivisions that are governments, where the
+#            brief's defaults ("cities, towns and villages"; "townships") would misname them
+#   weather_check   the ERA5 check's result, for the brief, when the state was published on a failed check Andrew accepted
+
+[MI]
+name = "Michigan"
+example = "Gaines charter township, MI"
+attains = "21MICH"
+agency = "Michigan EGLE"
+
+[OH]
+name = "Ohio"
+example = "Columbus city, OH"
+attains = "21OHIO"
+agency = "Ohio EPA"
+
+[VA]
+name = "Virginia"
+example = "Loudoun County, VA"
+attains = "21VASWCB"
+agency = "Virginia DEQ"
+
+[TX]
+name = "Texas"
+example = "Austin city, TX"
+attains = "TCEQMAIN"
+agency = "TCEQ"
+
+[WI]
+name = "Wisconsin"
+example = "Madison city, WI"
+attains = "WIDNR"
+agency = "Wisconsin DNR"
+places = "cities and villages"
+subdivisions = "towns"
+weather_check = "ERA5 runs about 0.6 C cool in the inland design dry-bulb (the 0.4% hour) against Wisconsin's stations, so hybrid and closed loop with assist average days run about 7% low; cooling towers, which follow the wet bulb, are not affected. A station correction for inland cells is planned for a coming release (docs/methods/era5-checks/wi.md)."

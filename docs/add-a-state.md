@@ -4,10 +4,10 @@ How a state gets into the waterledger packages and onto data.waterledger.org, as
 has a command, what it writes, a test that says it is done, and whether it needs Andrew's approval. The website side (site, trackers,
 rules, deploy, and the runner `engine/add_state.py`, which calls the commands here) is a Northline document.
 
-Checked against the code on Nov 4, 2026: 3.9.0 (model 1.7) with model 1.8's ERA5 path built on top. That path is the cells, the runs
-and the check below; snapshot format 3, which carries the cell results, is not built yet (step 4). Michigan, Ohio, Virginia and Texas
-are the only states built so far, so a fifth may turn up something new. Georgia, Wisconsin and Wyoming have had tracker footprints
-only, with no build.
+Checked against the code on Nov 6, 2026: 3.10.0 (model 1.8), plus `waterledger publish`, which is in the repo and not yet released.
+The ERA5 path is the cells, the runs and the check below; the snapshot (step 4) is format 3 and carries the cell results. Five states
+are built: Michigan, Ohio, Virginia, Texas and Wisconsin, the first added by this process (Nov 6). Georgia and Wyoming have had tracker
+footprints only, with no build. Northline's test `tests/test_add_state.py` checks the runner's commands against the table at the end.
 
 ## What is automatic
 
@@ -78,6 +78,9 @@ Or on GitHub, one state at a time (NOAA's rate limit has stopped parallel builds
 gh workflow run build-state --ref main -f state=ST -f upload=false
 ```
 
+That builds the layers, but its later steps (the end-to-end test and the snapshot) need the cell runs of step 2, which GitHub doesn't
+have, so they stop; the snapshot is written here.
+
 - **Writes:** every layer to `CACHE` (places, supply, wastewater, receiving, model 1.7's division runs, storms and rain, energy,
   water use), and `build-report/ST_build.json` (counts, timings and sources' dates by stage).
 - **Done when:** the command exits 0 and `build-report/ST_build.json` exists with a `stages` entry for each of `places`, `supply`,
@@ -94,9 +97,9 @@ uv run waterledger era5 cells ST --part 1/n --json
 WATERLEDGER_R2=wrangler uv run waterledger era5 run ST --part 1/n --workers 10
 ```
 
-The second command is repeated for parts 2/n to n/n. Leave out `WATERLEDGER_R2=wrangler` (or pass `--no-r2`) to keep everything
-local; with it, raw cells and results also go to the private bucket `waterledger-raw` as they are made, and a part can restart on
-another machine (README, "Model 1.8's ERA5 runs").
+The second command is repeated for parts 2/n to n/n. With `WATERLEDGER_R2=wrangler`, raw cells and results also go to the private
+bucket `waterledger-raw` as they are made, and a part can restart on another machine (README, "Model 1.8's ERA5 runs"); the runner
+always runs them that way. `--no-r2` keeps everything local.
 
 - **Writes:** `CACHE/era5/raw/<cell>/<fetch date>.npz` and `.json` (the weather as fetched), `CACHE/era5/anchors/<station>.json` and
   `.npy` (the shore stations), and `CACHE/era5/runs/model1.8/<cell>.json`, one per cell, as each finishes.
@@ -142,25 +145,14 @@ Virginia 4, Texas 6). These are the first limits, set from four states; Andrew m
   Andrew. `--weather-only` skips the places and can't pass.
 - **Approval:** a fail needs Andrew's decision on the method. The command never changes the method.
 
-### 4. Fold the cell results into the snapshot (format 3, not built)
-
-Snapshot format 3 (design 0004, section 5) carries each place's cell and each cell's results (`cells/<cell>.json`, `cells/index.json`,
-and the cell fields in `places.json`) in place of model 1.7's division runs. It is not built. Until it is, a runner stops here, and a
-state can be published only on model 1.7 (division stations) by skipping to step 5.
-
-- **Writes (when built):** `snapshot/ST/<date>/` with `cells/` from `CACHE/era5/runs/model1.8/` (or R2's `runs/era5/model1.8/`).
-- **Done when (when built):** `waterledger snapshot ST --out snapshot` exits 0 and `cells/index.json` lists every cell of
-  `era5 cells ST --json`.
-- **Approval:** none.
-
-### 5. Write and check the snapshot
+### 4. Write and check the snapshot
 
 ```bash
 uv run waterledger snapshot ST --out snapshot
 uv run waterledger check-snapshot ST --dir snapshot
 ```
 
-- **Writes:** `snapshot/ST/<date>/` (places, supply, wastewater, receiving, climate, energy, water use, `manifest.json` with every file's
+- **Writes:** `snapshot/ST/<date>/`, format 3 (places, supply, wastewater, receiving, climate, energy, water use, `manifest.json` with every file's
   sha256), and the checks' results into its `manifest.json`.
 - **Done when:** `check-snapshot` exits 0. It exits non-zero when a layer covers less of the state's places than `COVERAGE_MIN`, or any
   of the 50 sampled places fails `place.context()` or `site.estimate()`:
@@ -186,14 +178,22 @@ Then check the numbers by hand, since passing coverage doesn't mean a number is 
 3. Compare 300 MW with cooling towers against a state already published. Towers should change little from place to place.
 4. Read `check.md` from step 3: the stations furthest off, and the places, against what you know of the state's climate.
 
-### 6. Publish
+### 5. Publish
 
 ```bash
-gh workflow run build-state --ref main -f state=ST -f upload=true
+WATERLEDGER_R2=wrangler uv run waterledger publish ST --dir snapshot --build build-report/ST_build.json
 ```
 
-- **Writes:** `data.waterledger.org/ST/<date>/` and `ST/latest.json`. A published snapshot never changes; publishing the same date again
-  stops, and needs `-f snapshot_id=<date>.2`.
+The snapshot published is the one written and checked in step 4, the same files the checks by hand looked at. The `build-state`
+workflow can't publish a format 3 snapshot: it rebuilds on GitHub's machines, which have no cell runs, so its end-to-end test and its
+snapshot stop. It still builds and checks a state's other layers on GitHub.
+
+- **Writes:** `data.waterledger.org/ST/<date>/`, the build report as its `build.json`, and `ST/latest.json`, in that order: the files,
+  then the manifest, then `latest.json`. With the R2 credentials (`R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`) in place
+  of the wrangler login, it uses R2's S3 API (`waterledger-data[r2]`).
+- **Stops:** before sending anything, when the manifest has no `checks` (run `check-snapshot`), or when data.waterledger.org already has
+  the date. A published snapshot never changes, so a second one the same day is written with `snapshot --date <date>.2`, checked and
+  published.
 - **Done when:** `https://data.waterledger.org/ST/latest.json` has `current` equal to the snapshot's date.
 - **Approval:** **Andrew's, every time.** Nothing is published without it.
 
@@ -203,11 +203,10 @@ gh workflow run build-state --ref main -f state=ST -f upload=true
 |---|---|---|---|
 | 0 Preflight | `waterledger era5 cells ST --json` | exit 0 | Atlas 14 coverage (by hand); outside the grid |
 | 1 Build | `waterledger build-state ST --out build-report --no-checks` | exit 0; `build-report/ST_build.json` has all eight stages | a build error |
-| 2 Runs | `waterledger era5 run ST --part k/n --workers 10`, k = 1..n | `waterledger era5 cells ST --json` prints `"complete": true` | Andrew starts each part |
-| 3 ERA5 check | `waterledger era5 check ST` | exit 0; `CACHE/era5/check/ST/check.json` has `"verdict": "pass"` | a fail: Andrew decides the method |
-| 4 Fold cells | `waterledger snapshot ST --out snapshot` (format 3) | not built: stop | format 3 not built |
-| 5 Snapshot checks | `waterledger snapshot ...` then `waterledger check-snapshot ST --dir snapshot` | exit 0; the manifest has `checks` | a coverage or sample failure; the checks by hand |
-| 6 Publish | `gh workflow run build-state ... -f upload=true` | `latest.json`'s `current` is the date | **Andrew's approval** |
+| 2 Runs | `waterledger era5 run ST --part k/n --workers 10`, k = 1..n, with `WATERLEDGER_R2=wrangler` | `waterledger era5 cells ST --json` prints `"complete": true` | Andrew starts each part |
+| 3 ERA5 check | `waterledger era5 check ST --out era5-check --workers 10` | exit 0; `era5-check/check.json` has `"verdict": "pass"`, or Andrew accepts a fail (stated on the methods page) | a fail: Andrew decides the method |
+| 4 Snapshot | `waterledger snapshot ST --out snapshot` (format 3, with the cells), then `waterledger check-snapshot ST --dir snapshot` | exit 0; the manifest has `checks` | a coverage or sample failure; the checks by hand |
+| 5 Publish | `waterledger publish ST --dir snapshot --build build-report/ST_build.json`, with `WATERLEDGER_R2=wrangler` | `latest.json`'s `current` is the date | **Andrew's approval** |
 
 ## Optional state layers
 
@@ -219,14 +218,16 @@ These improve a state but aren't needed for a snapshot:
 
 ## Code to change
 
-These files name states by hand:
+The states are listed once, in `states.toml` at the top of the repo; the tests and the briefs read it.
 
 | File | What to add |
 |---|---|
-| `tests/conftest.py` | `STATES`, `POINTS` and `BY_NAME`, which tag tests with `state_<st>` markers |
-| `docs/methods/build_briefs.py` | `NAMES`, `EXAMPLES`, `AGENCIES` (the state's ATTAINS organization) and the default list near the end of the file |
-| `tests/test_national_*.py` | At least one known place for the state, with the facts you checked by hand |
+| `states.toml` | A table for the state: its name, the brief's example place, and its ATTAINS organization ID and agency name |
+| `tests/test_national_*.py` | At least one known place for the state, with the facts you checked by hand; a point test names its state |
 | `README.md` | A row in the states table, before the release |
+
+`tests/conftest.py` tags each test with the states its parameters name (a postal code, or a query ending in one); a test whose
+state can't be read that way goes in its `BY_NAME`.
 
 The `build-state` workflow takes any state; it no longer keeps a list.
 
@@ -248,12 +249,11 @@ These are package requirements for every state, not only new ones.
 
 | Item | What it is | What it would take |
 |---|---|---|
-| Snapshot format 3 | Each place's cell and each cell's results in the snapshot (step 4) | Design 0004, section 5: `cells/`, the place fields, the manifest's weather and cell rule; the workflow pulls the runs from R2 |
+| Station correction on land cells | Quantile mapping toward nearby stations on land cells, as on shore cells (decided Nov 6, 2026; methods log) | A new model version: the held-out check in all five states, new snapshots, parity, a release |
 | ERA5 from CDS | Copernicus's own time series, 0004's named source | An ECMWF key (Andrew's); the open copy is what's built |
 | ERA5 outside the lower 48 | Alaska and Hawaii | The mask for their boxes, and the check there |
 | Storm source outside Atlas 14 | Older NOAA studies for states Atlas 14 doesn't cover | A reader for each study, plus coverage checks |
 | Water source tag | Each water system marked as Great Lake, stream or groundwater, with [A] where inferred | Read source type from SDWIS and add a Great Lake check; a new field in `supply.json` and `Context` |
 | Low-flow statistics | 7Q10 or similar along each place's downstream path | A national source, such as the National Water Model retrospective, checked against USGS gauges |
 | Return-flow location | The sewer plant's discharge point and receiving water carried through to the site | Plants already have a point and receiving water; connect them to `Site` |
-| Assessed status in snapshots | Whether each watershed was assessed | `receiving.by_huc12` already reads it as `a`, but `snapshot._downstream` drops it |
 | `waterledger new-state` | A template command for a state folder (designs 0001 and 0002) | Not needed unless a state needs its own folder |

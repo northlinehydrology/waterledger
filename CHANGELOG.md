@@ -2,6 +2,30 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.11.0 (Nov 6, 2026; model 1.8)
+
+No estimate, parameter or snapshot changes: with no limit set, every output is 3.10.0's to the bit.
+- **Water limits on the cooling model** ([design 0006](docs/design/0006-water-limits-and-return-loads.md)). `physics.hourly_limited`
+  meets a cap on the cooling water hour by hour while the heat still goes. A hybrid's wet mode or assist's pads give up
+  evaporative duty to the dry coolers and chillers, at more electricity. A towers plant, with no dry side, sheds the load it
+  can't cool. Heat beyond the dry side's capacity is reported as heat not removed. New parameters, not sampled:
+  `dry_capacity_margin` (0-20%) and `dry_derate_per_k` (1-2% per K) [A] (`physics.LIMITS`, `central_limits`).
+- **Return water.** `physics.dissolved_mass_split` says where the dissolved mass in the water taken for cooling goes (blowdown,
+  drift, leaks and scale), and `blowdown_temperature` gives the basin's or sump's temperature.
+- **`CoolingWaterBmi`: new inputs.**
+  - `water_user_water__withdrawal_volume_flux_limit` (m3 s-1, default infinity).
+  - `water_user__dry_mode_flag`.
+  - `water_user_intake_water_<name>__mass_concentration` for dissolved_solids, chloride and phosphorus (kg m-3).
+- **`CoolingWaterBmi`: new outputs.**
+  - `data_center__unremoved_heat_power` (MW) and `data_center__setpoint_lost_time` (h).
+  - `water_user_return_water__temperature` (degC).
+  - `water_user_return_water_<name>__mass_flux` and `water_user_unreturned_water_<name>__mass_flux` (kg s-1), which add to the intake's mass.
+  - The water-user names as aliases: `water_user_water__withdrawal_volume_flux`, `__gain_` (condensate), `__consumption_`,
+    `__return_` and `water_user__electric_power`.
+- **`physics.hourly_rates`** now sums `_rate_parts`, the flows one by one; its results are unchanged.
+- **`waterledger publish ST --dir SNAP`.** Uploads a snapshot written and checked on this machine to data.waterledger.org: the files, then the manifest, then `latest.json`. It stops before sending anything when the manifest has no checks or the date is already published. Model 1.8's snapshots are published this way, since the `build-state` workflow has no cell runs. `r2.from_env(bucket=...)` names the bucket, and `Store.publish` uploads with a content type and no checksum sidecar.
+- **One list of states.** `states.toml` holds the states built, with each one's example place and ATTAINS agency. The tests' state markers and the methods briefs read it.
+
 ## 3.10.0 (Nov 5, 2026; model 1.8)
 
 Model 1.8 changes the cooling weather and nothing else in the model.

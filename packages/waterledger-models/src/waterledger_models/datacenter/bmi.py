@@ -34,7 +34,29 @@ Variables (all on the one scalar grid point, float64):
                                                                                 and is part of the wastewater, not of the withdrawal
     output  atmosphere_bottom_air__wet_bulb_temperature                degC     wet-bulb temperature (Stull 2011)
     output  data_center__electric_power                                MW       facility electricity: computers at the run's utilization, cooling
-                                                                                and losses (hour's PUE x IT power)
+                                                                                and losses (hour's PUE x IT power), for the load cooled
+Water limits, dry mode and return water (design 0006):
+    input   water_user_water__withdrawal_volume_flux_limit             m3 s-1   the most the campus may take this step, staff water included;
+                                                                                infinity (the default) is none
+    input   water_user__dry_mode_flag                                  1        1: no evaporative cooling this step (a cooling limit of zero)
+    input   water_user_intake_water_<name>__mass_concentration         kg m-3   in what is taken in, for dissolved_solids, chloride, phosphorus
+                                                                                (default 0)
+    output  data_center__unremoved_heat_power                          MW       heat the plant couldn't reject under the limit: the IT load that
+                                                                                would have to be shed, never dropped silently
+    output  data_center__setpoint_lost_time                            h        steps with heat not removed, summed since initialize
+    output  water_user_return_water__temperature                       degC     the return's mixed temperature: blowdown at the tower basin's
+                                                                                (wet-bulb plus approach) or the pads' sump, condensate at the
+                                                                                indoor dew point limit, staff water at 20 C [A]
+    output  water_user_return_water_<name>__mass_flux                  kg s-1   dissolved mass in the return; evaporation carries none
+    output  water_user_unreturned_water_<name>__mass_flux              kg s-1   the rest of what was taken in: drift to the air, loop leaks, scale
+                                                                                and the consumed share of staff water; with the return it is the
+                                                                                intake's mass, every step
+    output  water_user_water__withdrawal_volume_flux, __gain_ (condensate), __consumption_, __return_, water_user__electric_power
+                                                                                the water-user names, the same values as the names above
+Under a limit the heat still goes: a hybrid's wet mode or assist's pads give up evaporative duty to the dry coolers and chillers, at more
+electricity, and a towers plant, with no dry side, sheds the load it can't cool (waterledger_models.datacenter.physics.hourly_limited). With no
+limit and dry mode off, every output above is what it was in 3.10.0, to the bit. Dry capacity needs the location's design dry-bulb (design_db),
+for assist as for hybrid, once a limit binds; parameters dry_capacity_margin and dry_derate_per_k [A] size it.
 With humidity: specific the component takes specific humidity and surface pressure, the pair NextGen's AORC and NWM forcing carries, and
 converts them to relative humidity each step (waterledger_models.weather.relative_humidity, Bolton 1980); the relative humidity input is then
 not read. Staff water is a constant flow at the configured capacity (it follows the people on site, not the weather or the
@@ -48,11 +70,20 @@ from waterledger_models.weather import from_open_meteo_json, relative_humidity
 
 GAL_PER_M3 = model.GAL_M3
 
+CONSTITUENTS = ("dissolved_solids", "chloride", "phosphorus")
+LIMIT = "water_user_water__withdrawal_volume_flux_limit"
+DRY_MODE = "water_user__dry_mode_flag"
+INTAKE = "water_user_intake_water_{}__mass_concentration"
+RETURN_MASS = "water_user_return_water_{}__mass_flux"
+UNRETURNED_MASS = "water_user_unreturned_water_{}__mass_flux"
 INPUTS = {
     "atmosphere_bottom_air__temperature": "degC",
     "atmosphere_bottom_air_water_vapor__relative_saturation": "percent",
     "atmosphere_bottom_air_water_vapor__mass_fraction": "kg kg-1",
     "land_surface_air__pressure": "Pa",
+    LIMIT: "m3 s-1",
+    DRY_MODE: "1",
+    **{INTAKE.format(k): "kg m-3" for k in CONSTITUENTS},
 }
 HUMIDITY = ("relative", "specific")
 OUTPUTS = {
@@ -62,7 +93,21 @@ OUTPUTS = {
     "data_center_cooling_water__condensate_volume_flux": "m3 s-1",
     "atmosphere_bottom_air__wet_bulb_temperature": "degC",
     "data_center__electric_power": "MW",
+    "data_center__unremoved_heat_power": "MW",
+    "data_center__setpoint_lost_time": "h",
+    "water_user_return_water__temperature": "degC",
+    **{RETURN_MASS.format(k): "kg s-1" for k in CONSTITUENTS},
+    **{UNRETURNED_MASS.format(k): "kg s-1" for k in CONSTITUENTS},
 }
+# The water-user names every user model reports (Basin Ledger's roles), the same values as the data center names above; condensate is the gain.
+ALIASES = {
+    "water_user_water__withdrawal_volume_flux": "data_center_cooling_water__withdrawal_volume_flux",
+    "water_user_water__gain_volume_flux": "data_center_cooling_water__condensate_volume_flux",
+    "water_user_water__consumption_volume_flux": "data_center_cooling_water__consumption_volume_flux",
+    "water_user_water__return_volume_flux": "data_center_cooling_water__return_volume_flux",
+    "water_user__electric_power": "data_center__electric_power",
+}
+OUTPUTS.update({k: OUTPUTS[v] for k, v in ALIASES.items()})
 
 
 def read_config(config):
@@ -298,9 +343,9 @@ class CoolingWaterBmi(ScalarPointBmi):
             raise ValueError("a forcing file carries relative humidity: use humidity: relative with it")
         self._mw = float(cfg.get("it_capacity_mw", 100.0))
         self._dt = float(cfg.get("time_step", 3600.0))
-        self._params = {**model.central_parameters(), **model.central_staff(),
+        self._params = {**model.central_parameters(), **model.central_staff(), **model.central_limits(),
                         **{k: float(v) for k, v in (cfg.get("parameters") or {}).items()}}
-        unknown = set(self._params) - set(model.PARAMETERS) - set(model.STAFF_PARAMETERS) - {"design_db", "switch_on"}
+        unknown = set(self._params) - set(model.PARAMETERS) - set(model.STAFF_PARAMETERS) - set(model.LIMIT_PARAMETERS) - {"design_db", "switch_on"}
         if unknown:
             raise ValueError(f"unknown parameters: {sorted(unknown)}")
         self._time = 0.0
@@ -316,6 +361,7 @@ class CoolingWaterBmi(ScalarPointBmi):
             model.hybrid_full(self._params)          # a hybrid without a design dry-bulb stops here, not at the first step
         for v in self._values.values():
             v[:] = 0.0
+        self._values[LIMIT][0] = np.inf
         self._set.clear()
 
     def _load_forcing(self):
@@ -330,17 +376,37 @@ class CoolingWaterBmi(ScalarPointBmi):
         else:
             rh = self._values["atmosphere_bottom_air_water_vapor__relative_saturation"]
         twb = model.wet_bulb(tdb, rh)
-        w, c, r = model.hourly_rates(tdb, twb, self._design, self._params, rh)
-        kwh_per_s = self._mw * 1000.0 * self._params["utilization"] / 3600.0     # IT energy per second of model time
+        p = self._params
+        kwh_per_s = self._mw * 1000.0 * p["utilization"] / 3600.0     # IT energy per second of model time
+        it = lambda per_kw: per_kw * self._mw * p["utilization"]      # MW, in 3.10.0's order of operations, so results match it to the bit
         to_m3s = kwh_per_s / GAL_PER_M3
         mgd_to_m3s = 1e6 / 86400.0 / GAL_PER_M3
-        sw, sc, sr = model.staff_water(self._params, self._mw)
-        self._values["data_center_cooling_water__withdrawal_volume_flux"][0] = w[0] * to_m3s + sw * mgd_to_m3s
-        self._values["data_center_cooling_water__consumption_volume_flux"][0] = c[0] * to_m3s + sc * mgd_to_m3s
-        self._values["data_center_cooling_water__return_volume_flux"][0] = r[0] * to_m3s + sr * mgd_to_m3s
-        self._values["data_center_cooling_water__condensate_volume_flux"][0] = model.hourly_water_with_air(tdb, twb, self._params, rh)[1][0] * to_m3s
-        self._values["atmosphere_bottom_air__wet_bulb_temperature"][0] = twb[0]
-        self._values["data_center__electric_power"][0] = model.hourly_heat_power(tdb, twb, self._design, self._params, rh)[0][0] * self._mw * self._params["utilization"]
+        sw, sc, sr = (x * mgd_to_m3s for x in model.staff_water(p, self._mw))
+        cap = 0.0 if self._values[DRY_MODE][0] >= 0.5 else (self._values[LIMIT][0] - sw) / to_m3s
+        o = model.hourly_limited(tdb, twb, self._design, p, max(cap, 0.0), rh)
+        out = self._values
+        out["data_center_cooling_water__withdrawal_volume_flux"][0] = o["withdrawn"][0] * to_m3s + sw
+        out["data_center_cooling_water__consumption_volume_flux"][0] = o["consumed"][0] * to_m3s + sc
+        out["data_center_cooling_water__return_volume_flux"][0] = o["returned"][0] * to_m3s + sr
+        out["data_center_cooling_water__condensate_volume_flux"][0] = o["condensate"][0] * to_m3s
+        out["atmosphere_bottom_air__wet_bulb_temperature"][0] = twb[0]
+        out["data_center__electric_power"][0] = it(o["power"][0])
+        out["data_center__unremoved_heat_power"][0] = it(o["unremoved"][0])
+        if o["unremoved"][0] > 0:
+            out["data_center__setpoint_lost_time"][0] += self._dt / 3600.0
+        # return water: its temperature mixed by flow, and the dissolved mass taken in, split between the return and the rest
+        blow, cond = o["blow"][0] * to_m3s, o["condensate"][0] * to_m3s
+        flow = blow + cond + sr
+        heat = blow * model.blowdown_temperature(twb[0], self._design, p) + cond * model.CONDENSATE_C + sr * model.STAFF_RETURN_C
+        out["water_user_return_water__temperature"][0] = heat / flow if flow > 0 else model.STAFF_RETURN_C
+        sewer, drift, left = (x[0] * to_m3s for x in model.dissolved_mass_split(o))
+        staff_back = sr / sw if sw > 0 else 0.0
+        for k in CONSTITUENTS:
+            c_in = out[INTAKE.format(k)][0]
+            out[RETURN_MASS.format(k)][0] = c_in * (sewer + sw * staff_back)
+            out[UNRETURNED_MASS.format(k)][0] = c_in * (drift + left + sw * (1.0 - staff_back))
+        for alias, name in ALIASES.items():
+            out[alias][0] = out[name][0]
 
     def _advance(self):
         if self._forcing is not None:

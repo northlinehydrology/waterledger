@@ -18,7 +18,7 @@ sewer plants, weather and design storms.
 - **CSDMS Basic Model Interface (BMI 2.0) components**, so coupling frameworks such as NOAA's NextGen can drive the
   models step by step.
 - **Public data for any U.S. place**, fetched once and cached: Census, EPA, USGS, NOAA and EIA, with each place's
-  downstream path traced across state lines. Michigan, Ohio, Virginia and Texas are published as checked snapshots.
+  downstream path traced across state lines. Michigan, Ohio, Virginia, Texas and Wisconsin are published as checked snapshots.
 - **Reproducible**: tests reproduce the published Water Ledger estimates exactly, and the data sources are checked nightly.
 
 [waterledger.org](https://waterledger.org) is powered by these packages.
@@ -86,8 +86,9 @@ They are validated, round-trip through JSON, and are described in
 | Ohio | 2,318 cities, villages, townships and counties | ERA5, each place's own cell (203 cells) | [waterledger.org/methods/oh](https://waterledger.org/methods/oh/), [brief](docs/methods/oh.pdf) |
 | Virginia | 322 cities, towns and counties | ERA5, each place's own cell (148 cells) | [waterledger.org/methods/va](https://waterledger.org/methods/va/), [brief](docs/methods/va.pdf) |
 | Texas | 1,481 cities, towns and counties | ERA5, each place's own cell (616 cells) | [waterledger.org/methods/tx](https://waterledger.org/methods/tx/), [brief](docs/methods/tx.pdf) |
+| Wisconsin | 1,922 cities, villages, towns and counties | ERA5, each place's own cell (283 cells) | [waterledger.org/methods/wi](https://waterledger.org/methods/wi/), [brief](docs/methods/wi.pdf) |
 
-**Model 1.8** (this release) changes where the cooling weather comes from. The cooling equations are unchanged.
+**Model 1.8** (since 3.10.0) changes where the cooling weather comes from. The cooling equations are unchanged.
 - **Each place's own ERA5 cell.** Every place takes its weather from its ERA5 grid cell (0.25 degrees, about 10 km
   away), 1995-2024, in place of Michigan's eight regions and the other states' one NOAA station per climate division
   ([design 0004](docs/design/0004-era5-weather.md)).
@@ -151,6 +152,11 @@ m.update()                                                       # computes the 
 m.get_value("data_center_cooling_water__withdrawal_volume_flux", ...)
 ```
 
+Under a water rule, set `water_user_water__withdrawal_volume_flux_limit` (m3 s-1) or `water_user__dry_mode_flag` before
+`update()`. The heat still goes: a hybrid or assist plant moves it to dry coolers and chillers, at more electricity, and a towers
+plant sheds the load it can't cool. `data_center__unremoved_heat_power` reports what isn't removed. With intake concentrations
+set, the component reports the dissolved mass in its return and the return's temperature (design 0006).
+
 A component of your own at one point can build on `waterledger_models.datacenter.ScalarPointBmi`, which supplies every BMI
 function but `initialize()`; its docstring has the contract. `waterledger_models.hydrology.stream_depletion` takes arrays,
 for a well's response at every step of a run.
@@ -188,15 +194,15 @@ uv run waterledger snapshot OH --out snapshots && uv run waterledger check-snaps
 
 Checks: `tests` runs on every push (lint, tests on Python 3.11 to 3.13); `nightly` builds the packages, tests the built
 wheels in a clean environment, checks the data sources and reproduces the published estimates, and opens an issue if
-anything fails; `publish` releases to PyPI from a `v*` tag by trusted publishing; `build-state` builds, checks and (when
-asked) publishes a state's snapshot.
+anything fails; `publish` releases to PyPI from a `v*` tag by trusted publishing; `build-state` builds a state's layers on
+GitHub (its snapshot needs the ERA5 cell runs, so model 1.8's are written and checked locally and published with `waterledger publish`).
 
 Paths (download cache, site output) come from `WATERLEDGER_CACHE` / `WATERLEDGER_SITE` or a `waterledger.toml` (see
 `waterledger_data.config`).
 
 ### Model 1.8's ERA5 runs
 
-Model 1.8's cooling numbers come from one run per ERA5 cell, about 13 to 14 hours at ten workers for the four states, in seven parts
+Model 1.8's cooling numbers come from one run per ERA5 cell, about 13 to 14 hours at ten workers for the first four states, in seven parts
 started by hand ([design 0004](docs/design/0004-era5-weather.md), section 3). Each part fetches its cells from Open-Meteo's open
 copy of ERA5, corrects the shore cells ([design 0005](docs/design/0005-era5-quantile-mapping.md)), runs them and writes
 `CACHE/era5/runs/model1.8/<cell>.json` as each finishes, so a stopped part resumes where it stopped:
@@ -212,6 +218,10 @@ Saving to R2 is optional and off unless set up. With it on, each raw cell series
 finishes. A file R2 already has with the same checksum is skipped. Before a part starts, whatever R2 has and this machine
 doesn't is pulled, so a part can be restarted on another machine. A failed upload warns and keeps the local file; it never
 stops the run.
+
+Publishing uses the same setup, with the public bucket `waterledger-data` behind data.waterledger.org: `waterledger publish ST --dir
+snapshot --build build-report/ST_build.json` uploads a snapshot written and checked on this machine, the files first, then its
+manifest, then `latest.json`. It stops before sending anything if the snapshot has no checks or its date is already published.
 
 | Setting | R2 through |
 |---|---|

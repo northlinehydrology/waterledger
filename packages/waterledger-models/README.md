@@ -16,6 +16,8 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
 - `datacenter.ensemble`: vectorized ensembles as xarray, dask across locations (`[ensemble]`).
 - `datacenter.bmi`: `CoolingWaterBmi` and `LakeCoolingBmi`, CSDMS BMI 2.0 with CSDMS Standard Names (`[bmi]`), on the public
   `ScalarPointBmi` base for components built on them.
+  `CoolingWaterBmi` takes a withdrawal limit, dry mode and intake concentrations, and reports heat not removed, the return's
+  temperature and the dissolved mass in it (design 0006); with no limit its outputs are unchanged.
 - `datacenter.stac`: ensemble results as zarr with a STAC catalog (`[stac]`).
 - `hydrology`: screening hydrology: SCS curve-number runoff, Theis drawdown and Glover stream depletion (on arrays).
 - `runoff`: runoff, sediment, nutrients, road salt and fuel from a developed site.
