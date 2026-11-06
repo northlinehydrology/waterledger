@@ -166,8 +166,8 @@ Tests: `tests/test_water_limits.py` (physics) and the design 0006 section of `te
 - **Capacity [A]:** the dry coolers and chillers are sized for every computer at capacity (the hour's heat per IT kW over the run's
   utilization), all dry, at the location's design dry-bulb, times 1 + `dry_capacity_margin` (0-20%, central 10%). Above the design
   dry-bulb they lose `dry_derate_per_k` of it per K (1-2%, central 1.5%), a straight-line derating in place of the proposal's coil
-  approach scaling, to be checked against makers' derating tables. At these values a hybrid or assist plant in dry mode rarely
-  sheds load: it has the dry capacity of a dry design, by construction. Neither is sampled in the Monte Carlo.
+  approach scaling. At these values a hybrid or assist plant in dry mode rarely sheds load: it has the dry capacity of a dry
+  design, by construction. Neither is sampled in the Monte Carlo.
 - **Shedding** scales the hour's cooling water (evaporation, drift, blowdown) and power by the share cooled. Loop top-ups,
   humidifiers and condensate don't follow the load in the hour and stay.
 - **Dry mode** is a cooling limit of zero (`water_user__dry_mode_flag`). A hybrid or assist plant in dry mode draws the dry design's
@@ -182,3 +182,24 @@ Tests: `tests/test_water_limits.py` (physics) and the design 0006 section of `te
   names are aliases (Basin Ledger request 5), condensate as the gain.
 - **Not built here:** the limit in the per-run builders (`cooling.py`) and the ensemble. A limit is a scenario for a coupled run;
   Water Ledger's estimates don't use one.
+
+## Decisions (Andrew, Nov 6, 2026)
+
+- **Dry capacity: kept as built** [A], said plainly: real hybrid and assist plants may carry less dry capacity than this, so
+  they may shed heat sooner under a limit than the model says.
+  - **Makers' tables, read before release.** Air-cooled chillers lose about 1.2-1.4% of capacity per K above their rating:
+    Parker's GSFE table gives 0.95 at 30 C and 0.77 at 45 C, and a Titan process chiller 0.93 at 100 F and 0.83 at 113 F.
+    That falls within `dry_derate_per_k`'s 1-2%.
+  - **Dry coolers derate faster.** Their capacity goes with the initial temperature difference, the fluid in less the air in,
+    so with a 10-15 K difference each K of warmer air takes about 7-10% (Liebert's drycooler selection guide sizes by
+    load / ITD). The 1-2% range holds where chillers carry what the dry coolers can't. Where dry coolers carry nearly the
+    whole dry side, the loss above the design dry-bulb is faster, and shedding in dry mode starts within a few K of it, not
+    near 55 C. Those hours are rare, since the design dry-bulb is the 0.4% hour, and the range stays until a coupled study
+    needs more.
+- **Return temperature: not on waterledger.org.** It stays in the BMI, for the coupled studies; the Clam is the first that
+  may use it.
+- **Towers under a limit: they shed load and report it, as built.** A towers plant has no dry side to give the duty to.
+
+Sources: Parker Hiross GSFE catalogue, ambient correction factors (divapps.parker.com/divapps/PFGE/GSFE/Catalogue/105/); Titan
+IPC-0946 process chiller ambient corrections (catalog.compressedairsystems.com/item/process-chillers/titan-large-capacity-industrial-process-chillers/ipc-0946);
+Liebert drycooler selection, 60 Hz (fitness.manualsonline.com/manuals/mfg/liebert/60_hz.html?p=7).

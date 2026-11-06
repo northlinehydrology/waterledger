@@ -1550,6 +1550,16 @@ on the site or in a snapshot carries a return temperature, so nothing is rerun; 
 
 **Not built:** the limit in the per-run builders (`cooling.py`) and the ensemble.
 
+## Nov 6, 2026: water limits, Andrew's three decisions (design 0006)
+
+- **Dry capacity, kept [A].** Air-cooled chillers' published ambient corrections lose about 1.2-1.4% of capacity per K above
+  their rating (Parker GSFE; Titan IPC), inside the 1-2% range. Dry coolers alone lose capacity with their initial temperature
+  difference, about 7-10% per K at a 10-15 K difference (Liebert's drycooler selection), so a plant whose dry side is mostly dry
+  coolers sheds heat in dry mode within a few K above its design dry-bulb, not near 55 C. Real hybrids may carry less dry
+  capacity than the model gives them, and the docs say so.
+- **Return temperature stays in the BMI**, for the coupled studies, and is not shown on waterledger.org.
+- **Towers under a limit shed load** and report the heat not removed, as built.
+
 ## Nov 6, 2026: Wisconsin's ERA5 check, and station correction for land cells (decided; a coming release)
 
 **Wisconsin's check.** `waterledger era5 check WI` (29 stations, 22 on land cells; [era5-checks/wi.md](era5-checks/wi.md))

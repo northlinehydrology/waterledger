@@ -403,12 +403,12 @@ def _rate_parts(tdb, twb, design, p, rh=None, heat=None):
 # Water limits (design 0006, Nov 2026). The heat a campus makes has to go whatever a rule allows it to take: a limit cuts the evaporative duty (a hybrid's wet
 # mode, assist's pads) and the dry coolers and chillers carry the rest, at the electricity they take that hour. Their capacity is finite [A]: sized for every
 # computer at capacity, all dry, at the location's design dry-bulb, with a margin, and falling as the air warms past that point (air-cooled equipment derates;
-# makers' derating tables to be read for the range). A towers plant has no dry side, so the heat a limit leaves it is heat not removed: IT load that would
+# chillers' tables give 1.2-1.4% per K, dry coolers alone lose more; design 0006). A towers plant has no dry side, so the heat a limit leaves it is heat not removed: IT load that would
 # have to be shed. Heat not removed is reported, never dropped. These are not sampled in the Monte Carlo; a limit is a scenario, set through the BMI.
 LIMITS = {"dry_capacity_margin": (0.0, 0.20), "dry_derate_per_k": (0.01, 0.02)}
 LIMIT_PARAMETERS = tuple(LIMITS)
 LIMIT_SOURCES = {"dry_capacity_margin": "Over the design load [A]; no published sizing margin for large campuses",
-                 "dry_derate_per_k": "Share of capacity lost per K above the design dry-bulb [A]; air-cooled equipment, makers' derating tables to be read"}
+                 "dry_derate_per_k": "Share of capacity lost per K above the design dry-bulb [A]: air-cooled chillers lose 1.2-1.4% (Parker GSFE, Titan tables); dry coolers alone lose more, with their ITD (design 0006)"}
 CAPACITY_RH = 40.0         # %, the humidity at which dry capacity is worked out at the design dry-bulb [A]; it enters only through outside air's small latent heat
 
 
