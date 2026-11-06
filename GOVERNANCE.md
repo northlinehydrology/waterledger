@@ -33,12 +33,13 @@ Current maintainers:
 ## Releases and data
 
 - Package releases follow semantic versioning and are published to PyPI from a tagged commit by trusted publishing.
-- The README is updated before every release, in the commit that is tagged or an earlier one: what the packages do, the
-  states, and the version numbers it states. `tests/test_readme.py` checks the version numbers.
+- The README and the docs are checked against the code and updated before every release, in the commit that is tagged or an
+  earlier one: what the packages do, the states, the version numbers, the changelog, the citation and the install notes.
+  `tests/test_readme.py` checks the version numbers.
 - A state snapshot is published only after it passes its statewide checks; its manifest records the checks, sources,
   package versions and model version.
-- Published snapshots are not changed in place except to republish the same date with a fix, recorded in the build
-  history.
+- A published snapshot never changes. A fix is published as a new snapshot (the next date, or `<date>.2` the same day), and
+  `waterledger publish` refuses a date already published.
 
 ## Conflicts of interest
 
