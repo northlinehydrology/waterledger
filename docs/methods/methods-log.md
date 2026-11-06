@@ -1492,3 +1492,36 @@ though Galveston's airport, Scholes Field (KGLS), is on the island. Two causes:
 
 **Not redone.** The prototype's leave-one-out figures in 0005 are from before the fixes; `waterledger era5 check ST` gives
 them on the current rules.
+
+## Nov 6, 2026: Wisconsin's ERA5 check, and station correction for land cells (decided; a coming release)
+
+**Wisconsin's check.** `waterledger era5 check WI` (29 stations, 22 on land cells; [era5-checks/wi.md](era5-checks/wi.md))
+fails two of its eleven criteria:
+
+- **W3.** On land cells the mean error in the 0.4% design dry-bulb is -0.60 C, against a limit of 0.50. The four
+  published states ran 0.07-0.33. The median |error| is 0.70 C, inside its 0.75 limit. ERA5 runs cool at most inland
+  stations: La Crosse -1.95 C, Wausau and Rhinelander -1.30, Fond du Lac -0.92. Green Bay and Dubuque run warm (+0.60).
+- **P3.** Through the cooling model, the mean difference in hybrid cooling's average day is 6.8% (limit 6.0; four states
+  0.6-4.9). The median is 5.9%, inside its limit of 8.0. Most of the twelve places run low on the cell: Campbell town
+  (La Crosse) and Schofield (Wausau) -18%, Somers -18%, Fond du Lac County -15%. Assist runs further off, up to -30%.
+- **Towers are not affected:** median 0.10% (limit 2.0), since they run on the wet bulb, which is off by 0.19 C.
+- **Shore cells correct well:** six corrected shore cells go from 1.80 to 0.41 C, as in the other states. Duluth has no
+  shore station within 100 km and stays uncorrected (-1.00 C).
+
+**Decision (Andrew, Nov 6).** Wisconsin goes on the site on the method as it is, labelled preliminary, with this result
+stated on its methods page: inland design temperatures about 0.6 C cool, hybrid and assist average days about 7% low,
+towers unaffected.
+
+**Decided for a coming release: station correction for land cells.** Andrew wanted this when only shore cells were
+corrected. Land cells near a qualifying station get the same quantile mapping as shore cells. It changes numbers in every
+state, so it is a new model version, with new snapshots for all five states, the parity checks and a package release.
+
+What it has to show. 0005's leave-one-station-out check found that no correction beat ERA5 as it is on land cells across
+the four states (106 stations; 0005, "On land cells no correction beats ERA5 as it is"). Their land errors were small, and
+Wisconsin's are not. So the release has to show, on held-out stations in all five states, that the correction lowers the
+land-cell errors (W2-W4) and does not raise the 0.4% wet bulb the way shore correction does (about +0.3 C where corrected).
+Settle these first:
+
+- which stations train a land cell (nearest only, or within a distance, as on the shore);
+- whether elevation needs a lapse-rate step first;
+- what a land cell with no station within the distance does.

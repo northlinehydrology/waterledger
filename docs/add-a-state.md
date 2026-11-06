@@ -236,6 +236,7 @@ These are package requirements for every state, not only new ones.
 
 | Item | What it is | What it would take |
 |---|---|---|
+| Station correction on land cells | Quantile mapping toward nearby stations on land cells, as on shore cells (decided Nov 6, 2026; methods log) | A new model version: the held-out check in all five states, new snapshots, parity, a release |
 | ERA5 from CDS | Copernicus's own time series, 0004's named source | An ECMWF key (Andrew's); the open copy is what's built |
 | ERA5 outside the lower 48 | Alaska and Hawaii | The mask for their boxes, and the check there |
 | Storm source outside Atlas 14 | Older NOAA studies for states Atlas 14 doesn't cover | A reader for each study, plus coverage checks |
