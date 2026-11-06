@@ -22,7 +22,7 @@ NAMES = {"MI": "Michigan", "OH": "Ohio", "VA": "Virginia", "TX": "Texas", "WI": 
 EXAMPLES = {"MI": "Gaines charter township, MI", "OH": "Columbus city, OH", "VA": "Loudoun County, VA", "TX": "Austin city, TX", "WI": "Madison city, WI"}
 DESIGNS = (("towers", "Cooling towers"), ("hybrid", "Hybrid"), ("assist", "Closed loop with assist"), ("dry", "Closed loop"))
 EXAMPLE_MW = 300
-AGENCIES = {"21MICH": "Michigan EGLE", "21OHIO": "Ohio EPA", "21VASWCB": "Virginia DEQ", "TCEQMAIN": "TCEQ"}   # ATTAINS organization IDs
+AGENCIES = {"21MICH": "Michigan EGLE", "21OHIO": "Ohio EPA", "21VASWCB": "Virginia DEQ", "TCEQMAIN": "TCEQ", "WIDNR": "Wisconsin DNR"}   # ATTAINS organization IDs
 INK, MUTED, ACCENT, LINE = colors.HexColor("#142231"), colors.HexColor("#5A6672"), colors.HexColor("#1C6B8A"), colors.HexColor("#D8DCDB")
 H1 = ParagraphStyle("h1", fontName="Helvetica-Bold", fontSize=17, leading=21, textColor=INK, spaceAfter=2)
 SUB = ParagraphStyle("sub", fontName="Helvetica", fontSize=9, leading=12, textColor=MUTED, spaceAfter=8)

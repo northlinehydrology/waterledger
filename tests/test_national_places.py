@@ -1,4 +1,4 @@
-"""The national tier's places (Census) for the test states: Ohio, Virginia and Texas (nightly; pytest -m live)."""
+"""The national tier's places (Census) for the test states: Ohio, Virginia, Texas and Wisconsin (nightly; pytest -m live)."""
 import pytest
 
 import waterledger as wl
@@ -14,6 +14,8 @@ pytestmark = pytest.mark.live
     ("Richmond city, VA", "5167000", "Richmond", "city", "Richmond"),
     ("Austin city, TX", "4805000", "Austin", "city", "Travis"),
     ("Abilene city, TX", "4801000", "Abilene", "city", "Taylor"),
+    ("Madison city, WI", "5548000", "Madison", "city", "Dane"),
+    ("Mount Pleasant village, WI", "5554875", "Mount Pleasant", "village", "Racine"),
 ])
 def test_finds(query, geoid, name, kind, county):
     if geoid is None:                     # Ashburn is a census-designated place, not a government: look up Loudoun County
@@ -38,6 +40,7 @@ def test_counts_and_independent_cities_once():
     (39.0438, -77.4874, "Loudoun County"),       # Ashburn data center alley: unincorporated Loudoun County
     (30.2672, -97.7431, "Austin"),
     (41.0947, -80.7608, "Austintown Township"),  # outside any village: the township governs
+    (43.0747, -89.3841, "Madison"),              # the Wisconsin Capitol
 ])
 def test_place_at_a_point(lat, lon, name):
     assert wl.place(lat=lat, lon=lon).name == name
