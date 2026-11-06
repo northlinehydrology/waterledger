@@ -1,7 +1,7 @@
 """Write a short methods brief (PDF, two pages) for each state Water Ledger covers, from that state's published snapshot, so
 every count, station and report year in a brief comes from the data it describes.
 
-    uv run python docs/methods/build_briefs.py [MI OH VA TX]      -> docs/methods/<st>.pdf
+    uv run python docs/methods/build_briefs.py [MI OH VA TX WI]      -> docs/methods/<st>.pdf
 
 Text that is the same for every state lives here; anything state-specific is read from the snapshot (manifest, places,
 supply, wastewater, receiving, climate, energy).
@@ -18,8 +18,8 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, KeepTogether, Space
 from waterledger.national.data import fetch_snapshot
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-NAMES = {"MI": "Michigan", "OH": "Ohio", "VA": "Virginia", "TX": "Texas"}
-EXAMPLES = {"MI": "Gaines charter township, MI", "OH": "Columbus city, OH", "VA": "Loudoun County, VA", "TX": "Austin city, TX"}
+NAMES = {"MI": "Michigan", "OH": "Ohio", "VA": "Virginia", "TX": "Texas", "WI": "Wisconsin"}
+EXAMPLES = {"MI": "Gaines charter township, MI", "OH": "Columbus city, OH", "VA": "Loudoun County, VA", "TX": "Austin city, TX", "WI": "Madison city, WI"}
 DESIGNS = (("towers", "Cooling towers"), ("hybrid", "Hybrid"), ("assist", "Closed loop with assist"), ("dry", "Closed loop"))
 EXAMPLE_MW = 300
 AGENCIES = {"21MICH": "Michigan EGLE", "21OHIO": "Ohio EPA", "21VASWCB": "Virginia DEQ", "TCEQMAIN": "TCEQ"}   # ATTAINS organization IDs
@@ -203,7 +203,7 @@ def brief(state):
 
 
 if __name__ == "__main__":
-    for st in (sys.argv[1:] or ["MI", "OH", "VA", "TX"]):
+    for st in (sys.argv[1:] or ["MI", "OH", "VA", "TX", "WI"]):
         try:
             print("wrote", brief(st.upper()))
         except Exception as e:                       # noqa: BLE001  a state whose snapshot isn't published yet
