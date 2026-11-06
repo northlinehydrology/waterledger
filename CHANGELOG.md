@@ -2,6 +2,11 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## Unreleased
+
+- **`waterledger publish ST --dir SNAP`.** Uploads a snapshot written and checked on this machine to data.waterledger.org: the files, then the manifest, then `latest.json`. It stops before sending anything when the manifest has no checks or the date is already published. Model 1.8's snapshots are published this way, since the `build-state` workflow has no cell runs. `r2.from_env(bucket=...)` names the bucket, and `Store.publish` uploads with a content type and no checksum sidecar.
+- **One list of states.** `states.toml` holds the states built, with each one's example place and ATTAINS agency. The tests' state markers and the methods briefs read it.
+
 ## 3.10.0 (Nov 5, 2026; model 1.8)
 
 Model 1.8 changes the cooling weather and nothing else in the model.

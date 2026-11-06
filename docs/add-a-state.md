@@ -4,9 +4,10 @@ How a state gets into the waterledger packages and onto data.waterledger.org, as
 has a command, what it writes, a test that says it is done, and whether it needs Andrew's approval. The website side (site, trackers,
 rules, deploy, and the runner `engine/add_state.py`, which calls the commands here) is a Northline document.
 
-Checked against the code on Nov 5, 2026: 3.10.0 (model 1.8). The ERA5 path is the cells, the runs and the check below; the snapshot
-(step 4) is format 3 and carries the cell results. Michigan, Ohio, Virginia and Texas are the only states built so far, so a fifth may turn up something new. Georgia, Wisconsin and Wyoming have had tracker footprints
-only, with no build.
+Checked against the code on Nov 6, 2026: 3.10.0 (model 1.8), plus `waterledger publish`, which is in the repo and not yet released.
+The ERA5 path is the cells, the runs and the check below; the snapshot (step 4) is format 3 and carries the cell results. Five states
+are built: Michigan, Ohio, Virginia, Texas and Wisconsin, the first added by this process (Nov 6). Georgia and Wyoming have had tracker
+footprints only, with no build. Northline's test `tests/test_add_state.py` checks the runner's commands against the table at the end.
 
 ## What is automatic
 
@@ -77,6 +78,9 @@ Or on GitHub, one state at a time (NOAA's rate limit has stopped parallel builds
 gh workflow run build-state --ref main -f state=ST -f upload=false
 ```
 
+That builds the layers, but its later steps (the end-to-end test and the snapshot) need the cell runs of step 2, which GitHub doesn't
+have, so they stop; the snapshot is written here.
+
 - **Writes:** every layer to `CACHE` (places, supply, wastewater, receiving, model 1.7's division runs, storms and rain, energy,
   water use), and `build-report/ST_build.json` (counts, timings and sources' dates by stage).
 - **Done when:** the command exits 0 and `build-report/ST_build.json` exists with a `stages` entry for each of `places`, `supply`,
@@ -93,9 +97,9 @@ uv run waterledger era5 cells ST --part 1/n --json
 WATERLEDGER_R2=wrangler uv run waterledger era5 run ST --part 1/n --workers 10
 ```
 
-The second command is repeated for parts 2/n to n/n. Leave out `WATERLEDGER_R2=wrangler` (or pass `--no-r2`) to keep everything
-local; with it, raw cells and results also go to the private bucket `waterledger-raw` as they are made, and a part can restart on
-another machine (README, "Model 1.8's ERA5 runs").
+The second command is repeated for parts 2/n to n/n. With `WATERLEDGER_R2=wrangler`, raw cells and results also go to the private
+bucket `waterledger-raw` as they are made, and a part can restart on another machine (README, "Model 1.8's ERA5 runs"); the runner
+always runs them that way. `--no-r2` keeps everything local.
 
 - **Writes:** `CACHE/era5/raw/<cell>/<fetch date>.npz` and `.json` (the weather as fetched), `CACHE/era5/anchors/<station>.json` and
   `.npy` (the shore stations), and `CACHE/era5/runs/model1.8/<cell>.json`, one per cell, as each finishes.
@@ -177,13 +181,19 @@ Then check the numbers by hand, since passing coverage doesn't mean a number is 
 ### 5. Publish
 
 ```bash
-gh workflow run build-state --ref main -f state=ST -f upload=true
+WATERLEDGER_R2=wrangler uv run waterledger publish ST --dir snapshot --build build-report/ST_build.json
 ```
 
-- **Writes:** `data.waterledger.org/ST/<date>/` and `ST/latest.json`. A published snapshot never changes; publishing the same date again
-  stops, and needs `-f snapshot_id=<date>.2`.
-- **Before it:** the workflow reads the cell results from R2. Runs made with R2 off go up by running each part again with
-  `WATERLEDGER_R2=wrangler`; done cells are uploaded, not rerun.
+The snapshot published is the one written and checked in step 4, the same files the checks by hand looked at. The `build-state`
+workflow can't publish a format 3 snapshot: it rebuilds on GitHub's machines, which have no cell runs, so its end-to-end test and its
+snapshot stop. It still builds and checks a state's other layers on GitHub.
+
+- **Writes:** `data.waterledger.org/ST/<date>/`, the build report as its `build.json`, and `ST/latest.json`, in that order: the files,
+  then the manifest, then `latest.json`. With the R2 credentials (`R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`) in place
+  of the wrangler login, it uses R2's S3 API (`waterledger-data[r2]`).
+- **Stops:** before sending anything, when the manifest has no `checks` (run `check-snapshot`), or when data.waterledger.org already has
+  the date. A published snapshot never changes, so a second one the same day is written with `snapshot --date <date>.2`, checked and
+  published.
 - **Done when:** `https://data.waterledger.org/ST/latest.json` has `current` equal to the snapshot's date.
 - **Approval:** **Andrew's, every time.** Nothing is published without it.
 
@@ -193,10 +203,10 @@ gh workflow run build-state --ref main -f state=ST -f upload=true
 |---|---|---|---|
 | 0 Preflight | `waterledger era5 cells ST --json` | exit 0 | Atlas 14 coverage (by hand); outside the grid |
 | 1 Build | `waterledger build-state ST --out build-report --no-checks` | exit 0; `build-report/ST_build.json` has all eight stages | a build error |
-| 2 Runs | `waterledger era5 run ST --part k/n --workers 10`, k = 1..n | `waterledger era5 cells ST --json` prints `"complete": true` | Andrew starts each part |
-| 3 ERA5 check | `waterledger era5 check ST` | exit 0; `CACHE/era5/check/ST/check.json` has `"verdict": "pass"`, or Andrew accepts a fail (stated on the methods page) | a fail: Andrew decides the method |
+| 2 Runs | `waterledger era5 run ST --part k/n --workers 10`, k = 1..n, with `WATERLEDGER_R2=wrangler` | `waterledger era5 cells ST --json` prints `"complete": true` | Andrew starts each part |
+| 3 ERA5 check | `waterledger era5 check ST --out era5-check --workers 10` | exit 0; `era5-check/check.json` has `"verdict": "pass"`, or Andrew accepts a fail (stated on the methods page) | a fail: Andrew decides the method |
 | 4 Snapshot | `waterledger snapshot ST --out snapshot` (format 3, with the cells), then `waterledger check-snapshot ST --dir snapshot` | exit 0; the manifest has `checks` | a coverage or sample failure; the checks by hand |
-| 5 Publish | `gh workflow run build-state ... -f upload=true` | `latest.json`'s `current` is the date | **Andrew's approval** |
+| 5 Publish | `waterledger publish ST --dir snapshot --build build-report/ST_build.json`, with `WATERLEDGER_R2=wrangler` | `latest.json`'s `current` is the date | **Andrew's approval** |
 
 ## Optional state layers
 

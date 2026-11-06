@@ -1,4 +1,5 @@
-"""waterledger build-state <ST>: build a state's data. waterledger era5 run <ST> --part k/n: model 1.8's cooling runs on ERA5 cells. waterledger build <state> [all|estimates|waters|power]: Michigan's site
+"""waterledger build-state <ST>: build a state's data. waterledger era5 run <ST> --part k/n: model 1.8's cooling runs on ERA5 cells. waterledger
+publish <ST> --dir <snapshot root>: upload a checked snapshot to data.waterledger.org. waterledger build <state> [all|estimates|waters|power]: Michigan's site
 data, part by part (paths from waterledger_data.config); kept for scripts, build-state MI runs the same build."""
 import argparse, os, sys
 
@@ -72,6 +73,11 @@ def main(argv=None):
     lj.add_argument("snapshot_id")
     lj.add_argument("--from", dest="old", default=None)
     lj.add_argument("--dir", default=None, help="the snapshot root: the snapshot's manifest gives the model it is filed under (else this package's model)")
+    pb = sub.add_parser("publish", help="upload a snapshot written and checked here to data.waterledger.org (needs R2: WATERLEDGER_R2=wrangler or the R2_* credentials)")
+    pb.add_argument("state")
+    pb.add_argument("--dir", required=True, help="the snapshot root (the --out given to snapshot)")
+    pb.add_argument("--date", default=None, help="the snapshot to publish (default the newest under --dir)")
+    pb.add_argument("--build", default=None, help="the build report (build-state --out's ST_build.json), published as build.json")
     sn = sub.add_parser("snapshot", help="write a state's snapshot files from its built data (run build-state first)")
     sn.add_argument("state")
     sn.add_argument("--out", required=True)
@@ -104,6 +110,10 @@ def main(argv=None):
         if a.dir:                                       # a snapshot is filed under the model of its numbers: a format 3 one under 1.8, so 1.7 packages never read it
             model = json.load(open(os.path.join(a.dir, a.state.upper(), a.snapshot_id, "manifest.json")))["model_version"]
         print(json.dumps(pointer(json.load(open(a.old)) if a.old and os.path.exists(a.old) else None, a.state.upper(), a.snapshot_id, model)))
+        return
+    if a.cmd == "publish":
+        from waterledger.national.publish import publish
+        print("published", publish(a.state, a.dir, a.date, a.build))
         return
     if a.cmd == "snapshot":
         if a.state.upper() == "MI":                       # Michigan: from its own data, with its site files carried along

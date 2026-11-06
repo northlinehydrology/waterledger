@@ -3,18 +3,20 @@
     store = r2.from_env()       # None when off
     store.put(key, path)        # skipped when R2 already has the file with the same sha256; a failure warns and returns False
     store.get(key, path)        # True if R2 had it (checked against its sha256), False if not
+    store.publish(key, path, content_type, cache_control)   # a plain upload with no sidecar, raising on failure (waterledger publish)
 
 How it is turned on (the first that applies):
 - S3 API: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY in the environment (the names the build-state workflow uses),
   ideally a token limited to this bucket. Needs boto3 (waterledger-data[r2]).
 - wrangler: WATERLEDGER_R2=wrangler, using the wrangler login already on the machine (`npx wrangler r2 object put|get ... --remote`).
 - A folder, for tests and dry runs: WATERLEDGER_R2=dir:/some/path.
-WATERLEDGER_R2=off turns it off whatever else is set; WATERLEDGER_R2_BUCKET names another bucket.
+WATERLEDGER_R2=off turns it off whatever else is set; WATERLEDGER_R2_BUCKET names another bucket. from_env(bucket=...) names the bucket
+outright: publishing writes to waterledger-data, the public bucket behind data.waterledger.org.
 
 Each object has a sidecar <key>.sha256 holding its checksum, written after the object itself, so a file is skipped only when R2 holds that
 exact file, and a half-finished upload is never mistaken for a whole one. Nothing here holds or asks for credentials.
 """
-import hashlib, os, shutil, subprocess, sys, tempfile
+import hashlib, os, shutil, subprocess, sys, tempfile, time
 
 BUCKET = "waterledger-raw"
 
@@ -79,6 +81,17 @@ class Store:
             _warn(f"could not download {key} ({type(e).__name__}: {str(e)[:200]})")
             return False
 
+    def publish(self, key, path, content_type, cache_control=None, tries=3):
+        """Upload `path` to `key` as it is, with its content type: no checksum sidecar, so a published bucket holds only the files
+        themselves. Tried `tries` times; the last failure is raised, since a publish must not go on with a file missing."""
+        for i in range(tries):
+            try:
+                return self._put_file(key, path, content_type=content_type, cache_control=cache_control)
+            except Exception:                        # noqa: BLE001
+                if i == tries - 1:
+                    raise
+                time.sleep(3)
+
 
 class FolderStore(Store):
     """A local folder standing in for the bucket (WATERLEDGER_R2=dir:PATH)."""
@@ -87,7 +100,7 @@ class FolderStore(Store):
     def __init__(self, root):
         self.root = root
 
-    def _put_file(self, key, path):
+    def _put_file(self, key, path, content_type=None, cache_control=None):
         dst = os.path.join(self.root, key)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         shutil.copyfile(path, dst + ".tmp")
@@ -113,8 +126,9 @@ class WranglerStore(Store):
     def _call(self, *args):
         return self._run([*self.command, "r2", "object", *args, "--remote"], capture_output=True, text=True, timeout=600)
 
-    def _put_file(self, key, path):
-        r = self._call("put", f"{self.bucket}/{key}", "--file", path)
+    def _put_file(self, key, path, content_type=None, cache_control=None):
+        meta = (["--content-type", content_type] if content_type else []) + (["--cache-control", cache_control] if cache_control else [])
+        r = self._call("put", f"{self.bucket}/{key}", "--file", path, *meta)
         if r.returncode:
             raise RuntimeError((r.stderr or r.stdout).strip()[-300:])
 
@@ -141,8 +155,9 @@ class S3Store(Store):
                                   aws_secret_access_key=secret, region_name="auto")
         self.bucket, self.client = bucket, client
 
-    def _put_file(self, key, path):
-        self.client.upload_file(path, self.bucket, key)
+    def _put_file(self, key, path, content_type=None, cache_control=None):
+        extra = {k: v for k, v in (("ContentType", content_type), ("CacheControl", cache_control)) if v}
+        self.client.upload_file(path, self.bucket, key, ExtraArgs=extra or None)
 
     def _get_file(self, key, path):
         try:
@@ -154,11 +169,11 @@ class S3Store(Store):
             raise
 
 
-def from_env(env=None):
-    """The store the environment sets up, or None when R2 is off."""
+def from_env(env=None, bucket=None):
+    """The store the environment sets up, or None when R2 is off; `bucket` names the bucket outright."""
     env = os.environ if env is None else env
     mode = env.get("WATERLEDGER_R2", "").strip()
-    bucket = env.get("WATERLEDGER_R2_BUCKET") or BUCKET
+    bucket = bucket or env.get("WATERLEDGER_R2_BUCKET") or BUCKET
     if mode == "off":
         return None
     if mode.startswith("dir:"):
