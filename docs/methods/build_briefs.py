@@ -1,12 +1,12 @@
 """Write a short methods brief (PDF, two pages) for each state Water Ledger covers, from that state's published snapshot, so
 every count, station and report year in a brief comes from the data it describes.
 
-    uv run python docs/methods/build_briefs.py [MI OH VA TX WI]      -> docs/methods/<st>.pdf
+    uv run python docs/methods/build_briefs.py [MI OH ...]      -> docs/methods/<st>.pdf (default: every state in states.toml)
 
 Text that is the same for every state lives here; anything state-specific is read from the snapshot (manifest, places,
 supply, wastewater, receiving, climate, energy).
 """
-import collections, json, os, sys
+import collections, json, os, sys, tomllib
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_LEFT
@@ -18,11 +18,12 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, KeepTogether, Space
 from waterledger.national.data import fetch_snapshot
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-NAMES = {"MI": "Michigan", "OH": "Ohio", "VA": "Virginia", "TX": "Texas", "WI": "Wisconsin"}
-EXAMPLES = {"MI": "Gaines charter township, MI", "OH": "Columbus city, OH", "VA": "Loudoun County, VA", "TX": "Austin city, TX", "WI": "Madison city, WI"}
+STATES = tomllib.load(open(os.path.join(HERE, "..", "..", "states.toml"), "rb"))       # the states built, with each one's example place and ATTAINS agency
+NAMES = {st: s["name"] for st, s in STATES.items()}
+EXAMPLES = {st: s["example"] for st, s in STATES.items()}
 DESIGNS = (("towers", "Cooling towers"), ("hybrid", "Hybrid"), ("assist", "Closed loop with assist"), ("dry", "Closed loop"))
 EXAMPLE_MW = 300
-AGENCIES = {"21MICH": "Michigan EGLE", "21OHIO": "Ohio EPA", "21VASWCB": "Virginia DEQ", "TCEQMAIN": "TCEQ", "WIDNR": "Wisconsin DNR"}   # ATTAINS organization IDs
+AGENCIES = {s["attains"]: s["agency"] for s in STATES.values()}
 INK, MUTED, ACCENT, LINE = colors.HexColor("#142231"), colors.HexColor("#5A6672"), colors.HexColor("#1C6B8A"), colors.HexColor("#D8DCDB")
 H1 = ParagraphStyle("h1", fontName="Helvetica-Bold", fontSize=17, leading=21, textColor=INK, spaceAfter=2)
 SUB = ParagraphStyle("sub", fontName="Helvetica", fontSize=9, leading=12, textColor=MUTED, spaceAfter=8)
@@ -203,7 +204,7 @@ def brief(state):
 
 
 if __name__ == "__main__":
-    for st in (sys.argv[1:] or ["MI", "OH", "VA", "TX", "WI"]):
+    for st in (sys.argv[1:] or list(STATES)):
         try:
             print("wrote", brief(st.upper()))
         except Exception as e:                       # noqa: BLE001  a state whose snapshot isn't published yet

@@ -208,14 +208,16 @@ These improve a state but aren't needed for a snapshot:
 
 ## Code to change
 
-These files name states by hand:
+The states are listed once, in `states.toml` at the top of the repo; the tests and the briefs read it.
 
 | File | What to add |
 |---|---|
-| `tests/conftest.py` | `STATES`, `POINTS` and `BY_NAME`, which tag tests with `state_<st>` markers |
-| `docs/methods/build_briefs.py` | `NAMES`, `EXAMPLES`, `AGENCIES` (the state's ATTAINS organization) and the default list near the end of the file |
-| `tests/test_national_*.py` | At least one known place for the state, with the facts you checked by hand |
+| `states.toml` | A table for the state: its name, the brief's example place, and its ATTAINS organization ID and agency name |
+| `tests/test_national_*.py` | At least one known place for the state, with the facts you checked by hand; a point test names its state |
 | `README.md` | A row in the states table, before the release |
+
+`tests/conftest.py` tags each test with the states its parameters name (a postal code, or a query ending in one); a test whose
+state can't be read that way goes in its `BY_NAME`.
 
 The `build-state` workflow takes any state; it no longer keeps a list.
 

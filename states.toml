@@ -1,0 +1,35 @@
+# The states built and published as snapshots (docs/add-a-state.md). The tests (tests/conftest.py) and the methods briefs
+# (docs/methods/build_briefs.py) read this list; adding a state means adding its table here, a known-place test and a README row.
+#   name     the state's name
+#   example  the brief's worked example, a place query wl.place() answers
+#   attains  the state's ATTAINS organization ID, and agency, the name the brief gives it
+
+[MI]
+name = "Michigan"
+example = "Gaines charter township, MI"
+attains = "21MICH"
+agency = "Michigan EGLE"
+
+[OH]
+name = "Ohio"
+example = "Columbus city, OH"
+attains = "21OHIO"
+agency = "Ohio EPA"
+
+[VA]
+name = "Virginia"
+example = "Loudoun County, VA"
+attains = "21VASWCB"
+agency = "Virginia DEQ"
+
+[TX]
+name = "Texas"
+example = "Austin city, TX"
+attains = "TCEQMAIN"
+agency = "TCEQ"
+
+[WI]
+name = "Wisconsin"
+example = "Madison city, WI"
+attains = "WIDNR"
+agency = "Wisconsin DNR"
