@@ -2,7 +2,7 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## Unreleased
+## 3.11.0 (Nov 6, 2026; model 1.8)
 
 No estimate, parameter or snapshot changes: with no limit set, every output is 3.10.0's to the bit.
 - **Water limits on the cooling model** ([design 0006](docs/design/0006-water-limits-and-return-loads.md)). `physics.hourly_limited`
