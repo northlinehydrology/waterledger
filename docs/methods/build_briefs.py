@@ -73,6 +73,7 @@ def example(state):
 def brief(state):
     folder, m, places, supply, plants, rec, clim, en = load(state)
     name = NAMES.get(state, state)
+    words = {"places": "cities, towns and villages", "subdivisions": "townships"} | {k: v for k, v in STATES.get(state, {}).items() if k in ("places", "subdivisions")}
     mi = state == "MI"
     levels = collections.Counter(p["level"] for p in places)
     cov = (m.get("checks") or {}).get("coverage", {})
@@ -97,7 +98,7 @@ def brief(state):
             ["Places", "Census TIGERweb: county subdivisions (Michigan's cities and townships)" if mi else
              "Census TIGERweb: incorporated places; county subdivisions that are governments; counties",
              f"{len(places):,} places" + ("" if mi else ": " + "; ".join(f"{levels[k]:,} {w}" for k, w in
-                                             (("place", "cities, towns and villages"), ("township", "townships"), ("county", "counties")) if levels.get(k)))],
+                                             (("place", words["places"]), ("township", words["subdivisions"]), ("county", "counties")) if levels.get(k)))],
             ["Water supply", "EPA community water system service areas, with SDWIS population and connections",
              f"{len(supply['systems']):,} systems; {pct(cov.get('water_system'))} of places have one mapped" if cov else f"{len(supply['systems']):,} systems"],
             ["Wastewater", "EPA Clean Watersheds Needs Survey 2022 (design flow) matched to ECHO (recent flow, receiving water)",
@@ -161,10 +162,12 @@ def brief(state):
               Paragraph(f"<b>Weather.</b> {ncell} ERA5 cells; {corr.get('cells_corrected', 0)} shore cells corrected toward "
                         f"{len(shore)} stations: {', '.join(shore) or 'none'}. Rainfall and road salt come from {len(divs)} NOAA climate divisions, "
                         f"with these stations: {st}.", BODY),
-              Paragraph("<b>Places.</b> " + "; ".join(f"{levels[k]:,} {w}" for k, w in (("place", "cities, towns and villages"),
-                        ("township", "townships that are governments"), ("county", "counties")) if levels.get(k)) +
-                        ". Counties are included so that unincorporated land is covered.", BODY),
-              Paragraph(f"<b>Water quality.</b> Impairments and TMDLs from {agency}'s {att.get('cycle', '')} integrated "
+              Paragraph("<b>Places.</b> " + "; ".join(f"{levels[k]:,} {w}" for k, w in (("place", words["places"]),
+                        ("township", words["subdivisions"] + " that are governments"), ("county", "counties")) if levels.get(k)) +
+                        ". Counties are included so that unincorporated land is covered.", BODY)]
+        if STATES.get(state, {}).get("weather_check"):
+            S += [Paragraph("<b>Weather check.</b> " + STATES[state]["weather_check"], BODY)]
+        S += [Paragraph(f"<b>Water quality.</b> Impairments and TMDLs from {agency}'s {att.get('cycle', '')} integrated "
                         "report, through EPA ATTAINS.", BODY),
               Paragraph(f"<b>Not yet added:</b> {name}'s reported water use by sector, domestic wells, coldwater streams, lake-source "
                         "cooling and state rules.", BODY)]
