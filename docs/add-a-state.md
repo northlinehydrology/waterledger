@@ -256,5 +256,4 @@ These are package requirements for every state, not only new ones.
 | Water source tag | Each water system marked as Great Lake, stream or groundwater, with [A] where inferred | Read source type from SDWIS and add a Great Lake check; a new field in `supply.json` and `Context` |
 | Low-flow statistics | 7Q10 or similar along each place's downstream path | A national source, such as the National Water Model retrospective, checked against USGS gauges |
 | Return-flow location | The sewer plant's discharge point and receiving water carried through to the site | Plants already have a point and receiving water; connect them to `Site` |
-| Assessed status in snapshots | Whether each watershed was assessed | `receiving.by_huc12` already reads it as `a`, but `snapshot._downstream` drops it |
 | `waterledger new-state` | A template command for a state folder (designs 0001 and 0002) | Not needed unless a state needs its own folder |

@@ -88,7 +88,7 @@ They are validated, round-trip through JSON, and are described in
 | Texas | 1,481 cities, towns and counties | ERA5, each place's own cell (616 cells) | [waterledger.org/methods/tx](https://waterledger.org/methods/tx/), [brief](docs/methods/tx.pdf) |
 | Wisconsin | 1,922 cities, villages, towns and counties | ERA5, each place's own cell (283 cells) | [waterledger.org/methods/wi](https://waterledger.org/methods/wi/), [brief](docs/methods/wi.pdf) |
 
-**Model 1.8** (this release) changes where the cooling weather comes from. The cooling equations are unchanged.
+**Model 1.8** (since 3.10.0) changes where the cooling weather comes from. The cooling equations are unchanged.
 - **Each place's own ERA5 cell.** Every place takes its weather from its ERA5 grid cell (0.25 degrees, about 10 km
   away), 1995-2024, in place of Michigan's eight regions and the other states' one NOAA station per climate division
   ([design 0004](docs/design/0004-era5-weather.md)).
@@ -202,7 +202,7 @@ Paths (download cache, site output) come from `WATERLEDGER_CACHE` / `WATERLEDGER
 
 ### Model 1.8's ERA5 runs
 
-Model 1.8's cooling numbers come from one run per ERA5 cell, about 13 to 14 hours at ten workers for the four states, in seven parts
+Model 1.8's cooling numbers come from one run per ERA5 cell, about 13 to 14 hours at ten workers for the first four states, in seven parts
 started by hand ([design 0004](docs/design/0004-era5-weather.md), section 3). Each part fetches its cells from Open-Meteo's open
 copy of ERA5, corrects the shore cells ([design 0005](docs/design/0005-era5-quantile-mapping.md)), runs them and writes
 `CACHE/era5/runs/model1.8/<cell>.json` as each finishes, so a stopped part resumes where it stopped:
@@ -218,6 +218,10 @@ Saving to R2 is optional and off unless set up. With it on, each raw cell series
 finishes. A file R2 already has with the same checksum is skipped. Before a part starts, whatever R2 has and this machine
 doesn't is pulled, so a part can be restarted on another machine. A failed upload warns and keeps the local file; it never
 stops the run.
+
+Publishing uses the same setup, with the public bucket `waterledger-data` behind data.waterledger.org: `waterledger publish ST --dir
+snapshot --build build-report/ST_build.json` uploads a snapshot written and checked on this machine, the files first, then its
+manifest, then `latest.json`. It stops before sending anything if the snapshot has no checks or its date is already published.
 
 | Setting | R2 through |
 |---|---|
