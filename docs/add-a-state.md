@@ -4,9 +4,8 @@ How a state gets into the waterledger packages and onto data.waterledger.org, as
 has a command, what it writes, a test that says it is done, and whether it needs Andrew's approval. The website side (site, trackers,
 rules, deploy, and the runner `engine/add_state.py`, which calls the commands here) is a Northline document.
 
-Checked against the code on Nov 4, 2026: 3.9.0 (model 1.7) with model 1.8's ERA5 path built on top. That path is the cells, the runs
-and the check below; snapshot format 3, which carries the cell results, is not built yet (step 4). Michigan, Ohio, Virginia and Texas
-are the only states built so far, so a fifth may turn up something new. Georgia, Wisconsin and Wyoming have had tracker footprints
+Checked against the code on Nov 5, 2026: 3.10.0 (model 1.8). The ERA5 path is the cells, the runs and the check below; the snapshot
+(step 4) is format 3 and carries the cell results. Michigan, Ohio, Virginia and Texas are the only states built so far, so a fifth may turn up something new. Georgia, Wisconsin and Wyoming have had tracker footprints
 only, with no build.
 
 ## What is automatic
@@ -142,25 +141,14 @@ Virginia 4, Texas 6). These are the first limits, set from four states; Andrew m
   Andrew. `--weather-only` skips the places and can't pass.
 - **Approval:** a fail needs Andrew's decision on the method. The command never changes the method.
 
-### 4. Fold the cell results into the snapshot (format 3, not built)
-
-Snapshot format 3 (design 0004, section 5) carries each place's cell and each cell's results (`cells/<cell>.json`, `cells/index.json`,
-and the cell fields in `places.json`) in place of model 1.7's division runs. It is not built. Until it is, a runner stops here, and a
-state can be published only on model 1.7 (division stations) by skipping to step 5.
-
-- **Writes (when built):** `snapshot/ST/<date>/` with `cells/` from `CACHE/era5/runs/model1.8/` (or R2's `runs/era5/model1.8/`).
-- **Done when (when built):** `waterledger snapshot ST --out snapshot` exits 0 and `cells/index.json` lists every cell of
-  `era5 cells ST --json`.
-- **Approval:** none.
-
-### 5. Write and check the snapshot
+### 4. Write and check the snapshot
 
 ```bash
 uv run waterledger snapshot ST --out snapshot
 uv run waterledger check-snapshot ST --dir snapshot
 ```
 
-- **Writes:** `snapshot/ST/<date>/` (places, supply, wastewater, receiving, climate, energy, water use, `manifest.json` with every file's
+- **Writes:** `snapshot/ST/<date>/`, format 3 (places, supply, wastewater, receiving, climate, energy, water use, `manifest.json` with every file's
   sha256), and the checks' results into its `manifest.json`.
 - **Done when:** `check-snapshot` exits 0. It exits non-zero when a layer covers less of the state's places than `COVERAGE_MIN`, or any
   of the 50 sampled places fails `place.context()` or `site.estimate()`:
@@ -186,7 +174,7 @@ Then check the numbers by hand, since passing coverage doesn't mean a number is 
 3. Compare 300 MW with cooling towers against a state already published. Towers should change little from place to place.
 4. Read `check.md` from step 3: the stations furthest off, and the places, against what you know of the state's climate.
 
-### 6. Publish
+### 5. Publish
 
 ```bash
 gh workflow run build-state --ref main -f state=ST -f upload=true
@@ -248,7 +236,6 @@ These are package requirements for every state, not only new ones.
 
 | Item | What it is | What it would take |
 |---|---|---|
-| Snapshot format 3 | Each place's cell and each cell's results in the snapshot (step 4) | Design 0004, section 5: `cells/`, the place fields, the manifest's weather and cell rule; the workflow pulls the runs from R2 |
 | ERA5 from CDS | Copernicus's own time series, 0004's named source | An ECMWF key (Andrew's); the open copy is what's built |
 | ERA5 outside the lower 48 | Alaska and Hawaii | The mask for their boxes, and the check there |
 | Storm source outside Atlas 14 | Older NOAA studies for states Atlas 14 doesn't cover | A reader for each study, plus coverage checks |
