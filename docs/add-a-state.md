@@ -182,6 +182,8 @@ gh workflow run build-state --ref main -f state=ST -f upload=true
 
 - **Writes:** `data.waterledger.org/ST/<date>/` and `ST/latest.json`. A published snapshot never changes; publishing the same date again
   stops, and needs `-f snapshot_id=<date>.2`.
+- **Before it:** the workflow reads the cell results from R2. Runs made with R2 off go up by running each part again with
+  `WATERLEDGER_R2=wrangler`; done cells are uploaded, not rerun.
 - **Done when:** `https://data.waterledger.org/ST/latest.json` has `current` equal to the snapshot's date.
 - **Approval:** **Andrew's, every time.** Nothing is published without it.
 
@@ -192,10 +194,9 @@ gh workflow run build-state --ref main -f state=ST -f upload=true
 | 0 Preflight | `waterledger era5 cells ST --json` | exit 0 | Atlas 14 coverage (by hand); outside the grid |
 | 1 Build | `waterledger build-state ST --out build-report --no-checks` | exit 0; `build-report/ST_build.json` has all eight stages | a build error |
 | 2 Runs | `waterledger era5 run ST --part k/n --workers 10`, k = 1..n | `waterledger era5 cells ST --json` prints `"complete": true` | Andrew starts each part |
-| 3 ERA5 check | `waterledger era5 check ST` | exit 0; `CACHE/era5/check/ST/check.json` has `"verdict": "pass"` | a fail: Andrew decides the method |
-| 4 Fold cells | `waterledger snapshot ST --out snapshot` (format 3) | not built: stop | format 3 not built |
-| 5 Snapshot checks | `waterledger snapshot ...` then `waterledger check-snapshot ST --dir snapshot` | exit 0; the manifest has `checks` | a coverage or sample failure; the checks by hand |
-| 6 Publish | `gh workflow run build-state ... -f upload=true` | `latest.json`'s `current` is the date | **Andrew's approval** |
+| 3 ERA5 check | `waterledger era5 check ST` | exit 0; `CACHE/era5/check/ST/check.json` has `"verdict": "pass"`, or Andrew accepts a fail (stated on the methods page) | a fail: Andrew decides the method |
+| 4 Snapshot | `waterledger snapshot ST --out snapshot` (format 3, with the cells), then `waterledger check-snapshot ST --dir snapshot` | exit 0; the manifest has `checks` | a coverage or sample failure; the checks by hand |
+| 5 Publish | `gh workflow run build-state ... -f upload=true` | `latest.json`'s `current` is the date | **Andrew's approval** |
 
 ## Optional state layers
 
