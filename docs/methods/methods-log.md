@@ -1508,8 +1508,8 @@ fails two of its eleven criteria:
 - **Shore cells correct well:** six corrected shore cells go from 1.80 to 0.41 C, as in the other states. Duluth has no
   shore station within 100 km and stays uncorrected (-1.00 C).
 
-**Decision (Andrew, Nov 6).** Wisconsin goes on the site on the method as it is, labelled preliminary, with this result
-stated on its methods page: inland design temperatures about 0.6 C cool, hybrid and assist average days about 7% low,
+**Decision (Andrew, Nov 6).** Wisconsin goes on the site on the method as it is, with this result stated on its methods
+page (no preliminary label: its tracker research is done, so it stands with Ohio, Virginia and Texas): inland design temperatures about 0.6 C cool, hybrid and assist average days about 7% low,
 towers unaffected.
 
 **Decided for a coming release: station correction for land cells.** Andrew wanted this when only shore cells were
