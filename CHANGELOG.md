@@ -12,6 +12,13 @@ Package changes (code). Changes to the numbers are listed by model version on th
 - **Peak-day power.** `cooling.run_location` reports `power_mw_peak_day_1in10`: the 1-in-10-year peak day's average
   power at the peak-day load, on the same basis as the peak-day water. In West Michigan at 100 MW (central run) a dry plant
   takes 89.5 MW on that day against towers' 83.1.
+- **A place's own electric utility first** (`energy.ranked` with the place; `is_own`). A utility named for the place, not a
+  cooperative, covering at least half of it with at least 100 EIA customers per km2 of what it covers [A], is listed first:
+  Madison Gas & Electric in Madison, the town utilities of Bedford and Culpeper. Before, a larger utility drawn over whole
+  counties came first. Columbus, Ohio keeps AEP Ohio first. First utilities change in 12 (Virginia) to 79 (Ohio) places a state;
+  Michigan's order comes from its own territory data and is unchanged.
+- **Station years time out after 60 s** (ISD-Lite, ECCC), not 300, so a year a station never reported can't hold a build for
+  15 minutes.
 
 ## 3.11.0 (Nov 6, 2026; model 1.8)
 
