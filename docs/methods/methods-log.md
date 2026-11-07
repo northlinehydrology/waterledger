@@ -1752,3 +1752,24 @@ its own territory data and is unchanged.
 
 **Decided.** Andrew (Nov 7): kept for now. A more direct source for which utility serves a place (state commission
 service-area records) may replace the name and density test later.
+
+## Nov 7, 2026: model 1.9's ERA5 checks pass in all five states
+
+Model 1.9's cell runs finished Nov 7 (1,507 cells, about 13 hours on one machine), and `waterledger era5 check` passes in
+Michigan, Ohio, Virginia, Texas and Wisconsin ([era5-checks/](era5-checks/)). Wisconsin, which failed W3 and P3 on model 1.8,
+now passes: the inland design dry-bulb's mean error is 0.18 C (was 0.60) and the hybrid average day's mean difference 4.4%
+(was 6.8%).
+
+| | W2 dry-bulb median | W3 dry-bulb mean | W4 wet bulb median | P2 hybrid avg | P3 hybrid avg mean | P4 hybrid peak | P5 towers avg |
+|---|---|---|---|---|---|---|---|
+| Limit | 0.75 C | 0.50 C | 0.40 C | 8% | 6% | 6% | 2% |
+| Michigan | 0.27 | 0.03 | 0.22 | 5.4 | 0.1 | 5.3 | 0.2 |
+| Ohio | 0.26 | 0.04 | 0.10 | 1.9 | 1.5 | 5.9 | 0.1 |
+| Virginia | 0.43 | 0.16 | 0.18 | 3.2 | 1.0 | 4.6 | 0.2 |
+| Texas | 0.45 | 0.02 | 0.17 | 5.0 | 1.6 | 4.0 | 0.3 |
+| Wisconsin | 0.40 | 0.18 | 0.11 | 6.5 | 4.4 | 4.6 | 0.2 |
+
+P4, the hybrid peak day, sits near its limit in every state (Ohio 5.9 of 6), where the first four states on model 1.7 were
+0.5-3.2%. The weather isn't the cause: towers move 0.1-0.3% and the mean differences are small. The glycol loop moved the
+hybrid's dry-to-wet switch, so its water now turns on a smaller temperature difference, and a place's cell and its station
+differ by more in water than they did. The limits were set from the earlier model and are not changed here.
