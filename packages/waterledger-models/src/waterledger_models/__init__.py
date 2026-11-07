@@ -14,4 +14,4 @@ from waterledger_models import datacenter, hydrology, quantile_mapping, runoff, 
 
 __all__ = ["datacenter", "hydrology", "quantile_mapping", "runoff", "weather", "MODEL_VERSION"]
 MODEL_VERSION = "1.9"
-__version__ = "3.11.0"
+__version__ = "3.12.0"

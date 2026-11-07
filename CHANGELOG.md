@@ -2,7 +2,7 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## Unreleased (model 1.9)
+## 3.12.0 (Nov 7, 2026; model 1.9)
 
 - **The dry coolers' glycol loop** (methods log, Nov 6). Dry, assist and hybrid plants now carry a plate exchanger's
   approach (`hx_approach`) and a glycol loop pump at the tower loop's range and pressure [A], which towers already had.
