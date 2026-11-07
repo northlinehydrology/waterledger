@@ -148,7 +148,9 @@ SOURCES = {
     "oa_cfm_per_mw": "ASHRAE 62.1-2007 computer rooms, quoted secondhand, at about 5,000 ft2 per MW [A]; ends 100 and 1,500 [A], no published campus flow",
     "humidify_share": "Not published for any fleet; all of 0-1 sampled [A]; HVAC.best on ASHRAE TC 9.9 (many facilities no longer humidify)",
     **dict.fromkeys(("ups", "dist_loss", "light", "supply_air", "air_rise", "coil_eff", "water_rise", "crah_pa", "fan_eff", "tower_fan_pa", "lg",
-                     "tower_approach", "hx_approach", "pump_chw_kpa", "pump_tower_kpa", "pump_econ_kpa", "pump_eff"), _LM),
+                     "tower_approach", "pump_chw_kpa", "pump_econ_kpa", "pump_eff"), _LM),
+    "hx_approach": f"{_LM}; the dry coolers' glycol exchanger by analogy (model 1.9) [A]",
+    "pump_tower_kpa": f"{_LM}; the dry coolers' glycol loop by analogy (model 1.9) [A]",
     "carnot_water": "WAC 51-11C-403323 (replica of ASHRAE 90.1 Table 6.8.1-3); +/-11% from Lei and Masanet; fitted with the temperature offsets [A]",
     "carnot_air": "EER 10.1; 0.55 [A]; fitted with the temperature offsets [A]",
     "dc_approach": "ThermoKey catalogue point (10 K); makers' quotes for larger coils (5 K) [A]",
@@ -200,7 +202,7 @@ def loop_limit(p):
     shares of the heat (Lei and Masanet's air loop water; a liquid loop of its own). Above it, a dry plant needs chillers or evaporation."""
     air = (1.0 - p["liquid_share"]) + p["liquid_share"] * p["liquid_air_share"]
     air_water = p["supply_air"] + p["air_rise"] - p["air_rise"] / p["coil_eff"]
-    return air * air_water + (1.0 - air) * p["liquid_water"] - p["dc_approach"]
+    return air * air_water + (1.0 - air) * p["liquid_water"] - p["dc_approach"] - p["hx_approach"]
 
 
 def switch_point(p):
@@ -296,7 +298,8 @@ def _loop(load, supply, tdb, twb, coil_air, wet, design, p):
     """One facility water loop carrying `load` (kW per IT kW) at `supply` C, kW per IT kW: chiller power, pump power (both end up as heat to
     reject) and heat rejection fan power (whose heat goes straight to the exhaust air)."""
     ret = supply + p["water_rise"]
-    outside = wet * (twb + p["tower_approach"] + p["hx_approach"]) + (1 - wet) * (coil_air + p["dc_approach"])
+    # every design's heat rejection sits behind a plate heat exchanger: towers' open water, and the glycol a closed dry cooler runs to keep from freezing [A]
+    outside = wet * (twb + p["tower_approach"] + p["hx_approach"]) + (1 - wet) * (coil_air + p["dc_approach"] + p["hx_approach"])
     free = _ramp(ret - outside, 0.0, ret - supply)                # Lei and Masanet: the economizer's share falls from 1 to 0 as outside approaches the return
     chilled = load * (1 - free)
     evaporator = supply - 2.0
@@ -305,13 +308,17 @@ def _loop(load, supply, tdb, twb, coil_air, wet, design, p):
     air_cooled = cop(coil_air + 12.0, p["carnot_air"], CHILLER_COP_CAP["air"])     # its rated COP includes its condenser fans
     # the chiller rejects through the same split as the rest of the heat: to evaporating water in the wet share, to air in the rest
     chiller = chilled * (wet / water_cooled + (1 - wet) / air_cooled)
-    pumps = (_pump_kw(load * free / (CP_WATER * p["water_rise"]), p["pump_econ_kpa"], p["pump_eff"])
-             + _pump_kw(chilled / (CP_WATER * p["water_rise"]), p["pump_chw_kpa"], p["pump_eff"]))
+    econ_pump = _pump_kw(load * free / (CP_WATER * p["water_rise"]), p["pump_econ_kpa"], p["pump_eff"])
+    pumps = econ_pump + _pump_kw(chilled / (CP_WATER * p["water_rise"]), p["pump_chw_kpa"], p["pump_eff"])
     # tower flow carries its share of all the water's heat, the tower pump's own included: m x cp x range = wet x (load + chiller + pumps + m x dP / eff)
     pump_per_flow = p["pump_tower_kpa"] / (RHO_WATER * p["pump_eff"])
     tower_range = p["range_f"] / 1.8
     tower_water = (load + chiller + pumps) * wet / (CP_WATER * tower_range - wet * pump_per_flow)
     tower_pump = tower_water * pump_per_flow
+    # the dry coolers' glycol loop carries the economizer's heat and the economizer pump's (an air-cooled chiller rejects through its own condenser), its own pump's
+    # heat included; its range and pressure are the tower loop's, by analogy [A], with water's properties for the glycol's [A]
+    glycol = (load * free + econ_pump) * (1 - wet) / (CP_WATER * tower_range - (1 - wet) * pump_per_flow)
+    dry_pump = glycol * pump_per_flow
     # tower fans: a tower is sized for a design point and its fans slow when less air will do. Design: full heat through evaporation at the rating wet-bulb, with air
     # at the sampled water-to-air ratio, capped where air would leave hotter than saturated at the hot water. Each hour the air needed goes with the tower's heat over
     # the enthalpy the air can pick up, saturated at the hot water less the air coming in (Merkel's driving potential, with the design point's effectiveness); the
@@ -325,10 +332,10 @@ def _loop(load, supply, tdb, twb, coil_air, wet, design, p):
     tower_fan = _fan_kw(design_air, p["tower_fan_pa"], p["fan_eff"]) * np.clip(air_share, 0.1, 1.0) ** 3 * (wet > 0)
     # dry cooler fans: the air flow that carries the economizer's heat, up to design flow, by the fan affinity law (cubic; 10% floor, immaterial)
     design_flow = load / (CP_AIR * p["assist_dt_air"])
-    rise = np.maximum(ret - p["dc_approach"] - coil_air, p["assist_dt_air"])
+    rise = np.maximum(ret - p["hx_approach"] - p["dc_approach"] - coil_air, p["assist_dt_air"])
     flow = load * free * (1 - wet) / (CP_AIR * rise)
     dry = _fan_kw(design_flow, p["dc_fan_pa"], p["fan_eff"]) * np.clip(flow / np.maximum(design_flow, 1e-12), 0.1, 1.0) ** 3
-    return chiller, pumps + tower_pump, tower_fan + (0.0 if design == "towers" else dry)
+    return chiller, pumps + tower_pump + dry_pump, tower_fan + (0.0 if design == "towers" else dry)
 
 
 def hourly_heat_power(tdb, twb, design, p, rh=None):

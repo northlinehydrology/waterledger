@@ -165,6 +165,23 @@ def test_tower_flow_in_the_two_equations_is_the_same_water():
     assert gal_kwh == pytest.approx(kg_s * 3600 / GAL_KG, rel=0.003)
 
 
+def test_the_glycol_loop_carries_the_heat_its_pump_adds():
+    """In a cold hour the economizer carries everything, so a dry plant's heat is the glycol loop's: its pump moves heat / (cp x range) and adds that pump's own heat."""
+    p = {**CENTRAL, "oa_cfm_per_mw": 0.0}
+    t, wb = np.array([-10.0]), np.array([-11.0])
+    power, heat = ph.hourly_heat_power(t, wb, "dry", p)
+    pump = power - ph.hourly_heat_power(t, wb, "dry", {**p, "pump_tower_kpa": 0.0})[0]
+    assert pump[0] == pytest.approx(heat[0] / (ph.CP_WATER * p["range_f"] / 1.8) * p["pump_tower_kpa"] / (ph.RHO_WATER * p["pump_eff"]))
+
+
+def test_dry_heat_rejection_costs_at_least_the_towers_electricity():
+    """With the same loop pumps on both sides, a dry plant and towers take about the same electricity in freezing hours, the dry plant more above them, and
+    several percent more once its economizer runs out."""
+    dry, towers = (ph.hourly_heat_power(T, W, d, CENTRAL)[0] for d in ("dry", "towers"))
+    assert (abs(dry - towers)[T < 0.0] < 0.001).all()
+    assert (dry[T >= -10.0] > towers[T >= -10.0]).all() and (dry[T >= 20.0] - towers[T >= 20.0] > 0.03).all()
+
+
 def _tower_fan(tdb, twb, **over):
     p = {**CENTRAL, "liquid_share": 0.0, "oa_cfm_per_mw": 0.0, **over}
     t, w = np.array([tdb]), np.array([twb])
