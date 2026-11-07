@@ -130,7 +130,8 @@ def write(folder, places, runs_dir=None):
                      "parts": [p["id"] for p in meta["parts"]] if meta.get("parts") else None, "fetched": _fetched({**meta, **a}) if meta else None})
     from waterledger_data import climate
     correction = {"method": Q.METHOD, "design": "0005", "cells_corrected": sum(v["corrected"] for v in index.values()),
-                  "rule": {"cell_land_below": Q.SHORE_LAND, "stations": f"shore stations (own cell under {Q.SHORE_LAND:.0%} land) within {Q.R_KM:.0f} km, at most {Q.K}, 1/d^2",
+                  "rule": {"shore_cell_land_below": Q.SHORE_LAND,
+                           "stations": f"shore cells: shore stations (own cell under {Q.SHORE_LAND:.0%} land) within {Q.R_KM:.0f} km; land cells: land stations (own cell at least {Q.SHORE_LAND:.0%} land) within {Q.R_KM:.0f} km; at most {Q.K}, 1/d^2",
                            "lapse_c_per_m": Q.LAPSE, "bins": "calendar month (with the months either side) x 3-hour block of local standard time, 99 quantiles"},
                   "anchors": used, "isd": "NOAA NCEI Integrated Surface Database, ISD-Lite (https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database)"}
     if any(a["source"] == "eccc" for a in used):

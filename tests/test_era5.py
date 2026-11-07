@@ -1,4 +1,4 @@
-"""Model 1.8's ERA5 path (design 0004): the land rule's cells, the raw cache, local standard time, parts, the per-cell results cache and
+"""The ERA5 path (design 0004): the land rule's cells, the raw cache, local standard time, parts, the per-cell results cache and
 the optional R2 step (a folder stands in for the bucket; wrangler is faked). Offline but for the `live` tests, which read a few cells
 from Open-Meteo's open copy of ERA5."""
 import csv, json, os, subprocess
@@ -187,14 +187,14 @@ def test_a_part_runs_each_cell_once_corrects_the_shore_and_resumes_on_another_ma
     out = E.run_part("OH", 1, 1, workers=1, draws=5, store=bucket, cells=CELLS, run=_run_stub(calls), fetch=fetch)
     assert sorted(out) == sorted(CELLS) and sorted(fetched) == sorted(CELLS) and len(calls) == 2
     lorain = json.load(open(out["41.50_-82.00"]))
-    assert lorain["model_version"] == "1.8" and lorain["draws"] == 5 and lorain["hours"] == 262992
+    assert lorain["model_version"] == "1.9" and lorain["draws"] == 5 and lorain["hours"] == 262992
     assert lorain["correction"]["applied"] and lorain["correction"]["stations"][0]["name"] == "Shore Station"
     before, after = lorain["correction"]["change"]["design_dry_bulb_c"]
     assert after - before == pytest.approx(1.0, abs=1e-6)          # the station is the cell plus 1 C, at the cell's own elevation
-    assert json.load(open(out["43.00_-85.50"]))["correction"]["reason"] == "cell at least 90% land"
+    assert json.load(open(out["43.00_-85.50"]))["correction"]["reason"] == "no land station within 100 km"     # a land cell; the only station is on Lorain's shore, 340 km off
     keys = set(bucket.puts)
     for c in CELLS:
-        assert f"runs/era5/model1.8/{c}.json" in keys and f"era5/{c}/2026-11-04.npz" in keys and f"era5/{c}/latest.json" in keys
+        assert f"runs/era5/model1.9/{c}.json" in keys and f"era5/{c}/2026-11-04.npz" in keys and f"era5/{c}/latest.json" in keys
 
     assert E.run_part("OH", 1, 1, workers=1, draws=5, store=bucket, cells=CELLS, run=_run_stub(calls), fetch=fetch) == out
     assert len(calls) == 2                                          # done cells are not run again
@@ -213,7 +213,7 @@ def test_a_part_finishes_when_r2_fails(cache, monkeypatch, capsys):
     out = E.run_part("OH", 1, 1, workers=1, draws=5, store=Broken(), cells=CELLS, run=_run_stub(calls),
                      fetch=lambda ids: [_synthetic(c) for c in ids])
     assert len(calls) == 2 and all(os.path.exists(p) for p in out.values())
-    assert "could not upload runs/era5/model1.8/" in capsys.readouterr().err
+    assert "could not upload runs/era5/model1.9/" in capsys.readouterr().err
     assert json.load(open(out["41.50_-82.00"]))["correction"]["reason"] == "no shore station within 100 km"
 
 
@@ -226,7 +226,7 @@ def test_a_restart_uploads_finished_results_r2_does_not_have(cache, monkeypatch)
     E.run_part("OH", 1, 1, workers=1, draws=5, store=bucket, cells=CELLS, run=_run_stub(calls), fetch=fetch)
     assert len(calls) == 2
     for c in CELLS:
-        assert f"runs/era5/model1.8/{c}.json" in bucket.puts and f"era5/{c}/2026-11-04.npz" in bucket.puts
+        assert f"runs/era5/model1.9/{c}.json" in bucket.puts and f"era5/{c}/2026-11-04.npz" in bucket.puts
 
 
 def test_an_interrupt_keeps_the_finished_cells_and_their_uploads(cache, monkeypatch, capsys):

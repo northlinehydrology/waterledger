@@ -4,7 +4,7 @@
     datacenter.lake      lake-source (once-through) cooling
     runoff               runoff, sediment, nutrients, salt and fuel from a developed site
     hydrology            screening hydrology: curve-number storm runoff, Theis drawdown, Glover stream depletion
-    quantile_mapping     an ERA5 cell's temperature and dew point corrected toward shore stations, for cells under 90% land
+    quantile_mapping     an ERA5 cell's temperature and dew point corrected toward nearby stations (shore stations for cells under 90% land)
     weather              hourly weather from Open-Meteo's best match (ERA5, ERA5-Land, IFS HRES), as xarray, for the ensembles and BMI components
 
 MODEL_VERSION is Water Ledger's model version (the numbers); __version__ is the package version (the code, semver).

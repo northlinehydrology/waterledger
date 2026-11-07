@@ -3,7 +3,7 @@
 Two parts, as docs/methods/qm-check's cv_weather and cv_places did for the first four states:
 - Weather. Every qualifying station (ISD under one ID or linked, and ECCC) in the state or within 100 km of one of its places is held
   out in turn, with any other within 5 km. Its cell (the land rule's) gets the method as decided: shore cells corrected from the shore
-  stations left, land cells as ERA5 gives them. The cell is compared with the station on the station's own hours: the 0.4% design
+  stations left, and from model 1.9 land cells from the land stations left within 100 km. The cell is compared with the station on the station's own hours: the 0.4% design
   dry-bulb, the 0.4% wet bulb, the mean summer afternoon and the mean dew point.
 - Places. For up to `n` stations in the state, the nearest place within PLACE_KM, through the cooling model: the place's cell
   (corrected without that station) against the station's own record (cooling.run_location, 400 draws, seed 7, per 100 MW).
@@ -207,8 +207,8 @@ def judge(weather, places):
     shore = [r for r in weather if r["cell_land"] < 0.9 and r["corrected"]]
     med = lambda x: float(np.median(np.abs(x))) if len(x) else None
     e = lambda rows, way, k: np.array([r[way][k] for r in rows])
-    v = {"W1": len(land), "W2": med(e(land, "uncorrected", "ddb")), "W3": abs(float(e(land, "uncorrected", "ddb").mean())) if land else None,
-         "W4": med(e(land, "uncorrected", "wb"))}
+    v = {"W1": len(land), "W2": med(e(land, "decided", "ddb")), "W3": abs(float(e(land, "decided", "ddb").mean())) if land else None,
+         "W4": med(e(land, "decided", "wb"))}
     if len(shore) >= 3:
         v["W5"] = med(e(shore, "decided", "ddb"))
         v["W6"] = [v["W5"], med(e(shore, "uncorrected", "ddb"))]
@@ -243,7 +243,8 @@ def markdown(rep):
     W = rep["weather"]
     L += ["", "## Weather at the held-out stations", "", "Median absolute error (mean error), C, against the station on its own hours.", "",
           "| Stations | Way | Design dry-bulb | 0.4% wet bulb | Summer afternoon T | Mean dew point |", "|---|---|---|---|---|---|"]
-    groups = [("land cells", [r for r in W if r["cell_land"] >= 0.9], ["uncorrected"]),
+    groups = [("land cells, corrected", [r for r in W if r["cell_land"] >= 0.9 and r["corrected"]], ["uncorrected", "decided"]),
+              ("land cells, no station", [r for r in W if r["cell_land"] >= 0.9 and not r["corrected"]], ["uncorrected"]),
               ("shore cells, corrected", [r for r in W if r["cell_land"] < 0.9 and r["corrected"]], ["uncorrected", "decided"]),
               ("shore cells, no shore station", [r for r in W if r["cell_land"] < 0.9 and not r["corrected"]], ["uncorrected"])]
     for name, rows, ways in groups:

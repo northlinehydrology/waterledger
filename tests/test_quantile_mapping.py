@@ -33,7 +33,7 @@ CELL = {"lat": 42.0, "lon": -83.0, "land": 0.6, "elev_m": 180.0}
 def test_a_station_with_the_cells_own_weather_changes_nothing():
     times, t, td = _weather()
     tc, tdc, note = Q.correct(times, t, td, CELL, [_station(times, t, td)])
-    assert note["applied"] and note["method"] == "qm-1"
+    assert note["applied"] and note["method"] == "qm-2"
     assert np.allclose(tc, t, atol=1e-9) and np.allclose(tdc, td, atol=1e-9)
 
 
@@ -71,10 +71,18 @@ def test_lapse_moves_a_station_100_m_above_the_cell_0_65_c_warmer():
     assert np.allclose(tc, t + 0.65, atol=1e-9) and np.allclose(tc - tdc, t - td, atol=1e-9)
 
 
-def test_land_cells_are_left_as_they_are():
+def test_land_cells_are_corrected_from_land_stations_near():
+    """From model 1.9 a land cell is corrected too, from the land stations within 100 km (whose own nearest cell is at least 90% land), as a shore
+    cell is from shore stations; a shore station near it is not used, and with no land station that near it is left as it is."""
     times, t, td = _weather()
-    tc, tdc, note = Q.correct(times, t, td, CELL | {"land": 0.9}, [_station(times, t + 2, td + 2)])
-    assert not note["applied"] and note["reason"] == "cell at least 90% land" and (tc == t).all() and (tdc == td).all()
+    inland = _station(times, t + 2, td + 2, lat=42.5, land=0.95, sid="inland")         # 56 km away, its cell 95% land
+    shore = _station(times, t - 1, td - 1, lat=42.1, land=0.7, sid="shore")            # 11 km away, on the shore
+    tc, tdc, note = Q.correct(times, t, td, CELL | {"land": 0.9}, [inland, shore])
+    assert note["applied"] and note["reason"] == "cell at least 90% land" and [s[0] for s in note["stations"]] == ["inland"]
+    assert np.allclose(tc, t + 2, atol=1e-9) and np.allclose(tc - tdc, t - td, atol=1e-9)
+    far = _station(times, t + 2, td + 2, lat=43.0, land=0.95, sid="far")                # 111 km
+    tc, tdc, note = Q.correct(times, t, td, CELL | {"land": 0.95}, [far, shore])
+    assert not note["applied"] and note["reason"] == "no land station within 100 km" and (tc == t).all() and (tdc == td).all()
 
 
 def test_only_shore_stations_anchor_a_shore_cell():
