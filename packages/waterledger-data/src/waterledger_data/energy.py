@@ -2,7 +2,7 @@
 live copy is PNNL's, since HIFLD Open closed on Aug 26, 2025), joined to places by area; each utility's balancing
 authority; and the water used at power plants per kWh there (Siddik et al. 2024, tables/grid_water_2022.csv). Sales,
 customers and peaks come from EIA-861 by state (power.utility_loads). Cached under <cache>/energy/."""
-import csv, json, os
+import csv, json, os, re
 
 import geopandas as gpd
 import shapely
@@ -200,10 +200,34 @@ def loads(state):
     return power.utility_loads(year, state)
 
 
-def ranked(utilities, loads_):
+OWN_MIN_SHARE = 0.5            # a place's own utility covers at least half of it in the territory layer
+OWN_MIN_DENSITY = 100.0        # and has at least this many EIA customers per km2 of the place it covers [A]: Columbus, Ohio's own utility
+                               # (about 30) serves a part of the city, the towns' and small cities' own utilities 150 or more
+
+
+def _words(s):
+    return re.findall(r"[a-z]+", (s or "").lower())
+
+
+def is_own(u, place, loads_):
+    """Whether `u` is the place's own utility: a municipal or investor-owned utility named for it (Madison Gas & Electric in Madison, the City of
+    Coldwater's in Coldwater; cooperatives are named for counties and regions, so never), covering at least OWN_MIN_SHARE of the place, with at
+    least OWN_MIN_DENSITY customers per km2 of what it covers. `place`: {"base": its name without its kind, "km2": its area}."""
+    b, w = _words(place["base"]), _words(u.get("name"))
+    if not b or (u.get("type") or "").upper() == "COOPERATIVE" or (u.get("share") or 0) < OWN_MIN_SHARE:
+        return False
+    if not any(w[i:i + len(b)] == b for i in range(len(w) - len(b) + 1)):
+        return False
+    cust = (loads_.get(u["eia_id"]) or {}).get("customers") or 0
+    return cust >= OWN_MIN_DENSITY * place["km2"] * u["share"]
+
+
+def ranked(utilities, loads_, place=None):
     """A place's utilities in the order to show them: by EIA customers in the state (AEP Ohio before the City of Columbus's
     own small utility; Austin Energy before the cooperatives around it). HIFLD draws many territories as whole counties, so
     area shares overstate small utilities and are kept as "may serve", not as the share served. Ties (delivery-only utilities report no customers) go to the larger share, then the name,
-    so a rebuild keeps the same order."""
+    so a rebuild keeps the same order. With `place` ({"base", "km2"}; model 1.9), the place's own utility (is_own) comes first: a large utility
+    drawn over whole counties otherwise outranks the city's own (Wisconsin Power & Light in Madison, Consumers Energy in Coldwater)."""
     cust = lambda u: (loads_.get(u["eia_id"]) or {}).get("customers") or 0
-    return sorted(utilities, key=lambda u: (-cust(u), -(u.get("share") or 0), u.get("name") or ""))
+    own = (lambda u: is_own(u, place, loads_)) if place else (lambda u: False)
+    return sorted(utilities, key=lambda u: (not own(u), -cust(u), -(u.get("share") or 0), u.get("name") or ""))
