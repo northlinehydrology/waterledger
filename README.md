@@ -88,7 +88,18 @@ They are validated, round-trip through JSON, and are described in
 | Texas | 1,481 cities, towns and counties | ERA5, each place's own cell (616 cells) | [waterledger.org/methods/tx](https://waterledger.org/methods/tx/), [brief](docs/methods/tx.pdf) |
 | Wisconsin | 1,922 cities, villages, towns and counties | ERA5, each place's own cell (283 cells) | [waterledger.org/methods/wi](https://waterledger.org/methods/wi/), [brief](docs/methods/wi.pdf) |
 
-**Model 1.8** (since 3.10.0) changes where the cooling weather comes from. The cooling equations are unchanged.
+**Model 1.9** (3.12.0) changes the numbers in four ways, and every state's snapshot is rebuilt for it:
+- **The dry coolers' glycol loop.** Dry, assist and hybrid plants carry a plate exchanger's approach and a glycol loop pump,
+  as towers already did, so dry heat rejection costs more electricity than towers. In West Michigan at central values a dry
+  plant takes 2.4% more on average, 7.8% more on the 1-in-10-year peak day and 7% more in the hottest hour. Assist and
+  hybrid switch to wet sooner and use more water.
+- **Peak-day power** (`power_mw_peak_day_1in10`): the 1-in-10-year peak day's average power at the peak-day load, beside the
+  hottest hour at capacity.
+- **Station correction on land cells.** Land cells (at least 90% land) are corrected toward the land stations within 100 km,
+  as shore cells are toward shore stations ([design 0005](docs/design/0005-era5-quantile-mapping.md); methods log, Nov 6).
+- **A place's own electric utility first**, where a larger one is drawn over whole counties (Madison, Bedford, Culpeper).
+
+**Model 1.8** (3.10.0) changed where the cooling weather comes from. The cooling equations were unchanged.
 - **Each place's own ERA5 cell.** Every place takes its weather from its ERA5 grid cell (0.25 degrees, about 10 km
   away), 1995-2024, in place of Michigan's eight regions and the other states' one NOAA station per climate division
   ([design 0004](docs/design/0004-era5-weather.md)).
@@ -175,10 +186,10 @@ components and the command line) waits for 4.0 and does not ship in a 3.x minor 
 Three version numbers, each with one meaning:
 
 - **Package versions** (semver) change with the code: a major version for breaking changes.
-- **`waterledger_models.MODEL_VERSION`** (now 1.8) changes when the numbers change; the golden test fails until that is
+- **`waterledger_models.MODEL_VERSION`** (now 1.9) changes when the numbers change; the golden test fails until that is
   done deliberately. Every published estimate names the model version that produced it.
 - **The snapshot format version** (now 3, in each snapshot's manifest) changes when the structure of a state's data
-  files does. Format 3 (model 1.8) carries cooling by ERA5 cell (`cells/`). The package still reads format 2, which the
+  files does. Format 3 (from model 1.8) carries cooling by ERA5 cell (`cells/`). The package still reads format 2, which the
   published model 1.7 snapshots are.
 
 ## Development
@@ -195,17 +206,17 @@ uv run waterledger snapshot OH --out snapshots && uv run waterledger check-snaps
 Checks: `tests` runs on every push (lint, tests on Python 3.11 to 3.13); `nightly` builds the packages, tests the built
 wheels in a clean environment, checks the data sources and reproduces the published estimates, and opens an issue if
 anything fails; `publish` releases to PyPI from a `v*` tag by trusted publishing; `build-state` builds a state's layers on
-GitHub (its snapshot needs the ERA5 cell runs, so model 1.8's are written and checked locally and published with `waterledger publish`).
+GitHub (its snapshot needs the ERA5 cell runs, so they are written and checked locally and published with `waterledger publish`).
 
 Paths (download cache, site output) come from `WATERLEDGER_CACHE` / `WATERLEDGER_SITE` or a `waterledger.toml` (see
 `waterledger_data.config`).
 
-### Model 1.8's ERA5 runs
+### The ERA5 runs
 
-Model 1.8's cooling numbers come from one run per ERA5 cell, about 13 to 14 hours at ten workers for the first four states, in seven parts
+The cooling numbers come from one run per ERA5 cell, about 13 hours at ten workers for the five states' 1,507 cells (model 1.9, one machine), in parts
 started by hand ([design 0004](docs/design/0004-era5-weather.md), section 3). Each part fetches its cells from Open-Meteo's open
-copy of ERA5, corrects the shore cells ([design 0005](docs/design/0005-era5-quantile-mapping.md)), runs them and writes
-`CACHE/era5/runs/model1.8/<cell>.json` as each finishes, so a stopped part resumes where it stopped:
+copy of ERA5, corrects them toward nearby stations ([design 0005](docs/design/0005-era5-quantile-mapping.md)), runs them and writes
+`CACHE/era5/runs/model<version>/<cell>.json` as each finishes, so a stopped part resumes where it stopped:
 
 ```bash
 uv sync                                              # the workspace includes waterledger-data[era5] (omfiles, s3fs) for the open copy
@@ -214,7 +225,7 @@ uv run waterledger era5 run TX --part 1/3 --workers 10
 ```
 
 Saving to R2 is optional and off unless set up. With it on, each raw cell series goes to the private bucket `waterledger-raw` at
-`era5/<cell>/<fetch date>.npz` (with its request and checksum) and each result to `runs/era5/model1.8/<cell>.json` as it
+`era5/<cell>/<fetch date>.npz` (with its request and checksum) and each result to `runs/era5/model<version>/<cell>.json` as it
 finishes. A file R2 already has with the same checksum is skipped. Before a part starts, whatever R2 has and this machine
 doesn't is pulled, so a part can be restarted on another machine. A failed upload warns and keeps the local file; it never
 stops the run.

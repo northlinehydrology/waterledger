@@ -2,6 +2,29 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.12.0 (Nov 7, 2026; model 1.9)
+
+- **The dry coolers' glycol loop** (methods log, Nov 6). Dry, assist and hybrid plants now carry a plate exchanger's
+  approach (`hx_approach`) and a glycol loop pump at the tower loop's range and pressure [A], which towers already had.
+  Dry heat rejection now costs more electricity than towers, as it should: in West Michigan at central values, PUE goes
+  from 1.122 to 1.145 for dry, against 1.118 for towers. Assist's and hybrid's switch point falls by `hx_approach`, so
+  they go wet more often and use more water (assist 0.018 to 0.030 gal per IT kWh). Towers are unchanged to the bit.
+- **Peak-day power.** `cooling.run_location` reports `power_mw_peak_day_1in10`: the 1-in-10-year peak day's average
+  power at the peak-day load, on the same basis as the peak-day water. In West Michigan at 100 MW (central run) a dry plant
+  takes 89.5 MW on that day against towers' 83.1.
+- **Station correction on land cells** (methods log, Nov 6; `quantile_mapping` method `qm-2`). Land cells (at least 90%
+  land) are corrected toward the land stations within 100 km, at most 4, 1/d^2, with the lapse step, as shore cells are
+  toward shore stations. Held out across the five states (146 land stations), ERA5's land bias in the design dry-bulb goes
+  from -0.31 to -0.05 C and the median error from 0.45 to 0.37 C. `era5.candidates` finds the land stations, `era5_check`
+  judges land cells as corrected, and runs go to `runs/era5/model1.9`.
+- **A place's own electric utility first** (`energy.ranked` with the place; `is_own`). A utility named for the place, not a
+  cooperative, covering at least half of it with at least 100 EIA customers per km2 of what it covers [A], is listed first:
+  Madison Gas & Electric in Madison, the town utilities of Bedford and Culpeper. Before, a larger utility drawn over whole
+  counties came first. Columbus, Ohio keeps AEP Ohio first. First utilities change in 12 (Virginia) to 79 (Ohio) places a state;
+  Michigan's order comes from its own territory data and is unchanged.
+- **Station years time out after 60 s** (ISD-Lite, ECCC), not 300, so a year a station never reported can't hold a build for
+  15 minutes.
+
 ## 3.11.0 (Nov 6, 2026; model 1.8)
 
 No estimate, parameter or snapshot changes: with no limit set, every output is 3.10.0's to the bit.

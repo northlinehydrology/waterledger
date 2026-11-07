@@ -121,7 +121,10 @@ def _energy(state, place):
     sd = state_data(state)
     L, W = sd.loads(), sd.grid_water()
     out = []
-    for u in en.ranked(sd.utilities_for(place.geoid), L):
+    pl = sd.places()
+    row = pl[pl.geoid == place.geoid]
+    own = {"base": row.base.iloc[0], "km2": float(row.to_crs(en.ALBERS).geometry.area.iloc[0]) / 1e6} if len(row) and "base" in row else None
+    for u in en.ranked(sd.utilities_for(place.geoid), L, own):
         e = L.get(u["eia_id"]) or {}
         w = W.get(u["balancing_authority"]) or {}
         out.append(cx.Utility(name=u["name"].title(), type=(u["type"] or "").title(), share_of_place=u["share"], customers=e.get("customers"),

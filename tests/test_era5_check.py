@@ -60,7 +60,9 @@ def test_a_state_like_the_four_passes(cache):
     rep = C.run_check("OH", out=str(cache / "out"), n=8, workers=1, draws=5, places=_places(st), stations=st, run=_run, fetch=lambda ids: None)
     assert rep["verdict"] == "pass", [c for c in rep["criteria"] if c["pass"] is False]
     by = {c["id"]: c for c in rep["criteria"]}
-    assert by["W1"]["value"] == 6 and by["W2"]["value"] < 0.1                    # land: ERA5 is the stations, near enough
+    assert by["W1"]["value"] == 6 and by["W2"]["pass"]                            # land: corrected from the neighbors' stations, near enough
+    land = [r for r in rep["weather"] if r["cell_land"] >= 0.9]
+    assert any(r["corrected"] for r in land) and all(abs(r["uncorrected"]["ddb"]) < 0.3 for r in land)
     shore = [r for r in rep["weather"] if r["cell_land"] < 0.9]
     assert all(r["corrected"] for r in shore) and by["W5"]["value"] < 0.5 and by["W6"]["pass"]
     assert all(abs(r["uncorrected"]["ddb"] + 1.5) < 0.3 for r in shore)           # uncorrected, the shore runs 1.5 C cool
@@ -72,13 +74,23 @@ def test_a_state_like_the_four_passes(cache):
     assert md.startswith("# ERA5 check: OH") and "**PASS**" in md and "| W2 |" in md and "Places through the cooling model" in md
 
 
-def test_era5_2c_cool_on_land_fails_and_says_why(cache):
+def test_era5_2c_cool_on_land_is_corrected_from_the_stations_left(cache):
+    """Model 1.9: ERA5 2 C cool on every land cell, which failed W2 and W3 when land cells were left as they were, is brought within
+    the limits by the land cells' own correction, each held-out station's cell corrected from the others."""
     st = _stations(land_bias=2.0)
     rep = C.run_check("OH", out=str(cache / "out"), n=8, workers=1, draws=5, places=_places(st), stations=st, run=_run, fetch=lambda ids: None)
     by = {c["id"]: c for c in rep["criteria"]}
-    assert rep["verdict"] == "fail" and by["W2"]["pass"] is False and by["W3"]["pass"] is False
-    assert by["W2"]["value"] == pytest.approx(2.0, abs=0.15)
-    assert "**no**" in open(cache / "out" / "check.md").read()
+    land = [r for r in rep["weather"] if r["cell_land"] >= 0.9]
+    assert all(r["uncorrected"]["ddb"] == pytest.approx(-2.0, abs=0.15) for r in land)
+    assert by["W2"]["pass"] and by["W3"]["pass"] and by["W2"]["value"] < 0.75
+
+
+def test_a_land_error_left_after_correction_fails_and_says_why(tmp_path):
+    land = [{"cell_land": 1.0, "corrected": True, "uncorrected": {"ddb": -2.0, "wb": 0.05}, "decided": {"ddb": -1.9, "wb": 0.05}}] * 6
+    places = [{"difference_pct": {f"{d}.{s}": 1.0 for d, s in C.STATS}}] * 5
+    crit, ok = C.judge(land, places)
+    by = {c["id"]: c for c in crit}
+    assert not ok and by["W2"]["pass"] is False and by["W3"]["pass"] is False and by["W2"]["value"] == pytest.approx(1.9)
 
 
 def test_too_few_stations_or_weather_only_cannot_pass(cache):

@@ -1,10 +1,10 @@
-"""Model 1.8's cooling runs: the cooling Monte Carlo on each place's ERA5 cell (design 0004), corrected near the shore by quantile
-mapping (design 0005), one result file per cell. `waterledger era5 run ST --part k/n --workers 10` runs one part by hand.
+"""Model 1.9's cooling runs: the cooling Monte Carlo on each place's ERA5 cell (design 0004), corrected toward nearby stations by quantile
+mapping (design 0005; shore cells from model 1.8, land cells from 1.9), one result file per cell. `waterledger era5 run ST --part k/n --workers 10` runs one part by hand.
 
     state_cells(ST)         {cell: {"cell": era5.cell's record, "places": [geoid, ...]}} for every place in the state's snapshot
     part(cells, k, n)       the k-th of n parts: the cells in id order, cut into n runs of near-equal size
-    anchors(cells)          the shore stations that can correct these cells, qualified and fitted once (cached)
-    run_part(ST, k, n)      fetch the part's weather, correct it, run each cell and write CACHE/era5/runs/model1.8/<cell>.json
+    anchors(cells)          the stations that can correct these cells, qualified and fitted once (cached)
+    run_part(ST, k, n)      fetch the part's weather, correct it, run each cell and write CACHE/era5/runs/model<RUN_MODEL>/<cell>.json
 
 A cell's result is written the moment it finishes, so a stopped part resumes where it stopped. With R2 set up (waterledger_data.r2:
 WATERLEDGER_R2=wrangler, or R2 credentials in the environment), each raw cell series is uploaded as it is fetched and each result as it
@@ -18,7 +18,7 @@ import numpy as np
 from waterledger_data import era5
 from waterledger_data.config import CACHE
 
-RUN_MODEL = "1.8"           # model 1.7's cooling on ERA5 cell weather, corrected near the shore: what these runs are for
+RUN_MODEL = "1.9"           # the cooling model on ERA5 cell weather, corrected toward stations near the shore and, from 1.9, inland: what these runs are for
 SEED, MW = 7, 100.0
 
 
@@ -88,7 +88,7 @@ def parse_part(text):
     return int(m[1]), int(m[2])
 
 
-# --- anchors: the shore stations (design 0005) -------------------------------------------------------------------
+# --- anchors: the stations that correct the cells (design 0005) -------------------------------------------------------------------
 
 def _elevations():
     """ISD's station elevations (m) by USAF-WBAN, from isd-history."""
@@ -101,26 +101,30 @@ def _elevations():
 
 
 def candidates(cells):
-    """The ISD (one ID or linked) and ECCC sites within R_KM of a shore cell in `cells` whose own nearest cell is a shore cell: the
-    stations that could anchor them, before the 85% rule. `cells`: {id: {"cell": {lat, lon, land}}}. A station keeps its land-rule
-    cell (`cell`, `cell_land`) as a place there would get it, and is judged a shore station by its nearest (`shore_land`; Nov 5)."""
+    """The ISD (one ID or linked) and ECCC sites that could correct a cell in `cells`, before the 85% rule: for a shore cell, those within
+    R_KM whose own nearest cell is a shore cell; for a land cell (model 1.9), those within R_KM whose own nearest cell is a land cell. `cells`: {id: {"cell": {lat, lon, land}}}.
+    A station keeps its land-rule cell (`cell`, `cell_land`) as a place there would get it, and is judged a shore station by its nearest
+    (`shore_land`; Nov 5)."""
     from waterledger_data import climate
     from waterledger_models import quantile_mapping as Q
-    shore = [c["cell"] for c in cells.values() if c["cell"]["land"] < Q.SHORE_LAND]
-    if not shore:
+    if not cells:
         return []
+    pts = np.array([(c["cell"]["lat"], c["cell"]["lon"]) for c in cells.values()])
+    shore = np.array([c["cell"]["land"] < Q.SHORE_LAND for c in cells.values()])
     elev = _elevations()
     sites = [{**s, "source": "isd-linked" if "parts" in s else "isd", "elev_m": elev.get(s.get("fallback_for", s["id"]))} for s in climate.isd_sites()]
     sites += [{**s, "source": "eccc"} for s in climate.eccc_sites()]
     out = []
     for s in sites:
-        if not any(Q.km(c["lat"], c["lon"], s["lat"], s["lon"]) <= Q.R_KM for c in shore):
+        near_cells = Q.km(pts[:, 0], pts[:, 1], s["lat"], s["lon"]) <= Q.R_KM
+        if not near_cells.any():
             continue
         try:
             own, near = era5.cell(s["lat"], s["lon"]), era5.cell(s["lat"], s["lon"], land=None)
         except ValueError:                                  # outside the shipped grid
             continue
-        if near["land"] < Q.SHORE_LAND:
+        on_shore = near["land"] < Q.SHORE_LAND
+        if (near_cells & (shore if on_shore else ~shore)).any():
             out.append({**s, "cell": own["id"], "cell_land": own["land"], "shore_land": near["land"]})
     return out
 
@@ -159,7 +163,7 @@ def anchor(site, store=None):
 
 
 def anchors(cells, store=None):
-    """The qualified shore stations for `cells` (quantile_mapping's station records). A linked fallback (climate.isd_sites' "fallback_for")
+    """The qualified stations for `cells` (quantile_mapping's station records). A linked fallback (climate.isd_sites' "fallback_for")
     is tried only where its station fails the 85% rule on its own ID, so a station that qualifies keeps its own record."""
     out, failed = [], set()
     cands = candidates(cells)
@@ -186,8 +190,8 @@ def _summer_pm(times, t):
 
 
 def weather(cid, stations):
-    """A cell's run weather: (times, temp_c, rh_pct, correction note), corrected under 0005 when it is a shore cell with a shore station
-    within 100 km. The note records what was done and the change it made."""
+    """A cell's run weather: (times, temp_c, rh_pct, correction note), corrected under 0005 where a station is near enough (a shore cell from
+    shore stations within 100 km; from model 1.9 a land cell from land stations within 100 km). The note records what was done and the change it made."""
     from waterledger_models import quantile_mapping as Q
     from waterledger_models.datacenter.physics import design_dry_bulb
     times, t, td = era5.local(cid)
@@ -292,7 +296,7 @@ def run_part(state, k=1, n=1, workers=6, draws=None, store=None, cells=None, run
         _say(f"fetching {len(missing)} cells from the open copy")
         fetch(missing)
     stations = anchors({c: cells[c] for c in todo}, store) if todo else []
-    _say(f"{len(ids) - len(todo)} cells done before, {len(todo)} to run; {len(stations)} shore stations")
+    _say(f"{len(ids) - len(todo)} cells done before, {len(todo)} to run; {len(stations)} stations to correct them")
     os.makedirs(RUNS, exist_ok=True)
     out = {c: result_path(c) for c in ids if c not in todo}
     uploads, sent = ThreadPoolExecutor(2), []               # uploads go up while the cells run; put() never raises

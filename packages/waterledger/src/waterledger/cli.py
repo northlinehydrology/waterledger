@@ -1,4 +1,4 @@
-"""waterledger build-state <ST>: build a state's data. waterledger era5 run <ST> --part k/n: model 1.8's cooling runs on ERA5 cells. waterledger
+"""waterledger build-state <ST>: build a state's data. waterledger era5 run <ST> --part k/n: the cooling runs on ERA5 cells. waterledger
 publish <ST> --dir <snapshot root>: upload a checked snapshot to data.waterledger.org. waterledger build <state> [all|estimates|waters|power]: Michigan's site
 data, part by part (paths from waterledger_data.config); kept for scripts, build-state MI runs the same build."""
 import argparse, os, sys
@@ -82,7 +82,7 @@ def main(argv=None):
     sn.add_argument("state")
     sn.add_argument("--out", required=True)
     sn.add_argument("--date", default=None)
-    e5 = sub.add_parser("era5", help="model 1.8's cooling runs on each place's ERA5 cell (design 0004): cells, fetch, run part by part, or check")
+    e5 = sub.add_parser("era5", help="the cooling runs on each place's ERA5 cell (design 0004): cells, fetch, run part by part, or check")
     e5.add_argument("action", choices=["cells", "fetch", "run", "check"],
                     help="cells: the parts and what is done; fetch: a part's weather only; run: fetch, correct and run; "
                          "check: the leave-one-station-out check of design 0005 (exit 0 pass, 1 fail)")

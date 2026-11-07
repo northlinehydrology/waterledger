@@ -1592,3 +1592,184 @@ Settle these first:
 - which stations train a land cell (nearest only, or within a distance, as on the shore);
 - whether elevation needs a lapse-rate step first;
 - what a land cell with no station within the distance does.
+
+## Nov 6, 2026: the dry coolers' glycol loop, its exchanger and its pump (model 1.9; built, not released)
+
+**What was wrong.** Andrew asked why towers and closed loop come out with nearly the same electricity, and so nearly the
+same power-plant water. A Basin Ledger screening (CoolingWaterBmi 3.11 on the Clam's weather) had dry, assist and hybrid
+taking slightly *less* electricity than towers. Two terms in `_loop` were missing for the dry side:
+
+- **No pump.** The tower loop's pump (`pump_tower_kpa`, 167-250 kPa) was charged on the wet share only. The dry coolers'
+  own circuit had none, so towers paid for a pump the dry plant didn't.
+- **No exchanger.** The wet path carried the plate exchanger's approach (`hx_approach`, 1.7-2.8 K) and the dry path did
+  not. A closed dry cooler in a freezing climate runs glycol behind a plate exchanger, so its water reaches the facility
+  that much warmer, and the economizer runs out sooner.
+
+**The change.**
+
+- Every design's heat rejection sits behind a plate exchanger: `outside = wet x (twb + tower approach + hx) + (1 - wet) x
+  (coil air + dc approach + hx)`. `loop_limit`, and with it assist's and hybrid's switch point, moves down by `hx_approach`;
+  the dry coolers' air rise is taken from the glycol's temperature, the return less `hx_approach`.
+- The glycol loop carries the economizer's heat and the economizer pump's (an air-cooled chiller rejects through its own
+  condenser, whose fans its rated COP includes), with its own pump's heat included, as the tower loop does:
+
+      m x cp x range = (1 - wet) x (economizer heat + economizer pump + m x dP / eff)
+
+  at the tower loop's range and pressure, by analogy [A]. Glycol is taken with water's properties [A]: 30% propylene glycol
+  has about 8% less heat capacity and a higher viscosity, so this understates the pump a little.
+- Glycol everywhere [A]. Every lower-48 state records freezing hours, so a closed dry cooler is protected in all of them.
+  The few frost-free places (south Florida, the far south Texas coast) are charged an exchanger they might not have, about
+  2 K of economizer.
+- Towers are unchanged, to the bit: their wet share is 1, so neither new term touches them.
+
+Energy still closes (`test_every_kw_is_accounted_for`); `test_the_glycol_loop_carries_the_heat_its_pump_adds` checks the
+loop's own balance in a cold hour.
+
+**What it does.** Central parameters, the tests' West Michigan year (2023-24), facility power over IT power, and on-site
+water consumed in gallons per IT kWh:
+
+| design | model 1.8 | model 1.9 | consumed, 1.8 | consumed, 1.9 |
+|---|---|---|---|---|
+| towers | 1.118 | 1.118 | 0.331 | 0.331 |
+| dry | 1.122 | 1.145 | 0 | 0 |
+| assist | 1.114 | 1.136 | 0.018 | 0.030 |
+| hybrid | 1.117 | 1.136 | 0.016 | 0.024 |
+
+- A dry plant now takes about 2.4% more electricity than towers in West Michigan, where it took 0.4% more, and assist and
+  hybrid about 1.6% more, where they took less. In freezing hours the two are within 0.1%; above them the dry plant takes
+  more, and several percent more once its economizer runs out.
+- Assist and hybrid use more water: their switch point falls from 24.0 to 21.75 C, so they go wet more often.
+- With every computer air-cooled at a 27 C supply (the bottom of the sampled range), dry takes 1.200 against towers' 1.145,
+  4.8% more.
+
+**The peak, where the trade-off is largest.** A new output, `power_mw_peak_day_1in10`, is the 1-in-10-year peak day's
+average power at the peak-day load, the same basis as the peak-day water (the 1-in-10-year hottest hour at capacity,
+`power_mw_peak_1in10`, stays). Same year, 100 MW of IT, central run, MW:
+
+| design | average | peak day | hottest hour at capacity |
+|---|---|---|---|
+| towers | 72.7 | 83.1 | 121.0 |
+| dry | 74.4 | 89.5 | 129.5 |
+| assist | 73.8 | 87.8 | 125.5 |
+| hybrid | 73.9 | 86.2 | 122.6 |
+
+A dry plant takes 2.4% more than towers on average, 7.8% more on the peak day and 7.0% more in the hottest hour; in model
+1.8 the hottest hour was 5.0% more. The p10 and p90 above are each design's own spread across the draws; the draws are the
+same for every design, so a paired difference could be reported, but it isn't yet.
+
+**Still open: the loops' temperatures.** Basin Ledger's third finding is that the sampled loops are warm. Supply air is
+27-35 C (Lei and Masanet's case 2; ASHRAE's recommended inlet tops out at 27 C), and the liquid-cooled share is 0-1 uniform
+at W32-W45 water. At central values the air loop's water is 26.8 C out and 34.3 C back, and the economizer carries all of
+the air loop below about 17 C dry-bulb for a dry plant (now with the exchanger) and 20 C wet-bulb for towers. That is most of Michigan's year, so the cooling plant is a few percent of facility power and the
+designs have little to differ on. Both ranges are sourced, so changing them, or making the loop temperature and liquid
+share scenario inputs, is a method decision for Andrew, not part of this fix. Andrew (Nov 7): kept for model 1.9. The ranges are cited,
+which is better than a guess, and the runs sample across them; the loops may run warm, so they get a closer look before
+the next full rerun.
+
+## Nov 6, 2026: station correction on land cells (model 1.9; built, not released)
+
+**Why.** Model 1.8 corrected only shore cells (under 90% land), because design 0005's check on the first four states found
+no land correction that beat ERA5 as it is (60 land stations). Wisconsin's check (Nov 6, above) failed W3: inland, ERA5's
+design dry-bulb ran 0.60 C cool on average. Andrew decided that land cells should be corrected too, if held-out stations
+show it helps.
+
+**The check.** [qm-check/land/land_cv.py](qm-check/land/land_cv.py), on every qualifying station on a land cell in the
+five states, or within 100 km of one of their places (146 distinct stations). Each is held out in turn, with any other
+within 5 km. Its cell is corrected from the stations left, then compared with it on its own hours, as in design 0005.
+The ways tried:
+
+| way | stations | radius |
+|---|---|---|
+| any_100 | any | 100 km, at most 4, 1/d^2, lapse to the cell's elevation |
+| any_50 | any | 50 km |
+| nearest_100 | the nearest only | 100 km |
+| land_100 | land stations only (own nearest cell at least 90% land) | 100 km |
+| land_50 | land stations only | 50 km |
+| land_100_nolapse | land stations only, without the lapse step | 100 km |
+
+The results are each state's ([qm-check/land/](qm-check/land/), one file a state). Median absolute error (mean error), C:
+
+| state (land stations) | way | design dry-bulb | 0.4% wet bulb | summer afternoon | mean dew point |
+|---|---|---|---|---|---|
+| Michigan (18) | none | 0.40 (-0.34) | 0.10 (-0.13) | 0.30 (-0.30) | 0.20 (+0.05) |
+| | land_100 | 0.27 (-0.03) | 0.22 (+0.02) | 0.25 (+0.05) | 0.19 (+0.02) |
+| Ohio (33) | none | 0.30 (-0.30) | 0.16 (-0.03) | 0.22 (-0.16) | 0.19 (+0.11) |
+| | land_100 | 0.26 (+0.04) | 0.10 (+0.09) | 0.25 (+0.13) | 0.16 (-0.02) |
+| Virginia (22) | none | 0.73 (-0.07) | 0.25 (-0.17) | 0.46 (-0.10) | 0.22 (+0.17) |
+| | land_100 | 0.43 (-0.16) | 0.18 (-0.10) | 0.46 (-0.13) | 0.27 (-0.04) |
+| Texas (63) | none | 0.40 (-0.32) | 0.18 (-0.06) | 0.34 (-0.14) | 0.22 (+0.04) |
+| | land_100 | 0.45 (-0.02) | 0.17 (-0.01) | 0.30 (+0.05) | 0.24 (-0.04) |
+| Wisconsin (22) | none | 0.70 (-0.60) | 0.19 (-0.21) | 0.38 (-0.39) | 0.21 (+0.10) |
+| | land_100 | 0.40 (-0.18) | 0.11 (+0.01) | 0.26 (-0.06) | 0.29 (-0.06) |
+| **all five (146)** | none | 0.45 (-0.31) | 0.18 (-0.09) | 0.34 (-0.18) | 0.22 (+0.08) |
+| | any_100 | 0.37 (-0.13) | 0.16 (-0.01) | 0.30 (-0.06) | 0.25 (-0.01) |
+| | any_50 | 0.40 (-0.19) | 0.16 (-0.05) | 0.28 (-0.10) | 0.20 (+0.02) |
+| | nearest_100 | 0.42 (-0.10) | 0.18 (+0.01) | 0.30 (-0.04) | 0.32 (-0.02) |
+| | **land_100 (built)** | **0.37 (-0.05)** | **0.16 (-0.00)** | **0.28 (+0.02)** | 0.25 (-0.04) |
+| | land_50 | 0.40 (-0.16) | 0.16 (-0.05) | 0.27 (-0.08) | 0.21 (+0.01) |
+| | land_100_nolapse | 0.40 (+0.00) | 0.20 (+0.05) | 0.32 (+0.07) | 0.27 (+0.01) |
+
+- **ERA5 runs cool on land in every state,** by 0.30-0.60 C in the design dry-bulb on average, and the correction takes
+  that out: -0.31 C becomes -0.05 C across the five, and the wet bulb's -0.09 C becomes 0.00. The design dry-bulb's
+  median error falls from 0.45 to 0.37 C, the summer afternoon's from 0.34 to 0.28.
+- **Land stations only** does as well as any station on the dry-bulb and better on the bias and the summer afternoon. It
+  is also the shore rule's mirror: shore cells from shore stations, land cells from land stations. A shore station can
+  run cooler in summer than the land around it, so it isn't used for a land cell.
+- **Not every measure improves in every state.** Michigan's wet bulb median goes from 0.10 to 0.22 C (its mean from -0.13
+  to +0.02). Texas's design dry-bulb median goes from 0.40 to 0.45 C, while its bias goes from -0.32 to -0.02. Virginia's
+  bias goes from -0.07 to -0.16 C, while its median falls from 0.73 to 0.43. Every state stays inside the check's limits
+  (W2 0.75, W3 0.5, W4 0.4), and Wisconsin, which failed W3 at 0.60, passes at 0.18. The dew point's median rises a
+  little (0.22 to 0.25 C).
+- **The lapse step stays.** Without it Virginia does better (0.28 C), as cold air pools in its valleys, but the other
+  four do worse, and the wet bulb runs warm (+0.05).
+- **Not yet run: the places check** through the cooling model (design 0005's P criteria), which takes about half an hour
+  a state. It runs after the model 1.9 cells, from the snapshots' runs.
+
+**Built.** `quantile_mapping.correct` corrects a land cell from the land stations within 100 km (at most 4, 1/d^2, lapse),
+`LAND_FROM_LAND`; a land cell with none that near is left as it is ("no land station within 100 km"). The method is
+`qm-2`. `era5.candidates` takes the land stations near land cells as well, and `era5_check` judges W2-W4 on the land
+cells as corrected.
+
+**Decided (Claude for the overnight run; Andrew confirmed Nov 7).** Andrew's bar was that the correction lower land-cell
+errors in all five states without raising the wet bulb. It does on the pooled stations and on the bias in every state but
+Virginia, and not on every median. The bias is what moves every place's numbers the same way, so the run uses it. Andrew
+(Nov 7): the gains at individual places outweigh the pooled summary statistics, so the correction stays.
+
+## Nov 7, 2026: a place's own electric utility first (model 1.9; built, not released)
+
+**What was wrong.** Outside Michigan a place's utilities come from the national territory layer, ranked by customers. A
+large utility drawn over whole counties came ahead of the one that serves the place: Alliant ahead of Madison Gas &
+Electric in Madison, Dominion ahead of the town utilities of Bedford and Culpeper.
+
+**Rule.** `energy.is_own`: a utility comes first when it is named for the place (its name's words contain the place's name
+without its kind), is not a cooperative, covers at least half of the place in the territory layer, and has at least 100 EIA
+customers per km2 of the place it covers [A]. The density test keeps Columbus, Ohio on AEP Ohio: the City of Columbus's
+utility covers 92% of the city in the territory layer but has about 19,000 EIA customers, 35 per km2 of what it covers;
+AEP Ohio has 1.5 million. The threshold is set from that case, not from a published figure.
+
+**Effect.** The first utility changes in 12 Virginia, 45 Texas, 75 Wisconsin and 79 Ohio places. Michigan's order comes from
+its own territory data and is unchanged.
+
+**Decided.** Andrew (Nov 7): kept for now. A more direct source for which utility serves a place (state commission
+service-area records) may replace the name and density test later.
+
+## Nov 7, 2026: model 1.9's ERA5 checks pass in all five states
+
+Model 1.9's cell runs finished Nov 7 (1,507 cells, about 13 hours on one machine), and `waterledger era5 check` passes in
+Michigan, Ohio, Virginia, Texas and Wisconsin ([era5-checks/](era5-checks/)). Wisconsin, which failed W3 and P3 on model 1.8,
+now passes: the inland design dry-bulb's mean error is 0.18 C (was 0.60) and the hybrid average day's mean difference 4.4%
+(was 6.8%).
+
+| | W2 dry-bulb median | W3 dry-bulb mean | W4 wet bulb median | P2 hybrid avg | P3 hybrid avg mean | P4 hybrid peak | P5 towers avg |
+|---|---|---|---|---|---|---|---|
+| Limit | 0.75 C | 0.50 C | 0.40 C | 8% | 6% | 6% | 2% |
+| Michigan | 0.27 | 0.03 | 0.22 | 5.4 | 0.1 | 5.3 | 0.2 |
+| Ohio | 0.26 | 0.04 | 0.10 | 1.9 | 1.5 | 5.9 | 0.1 |
+| Virginia | 0.43 | 0.16 | 0.18 | 3.2 | 1.0 | 4.6 | 0.2 |
+| Texas | 0.45 | 0.02 | 0.17 | 5.0 | 1.6 | 4.0 | 0.3 |
+| Wisconsin | 0.40 | 0.18 | 0.11 | 6.5 | 4.4 | 4.6 | 0.2 |
+
+P4, the hybrid peak day, sits near its limit in every state (Ohio 5.9 of 6), where the first four states on model 1.7 were
+0.5-3.2%. Not a weather bias: towers move 0.1-0.3% and the mean differences are small. The likely cause, not yet
+tested, is that the glycol loop moved the hybrid's dry-to-wet switch, so the same small temperature difference between a
+place's cell and its station moves more water. The limits were set from the earlier model and are not changed here.

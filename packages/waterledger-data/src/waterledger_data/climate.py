@@ -188,7 +188,7 @@ def _isd_frame(station, years):
                 continue
             path = os.path.join(RAW, "isd", "lite", f"{part['id']}-{y}.gz")
             try:
-                _fetch(ISD_LITE.format(y=y, usaf=usaf, wban=wban), path, tries=3, wait=20)      # a station's year may be missing: not worth a long wait
+                _fetch(ISD_LITE.format(y=y, usaf=usaf, wban=wban), path, timeout=60, tries=3, wait=20)      # a station's year may be missing: not worth a long wait
             except Exception:
                 continue
             with gzip.open(path, "rt") as f:
@@ -363,7 +363,7 @@ def _eccc_frame(station, years):
                 continue
             path = os.path.join(RAW, "eccc", "hourly", f"{part['id']}-{y}.csv")
             try:
-                _fetch(ECCC_HOURLY.format(cid=part["id"], y=y), path, tries=3, wait=20, check=lambda d: d.startswith(b"x,y,UTC_DATE") or d.startswith(b"\xef\xbb\xbfx,y"))
+                _fetch(ECCC_HOURLY.format(cid=part["id"], y=y), path, timeout=60, tries=3, wait=20, check=lambda d: d.startswith(b"x,y,UTC_DATE") or d.startswith(b"\xef\xbb\xbfx,y"))
             except Exception:
                 continue
             f = pd.read_csv(path, dtype={"TEMP_FLAG": str, "DEW_POINT_TEMP_FLAG": str})

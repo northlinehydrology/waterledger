@@ -92,18 +92,19 @@ def test_hybrid_ramp_runs_to_the_locations_own_design_temperature():
 
 def test_switch_point_by_hand():
     # Air loop water = supply air + air rise - air rise / coil effectiveness = 31 + 16.65 - 16.65 / 0.8 = 26.8375 C. Half the computers liquid-cooled, with 20% of their
-    # heat still going to air: the air share is 0.5 + 0.5 x 0.2 = 0.6. Weighted supply 0.6 x 26.8375 + 0.4 x 38.5 = 31.5025 C; less the 7.5 K approach, 24.0025 C.
-    mid = {**C, "supply_air": 31.0, "air_rise": 16.65, "coil_eff": 0.8, "liquid_share": 0.5, "liquid_air_share": 0.2, "liquid_water": 38.5, "dc_approach": 7.5, "switch_margin": 0.0}
-    assert ph.loop_limit(mid) == pytest.approx(24.0025)
-    assert ph.switch_point(mid) == pytest.approx(24.0025)
-    assert ph.switch_point({**mid, "switch_margin": 2.0}) == pytest.approx(26.0025)
-    # All air, 27 C supply: 27 + 19.4 - 19.4 / 0.7 = 18.686 C, less 10 K = 8.686 C, below any published setting, so 70 F (21.1 C)
+    # heat still going to air: the air share is 0.5 + 0.5 x 0.2 = 0.6. Weighted supply 0.6 x 26.8375 + 0.4 x 38.5 = 31.5025 C; less the 7.5 K approach and the glycol exchanger's 2.25 K (model 1.9), 21.7525 C.
+    mid = {**C, "supply_air": 31.0, "air_rise": 16.65, "coil_eff": 0.8, "liquid_share": 0.5, "liquid_air_share": 0.2, "liquid_water": 38.5, "dc_approach": 7.5, "hx_approach": 2.25,
+           "switch_margin": 0.0}
+    assert ph.loop_limit(mid) == pytest.approx(21.7525)
+    assert ph.switch_point(mid) == pytest.approx(21.7525)
+    assert ph.switch_point({**mid, "switch_margin": 2.0}) == pytest.approx(23.7525)
+    # All air, 27 C supply: 27 + 19.4 - 19.4 / 0.7 = 18.686 C, less 10 K and 2.25 K = 6.436 C, below any published setting, so 70 F (21.1 C)
     cold = {**mid, "supply_air": 27.0, "air_rise": 19.4, "coil_eff": 0.7, "liquid_share": 0.0, "dc_approach": 10.0}
-    assert ph.loop_limit(cold) == pytest.approx(8.686, abs=1e-3)
+    assert ph.loop_limit(cold) == pytest.approx(6.436, abs=1e-3)
     assert ph.switch_point(cold) == pytest.approx(21.1)
-    # All liquid at 45 C with 10% to air on a 26.8375 C air loop: 0.1 x 26.8375 + 0.9 x 45 = 43.18 C, less 5 K = 38.18 C, above 95 F, so 35.1 C
+    # All liquid at 45 C with 10% to air on a 26.8375 C air loop: 0.1 x 26.8375 + 0.9 x 45 = 43.18 C, less 5 K and 2.25 K = 35.93 C, above 95 F, so 35.1 C
     warm = {**mid, "liquid_share": 1.0, "liquid_air_share": 0.1, "liquid_water": 45.0, "dc_approach": 5.0}
-    assert ph.loop_limit(warm) == pytest.approx(38.184, abs=1e-3)
+    assert ph.loop_limit(warm) == pytest.approx(35.934, abs=1e-3)
     assert ph.switch_point(warm) == pytest.approx(35.1)
     # An operator's setting wins
     assert ph.switch_point({**mid, "switch_on": 27.8}) == 27.8

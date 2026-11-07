@@ -202,6 +202,24 @@ def test_ranked_order_does_not_depend_on_the_input_order():
     assert [u["name"] for u in energy.ranked(U, L)] == want and [u["name"] for u in energy.ranked(U[::-1], L)] == want
 
 
+def test_a_places_own_utility_comes_first():
+    """Madison: Wisconsin Power & Light is drawn over all of it and has more customers, but Madison Gas & Electric is named for the city and covers 86% of
+    it, densely. Columbus, Ohio: the city's own utility covers 92% but has too few customers for the city's area, so AEP Ohio stays first. A cooperative
+    named for a county is never a place's own."""
+    from waterledger_data import energy
+    L = {1: {"customers": 500000}, 2: {"customers": 160000}, 3: {"customers": 1543033}, 4: {"customers": 18979}, 5: {"customers": 20000}}
+    madison = [{"eia_id": 1, "name": "WISCONSIN POWER & LIGHT CO", "type": "INVESTOR OWNED", "share": 1.0},
+               {"eia_id": 2, "name": "MADISON GAS & ELECTRIC CO", "type": "INVESTOR OWNED", "share": 0.86}]
+    assert [u["eia_id"] for u in energy.ranked(madison, L, {"base": "Madison", "km2": 250.0})] == [2, 1]
+    assert [u["eia_id"] for u in energy.ranked(madison, L)] == [1, 2]                         # without the place, by customers as before
+    columbus = [{"eia_id": 3, "name": "OHIO POWER CO", "type": "INVESTOR OWNED", "share": 0.996},
+                {"eia_id": 4, "name": "CITY OF COLUMBUS - (OH)", "type": "MUNICIPAL", "share": 0.92}]
+    assert [u["eia_id"] for u in energy.ranked(columbus, L, {"base": "Columbus", "km2": 580.0})] == [3, 4]
+    dunn = [{"eia_id": 1, "name": "NORTHERN STATES POWER CO", "type": "INVESTOR OWNED", "share": 1.0},
+            {"eia_id": 5, "name": "DUNN COUNTY ELECTRIC COOP", "type": "COOPERATIVE", "share": 0.9}]
+    assert [u["eia_id"] for u in energy.ranked(dunn, L, {"base": "Dunn", "km2": 90.0})] == [1, 5]
+
+
 def test_power_plants_answer_to_the_old_name_of_the_state_mix():
     from waterledger.site import _PowerPlants
     q = _PowerPlants({"state_mix": 1, "coal": 2})

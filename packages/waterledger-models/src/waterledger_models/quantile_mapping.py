@@ -1,4 +1,5 @@
-"""Quantile mapping of an ERA5 cell's hourly weather to weather stations near the shore (design 0005, decided Nov 4, 2026; model 1.8).
+"""Quantile mapping of an ERA5 cell's hourly weather to nearby weather stations (design 0005, decided Nov 4, 2026, model 1.8, for shore cells;
+land cells added Nov 6, 2026, model 1.9).
 
 What is corrected: air temperature T and the dew-point depression D = T - Td (C), each by an additive delta read off its own quantile.
 D is kept at or above 0 after correction, so the corrected dew point never passes the corrected temperature and relative humidity
@@ -7,9 +8,13 @@ stays at or below 100%. RH comes from T and Td by the Magnus form the stations u
 Bins: calendar month (fitted on that month and the months either side, applied to that month) by 3-hour block of local standard time,
 12 x 8 = 96 bins; 99 quantiles in each (1% to 99%), deltas held constant beyond them.
 
-Which cells, from which stations (Andrew's decisions, Nov 4, 2026):
-- Only cells under SHORE_LAND (90%) land are corrected; cells at least 90% land keep ERA5 as it is.
-- A cell is corrected only from shore stations: stations whose own nearest cell is under SHORE_LAND land (Nov 5: the nearest cell,
+Which cells, from which stations (Andrew's decisions, Nov 4 and Nov 6, 2026):
+- Every cell is corrected where a station is near enough. Model 1.8 corrected only cells under SHORE_LAND (90%) land; from model 1.9
+  land cells (at least 90% land) are corrected too, from the land stations (whose own nearest cell is at least SHORE_LAND land) within
+  R_KM, at most K, weighted 1/d^2, as shore cells are from shore stations (the methods log, Nov 6: Wisconsin's inland cells ran about
+  0.6 C cool; held out across the five states, the correction brings land cells closer to their stations). A land cell with no land
+  station that near is left as it is and flagged.
+- A shore cell is corrected only from shore stations: stations whose own nearest cell is under SHORE_LAND land (Nov 5: the nearest cell,
   not the land rule's, which moves the stations right on the water inland, Corpus Christi NAS among them). A shore cell is corrected from the shore stations within R_KM of its center, at most K, weighted 1/d^2 (d at least
   5 km), and with no shore station that near it is left as it is and flagged.
 - The stations' quantiles are averaged and the cell mapped onto them, each station's temperature moved to the cell's ERA5 elevation at
@@ -20,7 +25,8 @@ P = (np.arange(99) + 1) / 100
 MAGNUS = 17.625, 243.04                 # Alduchov and Eskridge (1996), as climate.isd_hourly uses
 R_KM, K, LAPSE = 100.0, 4, -6.5e-3      # search radius, stations at most, C per m
 SHORE_LAND = 0.9                        # cells under this land fraction are corrected; stations whose cell is under it anchor them
-METHOD = "qm-1"
+METHOD = "qm-2"                         # qm-1 (model 1.8): shore cells only
+LAND_FROM_LAND = True                   # land cells from land stations only (whose own nearest cell is at least SHORE_LAND land), as shore cells from shore ones
 
 
 def rh_from(t, td):
@@ -103,15 +109,16 @@ def delta(cell, stations, lapse=True, **kw):
 
 def correct(times, t, td, cell, stations, r_km=R_KM, k=K):
     """A cell's hourly (T, Td) corrected under the rule above, and what was done: {method, applied, reason, stations [(id, name, km, weight)]}.
+    reason: "cell under 90% land" or "cell at least 90% land" when applied; "no shore station within 100 km" or "no land station within 100 km" when not.
     `cell`: {lat, lon, land, elev_m}; its ERA5 quantiles are fitted on `times` here."""
     t, td = np.asarray(t, float), np.asarray(td, float)
     note = {"method": METHOD, "applied": False, "stations": []}
-    if cell["land"] >= SHORE_LAND:
-        return t, td, note | {"reason": f"cell at least {SHORE_LAND:.0%} land"}
-    ws = weights(cell["lat"], cell["lon"], stations, r_km, k)
+    shore = cell["land"] < SHORE_LAND
+    pool = stations if shore or not LAND_FROM_LAND else [s for s in stations if not is_shore_station(s)]
+    ws = weights(cell["lat"], cell["lon"], pool, r_km, k, shore_only=shore)
     if not ws:
-        return t, td, note | {"reason": f"no shore station within {r_km:.0f} km"}
+        return t, td, note | {"reason": f"no {'shore' if shore else 'land' if LAND_FROM_LAND else ''} station within {r_km:.0f} km".replace("  ", " ")}
     qe = fit(times, t, td)
-    tc, tdc = apply(times, t, td, qe, delta({**cell, "qe": qe}, stations, r_km=r_km, k=k))
+    tc, tdc = apply(times, t, td, qe, delta({**cell, "qe": qe}, pool, r_km=r_km, k=k, shore_only=shore))
     used = [(s["id"], s.get("name"), round(float(km(cell["lat"], cell["lon"], s["lat"], s["lon"])), 1), round(float(w), 3)) for s, w in ws]
-    return tc, tdc, note | {"applied": True, "reason": f"cell under {SHORE_LAND:.0%} land", "stations": used}
+    return tc, tdc, note | {"applied": True, "reason": f"cell {'under' if shore else 'at least'} {SHORE_LAND:.0%} land", "stations": used}
