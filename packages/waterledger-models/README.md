@@ -21,10 +21,11 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
 - `datacenter.stac`: ensemble results as zarr with a STAC catalog (`[stac]`).
 - `hydrology`: screening hydrology: SCS curve-number runoff, Theis drawdown and Glover stream depletion (on arrays).
 - `runoff`: runoff, sediment, nutrients, road salt and fuel from a developed site.
-- `quantile_mapping`: an ERA5 cell's hourly temperature and dew point corrected toward the shore stations within 100 km,
-  for cells under 90% land (design 0005); the dew point never passes the temperature.
+- `quantile_mapping`: an ERA5 cell's hourly temperature and dew point corrected toward the stations within 100 km: shore
+  stations for cells under 90% land, land stations for the rest (design 0005; land cells from model 1.9); the dew point never
+  passes the temperature.
 - `weather`: hourly weather from the Open-Meteo archive, its best match (ERA5, ERA5-Land and, from 2017, IFS HRES); humidity
   conversions (Bolton 1980) and a record's design dry-bulb.
 
-`MODEL_VERSION` is Water Ledger's model version (1.8), which changes when the numbers do; the package version (semver)
+`MODEL_VERSION` is Water Ledger's model version (1.9), which changes when the numbers do; the package version (semver)
 changes with the code. They are independent.
