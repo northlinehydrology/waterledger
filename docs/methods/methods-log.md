@@ -1662,7 +1662,9 @@ same for every design, so a paired difference could be reported, but it isn't ye
 at W32-W45 water. At central values the air loop's water is 26.8 C out and 34.3 C back, and the economizer carries all of
 the air loop below about 17 C dry-bulb for a dry plant (now with the exchanger) and 20 C wet-bulb for towers. That is most of Michigan's year, so the cooling plant is a few percent of facility power and the
 designs have little to differ on. Both ranges are sourced, so changing them, or making the loop temperature and liquid
-share scenario inputs, is a method decision for Andrew, not part of this fix.
+share scenario inputs, is a method decision for Andrew, not part of this fix. Andrew (Nov 7): kept for model 1.9. The ranges are cited,
+which is better than a guess, and the runs sample across them; the loops may run warm, so they get a closer look before
+the next full rerun.
 
 ## Nov 6, 2026: station correction on land cells (model 1.9; built, not released)
 
@@ -1728,7 +1730,25 @@ The results are each state's ([qm-check/land/](qm-check/land/), one file a state
 `qm-2`. `era5.candidates` takes the land stations near land cells as well, and `era5_check` judges W2-W4 on the land
 cells as corrected.
 
-**Decided by Claude for the overnight run, for Andrew to confirm.** Andrew's bar was that the correction lower land-cell
+**Decided (Claude for the overnight run; Andrew confirmed Nov 7).** Andrew's bar was that the correction lower land-cell
 errors in all five states without raising the wet bulb. It does on the pooled stations and on the bias in every state but
-Virginia, and not on every median. The bias is what moves every place's numbers the same way, so the run uses it; if
-Andrew wants land cells left as they were, `LAND_FROM_LAND` and the land branch come out and the cells are rerun.
+Virginia, and not on every median. The bias is what moves every place's numbers the same way, so the run uses it. Andrew
+(Nov 7): the gains at individual places outweigh the pooled summary statistics, so the correction stays.
+
+## Nov 7, 2026: a place's own electric utility first (model 1.9; built, not released)
+
+**What was wrong.** Outside Michigan a place's utilities come from the national territory layer, ranked by customers. A
+large utility drawn over whole counties came ahead of the one that serves the place: Alliant ahead of Madison Gas &
+Electric in Madison, Dominion ahead of the town utilities of Bedford and Culpeper.
+
+**Rule.** `energy.is_own`: a utility comes first when it is named for the place (its name's words contain the place's name
+without its kind), is not a cooperative, covers at least half of the place in the territory layer, and has at least 100 EIA
+customers per km2 of the place it covers [A]. The density test keeps Columbus, Ohio on AEP Ohio: the City of Columbus's
+utility covers 92% of the city in the territory layer but has about 19,000 EIA customers, 35 per km2 of what it covers;
+AEP Ohio has 1.5 million. The threshold is set from that case, not from a published figure.
+
+**Effect.** The first utility changes in 12 Virginia, 45 Texas, 75 Wisconsin and 79 Ohio places. Michigan's order comes from
+its own territory data and is unchanged.
+
+**Decided.** Andrew (Nov 7): kept for now. A more direct source for which utility serves a place (state commission
+service-area records) may replace the name and density test later.
