@@ -12,6 +12,11 @@ Package changes (code). Changes to the numbers are listed by model version on th
 - **Peak-day power.** `cooling.run_location` reports `power_mw_peak_day_1in10`: the 1-in-10-year peak day's average
   power at the peak-day load, on the same basis as the peak-day water. In West Michigan at 100 MW (central run) a dry plant
   takes 89.5 MW on that day against towers' 83.1.
+- **Station correction on land cells** (methods log, Nov 6; `quantile_mapping` method `qm-2`). Land cells (at least 90%
+  land) are corrected toward the land stations within 100 km, at most 4, 1/d^2, with the lapse step, as shore cells are
+  toward shore stations. Held out across the five states (146 land stations), ERA5's land bias in the design dry-bulb goes
+  from -0.31 to -0.05 C and the median error from 0.45 to 0.37 C. `era5.candidates` finds the land stations, `era5_check`
+  judges land cells as corrected, and runs go to `runs/era5/model1.9`.
 - **A place's own electric utility first** (`energy.ranked` with the place; `is_own`). A utility named for the place, not a
   cooperative, covering at least half of it with at least 100 EIA customers per km2 of what it covers [A], is listed first:
   Madison Gas & Electric in Madison, the town utilities of Bedford and Culpeper. Before, a larger utility drawn over whole

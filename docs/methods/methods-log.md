@@ -1663,3 +1663,72 @@ at W32-W45 water. At central values the air loop's water is 26.8 C out and 34.3 
 the air loop below about 17 C dry-bulb for a dry plant (now with the exchanger) and 20 C wet-bulb for towers. That is most of Michigan's year, so the cooling plant is a few percent of facility power and the
 designs have little to differ on. Both ranges are sourced, so changing them, or making the loop temperature and liquid
 share scenario inputs, is a method decision for Andrew, not part of this fix.
+
+## Nov 6, 2026: station correction on land cells (model 1.9; built, not released)
+
+**Why.** Model 1.8 corrected only shore cells (under 90% land), because design 0005's check on the first four states found
+no land correction that beat ERA5 as it is (60 land stations). Wisconsin's check (Nov 6, above) failed W3: inland, ERA5's
+design dry-bulb ran 0.60 C cool on average. Andrew decided that land cells should be corrected too, if held-out stations
+show it helps.
+
+**The check.** [qm-check/land/land_cv.py](qm-check/land/land_cv.py), on every qualifying station on a land cell in the
+five states, or within 100 km of one of their places (146 distinct stations). Each is held out in turn, with any other
+within 5 km. Its cell is corrected from the stations left, then compared with it on its own hours, as in design 0005.
+The ways tried:
+
+| way | stations | radius |
+|---|---|---|
+| any_100 | any | 100 km, at most 4, 1/d^2, lapse to the cell's elevation |
+| any_50 | any | 50 km |
+| nearest_100 | the nearest only | 100 km |
+| land_100 | land stations only (own nearest cell at least 90% land) | 100 km |
+| land_50 | land stations only | 50 km |
+| land_100_nolapse | land stations only, without the lapse step | 100 km |
+
+The results are each state's ([qm-check/land/](qm-check/land/), one file a state). Median absolute error (mean error), C:
+
+| state (land stations) | way | design dry-bulb | 0.4% wet bulb | summer afternoon | mean dew point |
+|---|---|---|---|---|---|
+| Michigan (18) | none | 0.40 (-0.34) | 0.10 (-0.13) | 0.30 (-0.30) | 0.20 (+0.05) |
+| | land_100 | 0.27 (-0.03) | 0.22 (+0.02) | 0.25 (+0.05) | 0.19 (+0.02) |
+| Ohio (33) | none | 0.30 (-0.30) | 0.16 (-0.03) | 0.22 (-0.16) | 0.19 (+0.11) |
+| | land_100 | 0.26 (+0.04) | 0.10 (+0.09) | 0.25 (+0.13) | 0.16 (-0.02) |
+| Virginia (22) | none | 0.73 (-0.07) | 0.25 (-0.17) | 0.46 (-0.10) | 0.22 (+0.17) |
+| | land_100 | 0.43 (-0.16) | 0.18 (-0.10) | 0.46 (-0.13) | 0.27 (-0.04) |
+| Texas (63) | none | 0.40 (-0.32) | 0.18 (-0.06) | 0.34 (-0.14) | 0.22 (+0.04) |
+| | land_100 | 0.45 (-0.02) | 0.17 (-0.01) | 0.30 (+0.05) | 0.24 (-0.04) |
+| Wisconsin (22) | none | 0.70 (-0.60) | 0.19 (-0.21) | 0.38 (-0.39) | 0.21 (+0.10) |
+| | land_100 | 0.40 (-0.18) | 0.11 (+0.01) | 0.26 (-0.06) | 0.29 (-0.06) |
+| **all five (146)** | none | 0.45 (-0.31) | 0.18 (-0.09) | 0.34 (-0.18) | 0.22 (+0.08) |
+| | any_100 | 0.37 (-0.13) | 0.16 (-0.01) | 0.30 (-0.06) | 0.25 (-0.01) |
+| | any_50 | 0.40 (-0.19) | 0.16 (-0.05) | 0.28 (-0.10) | 0.20 (+0.02) |
+| | nearest_100 | 0.42 (-0.10) | 0.18 (+0.01) | 0.30 (-0.04) | 0.32 (-0.02) |
+| | **land_100 (built)** | **0.37 (-0.05)** | **0.16 (-0.00)** | **0.28 (+0.02)** | 0.25 (-0.04) |
+| | land_50 | 0.40 (-0.16) | 0.16 (-0.05) | 0.27 (-0.08) | 0.21 (+0.01) |
+| | land_100_nolapse | 0.40 (+0.00) | 0.20 (+0.05) | 0.32 (+0.07) | 0.27 (+0.01) |
+
+- **ERA5 runs cool on land in every state,** by 0.30-0.60 C in the design dry-bulb on average, and the correction takes
+  that out: -0.31 C becomes -0.05 C across the five, and the wet bulb's -0.09 C becomes 0.00. The design dry-bulb's
+  median error falls from 0.45 to 0.37 C, the summer afternoon's from 0.34 to 0.28.
+- **Land stations only** does as well as any station on the dry-bulb and better on the bias and the summer afternoon. It
+  is also the shore rule's mirror: shore cells from shore stations, land cells from land stations. A shore station can
+  run cooler in summer than the land around it, so it isn't used for a land cell.
+- **Not every measure improves in every state.** Michigan's wet bulb median goes from 0.10 to 0.22 C (its mean from -0.13
+  to +0.02). Texas's design dry-bulb median goes from 0.40 to 0.45 C, while its bias goes from -0.32 to -0.02. Virginia's
+  bias goes from -0.07 to -0.16 C, while its median falls from 0.73 to 0.43. Every state stays inside the check's limits
+  (W2 0.75, W3 0.5, W4 0.4), and Wisconsin, which failed W3 at 0.60, passes at 0.18. The dew point's median rises a
+  little (0.22 to 0.25 C).
+- **The lapse step stays.** Without it Virginia does better (0.28 C), as cold air pools in its valleys, but the other
+  four do worse, and the wet bulb runs warm (+0.05).
+- **Not yet run: the places check** through the cooling model (design 0005's P criteria), which takes about half an hour
+  a state. It runs after the model 1.9 cells, from the snapshots' runs.
+
+**Built.** `quantile_mapping.correct` corrects a land cell from the land stations within 100 km (at most 4, 1/d^2, lapse),
+`LAND_FROM_LAND`; a land cell with none that near is left as it is ("no land station within 100 km"). The method is
+`qm-2`. `era5.candidates` takes the land stations near land cells as well, and `era5_check` judges W2-W4 on the land
+cells as corrected.
+
+**Decided by Claude for the overnight run, for Andrew to confirm.** Andrew's bar was that the correction lower land-cell
+errors in all five states without raising the wet bulb. It does on the pooled stations and on the bias in every state but
+Virginia, and not on every median. The bias is what moves every place's numbers the same way, so the run uses it; if
+Andrew wants land cells left as they were, `LAND_FROM_LAND` and the land branch come out and the cells are rerun.
