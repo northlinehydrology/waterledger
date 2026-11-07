@@ -1770,6 +1770,6 @@ now passes: the inland design dry-bulb's mean error is 0.18 C (was 0.60) and the
 | Wisconsin | 0.40 | 0.18 | 0.11 | 6.5 | 4.4 | 4.6 | 0.2 |
 
 P4, the hybrid peak day, sits near its limit in every state (Ohio 5.9 of 6), where the first four states on model 1.7 were
-0.5-3.2%. The weather isn't the cause: towers move 0.1-0.3% and the mean differences are small. The glycol loop moved the
-hybrid's dry-to-wet switch, so its water now turns on a smaller temperature difference, and a place's cell and its station
-differ by more in water than they did. The limits were set from the earlier model and are not changed here.
+0.5-3.2%. Not a weather bias: towers move 0.1-0.3% and the mean differences are small. The likely cause, not yet
+tested, is that the glycol loop moved the hybrid's dry-to-wet switch, so the same small temperature difference between a
+place's cell and its station moves more water. The limits were set from the earlier model and are not changed here.
