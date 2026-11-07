@@ -65,3 +65,11 @@ def test_run_location_reports_electricity():
         assert 1.0 < v["pue_avg"]["p50"] < 2.0
         assert v["power_mw_avg"]["p50"] < v["power_mw_peak_1in10"]["p50"]        # utilization below 1
         assert v["pue_peak_1in10"]["p50"] >= v["pue_avg"]["p50"] - 1e-9
+        # the peak day at the peak load sits between the average and the hottest hour at capacity; in steady weather it is that load times its PUE
+        c = v["power_mw_peak_day_1in10"]["central"]
+        assert v["power_mw_avg"]["central"] <= c <= v["power_mw_peak_1in10"]["central"]
+        p = ph.for_location(cw.central(), np.array([30.0]))
+        at_peak = {**p, "utilization": float(ph.peak_utilization(p))}
+        t = np.array([30.0])
+        pue = ph.hourly_heat_power(t, ph.wet_bulb(t, np.array([50.0])), d, at_peak, np.array([50.0]))[0][0]
+        assert c == pytest.approx(pue * 100.0 * at_peak["utilization"])

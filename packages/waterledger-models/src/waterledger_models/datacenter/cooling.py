@@ -160,15 +160,17 @@ HOUR_BLOCK = 4096
 
 def _hourly_run(tdb, twb, rh, design, p, at_peak, block=HOUR_BLOCK):
     """One run's hourly series, block by block: PUE; withdrawn, consumed, returned and condensate at the run's load and at its peak
-    load; and withdrawn with every computer at capacity."""
-    out = [np.empty_like(tdb) for _ in range(10)]
+    load; withdrawn with every computer at capacity; and PUE at the peak load."""
+    out = [np.empty_like(tdb) for _ in range(11)]
     at_capacity = {**p, "utilization": 1.0}
     for a in range(0, len(tdb), block or len(tdb)):
         s = slice(a, a + (block or len(tdb)))
         t, wb, h = tdb[s], twb[s], rh[s]
-        pue, heat = hourly_heat_power(t, wb, design, p, h)      # the slow part: once for the run's water and PUE
+        pue, heat = hourly_heat_power(t, wb, design, p, h)      # the slow part: once for the run's water and PUE, once at the peak load
+        pue_peak, heat_peak = hourly_heat_power(t, wb, design, at_peak, h)
         got = (pue, *hourly(t, wb, design, p, h, heat), hourly_water_with_air(t, wb, p, h)[1],
-               *hourly(t, wb, design, at_peak, h), hourly_water_with_air(t, wb, at_peak, h)[1], hourly(t, wb, design, at_capacity, h)[0])
+               *hourly(t, wb, design, at_peak, h, heat_peak), hourly_water_with_air(t, wb, at_peak, h)[1], hourly(t, wb, design, at_capacity, h)[0],
+               pue_peak)
         for o, v in zip(out, got):
             o[s] = v
     return out
@@ -181,7 +183,8 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=HOUR_BLOCK)
     plus the central-parameter run. Peak = 1-in-10-year peak day (90th percentile of annual maxima) at the peak load, average load over the load factor; the record
     day is at the same load, and averages, months and years at the average load. withdrawn_peak_full_capacity is the upper case, every computer at capacity all day. Electricity: pue_avg (energy over IT
     energy), power_mw_avg (at the run's utilization), pue_peak_1in10 and power_mw_peak_1in10 (the 1-in-10-year hottest hour, every computer
-    running at capacity).
+    running at capacity), and power_mw_peak_day_1in10 (the 1-in-10-year peak day's average power at the peak load, as the peak-day water; model 1.9).
+    Each statistic takes its own days, so the peak power day and the peak water day are usually, not always, the same day.
     """
     tdb = np.array(temps, dtype=float)
     rh = np.array(rhs, dtype=float)
@@ -203,7 +206,7 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=HOUR_BLOCK)
             # the peak day and the record day: the same weather at the peak load, average load over the load factor (model 1.7)
             at_peak = {**p, "utilization": float(peak_utilization(p))}
             kw_peak = mw * 1000 * at_peak["utilization"]
-            pue, w, c, r, cond, wp, cp, rp, condp, at_capacity = _hourly_run(tdb, twb, rh, design, p, at_peak, block)
+            pue, w, c, r, cond, wp, cp, rp, condp, at_capacity, pue_peak = _hourly_run(tdb, twb, rh, design, p, at_peak, block)
             for name, arr in (("withdrawn", w), ("consumed", c), ("returned", r), ("condensate", cond)):
                 s = daily_stats(day_index, len(uniq), years, arr, kw, months if name in ("withdrawn", "consumed") else None, by)
                 for stat, v in s.items():
@@ -222,6 +225,8 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=HOUR_BLOCK)
             acc.setdefault("power_mw_avg", []).append(float(pue.mean()) * mw * p["utilization"])
             acc.setdefault("pue_peak_1in10", []).append(peak)
             acc.setdefault("power_mw_peak_1in10", []).append(peak * mw)
+            day_mw = np.bincount(day_index, weights=pue_peak * kw_peak / 1000.0, minlength=len(uniq)) / np.bincount(day_index, minlength=len(uniq))
+            acc.setdefault("power_mw_peak_day_1in10", []).append(float(np.quantile([day_mw[g].max() for g in by[0]], 0.9)))
         res = {}
         for k, vals in acc.items():
             v = np.array(vals[:-1])
