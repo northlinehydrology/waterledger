@@ -88,7 +88,7 @@ They are validated, round-trip through JSON, and are described in
 | Texas | 1,481 cities, towns and counties | ERA5, each place's own cell (616 cells) | [waterledger.org/methods/tx](https://waterledger.org/methods/tx/), [brief](docs/methods/tx.pdf) |
 | Wisconsin | 1,922 cities, villages, towns and counties | ERA5, each place's own cell (283 cells) | [waterledger.org/methods/wi](https://waterledger.org/methods/wi/), [brief](docs/methods/wi.pdf) |
 
-**Model 1.9** (unreleased) changes the numbers in four ways, and every state's snapshot is rebuilt for it:
+**Model 1.9** (3.12.0) changes the numbers in four ways, and every state's snapshot is rebuilt for it:
 - **The dry coolers' glycol loop.** Dry, assist and hybrid plants carry a plate exchanger's approach and a glycol loop pump,
   as towers already did, so dry heat rejection costs more electricity than towers. In West Michigan at central values a dry
   plant takes 2.4% more on average, 7.8% more on the 1-in-10-year peak day and 7% more in the hottest hour. Assist and
@@ -213,7 +213,7 @@ Paths (download cache, site output) come from `WATERLEDGER_CACHE` / `WATERLEDGER
 
 ### The ERA5 runs
 
-The cooling numbers come from one run per ERA5 cell, about 13 to 14 hours at ten workers for the first four states (model 1.8), in parts
+The cooling numbers come from one run per ERA5 cell, about 13 hours at ten workers for the five states' 1,507 cells (model 1.9, one machine), in parts
 started by hand ([design 0004](docs/design/0004-era5-weather.md), section 3). Each part fetches its cells from Open-Meteo's open
 copy of ERA5, corrects them toward nearby stations ([design 0005](docs/design/0005-era5-quantile-mapping.md)), runs them and writes
 `CACHE/era5/runs/model<version>/<cell>.json` as each finishes, so a stopped part resumes where it stopped:

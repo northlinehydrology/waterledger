@@ -4,7 +4,7 @@ How a state gets into the waterledger packages and onto data.waterledger.org, as
 has a command, what it writes, a test that says it is done, and whether it needs Andrew's approval. The website side (site, trackers,
 rules, deploy, and the runner `engine/add_state.py`, which calls the commands here) is a Northline document.
 
-Checked against the code on Nov 6, 2026: 3.10.0 (model 1.8), plus `waterledger publish`, which is in the repo and not yet released.
+Checked against the code on Nov 7, 2026: 3.12.0 (model 1.9).
 The ERA5 path is the cells, the runs and the check below; the snapshot (step 4) is format 3 and carries the cell results. Five states
 are built: Michigan, Ohio, Virginia, Texas and Wisconsin, the first added by this process (Nov 6). Georgia and Wyoming have had tracker
 footprints only, with no build. Northline's test `tests/test_add_state.py` checks the runner's commands against the table at the end.
@@ -20,8 +20,8 @@ Any state answers `wl.place()`, `place.context()` and `site.estimate()` from the
 | Water systems | EPA service area boundaries, SDWIS | `waterledger_data.supply` |
 | Sewer plants | EPA Clean Watersheds Needs Survey 2022, ECHO | `waterledger_data.wastewater` |
 | Watersheds, impairments | USGS WBD, EPA ATTAINS, the watershed tracer | `waterledger_data.receiving`, `waterledger_data.trace` |
-| Cooling weather (model 1.8) | ERA5 at each place's 0.25-degree cell, the nearest at least half land, 1995-2024; shore cells corrected toward stations near the shore (designs 0004, 0005) | `waterledger_data.era5`, `waterledger.national.era5`, `waterledger_models.quantile_mapping` |
-| Cooling weather (model 1.7, the published snapshots) | NOAA ISD, one station per climate division | `waterledger_data.divisions`, `waterledger.national.climate` |
+| Cooling weather (model 1.9) | ERA5 at each place's 0.25-degree cell, the nearest at least half land, 1995-2024; shore cells corrected toward stations near the shore, land cells toward land stations (designs 0004, 0005; land cells from model 1.9) | `waterledger_data.era5`, `waterledger.national.era5`, `waterledger_models.quantile_mapping` |
+| Cooling weather (model 1.7, older snapshots) | NOAA ISD, one station per climate division | `waterledger_data.divisions`, `waterledger.national.climate` |
 | Rainfall, road salt, golf | NOAA station records by climate division (both models) | `waterledger_data.divisions`, `waterledger.national.climate` |
 | Design storms | NOAA Atlas 14 | `waterledger_data.divisions` |
 | Electricity | HIFLD territories, EIA-861, plant reports | `waterledger_data.energy`, `waterledger_data.power` |
@@ -98,11 +98,11 @@ WATERLEDGER_R2=wrangler uv run waterledger era5 run ST --part 1/n --workers 10
 ```
 
 The second command is repeated for parts 2/n to n/n. With `WATERLEDGER_R2=wrangler`, raw cells and results also go to the private
-bucket `waterledger-raw` as they are made, and a part can restart on another machine (README, "Model 1.8's ERA5 runs"); the runner
+bucket `waterledger-raw` as they are made, and a part can restart on another machine (README, "The ERA5 runs"); the runner
 always runs them that way. `--no-r2` keeps everything local.
 
 - **Writes:** `CACHE/era5/raw/<cell>/<fetch date>.npz` and `.json` (the weather as fetched), `CACHE/era5/anchors/<station>.json` and
-  `.npy` (the shore stations), and `CACHE/era5/runs/model1.8/<cell>.json`, one per cell, as each finishes.
+  `.npy` (the stations), and `CACHE/era5/runs/model<version>/<cell>.json`, one per cell, as each finishes.
 - **Done when:** for a part, `era5 run` exits 0 and that part's `done` equals its `cells` in `era5 cells ST --part k/n --json`. For the
   state, `uv run waterledger era5 cells ST --json` prints `"complete": true`.
 - **Approval:** none; Andrew starts the parts. Cells shared with a state already run are reused, not run again.
@@ -249,7 +249,6 @@ These are package requirements for every state, not only new ones.
 
 | Item | What it is | What it would take |
 |---|---|---|
-| Station correction on land cells | Quantile mapping toward nearby stations on land cells, as on shore cells (decided Nov 6, 2026; methods log) | A new model version: the held-out check in all five states, new snapshots, parity, a release |
 | ERA5 from CDS | Copernicus's own time series, 0004's named source | An ECMWF key (Andrew's); the open copy is what's built |
 | ERA5 outside the lower 48 | Alaska and Hawaii | The mask for their boxes, and the check there |
 | Storm source outside Atlas 14 | Older NOAA studies for states Atlas 14 doesn't cover | A reader for each study, plus coverage checks |
