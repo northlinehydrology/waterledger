@@ -2,6 +2,17 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## Unreleased (model 1.9)
+
+- **The dry coolers' glycol loop** (methods log, Nov 6). Dry, assist and hybrid plants now carry a plate exchanger's
+  approach (`hx_approach`) and a glycol loop pump at the tower loop's range and pressure [A], which towers already had.
+  Dry heat rejection now costs more electricity than towers, as it should: in West Michigan at central values, PUE goes
+  from 1.122 to 1.145 for dry, against 1.118 for towers. Assist's and hybrid's switch point falls by `hx_approach`, so
+  they go wet more often and use more water (assist 0.018 to 0.030 gal per IT kWh). Towers are unchanged to the bit.
+- **Peak-day power.** `cooling.run_location` reports `power_mw_peak_day_1in10`: the 1-in-10-year peak day's average
+  power at the peak-day load, on the same basis as the peak-day water. In West Michigan at 100 MW (central run) a dry plant
+  takes 89.5 MW on that day against towers' 83.1.
+
 ## 3.11.0 (Nov 6, 2026; model 1.8)
 
 No estimate, parameter or snapshot changes: with no limit set, every output is 3.10.0's to the bit.

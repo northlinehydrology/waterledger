@@ -1592,3 +1592,74 @@ Settle these first:
 - which stations train a land cell (nearest only, or within a distance, as on the shore);
 - whether elevation needs a lapse-rate step first;
 - what a land cell with no station within the distance does.
+
+## Nov 6, 2026: the dry coolers' glycol loop, its exchanger and its pump (model 1.9; built, not released)
+
+**What was wrong.** Andrew asked why towers and closed loop come out with nearly the same electricity, and so nearly the
+same power-plant water. A Basin Ledger screening (CoolingWaterBmi 3.11 on the Clam's weather) had dry, assist and hybrid
+taking slightly *less* electricity than towers. Two terms in `_loop` were missing for the dry side:
+
+- **No pump.** The tower loop's pump (`pump_tower_kpa`, 167-250 kPa) was charged on the wet share only. The dry coolers'
+  own circuit had none, so towers paid for a pump the dry plant didn't.
+- **No exchanger.** The wet path carried the plate exchanger's approach (`hx_approach`, 1.7-2.8 K) and the dry path did
+  not. A closed dry cooler in a freezing climate runs glycol behind a plate exchanger, so its water reaches the facility
+  that much warmer, and the economizer runs out sooner.
+
+**The change.**
+
+- Every design's heat rejection sits behind a plate exchanger: `outside = wet x (twb + tower approach + hx) + (1 - wet) x
+  (coil air + dc approach + hx)`. `loop_limit`, and with it assist's and hybrid's switch point, moves down by `hx_approach`;
+  the dry coolers' air rise is taken from the glycol's temperature, the return less `hx_approach`.
+- The glycol loop carries the economizer's heat and the economizer pump's (an air-cooled chiller rejects through its own
+  condenser, whose fans its rated COP includes), with its own pump's heat included, as the tower loop does:
+
+      m x cp x range = (1 - wet) x (economizer heat + economizer pump + m x dP / eff)
+
+  at the tower loop's range and pressure, by analogy [A]. Glycol is taken with water's properties [A]: 30% propylene glycol
+  has about 8% less heat capacity and a higher viscosity, so this understates the pump a little.
+- Glycol everywhere [A]. Every lower-48 state records freezing hours, so a closed dry cooler is protected in all of them.
+  The few frost-free places (south Florida, the far south Texas coast) are charged an exchanger they might not have, about
+  2 K of economizer.
+- Towers are unchanged, to the bit: their wet share is 1, so neither new term touches them.
+
+Energy still closes (`test_every_kw_is_accounted_for`); `test_the_glycol_loop_carries_the_heat_its_pump_adds` checks the
+loop's own balance in a cold hour.
+
+**What it does.** Central parameters, the tests' West Michigan year (2023-24), facility power over IT power, and on-site
+water consumed in gallons per IT kWh:
+
+| design | model 1.8 | model 1.9 | consumed, 1.8 | consumed, 1.9 |
+|---|---|---|---|---|
+| towers | 1.118 | 1.118 | 0.331 | 0.331 |
+| dry | 1.122 | 1.145 | 0 | 0 |
+| assist | 1.114 | 1.136 | 0.018 | 0.030 |
+| hybrid | 1.117 | 1.136 | 0.016 | 0.024 |
+
+- A dry plant now takes about 2.4% more electricity than towers in West Michigan, where it took 0.4% more, and assist and
+  hybrid about 1.6% more, where they took less. In freezing hours the two are within 0.1%; above them the dry plant takes
+  more, and several percent more once its economizer runs out.
+- Assist and hybrid use more water: their switch point falls from 24.0 to 21.75 C, so they go wet more often.
+- With every computer air-cooled at a 27 C supply (the bottom of the sampled range), dry takes 1.200 against towers' 1.145,
+  4.8% more.
+
+**The peak, where the trade-off is largest.** A new output, `power_mw_peak_day_1in10`, is the 1-in-10-year peak day's
+average power at the peak-day load, the same basis as the peak-day water (the 1-in-10-year hottest hour at capacity,
+`power_mw_peak_1in10`, stays). Same year, 100 MW of IT, central run, MW:
+
+| design | average | peak day | hottest hour at capacity |
+|---|---|---|---|
+| towers | 72.7 | 83.1 | 121.0 |
+| dry | 74.4 | 89.5 | 129.5 |
+| assist | 73.8 | 87.8 | 125.5 |
+| hybrid | 73.9 | 86.2 | 122.6 |
+
+A dry plant takes 2.4% more than towers on average, 7.8% more on the peak day and 7.0% more in the hottest hour; in model
+1.8 the hottest hour was 5.0% more. The p10 and p90 above are each design's own spread across the draws; the draws are the
+same for every design, so a paired difference could be reported, but it isn't yet.
+
+**Still open: the loops' temperatures.** Basin Ledger's third finding is that the sampled loops are warm. Supply air is
+27-35 C (Lei and Masanet's case 2; ASHRAE's recommended inlet tops out at 27 C), and the liquid-cooled share is 0-1 uniform
+at W32-W45 water. At central values the air loop's water is 26.8 C out and 34.3 C back, and the economizer carries all of
+the air loop below about 17 C dry-bulb for a dry plant (now with the exchanger) and 20 C wet-bulb for towers. That is most of Michigan's year, so the cooling plant is a few percent of facility power and the
+designs have little to differ on. Both ranges are sourced, so changing them, or making the loop temperature and liquid
+share scenario inputs, is a method decision for Andrew, not part of this fix.
