@@ -1,9 +1,12 @@
 """Quantile mapping of an ERA5 cell's hourly weather to nearby weather stations (design 0005, decided Nov 4, 2026, model 1.8, for shore cells;
 land cells added Nov 6, 2026, model 1.9).
 
-What is corrected: air temperature T and the dew-point depression D = T - Td (C), each by an additive delta read off its own quantile.
-D is kept at or above 0 after correction, so the corrected dew point never passes the corrected temperature and relative humidity
-stays at or below 100%. RH comes from T and Td by the Magnus form the stations use.
+What is corrected: air temperature T and the dew point Td (C), each by an additive delta read off its own quantile (qm-3, model 1.10).
+Td is kept at or below the corrected T, so relative humidity stays at or below 100%. RH comes from T and Td by the Magnus form the stations use.
+Through model 1.9 (qm-1, qm-2) the second variable was the dew-point depression D = T - Td. Mapped apart from T, D let a hot-day temperature
+correction carry the dew point up with it: at model 1.9's checked places the corrected peak days ran 0.72 C (Michigan) and 0.35 C (Ohio) above
+their stations in wet-bulb, with about 37 more hours a year above a 22 C wet-bulb. Mapping Td itself brought both to 0.23 C (methods log,
+Nov 8, 2026).
 
 Bins: calendar month (fitted on that month and the months either side, applied to that month) by 3-hour block of local standard time,
 12 x 8 = 96 bins; 99 quantiles in each (1% to 99%), deltas held constant beyond them.
@@ -25,7 +28,8 @@ P = (np.arange(99) + 1) / 100
 MAGNUS = 17.625, 243.04                 # Alduchov and Eskridge (1996), as climate.isd_hourly uses
 R_KM, K, LAPSE = 100.0, 4, -6.5e-3      # search radius, stations at most, C per m
 SHORE_LAND = 0.9                        # cells under this land fraction are corrected; stations whose cell is under it anchor them
-METHOD = "qm-2"                         # qm-1 (model 1.8): shore cells only
+METHOD = "qm-3"                         # qm-1 (model 1.8): shore cells only, T and D; qm-2 (1.9): land cells too; qm-3 (1.10): T and Td
+FIT = "t-td"                            # what fit() returns quantiles of; cached station fits are keyed by it (qm-1 and qm-2 fitted T and D, "t-d")
 LAND_FROM_LAND = True                   # land cells from land stations only (whose own nearest cell is at least SHORE_LAND land), as shore cells from shore ones
 
 
@@ -43,9 +47,9 @@ def bins(times):
 
 
 def fit(times, t, td, keep=None):
-    """Quantiles of T and D in each bin: array (2, 12, 8, 99). `keep`: a boolean mask of the hours to fit on."""
+    """Quantiles of T and Td in each bin: array (2, 12, 8, 99). `keep`: a boolean mask of the hours to fit on."""
     m, b = bins(times)
-    x = np.stack([np.asarray(t, float), np.asarray(t, float) - np.asarray(td, float)])
+    x = np.stack([np.asarray(t, float), np.asarray(td, float)])
     if keep is not None:
         m, b, x = m[keep], b[keep], x[:, keep]
     q = np.empty((2, 12, 8, len(P)))
@@ -59,15 +63,14 @@ def fit(times, t, td, keep=None):
 def apply(times, t, td, qe, delta):
     """Correct T and Td: each hour moves by the delta at its own quantile in its bin's ERA5 distribution `qe`. Returns (T, Td), Td <= T."""
     m, b = bins(times)
-    x = np.stack([np.asarray(t, float), np.asarray(t, float) - np.asarray(td, float)])
+    x = np.stack([np.asarray(t, float), np.asarray(td, float)])
     out = x.copy()
     for mo in range(12):
         for bl in range(8):
             sel = (m == mo) & (b == bl)
             for v in range(2):
                 out[v, sel] = x[v, sel] + np.interp(x[v, sel], qe[v, mo, bl], delta[v, mo, bl])
-    tc, dc = out[0], np.maximum(out[1], 0.0)
-    return tc, tc - dc
+    return out[0], np.minimum(out[1], out[0])
 
 
 def km(a, b, c, d):

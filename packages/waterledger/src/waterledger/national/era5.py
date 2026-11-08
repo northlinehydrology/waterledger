@@ -131,13 +131,16 @@ def candidates(cells):
 
 def anchor(site, store=None):
     """One station qualified under the snapshots' rule and fitted (quantile_mapping.fit on its own hours), cached in ANCHORS as
-    <id>.json (and <id>.npy, its quantiles): the station record quantile_mapping.correct takes, or None if it fails the 85% rule."""
+    <id>.json (and <id>.<quantile_mapping.FIT>.npy, its quantiles): the station record quantile_mapping.correct takes, or None if it fails the 85% rule."""
     from waterledger_data import climate
     from waterledger_models import quantile_mapping as Q
     os.makedirs(ANCHORS, exist_ok=True)
-    meta_path, q_path = os.path.join(ANCHORS, site["id"] + ".json"), os.path.join(ANCHORS, site["id"] + ".npy")
+    q_name = f"{site['id']}.{Q.FIT}.npy"                   # the fit is keyed by what it fits (model 1.10: T and Td); a fit of another kind is never reused
+    meta_path, q_path = os.path.join(ANCHORS, site["id"] + ".json"), os.path.join(ANCHORS, q_name)
     if not os.path.exists(meta_path) and store:
-        store.get(f"anchors/{site['id']}.json", meta_path) and store.get(f"anchors/{site['id']}.npy", q_path)
+        store.get(f"anchors/{site['id']}.json", meta_path)
+    if not os.path.exists(q_path) and store:
+        store.get(f"anchors/{q_name}", q_path)
     if os.path.exists(meta_path):
         meta = json.load(open(meta_path))
         if not meta["qualifies"]:
@@ -158,7 +161,7 @@ def anchor(site, store=None):
     if store:
         store.put(f"anchors/{site['id']}.json", meta_path)
         if got:
-            store.put(f"anchors/{site['id']}.npy", q_path)
+            store.put(f"anchors/{q_name}", q_path)
     return {**meta, "shore_land": site.get("shore_land", meta["cell_land"]), "qt": np.load(q_path)} if got else None
 
 
