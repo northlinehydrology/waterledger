@@ -60,13 +60,18 @@ def for_regions(points, place_cells):
     return out
 
 
+class RunsMissing(FileNotFoundError):
+    """Cells with no run here. The runs are on the machine that made them and in the private bucket `waterledger-raw`, so a
+    machine without them (GitHub's) can't build a format 3 snapshot or a live cell record."""
+
+
 def runs(ids, runs_dir=None):
-    """{cell: its run file, read}; raises naming the cells with no run, which `waterledger era5 run` makes."""
+    """{cell: its run file, read}; raises RunsMissing naming the cells with no run, which `waterledger era5 run` makes."""
     from waterledger.national import era5 as E
     runs_dir = runs_dir or E.RUNS
     missing = [c for c in ids if not os.path.exists(os.path.join(runs_dir, f"{c}.json"))]
     if missing:
-        raise FileNotFoundError(f"{len(missing)} of {len(ids)} cells have no model {E.RUN_MODEL} run in {runs_dir} (first: {', '.join(missing[:5])}); "
+        raise RunsMissing(f"{len(missing)} of {len(ids)} cells have no model {E.RUN_MODEL} run in {runs_dir} (first: {', '.join(missing[:5])}); "
                                 "run `waterledger era5 run ST` first, or pull them from R2")
     return {c: json.load(open(os.path.join(runs_dir, f"{c}.json"))) for c in ids}
 

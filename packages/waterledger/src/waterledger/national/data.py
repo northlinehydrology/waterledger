@@ -247,7 +247,7 @@ class LiveData:
         return cells.place_fields(c, self.cell(c["id"])["correction"]["applied"])
 
     def cell(self, cid):
-        """A cell's record from its run (CACHE/era5/runs/model1.8; `waterledger era5 run` makes them)."""
+        """A cell's record from its run (CACHE/era5/runs/model<version>; `waterledger era5 run` makes them)."""
         from waterledger.national import cells
         return cells.record(cells.runs([cid])[cid])
 

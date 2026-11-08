@@ -1,5 +1,6 @@
 """Michigan's snapshot (design 0003, decision 8): its shared files agree with what Michigan's provider says, and the site
-files it carries are the site's own. Runs where Michigan's site data is at hand (Northline) or downloadable (-m live)."""
+files it carries are the site's own. Runs where Michigan's site data is at hand (Northline) or downloadable and its cell runs are
+here (-m live); skipped without the runs (GitHub's nightly)."""
 import os, random
 
 import pytest
@@ -14,8 +15,12 @@ WELL_PLACES_MIN, WELL_RECORDS_MIN = 1300, 470000
 
 @pytest.fixture(scope="module")
 def snap(tmp_path_factory):
+    from waterledger.national.cells import RunsMissing
     from waterledger.states.mi.snapshot import write
-    return SnapshotData("MI", write(str(tmp_path_factory.mktemp("snap")), date="2000-01-01"))
+    try:
+        return SnapshotData("MI", write(str(tmp_path_factory.mktemp("snap")), date="2000-01-01"))
+    except RunsMissing as ex:
+        pytest.skip(f"no cell runs here: {ex}")
 
 
 def test_carries_the_site_files(snap):
@@ -39,7 +44,8 @@ def test_shared_files_agree_with_michigan(snap):
         assert snap.division_of(r["cf"]) == c.climate.region or snap.division_runs()[c.climate.region]
         assert snap.storms().get(r["cf"], {}) == c.climate.design_storms_in
         assert {u.name for u in c.energy.utilities} == {u["name"] for u in snap.utilities_for(r["g"])}
-    assert snap.division_runs()["west"]["per_100mw"] == sc.data("estimates")["regions"]["west"]["per_100mw"]
+    west = sc.data("estimates")["regions"]["west"]["cell"]                  # format 3: a region starts on a cell
+    assert snap.cell(west)["per_100mw"] == sc.cell(west)["per_100mw"]
 
 
 def test_water_use_is_egle_then_usgs(snap):
