@@ -77,11 +77,15 @@ def test_designs_order_by_water_use():
     assert use["dry"] < min(use["assist"], use["hybrid"]) and max(use["assist"], use["hybrid"]) < use["towers"]    # assist and hybrid overlap
 
 
-def test_each_parameter_has_one_draw_in_each_stratum():
-    """Latin hypercube, by hand: with n = 50, each parameter's draws fall one each in 50 equal slices of its range, groups or not."""
+@pytest.mark.parametrize("plant", model.PLANTS)
+def test_each_parameter_has_one_draw_in_each_stratum(plant):
+    """Latin hypercube, by hand: with n = 50, each parameter's draws fall one each in 50 equal slices of its plant's range, groups or not. Where the liquid racks
+    share the air loop, liquid_water is the air loop's water, not a draw."""
     n = 50
-    v = model.sample_parameters(n, 7)
-    for k, (lo, hi) in [*model.RANGES.items(), ("topup", model.TOPUP), *model.ADIABATIC.items(), *model.POWER.items(), *model.OUTSIDE.items()]:
+    v = model.sample_parameters(n, 7, plant)
+    for k, (lo, hi) in model.plant_ranges(plant).items():
+        if k == "liquid_water" and model.SHARED[plant]:
+            continue
         assert sorted(np.floor((v[k] - lo) / (hi - lo) * n).astype(int)) == list(range(n)), k
 
 

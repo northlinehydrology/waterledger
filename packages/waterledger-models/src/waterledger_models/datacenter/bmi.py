@@ -8,6 +8,9 @@ them overridable in the configuration file); the Monte Carlo ensemble lives in w
 
 Configuration (a YAML file, or the same keys as a dict passed to initialize):
     design: dry | assist | hybrid | towers      (default towers)
+    plant: shared | warm | chilled               (default shared: the cooling plant inside the building, model.PLANTS; where the liquid
+                                                  racks share the air loop (shared, chilled) liquid_water follows it and can't be set;
+                                                  chilled_water is the chilled plant's only)
     it_capacity_mw: 100                          (IT capacity, MW; sets the cooling load and the staff on site)
     time_step: 3600                              (seconds; the model is calibrated hourly)
     end_time: 31536000                           (seconds; default one year)
@@ -343,8 +346,15 @@ class CoolingWaterBmi(ScalarPointBmi):
             raise ValueError("a forcing file carries relative humidity: use humidity: relative with it")
         self._mw = float(cfg.get("it_capacity_mw", 100.0))
         self._dt = float(cfg.get("time_step", 3600.0))
-        self._params = {**model.central_parameters(), **model.central_staff(), **model.central_limits(),
-                        **{k: float(v) for k, v in (cfg.get("parameters") or {}).items()}}
+        self._plant = cfg.get("plant", model.DEFAULT_PLANT)
+        if self._plant not in model.PLANTS:
+            raise ValueError(f"plant must be one of {tuple(model.PLANTS)}")
+        given = {k: float(v) for k, v in (cfg.get("parameters") or {}).items()}
+        if model.SHARED[self._plant] and "liquid_water" in given:
+            raise ValueError("on a shared loop the liquid racks take the air loop's water: set supply_air, air_rise or coil_eff, or use plant: warm")
+        if "chilled_water" in given and self._plant != "chilled":
+            raise ValueError("chilled_water is the chilled plant's: use plant: chilled")
+        self._params = model.with_plant({**model.central_parameters(self._plant), **model.central_staff(), **model.central_limits(), **given}, self._plant)
         unknown = set(self._params) - set(model.PARAMETERS) - set(model.STAFF_PARAMETERS) - set(model.LIMIT_PARAMETERS) - {"design_db", "switch_on"}
         if unknown:
             raise ValueError(f"unknown parameters: {sorted(unknown)}")

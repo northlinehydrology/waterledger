@@ -78,10 +78,10 @@ def _evaluate(tdb, twb, rh, starts, years, months, hour_years, design, params, m
 
 
 def run_ensemble(time, air_temperature, relative_humidity, mw=100.0, n=DRAWS, seed=7, designs=model.DESIGNS,
-                 chunk=25, keep_daily=False):
+                 chunk=25, keep_daily=False, plant=model.DEFAULT_PLANT):
     """Run the Monte Carlo ensemble for one location.
 
-    time: hourly timestamps (local), air_temperature in C, relative_humidity in percent. mw is IT capacity in MW.
+    time: hourly timestamps (local), air_temperature in C, relative_humidity in percent. mw is IT capacity in MW. plant: the cooling plant (model.PLANTS).
     Returns an xarray Dataset with per-run statistics (design, run, stat) for each flow, where the peak and record days are at the peak load (average load
     over the load factor) and the rest at the average load, the upper case peak day, the central (mid-range) run, water use effectiveness, the sampled parameters, and optionally daily volumes (design, run, day). These are
     cooling water only (with the closed loop's top-ups); summarize() adds staff water at the campus's size.
@@ -91,8 +91,8 @@ def run_ensemble(time, air_temperature, relative_humidity, mw=100.0, n=DRAWS, se
     twb = model.wet_bulb(tdb, rh)
     starts, labels, years, months = _day_layout(time)
     hour_years = np.asarray(time).astype("datetime64[Y]").astype(int)
-    params = model.sample_parameters(n, seed)
-    central = {k: np.array([v]) for k, v in model.central_parameters().items()}
+    params = model.sample_parameters(n, seed, plant)
+    central = {k: np.array([v]) for k, v in model.central_parameters(plant).items()}
 
     st = np.empty((len(designs), n, len(FLOWS), len(STATS)))
     wue = np.empty((len(designs), n, 2))

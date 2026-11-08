@@ -9,6 +9,7 @@ T = np.arange(-25.0, 41.0, 1.0)
 W = ph.wet_bulb(T, np.full_like(T, 55.0))
 DESIGN_DB = 33.0      # C, a test location's 0.4% design dry-bulb
 DRAWS = {**{k: v[:, None] for k, v in ph.sample_parameters(100).items()}, "design_db": DESIGN_DB}
+PLANT_DRAWS = {k: {**{n: v[:, None] for n, v in ph.sample_parameters(100, plant=k).items()}, "design_db": DESIGN_DB} for k in ph.PLANTS}
 CENTRAL = {**ph.central_parameters(), "design_db": DESIGN_DB}
 GAL_KG = 3.78541
 
@@ -17,18 +18,21 @@ def _rates(design):
     return ph.hourly_rates(T, W, design, DRAWS)
 
 
+@pytest.mark.parametrize("plant", ph.PLANTS)
 @pytest.mark.parametrize("design", ph.DESIGNS)
-def test_water_taken_plus_condensate_is_water_used_up_and_returned(design):
-    w, c, r = _rates(design)
-    condensate = ph.hourly_water_with_air(T, W, DRAWS)[1]
+def test_water_taken_plus_condensate_is_water_used_up_and_returned(design, plant):
+    p = PLANT_DRAWS[plant]
+    w, c, r = ph.hourly_rates(T, W, design, p)
+    condensate = ph.hourly_water_with_air(T, W, p)[1]
     assert np.allclose(w + condensate, c + r)
     assert (w >= 0).all() and (c >= 0).all() and (r >= -1e-12).all() and (condensate >= 0).all()
 
 
+@pytest.mark.parametrize("plant", ph.PLANTS)
 @pytest.mark.parametrize("design", ph.DESIGNS)
-def test_every_kw_is_accounted_for(design):
-    """Facility power + what outside air brings = heat through the water or coil + heat rejection fans, whose heat goes straight to the exhaust air."""
-    p = DRAWS
+def test_every_kw_is_accounted_for(design, plant):
+    """Facility power + what outside air brings = heat through the water or coil + heat rejection fans, whose heat goes straight to the exhaust air, in every plant."""
+    p = PLANT_DRAWS[plant]
     power, heat = ph.hourly_heat_power(T, W, design, p)
     assert (power >= 1.0).all() and (heat > 0.0).all()
     q = 1 / p["ups"] + 1 / (1 - p["dist_loss"]) - 1 + p["light"]
@@ -39,7 +43,7 @@ def test_every_kw_is_accounted_for(design):
     outside, latent = ph.hourly_outside_air_heat(T, W, p)
     wet = ph._wet_share(T, design, p)
     coil = T - (p["assist_eff"] * np.maximum(T - W, 0) * (T >= ph.switch_point(p)) if design == "assist" else 0.0)
-    water = p["supply_air"] + p["air_rise"] - p["air_rise"] / p["coil_eff"]
+    water = ph.air_loop_water(p)
     air_load = room + crah + outside
     electric, fans = q + crah, 0.0
     for load, supply in ((np.maximum(air_load, 0), water), (1 - air + np.minimum(air_load, 0), p["liquid_water"]), (latent, ph.DEHUMIDIFY_WATER)):

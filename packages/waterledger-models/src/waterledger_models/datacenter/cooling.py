@@ -31,8 +31,8 @@ from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 
 from waterledger_models.datacenter.physics import sample_staff
-from waterledger_models.datacenter.physics import (ADIABATIC, DRAWS, DESIGNS as _DESIGNS, HFG, KWH_BTU, LB_GAL, OUTSIDE, POWER, RANGES, STAFF, TOPUP, _ramp,  # noqa: F401
-                                                   evaporative_ratio, hourly_heat_power, hourly_rates, for_location, hourly_water_with_air, peak_utilization, sample_parameters, wet_bulb)
+from waterledger_models.datacenter.physics import (ADIABATIC, DEFAULT_PLANT, DRAWS, DESIGNS as _DESIGNS, PLANTS, HFG, KWH_BTU, LB_GAL, OUTSIDE, POWER, RANGES, STAFF, TOPUP, _ramp,  # noqa: F401
+                                                   central_parameters, evaporative_ratio, hourly_heat_power, hourly_rates, for_location, hourly_water_with_air, peak_utilization, sample_parameters, wet_bulb)
 
 DESIGNS = list(_DESIGNS)
 LABELS = {
@@ -48,14 +48,14 @@ def hourly(tdb, twb, design, p, rh=None, heat=None):
     return hourly_rates(tdb, twb, design, p, rh, heat)
 
 
-def sample(n=DRAWS, seed=7):
+def sample(n=DRAWS, seed=7, plant=DEFAULT_PLANT):
     """The Monte Carlo draws, run by run: physics.sample_parameters as a list of {name: value}."""
-    v = sample_parameters(n, seed)
+    v = sample_parameters(n, seed, plant)
     return [{k: float(a[i]) for k, a in v.items()} for i in range(n)]
 
 
-def central():
-    return {**{k: (a + b) / 2 for k, (a, b) in {**RANGES, **ADIABATIC, **POWER, **OUTSIDE}.items()}, "topup": sum(TOPUP) / 2}
+def central(plant=DEFAULT_PLANT):
+    return central_parameters(plant)
 
 
 STAFF_KEYS = ("core", "per_mw", "gpcd", "used", "maint_base", "maint_per_mw", "maint_used")
@@ -123,11 +123,11 @@ def summarize(days, mgd):
             "annual_mg": float(v.mean() * 365.25), "worst_year_mg": float(max(a.sum() for a in ann))}
 
 
-def daily(times, temps, rhs, design, mw, p=None):
+def daily(times, temps, rhs, design, mw, p=None, plant=DEFAULT_PLANT):
     """One run's daily series at `mw` MW of IT capacity (central parameters by default), staff water at its central values included:
     (days, withdrawn MGD, returned MGD), at the average load. For seasonal figures and record days; the pages and reviews use the Monte Carlo percentiles."""
     tdb, rh = np.array(temps, dtype=float), np.array(rhs, dtype=float)
-    p = {**for_location(central(), tdb), **(p or {})}
+    p = {**for_location(central(plant), tdb), **(p or {})}
     w, c, r = hourly(tdb, wet_bulb(tdb, rh), design, p, rh)
     days = np.array([t[:10] for t in times])
     uniq, idx = np.unique(days, return_inverse=True)
@@ -138,17 +138,23 @@ def daily(times, temps, rhs, design, mw, p=None):
     return [str(d) for d in uniq], wd.tolist(), rd.tolist()
 
 
-def run_locations(weather, n=DRAWS, seed=7, mw=100.0, workers=None):
+def run_locations(weather, n=DRAWS, seed=7, mw=100.0, workers=None, plant=DEFAULT_PLANT):
     """run_location for several places at once, one process each: {name: (times, temps, rhs)} to {name: results}. Each place's results are the same as
     running it alone. workers defaults to WATERLEDGER_WORKERS, else one, because a process pool needs the caller's script to have the usual `if __name__ == "__main__"`
     guard (on macOS it breaks without it) and a library can't know that. `waterledger build-state` and `build` turn on every core."""
     names = list(weather)
     workers = workers or int(os.environ.get("WATERLEDGER_WORKERS") or 1)
     if workers == 1 or len(names) == 1:
-        return {k: run_location(*weather[k], n=n, seed=seed, mw=mw) for k in names}
+        return {k: run_location(*weather[k], n=n, seed=seed, mw=mw, plant=plant) for k in names}
     with ProcessPoolExecutor(min(workers, len(names))) as pool:
-        jobs = {k: pool.submit(run_location, *weather[k], n=n, seed=seed, mw=mw) for k in names}
+        jobs = {k: pool.submit(run_location, *weather[k], n=n, seed=seed, mw=mw, plant=plant) for k in names}
         return {k: job.result() for k, job in jobs.items()}
+
+
+def run_plants(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=None, plants=None):
+    """run_location for each cooling plant (physics.PLANTS, the default first): {plant: results}. Each plant's draws share the same strata."""
+    return {k: run_location(times, temps, rhs, n=n, seed=seed, mw=mw, block=block or HOUR_BLOCK, plant=k)
+            for k in (plants or [DEFAULT_PLANT] + [k for k in PLANTS if k != DEFAULT_PLANT])}
 
 
 # Hours worked at a time (model 1.8, Nov 4, 2026). Each step of the heat balance is a NumPy operation over every hour of a run, and over
@@ -176,8 +182,8 @@ def _hourly_run(tdb, twb, rh, design, p, at_peak, block=HOUR_BLOCK):
     return out
 
 
-def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=HOUR_BLOCK):
-    """Monte Carlo for every design at one location, per `mw` MW of IT capacity. `block`: hours worked at a time (HOUR_BLOCK).
+def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=HOUR_BLOCK, plant=DEFAULT_PLANT):
+    """Monte Carlo for every design at one location, per `mw` MW of IT capacity, for one cooling plant (physics.PLANTS). `block`: hours worked at a time (HOUR_BLOCK).
 
     Returns {design: {stat: {"p10","p50","p90"}}} for withdrawn/consumed/returned average, peak and annual, and electricity,
     plus the central-parameter run. Peak = 1-in-10-year peak day (90th percentile of annual maxima) at the peak load, average load over the load factor; the record
@@ -196,11 +202,11 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=HOUR_BLOCK)
     hour_years = np.array([t[:4] for t in times])
     year_ends = np.r_[np.flatnonzero(hour_years[1:] != hour_years[:-1]) + 1, len(hour_years)]
     by = (groups(years), groups(months))
-    runs = sample(n, seed)
+    runs = sample(n, seed, plant)
     out = {}
     for design in DESIGNS:
         acc = {}
-        for p in runs + [central()]:
+        for p in runs + [central(plant)]:
             p = for_location(p, tdb)
             kw = mw * 1000 * p["utilization"]
             # the peak day and the record day: the same weather at the peak load, average load over the load factor (model 1.7)

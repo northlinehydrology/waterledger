@@ -78,7 +78,7 @@ ADIABATIC = {"assist_dt_air": (9.0, 13.0), "assist_bleed": (0.0, 0.5)}
 # waterside economizer, 2.8-6.7 C tower approach, and so on), which LBNL 2024 also draws on, unless noted.
 POWER = {
     "ups": (0.90, 0.99), "dist_loss": (0.0, 0.02), "light": (0.0, 0.002),
-    "supply_air": (27.0, 35.0), "air_rise": (13.9, 19.4), "coil_eff": (0.70, 0.90), "water_rise": (5.0, 10.0),
+    "supply_air": (24.0, 30.0), "air_rise": (13.9, 19.4), "coil_eff": (0.70, 0.90), "water_rise": (5.0, 10.0),
     "crah_pa": (300.0, 700.0), "fan_eff": (0.65, 0.90),
     "tower_fan_pa": (100.0, 400.0), "lg": (0.2, 4.0), "tower_approach": (2.8, 6.7), "hx_approach": (1.7, 2.8),
     "pump_chw_kpa": (114.9, 172.4), "pump_tower_kpa": (166.9, 250.4), "pump_econ_kpa": (114.9, 172.4), "pump_eff": (0.60, 0.80),
@@ -95,11 +95,40 @@ POWER = {
     # -21.1 C at 40%). Its heat capacity and density are taken at 20 C from the same sheet (GLYCOL); thicker than water (4.5 mPa s at -10 C at
     # 30%; water is about 1.8 near freezing), it would also take more pump pressure, which isn't modeled [A].
     "glycol_share": (0.30, 0.40),
-    # Liquid-cooled computers: facility water at ASHRAE TC 9.9 classes W32-W45 (LBNL 2024 Table 4.3: W45), the rest of the heat by air on a cooler
-    # loop: 12.9% (HPE GB200 NVL72), 20% (Schneider WP210), 25-39% (ASME InterPACK2022, not read directly); 10-30% [A]. The share of computers
-    # that are liquid-cooled at a campus is not published for any fleet, so all of 0-1 is sampled [A].
-    "liquid_water": (32.0, 45.0), "liquid_air_share": (0.10, 0.30), "liquid_share": (0.0, 1.0),
+    # Liquid-cooled computers: the rest of their heat goes by air: 12.9% (HPE GB200 NVL72), 20% (Schneider WP210), 25-39% (ASME InterPACK2022, not read
+    # directly); 10-30% [A]. The share of computers that are liquid-cooled at a campus is not published for any fleet, so all of 0-1 is sampled [A]. Their
+    # facility water depends on the plant (PLANTS below): on a shared loop it is the air loop's own water and liquid_water is not used; this range is
+    # the separate warm loop's.
+    "liquid_water": (30.0, 42.0), "liquid_air_share": (0.10, 0.30), "liquid_share": (0.0, 1.0),
 }
+# The cooling plant inside the building (model 1.10, design 0007; Andrew's decision, Nov 8, 2026). Through model 1.9 every campus ran supply air at
+# 27-35 C, Lei and Masanet's upper float bound, and liquid-cooled computers on a loop of their own at 32-45 C, two of ASHRAE's W-class ceilings
+# (ASHRAE TC 9.9 2021, p. 8: each class runs from 2 C up to its number), so every plant was a warm-water best case no source reports operating
+# at. Three documented plants replace it:
+#   shared  one facility water loop serves the air handlers and the liquid racks' coolant units, so the liquid racks get the air loop's water (about
+#           16-28.5 C): OCP, "30 C Coolant" (Rev 1.0, Oct 2024), Fig. 10, p. 22 (one loop at 24/34 C, 30 C supply air); Vertiv GB200 reference
+#           designs 006 and 007; Uptime Intelligence Update 373 (Jun 2025): operators commonly run 18-24 C at the coolant units because one loop
+#           also carries the air loads. The common documented plant, and the default.
+#   warm    a separate warm liquid loop on its own dry coolers, the air hall on a cooler loop: Schneider Reference Design 109 (37.2/47.2 C fluid
+#           coolers with adiabatic assist above 32 C; 22.8/32.8 C chilled water for 27.8 C supply air; about 75% of the heat to liquid). Facility
+#           water 30-42 C [A]: 42 is NVIDIA's 45 C rack inlet less about 3 K through the coolant unit (OCP 2024, p. 21: 4-8 K). Liquid-cooled
+#           share 0.7-1.0 [A]: Vertiv's GB200 designs 72-80%, Schneider about 75%, Microsoft over 90%.
+#   chilled a conventional chilled-water plant, as in older and many colocation buildings: supply air 18-22 C (ASHRAE TC 9.9 2021's recommended
+#           lower limit 18 C; ASHRAE 90.4-2022 Addendum g's basis, an 11 K rise to 29 C return air, so about 18 C; its zone 5A worked example, 18-19 C
+#           supply air on 44/56 F chilled water; 22 C [A]), on chilled water set at 7-13 C (6.7 C in the worked example; 13 C [A]
+#           for plants run warmer), the room air rising 11-14 K (90.4's 11 K to Lei and Masanet's 13.9 [A]). The coil relation can't reach water this
+#           cold from these supply temperatures, so the chilled water is set, not derived. Liquid-cooled share 0-0.2 [A] (Uptime's 2024 survey: 22% of
+#           operators use direct liquid cooling, nearly half of them on under 10% of racks), on the same chilled water. At this water the room coils can condense
+#           some indoor moisture that humidifiers then replace; the model takes them as dry [A].
+# Supply air in the shared and warm plants: 24-30 C [A] (above): Schneider 27.8, OCP 30, Meta's reference 18.3-29.4, ASHRAE's recommended upper limit 27. An air-cooled
+# hall (liquid share near 0) is the shared plant at one end of its range. The hybrid and assist switch point is one setting for the plant, so in the warm
+# plant it is the two loops' limits weighted by their heat (loop_limit), where a real plant could switch each loop on its own [A].
+PLANTS = {"shared": {}, "warm": {"liquid_water": (30.0, 42.0), "liquid_share": (0.7, 1.0)},
+          "chilled": {"supply_air": (18.0, 22.0), "air_rise": (11.0, 14.0), "chilled_water": (7.0, 13.0), "liquid_share": (0.0, 0.2)}}
+SHARED = {"shared": True, "warm": False, "chilled": True}
+DEFAULT_PLANT = "shared"
+PLANT_LABELS = {"shared": "One facility water loop for air and liquid cooling", "warm": "A separate warm-water loop for liquid cooling",
+                "chilled": "A conventional chilled-water plant"}
 # Lei and Masanet's sensible heat ratio (0.95-0.99) was removed in model 1.5 for OUTSIDE below: at their ratio the coils would condense moisture no air was
 # bringing in, and these coils are too warm to condense.
 # Outside air (model 1.5). The building takes a little outside air to stay pressurized and ventilated; it brings heat and
@@ -115,7 +144,7 @@ TOWER_DESIGN_WB = 25.6     # C, the 78 F wet-bulb of the standard cooling tower 
 # Switch settings stay within the 70-95 °F (21.1-35.1 °C) that US 12,426,214 B1 (2025) gives for its controller's wet mode threshold (example: 82 °F, 27.8 °C); applied to assist by analogy [A].
 SWITCH_SETTINGS = (21.1, 35.1)
 HYBRID_MIN_RAMP = 1.0      # K [A]: where a location's design dry-bulb is at or below the switch point, wet mode still comes on over this span, in its hottest hours only
-PARAMETERS = tuple(RANGES) + ("topup",) + tuple(ADIABATIC) + tuple(POWER) + tuple(OUTSIDE)
+PARAMETERS = tuple(RANGES) + ("topup",) + tuple(ADIABATIC) + tuple(POWER) + tuple(OUTSIDE) + ("chilled_water",)
 
 # Staff water. People = the campus's permanent headcount (employees and on-site contractors), a fixed core plus a share per MW of IT
 # capacity: JLARC 2024 puts a typical building at about 50 full-time workers; announced campuses run 0.1 to 0.5 jobs per MW (Meta Richland
@@ -152,8 +181,9 @@ SOURCES = {
     "assist_bleed": "Guentner; Spinazzola 2021; SCE ET13SCE1020, 2015, p. 29; ASHRAE 2016, ch. 41",
     "oa_cfm_per_mw": "ASHRAE 62.1-2007 computer rooms, quoted secondhand, at about 5,000 ft2 per MW [A]; ends 100 and 1,500 [A], no published campus flow",
     "humidify_share": "Not published for any fleet; all of 0-1 sampled [A]; HVAC.best on ASHRAE TC 9.9 (many facilities no longer humidify)",
-    **dict.fromkeys(("ups", "dist_loss", "light", "supply_air", "air_rise", "coil_eff", "water_rise", "crah_pa", "fan_eff", "tower_fan_pa", "lg",
+    **dict.fromkeys(("ups", "dist_loss", "light", "air_rise", "coil_eff", "water_rise", "crah_pa", "fan_eff", "tower_fan_pa", "lg",
                      "tower_approach", "pump_chw_kpa", "pump_econ_kpa", "pump_eff"), _LM),
+    "air_rise": f"{_LM}; the chilled plant 11-14 K, from ASHRAE 90.4-2022 Addendum g's 11 K basis [A]",
     "hx_approach": f"{_LM}; the dry coolers' glycol exchanger by analogy (model 1.9) [A]",
     "pump_tower_kpa": f"{_LM}; the dry coolers' glycol loop by analogy (model 1.9) [A]",
     "carnot_water": "WAC 51-11C-403323 (replica of ASHRAE 90.1 Table 6.8.1-3); +/-11% from Lei and Masanet; fitted with the temperature offsets [A]",
@@ -161,9 +191,11 @@ SOURCES = {
     "dc_approach": "ThermoKey catalogue point (10 K); makers' quotes for larger coils (5 K) [A]",
     "dc_fan_pa": "By analogy with Lei and Masanet's tower fans [A]",
     "glycol_share": "Burst to freeze protection [A]; freezing points, heat capacity and density from Dow's DOWFROST Technical Data Sheet, Form No. 180-01314-1019",
-    "liquid_water": "ASHRAE TC 9.9 classes W32-W45; LBNL 2024 Table 4.3",
+    "supply_air": "Shared and warm plants 24-30 C: Schneider RD109 (27.8 C); OCP 2024, Fig. 10 (30 C); Meta/OCP reference band 18.3-29.4 C; ASHRAE TC 9.9 2021 recommended upper 27 C; 24 C floor [A]. Chilled plant 18-22 C: ASHRAE TC 9.9 2021 recommended lower 18 C; ASHRAE 90.4-2022 Addendum g and its zone 5A worked example; 22 C [A]",
+    "liquid_water": "The warm plant only: Schneider RD109 (37.2 C); NVIDIA's 45 C rack inlet less about 3 K (OCP 2024, p. 21) [A]; on a shared loop, the air loop's water",
+    "chilled_water": "The chilled plant only: ASHRAE 90.4 zone 5A worked example (Amistadi 2020), 44/56 F; 13 C [A]",
     "liquid_air_share": "HPE GB200 NVL72; Schneider WP210; ASME InterPACK2022, not read directly [A]",
-    "liquid_share": "Not published for any fleet; all of 0-1 sampled [A]",
+    "liquid_share": "Not published for any fleet; all of 0-1 sampled on a shared loop [A]; 0.7-1.0 in the warm plant (Vertiv GB200 designs 72-80%, Schneider about 75%, Microsoft over 90%) [A]",
     "core": "JLARC 2024 (about 50 full-time workers a building) [A]",
     "per_mw": "Announced campuses: Meta Richland Parish, Meta El Paso, Saline Township, Gilroy",
     "gpcd": "EPA 2002 Table 3-4; Michigan septic design criteria; Gilroy applicant",
@@ -203,11 +235,18 @@ def for_location(p, tdb):
     return {**p, "design_db": design_dry_bulb(tdb)}
 
 
+def air_loop_water(p):
+    """The air loop's facility water, C: Lei and Masanet's coil relation from supply air (supply air less the coil's approach), or the chilled water a
+    conventional plant sets (PLANTS: chilled)."""
+    coil = p["supply_air"] + p["air_rise"] - p["air_rise"] / p["coil_eff"]
+    return p["chilled_water"] if "chilled_water" in p else coil
+
+
 def loop_limit(p):
     """Dry-bulb where a dry coil can no longer hold the loops' supply temperature, C: supply less the coil's approach, with the air and liquid loops weighted by their
     shares of the heat (Lei and Masanet's air loop water; a liquid loop of its own). Above it, a dry plant needs chillers or evaporation."""
     air = (1.0 - p["liquid_share"]) + p["liquid_share"] * p["liquid_air_share"]
-    air_water = p["supply_air"] + p["air_rise"] - p["air_rise"] / p["coil_eff"]
+    air_water = air_loop_water(p)
     return air * air_water + (1.0 - air) * p["liquid_water"] - p["dc_approach"] - p["hx_approach"]
 
 
@@ -373,7 +412,7 @@ def hourly_heat_power(tdb, twb, design, p, rh=None):
     crah = _fan_kw(room / (CP_AIR * p["air_rise"]) + kg_s, p["crah_pa"], p["fan_eff"])
     outside, latent = hourly_outside_air_heat(tdb, twb, p, rh)
     # supply air and the coil set the air loop's water temperature (Lei and Masanet); liquid-cooled heat goes to a warmer loop of its own
-    air_water = p["supply_air"] + p["air_rise"] - p["air_rise"] / p["coil_eff"]
+    air_water = air_loop_water(p)
     coil_air = tdb - (_pad_depression(tdb, twb, p) * (tdb >= switch_point(p)) if design == "assist" else 0.0)
     wet = _wet_share(tdb, design, p)
     air_load = room + crah + outside                          # in rare, bitter hours outside air could cool more than the air loop carries; the rest comes off the liquid loop
@@ -555,7 +594,7 @@ LINKED = {
     "plant": {"ups": 1, "dist_loss": -1, "fan_eff": 1, "pump_eff": 1, "crah_pa": -1, "tower_fan_pa": -1, "dc_fan_pa": -1, "pump_chw_kpa": -1, "pump_tower_kpa": -1,
               "pump_econ_kpa": -1, "coil_eff": 1, "tower_approach": -1, "hx_approach": -1, "dc_approach": -1, "carnot_water": 1, "carnot_air": 1},
     # one temperature design: warm supply air goes with wide temperature rises across the coil, the loop and, through the plate exchanger, the tower
-    "loop": {"supply_air": 1, "air_rise": 1, "water_rise": 1, "range_f": 1},
+    "loop": {"supply_air": 1, "air_rise": 1, "water_rise": 1, "range_f": 1, "chilled_water": 1},
     # AI campuses: higher utilization and steadier load (EPRI's hyperscale pair against its co-location pair), more liquid cooling, warmer liquid loops
     "load": {"utilization": 1, "load_factor": 1, "liquid_share": 1, "liquid_water": 1},
 }
@@ -583,14 +622,32 @@ def latin_hypercube(ranges, n, seed, linked=None):
 DRAWS = 400       # Latin hypercube draws at each location: 12 seeds at 200 left the hybrid and assist average medians within 6-16% (methods log, Nov 1, 2026), and error falls with the square root of the draws
 
 
-def sample_parameters(n=DRAWS, seed=7):
-    """Monte Carlo draws of the cooling parameters: {name: array (n,)}. cooling.py's per-run loop and ensemble.py both use these draws."""
-    return latin_hypercube({**RANGES, "topup": TOPUP, **ADIABATIC, **POWER, **OUTSIDE}, n, seed, LINKED)
+def plant_ranges(plant=DEFAULT_PLANT):
+    """Every cooling parameter's range for a plant (PLANTS): {name: (low, high)}."""
+    if plant not in PLANTS:
+        raise ValueError(f"plant must be one of {tuple(PLANTS)}, not {plant!r}")
+    return {**RANGES, "topup": TOPUP, **ADIABATIC, **POWER, **OUTSIDE, **PLANTS[plant]}
 
 
-def central_parameters():
-    """Every parameter at the middle of its range."""
-    return {**{k: (a + b) / 2 for k, (a, b) in {**RANGES, **ADIABATIC, **POWER, **OUTSIDE}.items()}, "topup": sum(TOPUP) / 2}
+def with_plant(p, plant=DEFAULT_PLANT):
+    """The parameters with the plant's link applied: where the liquid racks share the air loop (shared, chilled) their facility water is the air
+    loop's own (air_loop_water), so liquid_water is set from it; the warm plant keeps its own. Works on scalars or arrays; returns a new dict."""
+    if plant not in PLANTS:
+        raise ValueError(f"plant must be one of {tuple(PLANTS)}, not {plant!r}")
+    if not SHARED[plant]:
+        return dict(p)
+    return {**p, "liquid_water": air_loop_water(p)}
+
+
+def sample_parameters(n=DRAWS, seed=7, plant=DEFAULT_PLANT):
+    """Monte Carlo draws of the cooling parameters for a plant: {name: array (n,)}. cooling.py's per-run loop and ensemble.py both use these draws.
+    The same n and seed give the same strata for every plant; only the plant's own ranges and link differ."""
+    return with_plant(latin_hypercube(plant_ranges(plant), n, seed, LINKED), plant)
+
+
+def central_parameters(plant=DEFAULT_PLANT):
+    """Every parameter at the middle of its range, for a plant."""
+    return with_plant({k: (a + b) / 2 for k, (a, b) in plant_ranges(plant).items()}, plant)
 
 
 def sample_staff(n=DRAWS, seed=13):

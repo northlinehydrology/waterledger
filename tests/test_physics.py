@@ -9,7 +9,7 @@ from waterledger_models.datacenter import cooling as cw, physics as ph
 def test_vectorized_draws_match_the_loop():
     loop = cw.sample(50, seed=7)
     vec = ph.sample_parameters(50, seed=7)
-    for k in ph.PARAMETERS:
+    for k in vec:
         np.testing.assert_allclose(vec[k], [r[k] for r in loop], rtol=1e-14)
 
 
@@ -36,5 +36,5 @@ def test_hourly_rates_vectorized_equal_per_run():
 
 def test_every_parameter_has_a_source():
     from waterledger_models.datacenter import physics
-    names = {*physics.RANGES, "topup", *physics.ADIABATIC, *physics.POWER, *physics.OUTSIDE, *physics.STAFF}
+    names = {*physics.RANGES, "topup", *physics.ADIABATIC, *physics.POWER, *physics.OUTSIDE, *physics.STAFF, *(k for r in physics.PLANTS.values() for k in r)}
     assert set(physics.SOURCES) == names and all(physics.SOURCES.values())
