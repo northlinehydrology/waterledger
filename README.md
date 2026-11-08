@@ -205,7 +205,7 @@ uv run waterledger snapshot OH --out snapshots && uv run waterledger check-snaps
 
 Checks: `tests` runs on every push (lint, tests on Python 3.11 to 3.13); `nightly` builds the packages, tests the built
 wheels in a clean environment, checks the data sources and reproduces the published estimates, and opens an issue if
-anything fails; `publish` releases to PyPI from a `v*` tag by trusted publishing; `build-state` builds a state's layers on
+anything fails (the snapshot tests need the ERA5 cell runs, so they skip there and run where the runs are); `publish` releases to PyPI from a `v*` tag by trusted publishing; `build-state` builds a state's layers on
 GitHub (its snapshot needs the ERA5 cell runs, so they are written and checked locally and published with `waterledger publish`).
 
 Paths (download cache, site output) come from `WATERLEDGER_CACHE` / `WATERLEDGER_SITE` or a `waterledger.toml` (see
