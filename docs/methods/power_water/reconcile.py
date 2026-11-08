@@ -104,6 +104,8 @@ def plants(y):
         g_ = max(r.gen_basis, 0.0)
         if r.cons > r.wd * 1.001 and r.wd > 0:
             f.append('cons>withdrawal')
+        if r.cons > 0 and r.wd == 0:
+            f.append('no withdrawal, cons reported')
         if r.c_gpm == r.c_gpm and r.c_gpm > 1500:
             f.append('cons>1500gal/MWh')
         if r.cons == 0 and r.wd > 0 and r.cool in ('once', 'pond'):
@@ -115,8 +117,9 @@ def plants(y):
         fl.append('; '.join(f))
         c = mc * g_ / 1e6 if any(x.startswith(('cons>', 'zero cons')) for x in f) else r.cons
         w = mw_ * g_ / 1e6 if any(x.startswith('withdrawal>') for x in f) else r.wd
-        ca.append(min(c, w) if w > 0 else c)
-        wa.append(w)
+        c = min(c, w) if w > 0 else c
+        ca.append(c)
+        wa.append(max(w, c))        # [A] as states.py: withdrawal at least consumption
     p['flag'], p['cons_adj'], p['wd_adj'] = fl, ca, wa
     pf = g.groupby(['Plant Id', 'fuel']).gen.sum().reset_index()
     p['fuel'] = p['Plant Code'].map(pf[pf.fuel.isin(THERMAL)].sort_values('gen', ascending=False).drop_duplicates('Plant Id').set_index('Plant Id').fuel)

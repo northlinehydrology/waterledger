@@ -20,7 +20,9 @@ Method
                      withdrawal > 25,000 gal/MWh for tower or pond (recirculation reported as withdrawal);
                      water reported with no generation anywhere
   adjusted         = flagged consumption (and flagged recirculating withdrawal) replaced by Macknick et al. 2012 median
-                     (Table 2 consumption, Table 3 withdrawal) for the plant's technology and cooling class x cooled gen
+                     (Table 2 consumption, Table 3 withdrawal) for the plant's technology and cooling class x cooled gen;
+                     withdrawal at least consumption [A] (a plant reporting consumption with no withdrawal took at least
+                     that much; most likely reclaimed or utility water that EIA's withdrawal leaves out)
   bottom-up        = Macknick median for every reporting plant's technology/cooling x its cooled gen
   intensity        = state totals / state 2024 net generation (all sources, EIA)
 """
@@ -132,6 +134,8 @@ def main():
         g = max(r.gen_basis, 0.0)
         if r.cons > r.wd * 1.001 and r.wd > 0:
             f.append('cons>withdrawal')
+        if r.cons > 0 and r.wd == 0:
+            f.append('no withdrawal, cons reported')
         if r.c_gpm == r.c_gpm and r.c_gpm > 1500:
             f.append('cons>1500gal/MWh')
         if r.cons == 0 and r.wd > 0 and r.cool in ('once', 'pond'):
@@ -145,8 +149,9 @@ def main():
         bad_w = any(x.startswith('withdrawal>') for x in f)
         ca = mc * g / 1e6 if bad_c else r.cons
         wa = mw * g / 1e6 if bad_w else r.wd
-        cons_adj.append(min(ca, wa) if wa > 0 else ca)
-        wd_adj.append(wa)
+        ca = min(ca, wa) if wa > 0 else ca
+        cons_adj.append(ca)
+        wd_adj.append(max(wa, ca))      # [A] a plant reporting consumption with no withdrawal took at least that much
         cons_bu.append(mc * g / 1e6)
         wd_bu.append(mw * g / 1e6)
     p['flag'], p['cons_adj'], p['wd_adj'], p['cons_bu'], p['wd_bu'] = flags, cons_adj, wd_adj, cons_bu, wd_bu

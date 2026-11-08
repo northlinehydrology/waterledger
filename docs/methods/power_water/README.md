@@ -28,6 +28,9 @@ Rules, the same for every state:
   pond plant reports zero consumption, or when a tower or pond plant reports more than 25,000 gal/MWh withdrawn
   (circulation through a cooling reservoir reported as withdrawal). Flagged values are replaced by Macknick et al.
   (2012) medians for the plant's technology and cooling (Table 2 consumption, Table 3 withdrawal).
+- A plant's withdrawal is at least its consumption [A]. A few plants report water consumed with none withdrawn (2024:
+  Stanton, FL; Kings Mountain, NC; Ingleside Cogeneration, TX), most likely reclaimed or utility water that EIA's
+  withdrawal leaves out; they are flagged, and their withdrawal is set to their consumption.
 - State intensity = plant totals / the state's 2024 net generation, all sources (EIA).
 - Central value = (1 - s) x state + s x main balancing authority (plant-based, same method), s = net interstate imports
   / in-state consumption (EIA Table 10; 0 for net exporters).
