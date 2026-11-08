@@ -48,7 +48,7 @@ LEVELS = 4                 # Morris grid levels; step = LEVELS / (2 (LEVELS - 1)
 N_BOOT = 1000
 BATCH = 512
 WATER_OUTPUTS = ("consumed_avg", "withdrawn_avg", "withdrawn_peak_1in10", "withdrawn_peak_full_capacity")
-COOL_OUTPUTS = WATER_OUTPUTS + ("pue_avg", "pue_hottest_hour")       # model 1.4: electricity from the same heat balance
+COOL_OUTPUTS = WATER_OUTPUTS + ("pue_avg", "pue_hottest_hour", "power_peak_day_1in10")       # model 1.4: electricity from the same heat balance; 1.9: peak-day power
 NC_OUTPUTS = ("nc_withdrawn", "nc_consumed")
 
 
@@ -107,6 +107,10 @@ def cooling_outputs(wx, design, X, space):
         pue = ph.hourly_heat_power(wx["tdb"], wx["twb"], design, p, wx["rh"])[0]
         out["pue_avg"][i:i + BATCH] = pue.mean(1)
         out["pue_hottest_hour"][i:i + BATCH] = np.quantile(np.stack([pue[:, np.repeat(wx["years"], 24) == y].max(1) for y in ys], axis=1), 0.9, axis=1)
+        # the 1-in-10-year peak day's average power at the peak load, MW per 100 MW of IT capacity, as cooling.run_location's power_mw_peak_day_1in10
+        u = ph.peak_utilization(p)
+        pue_peak = ph.hourly_heat_power(wx["tdb"], wx["twb"], design, {**p, "utilization": u}, wx["rh"])[0]
+        out["power_peak_day_1in10"][i:i + BATCH] = peak_1in10((pue_peak * MW * u).reshape(len(xb), nd, 24).mean(-1))
     return out
 
 
@@ -250,7 +254,8 @@ def run(quick=False):
         mu, mu_star, sigma = analyse_morris(y_m, morder, mstep, k)
         base = y[:2 * n]
         sd = base.std(ddof=1)
-        units = "kWh per IT kWh" if o.startswith("pue") else "gal/day per 100 MW IT" if design != "non-cooling" else f"gal/day at {NC_MW:.0f} MW IT"
+        units = ("kWh per IT kWh" if o.startswith("pue") else "MW per 100 MW IT" if o.startswith("power") else "gal/day per 100 MW IT" if design != "non-cooling"
+                 else f"gal/day at {NC_MW:.0f} MW IT")
         srows.append({"design": design, "output": o, "units": units, "mean": base.mean(), "sd": sd,
                       "p10": np.quantile(base, 0.1), "p50": np.quantile(base, 0.5), "p90": np.quantile(base, 0.9),
                       "sum_S1": np.nansum(S1), "sum_ST": np.nansum(ST), "n_base": n, "model_runs": len(y)})
