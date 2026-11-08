@@ -113,9 +113,9 @@ POWER = {
 #           coolers with adiabatic assist above 32 C; 22.8/32.8 C chilled water for 27.8 C supply air; about 75% of the heat to liquid). Facility
 #           water 30-42 C [A]: 42 is NVIDIA's 45 C rack inlet less about 3 K through the coolant unit (OCP 2024, p. 21: 4-8 K). Liquid-cooled
 #           share 0.7-1.0 [A]: Vertiv's GB200 designs 72-80%, Schneider about 75%, Microsoft over 90%.
-#   chilled a conventional chilled-water plant, as in older and many colocation buildings: supply air 18-22 C (ASHRAE TC 9.9 2021's recommended
-#           lower limit 18 C; ASHRAE 90.4-2022 Addendum g's basis, an 11 K rise to 29 C return air, so about 18 C; its zone 5A worked example, 18-19 C
-#           supply air on 44/56 F chilled water; 22 C [A]), on chilled water set at 7-13 C (6.7 C in the worked example; 13 C [A]
+#   chilled a conventional chilled-water plant, as in older and many colocation buildings: supply air 18-22 C (ASHRAE TC 9.9 2021's H1 class for
+#           high-density equipment, recommended 18-22 C, p. 14; ASHRAE 90.4-2022 Addendum g's basis, an 11 K rise to 29 C return air, so about 18 C; its zone 5A worked example, 18-19 C
+#           supply air on 44/56 F chilled water), on chilled water set at 7-13 C (6.7 C in the worked example; 13 C [A]
 #           for plants run warmer), the room air rising 11-14 K (90.4's 11 K to Lei and Masanet's 13.9 [A]). The coil relation can't reach water this
 #           cold from these supply temperatures, so the chilled water is set, not derived. Liquid-cooled share 0-0.2 [A] (Uptime's 2024 survey: 22% of
 #           operators use direct liquid cooling, nearly half of them on under 10% of racks), on the same chilled water. At this water the room coils can condense
@@ -191,7 +191,7 @@ SOURCES = {
     "dc_approach": "ThermoKey catalogue point (10 K); makers' quotes for larger coils (5 K) [A]",
     "dc_fan_pa": "By analogy with Lei and Masanet's tower fans [A]",
     "glycol_share": "Burst to freeze protection [A]; freezing points, heat capacity and density from Dow's DOWFROST Technical Data Sheet, Form No. 180-01314-1019",
-    "supply_air": "Shared and warm plants 24-30 C: Schneider RD109 (27.8 C); OCP 2024, Fig. 10 (30 C); Meta/OCP reference band 18.3-29.4 C; ASHRAE TC 9.9 2021 recommended upper 27 C; 24 C floor [A]. Chilled plant 18-22 C: ASHRAE TC 9.9 2021 recommended lower 18 C; ASHRAE 90.4-2022 Addendum g and its zone 5A worked example; 22 C [A]",
+    "supply_air": "Shared and warm plants 24-30 C: Schneider RD109 (27.8 C); OCP 2024, Fig. 10 (30 C); Meta/OCP reference band 18.3-29.4 C; ASHRAE TC 9.9 2021 recommended upper 27 C; 24 C floor [A]. Chilled plant 18-22 C: ASHRAE TC 9.9 2021 H1 class, recommended 18-22 C (p. 14); ASHRAE 90.4-2022 Addendum g and its zone 5A worked example",
     "liquid_water": "The warm plant only: Schneider RD109 (37.2 C); NVIDIA's 45 C rack inlet less about 3 K (OCP 2024, p. 21) [A]; on a shared loop, the air loop's water",
     "chilled_water": "The chilled plant only: ASHRAE 90.4 zone 5A worked example (Amistadi 2020), 44/56 F; 13 C [A]",
     "liquid_air_share": "HPE GB200 NVL72; Schneider WP210; ASME InterPACK2022, not read directly [A]",

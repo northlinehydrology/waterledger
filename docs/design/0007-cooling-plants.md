@@ -31,7 +31,7 @@ On whether to include the conventional chilled-water plant: "If it's a legitimat
 |---|---|---|---|---|
 | `shared` (default): one facility water loop for air handlers and coolant units | 24-30 C [A] | the air loop's own, from the coil relation (about 16-28.5 C, centre 22.8) | 0-1 [A] | OCP "30 C Coolant" Rev 1.0 (Oct 2024) Fig. 10 p. 22; Vertiv GB200 reference designs 006, 007; Uptime Update 373 (Jun 2025): 18-24 C at the coolant units |
 | `warm`: a separate warm liquid loop on its own dry coolers | 24-30 C [A] | 30-42 C [A] | 0.7-1.0 [A] | Schneider Reference Design 109 (37.2/47.2 C fluid coolers; 22.8/32.8 C chilled water for 27.8 C air); NVIDIA's 45 C rack inlet less about 3 K (OCP 2024 p. 21) |
-| `chilled`: a conventional chilled-water plant | 18-22 C | the chilled water, set at 7-13 C | 0-0.2 [A] | ASHRAE TC 9.9 2021 (recommended 18-27 C); ASHRAE 90.4-2022 Addendum g (11 K air rise to 29 C return); 90.4's zone 5A worked example (18-19 C air, 44/56 F water); 22 C [A]; Uptime 2024 cooling survey (liquid share) |
+| `chilled`: a conventional chilled-water plant | 18-22 C | the chilled water, set at 7-13 C | 0-0.2 [A] | ASHRAE TC 9.9 2021 (H1 class, recommended 18-22 C, p. 14); ASHRAE 90.4-2022 Addendum g (11 K air rise to 29 C return); 90.4's zone 5A worked example (18-19 C air, 44/56 F water); Uptime 2024 cooling survey (liquid share) |
 
 Supply air at 24-30 C rests on these designs:
 - Schneider 27.8 C;
