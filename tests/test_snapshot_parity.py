@@ -1,9 +1,11 @@
-"""A place's context and estimate are the same from a state's snapshot as from a local build (nightly; pytest -m live)."""
+"""A place's context and estimate are the same from a state's snapshot as from a local build (pytest -m live). The local build
+reads the cell runs, so it is skipped where they aren't (GitHub's nightly)."""
 import random
 
 import pytest
 
 import waterledger as wl
+from waterledger.national.cells import RunsMissing
 from waterledger.national.data import SnapshotData, state_data
 
 pytestmark = pytest.mark.live
@@ -30,7 +32,10 @@ def test_snapshot_equals_live(monkeypatch):
         a = (p.context().model_dump(), wl.Site(place=p, facility=wl.DataCenter(it_mw=200, cooling="hybrid")).estimate().water.model_dump())
         state_data.cache_clear()
         monkeypatch.setenv("WATERLEDGER_DATA", "live")
-        b = (p.context().model_dump(), wl.Site(place=p, facility=wl.DataCenter(it_mw=200, cooling="hybrid")).estimate().water.model_dump())
+        try:
+            b = (p.context().model_dump(), wl.Site(place=p, facility=wl.DataCenter(it_mw=200, cooling="hybrid")).estimate().water.model_dump())
+        except RunsMissing as ex:
+            pytest.skip(f"no cell runs here: {ex}")
         monkeypatch.delenv("WATERLEDGER_DATA")
         state_data.cache_clear()
         assert _same_digits(a) == _same_digits(b), g
