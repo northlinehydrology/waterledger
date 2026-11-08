@@ -46,6 +46,7 @@ import waterledger as wl
 place = wl.place("Gaines charter township, MI")      # or wl.place(geoid="2608131240")
 site = wl.Site(place=place, facility=wl.DataCenter(it_mw=300, cooling="hybrid"))
 est = site.estimate()
+warm = wl.Site(place=place, facility=wl.DataCenter(it_mw=300, cooling="hybrid", plant="warm")).estimate()   # the plant inside: shared (default), warm or chilled
 
 est.water.withdrawn.avg          # Range(p10=..., p50=..., p90=...), million gallons a day
 est.water.withdrawn.peak_day     # on a 1-in-10-year peak day
@@ -53,7 +54,7 @@ est.water.withdrawn_peak_full_capacity   # the same day with every computer at c
 est.water.condensate.avg         # water a coil takes out of outside air; withdrawn + condensate = consumed + returned on the middle estimate
 est.electricity.avg_mw           # average power, MW, from the hourly heat balance at this place's weather
 est.electricity.peak_mw          # the 1-in-10-year hottest hour, every computer at capacity
-est.electricity.peak_day_mw      # the 1-in-10-year peak day's average power (model 1.9; None for lake-source cooling)
+est.electricity.peak_day_mw      # the 1-in-10-year peak day's average power (from model 1.9; None for lake-source cooling)
 est.site.source, est.site.wastewater     # the choices, with defaults filled in
 site.estimate(weather="local")   # the model run at the place's own point on Open-Meteo's best match instead of its ERA5 cell's results (about 30 seconds)
 est.comparisons                  # against what is already there: the water system's connections, the county's water, the sewer plant and its spare room, the utilities and the state; a very small water system gets no percent
@@ -88,6 +89,20 @@ They are validated, round-trip through JSON, and are described in
 | Virginia | 322 cities, towns and counties | ERA5, each place's own cell (148 cells) | [waterledger.org/methods/va](https://waterledger.org/methods/va/), [brief](docs/methods/va.pdf) |
 | Texas | 1,481 cities, towns and counties | ERA5, each place's own cell (616 cells) | [waterledger.org/methods/tx](https://waterledger.org/methods/tx/), [brief](docs/methods/tx.pdf) |
 | Wisconsin | 1,922 cities, villages, towns and counties | ERA5, each place's own cell (283 cells) | [waterledger.org/methods/wi](https://waterledger.org/methods/wi/), [brief](docs/methods/wi.pdf) |
+
+**Model 1.10** changes the numbers in three ways, and every state's snapshot is rebuilt for it ([design 0007](docs/design/0007-cooling-plants.md)):
+- **The cooling plant inside the building is a choice** (`DataCenter(plant=...)`):
+  - `shared`, the default: one facility water loop for the air handlers and the liquid racks;
+  - `warm`: a separate warm-water loop for liquid-cooled computers;
+  - `chilled`: a conventional chilled-water plant.
+
+  Through model 1.9 every plant ran supply air at 27-35 C and liquid racks at 32-45 C, the warm-water best case. Each cell
+  is now run for every plant, and the snapshots carry them all (`per_100mw` for the default, `per_100mw_plants` for the
+  others).
+- **The weather correction maps the dew point itself** (qm-3), not the dew-point depression, so a hot-day temperature
+  correction no longer makes peak days humid. The ERA5 check gains W7, a peak-day wet-bulb criterion.
+- **The dry coolers' glycol** has propylene glycol's heat capacity and density (30-40% by volume; Dow's data sheet), not
+  water's.
 
 **Model 1.9** (3.12.0) changes the numbers in four ways, and every state's snapshot is rebuilt for it:
 - **The dry coolers' glycol loop.** Dry, assist and hybrid plants carry a plate exchanger's approach and a glycol loop pump,
@@ -187,7 +202,7 @@ components and the command line) waits for 4.0 and does not ship in a 3.x minor 
 Three version numbers, each with one meaning:
 
 - **Package versions** (semver) change with the code: a major version for breaking changes.
-- **`waterledger_models.MODEL_VERSION`** (now 1.9) changes when the numbers change; the golden test fails until that is
+- **`waterledger_models.MODEL_VERSION`** (now 1.10) changes when the numbers change; the golden test fails until that is
   done deliberately. Every published estimate names the model version that produced it.
 - **The snapshot format version** (now 3, in each snapshot's manifest) changes when the structure of a state's data
   files does. Format 3 (from model 1.8) carries cooling by ERA5 cell (`cells/`). The package still reads format 2, which the
@@ -214,7 +229,7 @@ Paths (download cache, site output) come from `WATERLEDGER_CACHE` / `WATERLEDGER
 
 ### The ERA5 runs
 
-The cooling numbers come from one run per ERA5 cell, about 13 hours at ten workers for the five states' 1,507 cells (model 1.9, one machine), in parts
+The cooling numbers come from one run per ERA5 cell and cooling plant: about 13 hours a plant at ten workers for the five states' 1,507 cells (model 1.9, one machine), so about 40 for model 1.10's three plants, in parts
 started by hand ([design 0004](docs/design/0004-era5-weather.md), section 3). Each part fetches its cells from Open-Meteo's open
 copy of ERA5, corrects them toward nearby stations ([design 0005](docs/design/0005-era5-quantile-mapping.md)), runs them and writes
 `CACHE/era5/runs/model<version>/<cell>.json` as each finishes, so a stopped part resumes where it stopped:

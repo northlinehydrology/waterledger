@@ -1,4 +1,4 @@
-"""Model 1.9's cooling runs: the cooling Monte Carlo on each place's ERA5 cell (design 0004), corrected toward nearby stations by quantile
+"""Model 1.10's cooling runs: the cooling Monte Carlo on each place's ERA5 cell (design 0004), corrected toward nearby stations by quantile
 mapping (design 0005; shore cells from model 1.8, land cells from 1.9), one result file per cell. `waterledger era5 run ST --part k/n --workers 10` runs one part by hand.
 
     state_cells(ST)         {cell: {"cell": era5.cell's record, "places": [geoid, ...]}} for every place in the state's snapshot
@@ -18,7 +18,7 @@ import numpy as np
 from waterledger_data import era5
 from waterledger_data.config import CACHE
 
-RUN_MODEL = "1.9"           # the cooling model on ERA5 cell weather, corrected toward stations near the shore and, from 1.9, inland; from 1.10 each cooling plant: what these runs are for
+RUN_MODEL = "1.10"          # the cooling model on ERA5 cell weather, corrected toward stations near the shore and, from 1.9, inland; from 1.10 each cooling plant: what these runs are for
 SEED, MW = 7, 100.0
 
 
