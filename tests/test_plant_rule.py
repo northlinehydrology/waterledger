@@ -69,6 +69,8 @@ def test_live_permit_needs_the_sewer_and_the_town():
     assert ww.live_permit_at(rows, "AU GRES WWSL", "Au Gres") is None
     rows.append({"CWPName": "AU GRES WWTP", "CWPPermitStatusDesc": "Effective", "SourceID": "MI0058794"})
     assert ww.live_permit_at(rows, "AU GRES WWSL", "Au Gres")["SourceID"] == "MI0058794"
+    # a record without the status field (ECHO, Nov 7, 2026) is read as a null status, not terminated, and doesn't stop the build
+    assert ww.live_permit_at([{"CWPName": "AU GRES WWTP", "SourceID": "MI0058794"}], "AU GRES WWSL", "Au Gres")["SourceID"] == "MI0058794"
 
 
 def test_project_records():

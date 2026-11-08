@@ -7,6 +7,8 @@ Package changes (code). Changes to the numbers are listed by model version on th
 - **Peak-day power on the estimate.** `Estimate.electricity.peak_day_mw`, the 1-in-10-year peak day's average power at the
   peak day's load, from the cell results' `power_mw_peak_day_1in10` (model 1.9); `scenario.electricity` returns it as
   `peak_day_mw`. None for lake-source cooling, whose model doesn't report it, and for older data. No number changes.
+- **An ECHO record without its permit status no longer stops a build** (`wastewater`): read as a null status is, not
+  terminated, as before. ECHO left the field out once (the Nov 7 nightly). No number changes.
 
 ## 3.12.1 (Nov 7, 2026; model 1.9)
 
