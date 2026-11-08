@@ -1773,3 +1773,60 @@ P4, the hybrid peak day, sits near its limit in every state (Ohio 5.9 of 6), whe
 0.5-3.2%. Not a weather bias: towers move 0.1-0.3% and the mean differences are small. The likely cause, not yet
 tested, is that the glycol loop moved the hybrid's dry-to-wet switch, so the same small temperature difference between a
 place's cell and its station moves more water. The limits were set from the earlier model and are not changed here.
+
+## Nov 8, 2026: the cooling runs' hours compiled (model 1.10's runs; the numbers unchanged)
+
+**Decision (Andrew, Nov 8, 2026: "Yes start 1 and 2").** The Monte Carlo's hourly heat balance and water run through a compiled
+kernel (`waterledger_models.datacenter.kernel`, Numba), and the weather's own terms are worked out once per location instead of
+once per draw. `physics.py` stays the model and the reference; the kernel follows it step by step. No model parameter or
+equation changes, so the model version doesn't either.
+
+**Why.** Model 1.10 runs three cooling plants per cell, so a cell is 4,812 runs of the heat balance (3 plants x 4 designs x
+401 draws) over 263,000 hours, each hour three times (the run's load, the peak day's, every computer at capacity). On the
+Nov 4 code that came to about 92 s a cell at twelve workers, about 40 hours for the five states. A profile of one cell (30
+years, Nov 8, with the rerun loading the machine) put 64% of the time in `physics._loop` and 18% in psychrometric functions,
+mostly Python's cost for each of about sixty NumPy steps per block, and terms of the weather recomputed for every draw.
+
+**What changed.**
+- **One pass per hour.** Each hour's heat balance, water and outside-air moisture are worked in one compiled function, in the
+  order `physics.py` works them, with no in-between arrays.
+- **Weather terms once per location** (`kernel.weather_terms`): saturation pressure at the dry-bulb, saturated enthalpy at the
+  wet-bulb and the evaporative ratio's curve, with `physics.py`'s own NumPy functions.
+- **Terms shared by the three loads.** The loads differ only in utilization, so the economizer share, the chillers' COPs,
+  the tower's enthalpy difference and the dry coil's air rise are worked out once per hour for all three. The kernel refuses
+  loads that differ in anything else.
+- **The dehumidifying loop is skipped in hours it carries no heat**, where it gives exact zeros.
+- **Division** follows NumPy's rules (`error_model="numpy"`).
+- **The fan affinity law's cube is `x * x * x`**, where NumPy calls `pow(x, 3)`. This is the one step that can differ, by a
+  unit or two in the last place (at most 3.6e-16 of a value in the tests). Everything else is the same to the bit.
+
+**Same numbers.**
+- **Hourly.** `tests/test_kernel.py` holds every hourly series, for every design in every plant, over the West Michigan test
+  weather and over an extreme set (-35 to 45 C, 5-99% humidity, the switch points), to 1e-12 of `physics.py`. A change to the
+  physics there that isn't made in the kernel fails it.
+- **Through a location's Monte Carlo.** The same test compares `run_location` both ways for every plant.
+- **A real cell.** Michigan 42.75_-85.50, rerun in full (three plants, 401 draws, ERA5 1995-2024 with its station
+  correction) on the kernel, matches all 1,512 numbers of the rerun's stored result to the bit.
+- **Unchanged.** The golden test and the mass and energy balance tests pass unchanged.
+
+**Timings** (Apple M3 Max, one process, with the 12-worker rerun on the same machine; 30 years of hours):
+
+| | Per draw and design | Speed |
+|---|---|---|
+| NumPy (Nov 4 blocks) | 228 ms | 1 |
+| Compiled, same to the bit (division rule, loop skipped) | 127 ms | 1.8x |
+| Compiled, the cube as `x * x * x` | 84 ms | 2.7x |
+| Compiled, terms shared by the three loads | 51 ms | 4.5x |
+
+The full cell above took 236 s on one worker, against about 1,100 s per worker-cell on the Nov 4 code (4.7x). What remains
+is the kernel (about 60%) and the daily statistics (about 30%).
+
+**Alternatives considered.**
+- **A GPU on the Mac.** Apple's GPUs have no 64-bit arithmetic, and the model stays in 64-bit (Andrew, Nov 4).
+- **A data-center GPU** (A100, H100), with every draw and hour its own thread: likely a second or so per cell. The kernel's
+  hour is a plain function of scalars, which Numba can also compile for NVIDIA GPUs, so this stays open. Not needed now.
+- **More draws at once on the CPU.** The workers already keep every core busy; on Nov 4, wider arrays across draws were slower.
+- **Keeping `pow` for the cube** keeps every hourly value to the bit, at 127 ms instead of 84. The difference is far below
+  any digit Water Ledger shows, and the real cell's results matched to the bit either way.
+
+**Dependency.** `waterledger-models` now requires `numba` (0.60 or later) with `numpy`.
