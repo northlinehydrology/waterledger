@@ -1,6 +1,8 @@
 # 0007: Power at the grid: hourly plant water, what gets built, heat and drought, on-site generators
 
-Status: **proposed, Nov 8, 2026. Nothing decided or built.** The decisions for Andrew are at the end.
+Status: **proposed, Nov 8, 2026. Part 1 started the same day** on branch `grid-hourly`, on the proposals in decisions 1,
+2 and 5 (Andrew: "let's start", without choosing among them). Decisions 3 and 4 wait for parts 4 and 2. The build
+plan for part 1 is under *Part 1 as built*.
 
 ## Why
 
@@ -65,6 +67,24 @@ today's annual factors and says so.
   peak day then meets the grid's own hot-day mix.
 - **Closes:** the fuel shares sum to one each hour; a year of intensity × BA generation reproduces the BA's EIA-923
   water to within the reporting gaps, held by a test.
+
+### Part 1 as built
+
+The campus's hourly electricity exists only inside the cell runs (the cooling Monte Carlo behind each snapshot); an
+estimate reads summaries. So the grid component runs inside the cell runs, and its results go into the snapshot like
+the water's. Steps, each its own commit:
+
+1. **EIA-930 hourly, by BA** (`waterledger_data.grid930`): the six-month balance files, 2019 on, cached; the adjusted
+   demand and net generation by fuel for each BA, hourly in UTC.
+2. **Water by BA, fuel and month** (`docs/methods/power_water/ba_fuels.py` → a package table): the plant water
+   already summed for the state table, grouped by each plant's BA (EIA-860) and EIA-930's fuel classes.
+3. **The hourly intensity** for each BA, 2019 on: generation by fuel × its factor, over total generation, with a test
+   that a year of it reproduces the BA's plant-reported water.
+4. **The grid component** (`waterledger_models.grid`): hourly MW in, hourly plant water out, with a BMI wrapper.
+   Conditioning for the 30 weather years: each month and hour, the BA's intensity binned by the cell's own temperature
+   that hour (quintiles within the month), fit on the years the two overlap and applied to all 30.
+5. **Cell runs and the estimate:** the component in the Monte Carlo, the results in the snapshot, and a new power
+   option in `est.power_plants`, with the average, the 1-in-10-year peak day and the marginal figure. Needs a rerun.
 
 ## Part 2: what gets built (its own study)
 
