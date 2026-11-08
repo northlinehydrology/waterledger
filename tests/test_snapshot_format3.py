@@ -63,7 +63,7 @@ def test_cells_index_places_and_manifest(tmp_path, runs):
 
 def test_a_cell_with_no_run_stops_the_snapshot(tmp_path, runs):
     os.remove(os.path.join(runs, "42.00_-85.00.json"))
-    with pytest.raises(FileNotFoundError, match="1 of 3 cells have no model 1.9 run"):
+    with pytest.raises(FileNotFoundError, match=f"1 of 3 cells have no model {E.RUN_MODEL} run"):
         cells.write(str(tmp_path), PLACES, runs)
 
 
@@ -84,7 +84,7 @@ def test_an_estimate_from_a_format_3_snapshot_is_the_cells_run(tmp_path, runs, m
         site = wl.Site(place=place, facility=wl.DataCenter(it_mw=250, cooling=cool), source="muni", wastewater="sewer")
         got = provider.estimate("MI", site)
         assert got.water == water_use(sc.cooling_estimate(D, "41.75_-83.50", cool, 250, "sewer"))
-        assert got.model_version == "1.9"
+        assert got.model_version == E.RUN_MODEL
     assert provider._cooling("MI", place)[0] == "41.75_-83.50"
 
 

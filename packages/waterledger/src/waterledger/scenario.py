@@ -122,22 +122,36 @@ def cell(cid):
     return data(name)
 
 
-def cooling(p, D=None):
+DEFAULT_PLANT = "shared"      # waterledger_models.datacenter.physics.DEFAULT_PLANT, without importing the models here
+
+
+def for_plant(rec, plant=DEFAULT_PLANT):
+    """A cell's or region's results for a cooling plant (model 1.10): per_100mw holds the default plant's, per_100mw_plants the others'. Data from before
+    model 1.10 has one plant, its own, and only that one can be asked for."""
+    if plant == rec.get("plant", DEFAULT_PLANT):
+        return rec
+    other = rec.get("per_100mw_plants", {})
+    if plant not in other:
+        raise ValueError(f"these results have no {plant!r} plant: they have {[rec.get('plant', DEFAULT_PLANT), *other]} (results from before model 1.10 have one)")
+    return {**rec, "per_100mw": other[plant], "plant": plant}
+
+
+def cooling(p, D=None, plant=DEFAULT_PLANT):
     """(D, the key its regions are read by) for a place's cooling. Model 1.8 site data names the place's ERA5 cell (p["e"]), whose results
     come from cells/ and stand in D's regions under the cell's id, as the page loads them; before, the place's region's (p["r"]). The
-    region stays the place's for rainfall, road salt and golf."""
+    region stays the place's for rainfall, road salt and golf. `plant`: the cooling plant inside the building (model 1.10, for_plant)."""
     D = D or data("estimates")
     cid = p.get("e")
     if not cid:
-        return D, p["r"]
-    return {**D, "regions": {**D.get("regions", {}), cid: cell(cid)}}, cid
+        return {**D, "regions": {**D["regions"], p["r"]: for_plant(D["regions"][p["r"]], plant)}}, p["r"]
+    return {**D, "regions": {**D.get("regions", {}), cid: for_plant(cell(cid), plant)}}, cid
 
 
-def estimate(p, mw, cool, dest, region=None):
+def estimate(p, mw, cool, dest, region=None, plant=DEFAULT_PLANT):
     """Water taken, evaporated or lost, and sent out (MGD, lo/mid/hi), as on the page."""
     D = data("estimates")
     if region is None:
-        D, region = cooling(p, D)
+        D, region = cooling(p, D, plant)
     if cool == "lake":
         return lake_estimate(D, p["gl"]["lake"], region, mw, dest)
     return cooling_estimate(D, region, cool, mw, dest)
@@ -272,7 +286,7 @@ def land_default(incorporated):
     return (50, "built") if incorporated else (200, "farm")
 
 
-def scenario(gid, mw=None, cool="dry", src=None, dest=None, acres=None, before=None, imp=0.5, power="state_mix", h12=0, name=None):
+def scenario(gid, mw=None, cool="dry", src=None, dest=None, acres=None, before=None, imp=0.5, power="state_mix", h12=0, name=None, plant=DEFAULT_PLANT):
     p = place(gid)
     # the page's starting settings for a place [A]: cities a smaller campus on a smaller, built-up site; townships 300 MW on farmland
     city = p["k"] == "city"
@@ -280,9 +294,9 @@ def scenario(gid, mw=None, cool="dry", src=None, dest=None, acres=None, before=N
     src = src or src_for(p, cool)["src"]   # the page's starting water source for the place and cooling design
     check_lake(p["base"], p.get("gl"), cool, src)
     if not dest:
-        dest = dest_for(p, cool, estimate(p, mw, cool, "sewer")["sewer"]["mid"])["dest"]
+        dest = dest_for(p, cool, estimate(p, mw, cool, "sewer", plant=plant)["sewer"]["mid"])["dest"]
     start_acres, start_land = land_default(city)
     before = before or start_land
     acres = acres or start_acres
     return {"place": p, "mw": mw, "cool": cool, "src": src, "dest": dest, "acres": acres, "before": before, "imp": imp, "power": power,
-            "h12": min(h12, len(p["h12"]) - 1) if p["h12"] else None, "name": name, "E": estimate(p, mw, cool, dest)}
+            "h12": min(h12, len(p["h12"]) - 1) if p["h12"] else None, "name": name, "plant": plant, "E": estimate(p, mw, cool, dest, plant=plant)}

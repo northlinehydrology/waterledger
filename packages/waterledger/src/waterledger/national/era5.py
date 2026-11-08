@@ -18,7 +18,7 @@ import numpy as np
 from waterledger_data import era5
 from waterledger_data.config import CACHE
 
-RUN_MODEL = "1.9"           # the cooling model on ERA5 cell weather, corrected toward stations near the shore and, from 1.9, inland: what these runs are for
+RUN_MODEL = "1.9"           # the cooling model on ERA5 cell weather, corrected toward stations near the shore and, from 1.9, inland; from 1.10 each cooling plant: what these runs are for
 SEED, MW = 7, 100.0
 
 
@@ -219,7 +219,16 @@ def _record(cid, cells, times, temps, note, res, draws):
             "design_dry_bulb_c": design_dry_bulb(temps), "correction": note,
             "weather": {"source": meta["request"]["source"], "fetched": meta["fetched"], "sha256": meta["sha256"], "attribution": era5.ATTRIBUTION,
                         "citation": era5.CITATION},
-            "per_100mw": res}
+            **by_plant(res)}
+
+
+def by_plant(res):
+    """A run's results as a cell record carries them: per_100mw for the default plant, per_100mw_plants for the others (model 1.10). A run of one plant
+    (cooling.run_location, or a stand-in in tests) is the default's."""
+    from waterledger_models.datacenter.physics import DEFAULT_PLANT, PLANTS
+    if not set(res) <= set(PLANTS):
+        return {"per_100mw": res}
+    return {"plant": DEFAULT_PLANT, "per_100mw": res[DEFAULT_PLANT], "per_100mw_plants": {k: v for k, v in res.items() if k != DEFAULT_PLANT}}
 
 
 def _raw_keys(cid):
@@ -275,7 +284,7 @@ def _stop(pool):
 
 
 def run_part(state, k=1, n=1, workers=6, draws=None, store=None, cells=None, run=None, fetch=None):
-    """Run part k of n of a state's cells; return {cell: result path}. `run` and `fetch` stand in for cooling.run_location and
+    """Run part k of n of a state's cells, every cooling plant (cooling.run_plants); return {cell: result path}. `run` and `fetch` stand in for cooling.run_plants and
     era5.fetch in tests; `cells` for state_cells(state).
 
     Ctrl-C stops it cleanly: the cells not started are cancelled and the workers ended (a cell in progress runs again next time),
@@ -286,7 +295,7 @@ def run_part(state, k=1, n=1, workers=6, draws=None, store=None, cells=None, run
     from waterledger_models.datacenter import cooling
     from waterledger_models.datacenter.physics import DRAWS
     draws = draws or DRAWS
-    run, fetch = run or cooling.run_location, fetch or era5.fetch
+    run, fetch = run or cooling.run_plants, fetch or era5.fetch
     cells = cells if cells is not None else state_cells(state)
     ids = part(cells, k, n)
     _say(f"{state.upper()} part {k}/{n}: {len(ids)} cells" + (f"; R2 ({store.name}) on" if store else "; R2 off"))
