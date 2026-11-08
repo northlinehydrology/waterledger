@@ -1988,3 +1988,20 @@ is the kernel (about 60%) and the daily statistics (about 30%).
   any digit Water Ledger shows, and the real cell's results matched to the bit either way.
 
 **Dependency.** `waterledger-models` now requires `numba` (0.60 or later) with `numpy`.
+
+## Nov 8, 2026: a power plant's withdrawal is at least its consumption (next release; built, not released)
+
+**What.** Three plants in EIA's 2024 cooling data report water consumed and none withdrawn: Stanton Energy Center, FL
+(1,270 MG consumed; EIA water type "Reclaimed"), Kings Mountain Energy Center, NC (631 MG) and Ingleside Cogeneration, TX
+(622 MG). A plant can't consume water it didn't take in, so their withdrawal is now set to their consumption [A], and they
+are flagged. The likely cause is water that EIA's withdrawal leaves out, reclaimed or bought from a utility; Stanton's
+water type says so for that plant, and the other two are not confirmed. Plants that report a withdrawal keep their
+treatment (flagged consumption above withdrawal is still held to the withdrawal). The rule is the same in every state
+and every year the build reads (2022-2024).
+
+**Why.** The balancing-authority table for hourly grid water (design 0007) needed it to close, and Andrew decided (Nov 8)
+that both tables follow one rule.
+
+**Effect.** Withdrawn power plant water per kWh: Florida 46.562 to 46.582 L/kWh, North Carolina 33.057 to 33.077; Texas
+moves under the table's rounding. The added water is fresh. Consumption, the coal and nuclear options, and every other
+state are unchanged. The build before the change reproduces the published tables exactly from the same inputs.
