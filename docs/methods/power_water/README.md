@@ -12,11 +12,14 @@ Inputs, in a work folder (`$WL_POWER_WORK`, default `./work`, not committed):
 | `dl/api/state_gen_2024.json`, `facility_gen_2024.json`, `generators_2024_12.json` | EIA API v2 (`fetch_eia.py`; public data, DEMO_KEY) |
 | `dl/eia860/x/2___Plant_Y2024.xlsx` | EIA-860 2024, plant file (balancing authority of each plant): https://www.eia.gov/electricity/data/eia860/ |
 | `dl/sep/sep_<ST>.xlsx` | EIA State Electricity Profiles, Table 10, supply and disposition: https://www.eia.gov/electricity/state/xls/SEP%20Tables%20for%20<ST>.xlsx |
+| `dl/f923/EIA923_Schedules_2_3_4_5_M_12_2024_Final.xlsx` | EIA-923 2024, Page 1, monthly net generation by plant and fuel with each plant's balancing authority: https://www.eia.gov/electricity/data/eia923/ (`f923_2024.zip`) |
 
 Order: `fetch_eia.py`, `states.py` (state totals, plant flags, Macknick-filled adjusted case, bottom-up), `ba_compare.py`
 (the same by balancing authority), `imports.py` (net imports, blend with the main balancing authority, ranges).
 `combine.py` writes the package's state table, and `fuels.py` the coal and nuclear table (`tables/state_fuel_water_2024.csv`).
-`verify_table.py` checks `grid_water_2022.csv` against the Siddik et al. dataset.
+`verify_table.py` checks `grid_water_2022.csv` against the Siddik et al. dataset. `ba_fuels.py`, after `states.py`,
+writes `tables/ba_fuel_water_2024.csv`: the same plant water by balancing authority, EIA-930 fuel class and month, for
+the hourly grid water of design 0007.
 
 Rules, the same for every state:
 - A fresh-water plant that draws from and returns to a built reservoir is pond class, whatever its EIA code, unless it sits on a river main stem the plant is small against.

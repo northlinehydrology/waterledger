@@ -101,6 +101,29 @@ def fuel_options(state, name):
     return out
 
 
+BA_FUEL_TABLE = os.path.join(os.path.dirname(__file__), "tables", "ba_fuel_water_2024.csv")
+
+
+def ba_fuel_water(ba):
+    """Water at power plants per MWh by EIA-930 fuel class and month in a balancing authority, 2024 (design 0007; built by
+    docs/methods/power_water/ba_fuels.py): {fuel: {"consumed", "withdrawn", "withdrawn_saline"}} of 12 monthly gal/MWh
+    arrays, January first. A class the BA doesn't generate takes the U.S. factor; one with no water (hydro, solar, wind,
+    storage) is zero. None for a BA not in the table (Alaska and Hawaii have none in EIA-930)."""
+    import numpy as np
+    rows = list(csv.DictReader(open(BA_FUEL_TABLE)))
+    us = {r["fuel"]: r for r in rows if r["ba"] == "US"}
+    mine = [r for r in rows if r["ba"] == ba]
+    if not mine:
+        return None
+    zero = {"consumed_gal_mwh": "0", "withdrawn_gal_mwh": "0", "withdrawn_saline_gal_mwh": "0"}
+    out = {}
+    for fuel in ("coal", "gas", "nuclear", "oil", "hydro", "solar", "wind", "geothermal", "storage", "other", "unknown"):
+        by_m = {int(r["month"]): r for r in mine if r["fuel"] == fuel and r["consumed_gal_mwh"] != ""}
+        src = [by_m.get(m) or us.get("other" if fuel == "unknown" else fuel) or zero for m in range(1, 13)]
+        out[fuel] = {k: np.array([float(s[f"{k}_gal_mwh"]) for s in src]) for k in ("consumed", "withdrawn", "withdrawn_saline")}
+    return out
+
+
 def state_power_water(state):
     """Water at power plants per kWh of electricity used in a state, 2024, from plant-reported data (EIA-923 cooling water and
     EIA-860, flagged reports replaced by Macknick et al. 2012 medians, blended with the main balancing authority by the state's
