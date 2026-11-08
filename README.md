@@ -53,6 +53,7 @@ est.water.withdrawn_peak_full_capacity   # the same day with every computer at c
 est.water.condensate.avg         # water a coil takes out of outside air; withdrawn + condensate = consumed + returned on the middle estimate
 est.electricity.avg_mw           # average power, MW, from the hourly heat balance at this place's weather
 est.electricity.peak_mw          # the 1-in-10-year hottest hour, every computer at capacity
+est.electricity.peak_day_mw      # the 1-in-10-year peak day's average power (model 1.9; None for lake-source cooling)
 est.site.source, est.site.wastewater     # the choices, with defaults filled in
 site.estimate(weather="local")   # the model run at the place's own point on Open-Meteo's best match instead of its ERA5 cell's results (about 30 seconds)
 est.comparisons                  # against what is already there: the water system's connections, the county's water, the sewer plant and its spare room, the utilities and the state; a very small water system gets no percent

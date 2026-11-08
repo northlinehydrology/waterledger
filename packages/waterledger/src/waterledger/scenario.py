@@ -82,13 +82,16 @@ def flow(D, region, cool, key, mw):
 
 
 def electricity(D, region, cool, mw):
-    """Facility electricity at `mw` MW of IT capacity at a region's weather, lo/mid/hi: {"mw", "peak_mw", "pue", "peak_pue"}, or None for data from
-    before model 1.4. Lake-source cooling has its own heat balance (lake.run_lake), the same at every region. Same as WQ.elec on the page."""
+    """Facility electricity at `mw` MW of IT capacity at a region's weather, lo/mid/hi: {"mw", "peak_mw", "pue", "peak_pue"}, and "peak_day_mw"
+    where the results have it (model 1.9; not lake-source cooling), or None for data from before model 1.4. Lake-source cooling has its own heat balance (lake.run_lake), the same at every region. Same as WQ.elec on the page."""
     per_100mw = D["regions"][region]["per_100mw"]
     r = (D["lake_source"].get("power") or per_100mw["towers"]) if cool == "lake" else per_100mw[cool]      # data from before model 1.5: towers stood in
     if "power_mw_avg" not in r:
         return None
-    return {"mw": band(r["power_mw_avg"], mw / 100), "peak_mw": band(r["power_mw_peak_1in10"], mw / 100), "pue": band(r["pue_avg"], 1.0), "peak_pue": band(r["pue_peak_1in10"], 1.0)}
+    out = {"mw": band(r["power_mw_avg"], mw / 100), "peak_mw": band(r["power_mw_peak_1in10"], mw / 100), "pue": band(r["pue_avg"], 1.0), "peak_pue": band(r["pue_peak_1in10"], 1.0)}
+    if "power_mw_peak_day_1in10" in r:
+        out["peak_day_mw"] = band(r["power_mw_peak_day_1in10"], mw / 100)
+    return out
 
 
 def pue_by_design(regions, lake=None):

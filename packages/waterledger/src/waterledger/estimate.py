@@ -58,17 +58,22 @@ def water_use(E):
 def electricity(e):
     """Electricity from waterledger.scenario.electricity's form; None for data from before model 1.4."""
     R = Range.from_band
-    return Electricity(avg_mw=R(e["mw"]), peak_mw=R(e["peak_mw"]), pue=R(e["pue"]), peak_pue=R(e["peak_pue"])) if e else None
+    if not e:
+        return None
+    return Electricity(avg_mw=R(e["mw"]), peak_mw=R(e["peak_mw"]), pue=R(e["pue"]), peak_pue=R(e["peak_pue"]),
+                       peak_day_mw=R(e["peak_day_mw"]) if "peak_day_mw" in e else None)
 
 
 class Electricity(BaseModel):
     """A site's electricity, from the hourly heat balance at its weather (model 1.4). avg_mw: computers at their average utilization, plus cooling
-    and losses. peak_mw: the 1-in-10-year hottest hour with every computer at capacity. pue and peak_pue: facility power over IT power."""
+    and losses. peak_mw: the 1-in-10-year hottest hour with every computer at capacity. pue and peak_pue: facility power over IT power.
+    peak_day_mw: the 1-in-10-year peak day's average power at the peak day's load (model 1.9; None for lake-source cooling and older data)."""
     model_config = ConfigDict(frozen=True)
     avg_mw: Range
     peak_mw: Range
     pue: Range
     peak_pue: Range
+    peak_day_mw: Range | None = None
 
 
 class Percent(BaseModel):

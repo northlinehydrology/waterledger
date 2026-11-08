@@ -63,11 +63,12 @@ def replaced(name, design, largest_live):
 
 
 def live_permit_at(rows, name, city):
-    """Of ECHO's permits near a plant, a live one for a sewer plant of the same town or name: the renumbered permit, or None."""
+    """Of ECHO's permits near a plant, a live one for a sewer plant of the same town or name: the renumbered permit, or None. A record
+    without a permit status (ECHO left the field out once, Nov 7, 2026) is read as a null status is: not terminated."""
     n, c = name.upper().split(), (city or "").upper()
     for r in rows:
         held = (r.get("CWPName") or "").upper()
-        if r["CWPPermitStatusDesc"] != "Terminated" and SEWER_PERMIT.search(held) and not NOT_SEWER.search(held) and not STORMWATER_PERMIT.match(r.get("SourceID") or "") and ((c and c in held) or (n and len(n[0]) > 2 and n[0] in held)):
+        if r.get("CWPPermitStatusDesc") != "Terminated" and SEWER_PERMIT.search(held) and not NOT_SEWER.search(held) and not STORMWATER_PERMIT.match(r.get("SourceID") or "") and ((c and c in held) or (n and len(n[0]) > 2 and n[0] in held)):
             return r
     return None
 
@@ -101,7 +102,7 @@ def plants(state):
     reports = {r["SourceID"]: r for r in _echo(state)}
     unlisted = {pm for cid in fac if cid in flow and cid in loc and cid not in state_permit for pm in permits[cid] if pm not in reports}
     reports.update({r["SourceID"]: r for r in (_echo_by_permit(state, unlisted) if unlisted else [])})
-    echo = {k: r for k, r in reports.items() if r["CWPPermitStatusDesc"] != "Terminated"}
+    echo = {k: r for k, r in reports.items() if r.get("CWPPermitStatusDesc") != "Terminated"}
     usable = [c for c in fac if c in flow and c in loc and not is_project(fac[c]["FACILITY_NAME"])]
     found = {c: next((echo[pm] for pm in permits[c] if pm in echo), None) for c in usable}
     doubtful = [c for c in usable if found[c] is None and c not in state_permit and permits[c]]            # every permit terminated or gone from ECHO

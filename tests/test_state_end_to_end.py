@@ -68,6 +68,8 @@ def test_an_estimate_runs_and_closes(places, cooling):
         if w.condensate:
             assert w.withdrawn.avg.p50 + w.condensate.avg.p50 == pytest.approx(w.consumed.avg.p50 + w.returned.avg.p50, rel=1e-9)
         assert e.electricity.avg_mw.p50 > 0 and e.equivalents.golf_courses is not None
+        pd = e.electricity.peak_day_mw                                    # model 1.9: the peak day's average power, between the two
+        assert pd is not None and e.electricity.avg_mw.p50 < pd.p50 < e.electricity.peak_mw.p50 and pd.p10 <= pd.p50 <= pd.p90
         assert e.site.power in e.power_plants
         json.loads(e.model_dump_json())
 
