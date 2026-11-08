@@ -86,6 +86,23 @@ the water's. Steps, each its own commit:
 5. **Cell runs and the estimate:** the component in the Monte Carlo, the results in the snapshot, and a new power
    option in `est.power_plants`, with the average, the 1-in-10-year peak day and the marginal figure. Needs a rerun.
 
+**Progress, Nov 8, 2026.** Steps 1–4 are built and tested; step 5 is not started.
+
+- Step 1: 67 BAs, 2019–2025. Fuel classes sum to EIA's net generation within 0.004% (MISO). EIA split hydro, solar,
+  wind and storage in July 2024 and its headers carry typos; columns are matched by word.
+- Step 2: the factors give back each BA's 2024 plant water within 0.4%, BPAT within 4%. Only Hawaii's two plants have no
+  BA. Three plants report consumption with no withdrawal (Stanton, FL; Kings Mountain, NC; Ingleside Cogeneration,
+  TX); here their withdrawal is set to at least their consumption [A]. **The published state table keeps it at zero;
+  to be decided whether it follows** (it is the same evidence in every state).
+- Step 3: 2024's hours give back the large BAs' plant water within 10% (MISO 97%, PJM 100%, ERCOT 94%, SOCO 99%). The
+  gap follows the difference between EIA-930's and EIA-923's generation for the BA. PSCO (+69%) and BPAT (-29%) are far
+  off, from how the two surveys assign plants; flagged, not fixed.
+- Step 4: `waterledger_models.grid` and `GridWaterBmi`. Fit for MISO on the Gaines cell (42.75, -85.50), 2019–2024
+  (52,626 hours; the cell's ERA5 file ends Jan 1, 2025): average consumption 320–350 gal/MWh in July hours, 250–270
+  in January. The marginal plants consume 270–340 gal/MWh in summer but withdraw 12,000–16,000, from once-through
+  coal following load. The temperature at Gaines barely moves MISO's mix (the BA is too large); conditioning matters
+  more in small BAs.
+
 ## Part 2: what gets built (its own study)
 
 **Question:** when the region's data center pipeline arrives, which plants get built or kept running, and what do they
