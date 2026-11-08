@@ -150,3 +150,26 @@ def test_cells_as_json_say_when_a_state_is_done(cache, monkeypatch, capsys):
         open(E.result_path(c), "w").write("{}")
     cli.main(["era5", "cells", "OH", "--json"])
     assert json.loads(capsys.readouterr().out)["complete"] is True
+
+
+def test_a_humid_peak_day_on_corrected_cells_fails_w7():
+    """W7 (model 1.10): corrected cells whose 1-in-10-year peak day runs humid, on average, fail; one that is right, or rows from before W7, don't."""
+    row = lambda wb_peak: {"cell_land": 1.0, "corrected": True, "uncorrected": {"ddb": 0.1, "wb": 0.05, "wb_peak_day": 0.5},
+                           "decided": {"ddb": 0.1, "wb": 0.05, "wb_peak_day": wb_peak}}
+    places = [{"difference_pct": {f"{d}.{s}": 1.0 for d, s in C.STATS}}] * 5
+    crit, ok = C.judge([row(0.72)] * 6, places)
+    assert not ok and {c["id"]: c for c in crit}["W7"]["value"] == pytest.approx(0.72)
+    crit, ok = C.judge([row(0.23)] * 6, places)
+    assert ok and {c["id"]: c["pass"] for c in crit}["W7"]
+    old = [{"cell_land": 1.0, "corrected": True, "uncorrected": {"ddb": 0.1, "wb": 0.05}, "decided": {"ddb": 0.1, "wb": 0.05}}] * 6
+    assert {c["id"]: c["pass"] for c in C.judge(old, places)[0]}["W7"] is None
+
+
+def test_weather_stats_give_the_peak_days_mean_wet_bulb():
+    times = [f"{y}-07-{d:02d}T{h:02d}:00" for y in range(2000, 2010) for d in range(1, 4) for h in range(24)]
+    t = np.array([25.0 + (y - 2000) * 0.1 + (d == 2) * 3.0 for y in range(2000, 2010) for d in range(1, 4) for h in range(24)])
+    s = C.weather_stats(times, t, t - 5.0)
+    from waterledger_models.datacenter.physics import wet_bulb
+    from waterledger_data import era5
+    hot = [float(wet_bulb(np.array([28.0 + (y - 2000) * 0.1]), era5.rh_from(np.array([28.0 + (y - 2000) * 0.1]), np.array([23.0 + (y - 2000) * 0.1])))[0]) for y in range(2000, 2010)]
+    assert s["wb_peak_day"] == pytest.approx(np.quantile(hot, 0.9))
