@@ -1,20 +1,21 @@
 # ERA5 check: TX
 
-**PASS** (2026-11-07; model 1.9; design 0005's leave-one-station-out check; 67 stations).
+**PASS** (2026-11-08; model 1.10; design 0005's leave-one-station-out check; 67 stations).
 
 | Criterion | Test | Limit | Value | Pass | Limit set from |
 |---|---|---|---|---|---|
 | W1 | land stations held out, at least | 5 | 63 | yes | too few to judge below this |
 | W2 | land cells: median |error| in the 0.4% design dry-bulb, C, at most | 0.75 | 0.45 | yes | four states 0.30-0.68 (Virginia); +0.07 |
 | W3 | land cells: |mean error| in the design dry-bulb, C, at most | 0.50 | 0.02 | yes | four states 0.07-0.33 (Texas); +0.17 |
-| W4 | land cells: median |error| in the 0.4% wet bulb, C, at most | 0.40 | 0.17 | yes | four states 0.10-0.25 (Virginia); +0.15 |
+| W4 | land cells: median |error| in the 0.4% wet bulb, C, at most | 0.40 | 0.13 | yes | four states 0.10-0.25 (Virginia); +0.15 |
 | W5 | corrected shore cells (3 or more): median |error| in the design dry-bulb, C, at most | 0.50 | - | not judged | four states 0.19-0.32 (Michigan); +0.18 |
 | W6 | corrected shore cells (3 or more): median |error| no worse than uncorrected | - | - | not judged | the reason to correct |
+| W7 | corrected cells: |mean error| in the 1-in-10-year peak day's mean wet bulb, C, at most | 0.50 | 0.06 | yes | model 1.10 [A]: qm-2's Michigan peak days ran 0.72 C humid, mapping the dew point brought Michigan and Ohio to 0.23 (methods log, Nov 8, 2026) |
 | P1 | places sampled, at least | 5 | 12 | yes | too few to judge below this |
-| P2 | places: median |difference| in the hybrid average day, %, at most | 8.00 | 4.98 | yes | four states 1.9-4.6 (Virginia); +3.4 |
-| P3 | places: |mean difference| in the hybrid average day, %, at most | 6.00 | 1.63 | yes | four states 0.6-4.9 (Virginia); +1.1 |
-| P4 | places: median |difference| in the hybrid peak day, %, at most | 6.00 | 4.03 | yes | four states 0.5-3.2 (Virginia); +2.8 |
-| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.28 | yes | four states 0.03-0.22; +1.8 |
+| P2 | places: median |difference| in the hybrid average day, %, at most | 8.00 | 4.47 | yes | four states 1.9-4.6 (Virginia); +3.4 |
+| P3 | places: |mean difference| in the hybrid average day, %, at most | 6.00 | 1.26 | yes | four states 0.6-4.9 (Virginia); +1.1 |
+| P4 | places: median |difference| in the hybrid peak day, %, at most | 6.00 | 3.76 | yes | four states 0.5-3.2 (Virginia); +2.8 |
+| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.31 | yes | four states 0.03-0.22; +1.8 |
 
 ## Weather at the held-out stations
 
@@ -23,10 +24,10 @@ Median absolute error (mean error), C, against the station on its own hours.
 | Stations | Way | Design dry-bulb | 0.4% wet bulb | Summer afternoon T | Mean dew point |
 |---|---|---|---|---|---|
 | land cells, corrected (53) | uncorrected | 0.40 (-0.34) | 0.18 (-0.05) | 0.34 (-0.13) | 0.22 (+0.04) |
-| land cells, corrected (53) | decided | 0.45 (+0.03) | 0.17 (+0.01) | 0.30 (+0.10) | 0.28 (-0.06) |
+| land cells, corrected (53) | decided | 0.45 (+0.03) | 0.13 (-0.04) | 0.30 (+0.10) | 0.40 (-0.02) |
 | land cells, no station (10) | uncorrected | 0.45 (-0.25) | 0.18 (-0.10) | 0.20 (-0.21) | 0.16 (+0.08) |
 | shore cells, corrected (1) | uncorrected | 0.25 (-0.25) | 0.13 (-0.13) | 0.72 (-0.72) | 0.04 (+0.04) |
-| shore cells, corrected (1) | decided | 0.23 (+0.23) | 0.25 (+0.25) | 0.12 (-0.12) | 0.25 (+0.25) |
+| shore cells, corrected (1) | decided | 0.23 (+0.23) | 0.26 (+0.26) | 0.12 (-0.12) | 0.28 (+0.28) |
 | shore cells, no shore station (3) | uncorrected | 0.30 (-0.43) | 0.39 (-0.40) | 0.45 (-0.44) | 0.34 (-0.29) |
 
 | Station | Source | Cell land | Design dry-bulb error (C) | Corrected from |
@@ -105,17 +106,17 @@ The place's cell against the station's own record, p50 per 100 MW, % difference.
 
 | Place | Station (km) | Cell land | towers avg | towers peak | hybrid avg | hybrid peak | assist avg | assist peak |
 |---|---|---|---|---|---|---|---|---|
-| Nederland city | Southeast Texas Regional Airport (3) | 0.89 | +0 | +0 | +9 | +11 | -7 | +2 |
-| Galveston County | Scholes Intl At Glston Apt (4) | 0.67 | -1 | -1 | -16 | -13 | -14 | -11 |
-| Corpus Christi city | Corpus Christi Nas (14) | 0.74 | -1 | -1 | +0 | +3 | -1 | +4 |
-| Fulton town | Aransas County Airport (2) | 0.77 | +0 | +1 | -4 | +6 | -7 | +7 |
-| Palacios city | Palacios Municipal Airport (3) | 0.77 | -0 | -1 | -4 | -9 | -4 | -7 |
-| Tye city | Dyess Air Force Base (3) | 1.00 | -0 | -0 | -5 | -1 | -8 | -3 |
-| Tomball city | Hooks Memorial Airpt (7) | 1.00 | +0 | -1 | +5 | +3 | +0 | +4 |
-| Humble city | G Bush Intercontinental Ap/Houston Ap (9) | 0.98 | +0 | -0 | -1 | -1 | -3 | +1 |
-| South Houston city | William P. Hobby Airport (5) | 0.99 | -0 | +1 | -6 | -0 | -1 | -0 |
-| Burke city | Angelina County Airport (1) | 1.00 | +0 | +1 | +4 | +5 | +9 | +9 |
-| Chandler city | Tyler Pounds Regional Arpt (9) | 0.96 | -1 | -0 | -7 | +1 | -10 | -5 |
-| Lakeport city | East Texas Regional Arpt (2) | 0.98 | +0 | +1 | +7 | +6 | +7 | +7 |
+| Nederland city | Southeast Texas Regional Airport (3) | 0.89 | +0 | +0 | +9 | +9 | -5 | +3 |
+| Galveston County | Scholes Intl At Glston Apt (4) | 0.67 | -1 | -1 | -14 | -11 | -14 | -17 |
+| Corpus Christi city | Corpus Christi Nas (14) | 0.74 | -1 | -0 | -0 | +2 | +1 | +0 |
+| Fulton town | Aransas County Airport (2) | 0.77 | +0 | +1 | -3 | +5 | -5 | +6 |
+| Palacios city | Palacios Municipal Airport (3) | 0.77 | -0 | -1 | -3 | -6 | -4 | -11 |
+| Tye city | Dyess Air Force Base (3) | 1.00 | -0 | -0 | -4 | +0 | -8 | -2 |
+| Tomball city | Hooks Memorial Airpt (7) | 1.00 | +0 | -0 | +5 | +3 | +0 | +6 |
+| Humble city | G Bush Intercontinental Ap/Houston Ap (9) | 0.98 | +0 | -0 | -1 | -0 | -1 | +2 |
+| South Houston city | William P. Hobby Airport (5) | 0.99 | -1 | +1 | -6 | -0 | -0 | -0 |
+| Burke city | Angelina County Airport (1) | 1.00 | +0 | +1 | +4 | +5 | +8 | +9 |
+| Chandler city | Tyler Pounds Regional Arpt (9) | 0.96 | -0 | -0 | -7 | +1 | -12 | -5 |
+| Lakeport city | East Texas Regional Arpt (2) | 0.98 | +0 | +1 | +7 | +5 | +6 | +7 |
 
 A fail is a method question for Andrew; the command changes nothing. Criteria: `waterledger.national.era5_check.CRITERIA`.

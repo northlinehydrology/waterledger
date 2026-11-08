@@ -1,20 +1,21 @@
 # ERA5 check: VA
 
-**PASS** (2026-11-07; model 1.9; design 0005's leave-one-station-out check; 34 stations).
+**PASS** (2026-11-08; model 1.10; design 0005's leave-one-station-out check; 34 stations).
 
 | Criterion | Test | Limit | Value | Pass | Limit set from |
 |---|---|---|---|---|---|
 | W1 | land stations held out, at least | 5 | 22 | yes | too few to judge below this |
 | W2 | land cells: median |error| in the 0.4% design dry-bulb, C, at most | 0.75 | 0.43 | yes | four states 0.30-0.68 (Virginia); +0.07 |
 | W3 | land cells: |mean error| in the design dry-bulb, C, at most | 0.50 | 0.16 | yes | four states 0.07-0.33 (Texas); +0.17 |
-| W4 | land cells: median |error| in the 0.4% wet bulb, C, at most | 0.40 | 0.18 | yes | four states 0.10-0.25 (Virginia); +0.15 |
+| W4 | land cells: median |error| in the 0.4% wet bulb, C, at most | 0.40 | 0.20 | yes | four states 0.10-0.25 (Virginia); +0.15 |
 | W5 | corrected shore cells (3 or more): median |error| in the design dry-bulb, C, at most | 0.50 | 0.45 | yes | four states 0.19-0.32 (Michigan); +0.18 |
 | W6 | corrected shore cells (3 or more): median |error| no worse than uncorrected | - | 0.45 vs 1.07 | yes | the reason to correct |
+| W7 | corrected cells: |mean error| in the 1-in-10-year peak day's mean wet bulb, C, at most | 0.50 | 0.02 | yes | model 1.10 [A]: qm-2's Michigan peak days ran 0.72 C humid, mapping the dew point brought Michigan and Ohio to 0.23 (methods log, Nov 8, 2026) |
 | P1 | places sampled, at least | 5 | 12 | yes | too few to judge below this |
-| P2 | places: median |difference| in the hybrid average day, %, at most | 8.00 | 3.20 | yes | four states 1.9-4.6 (Virginia); +3.4 |
-| P3 | places: |mean difference| in the hybrid average day, %, at most | 6.00 | 0.98 | yes | four states 0.6-4.9 (Virginia); +1.1 |
-| P4 | places: median |difference| in the hybrid peak day, %, at most | 6.00 | 4.60 | yes | four states 0.5-3.2 (Virginia); +2.8 |
-| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.16 | yes | four states 0.03-0.22; +1.8 |
+| P2 | places: median |difference| in the hybrid average day, %, at most | 8.00 | 3.11 | yes | four states 1.9-4.6 (Virginia); +3.4 |
+| P3 | places: |mean difference| in the hybrid average day, %, at most | 6.00 | 1.03 | yes | four states 0.6-4.9 (Virginia); +1.1 |
+| P4 | places: median |difference| in the hybrid peak day, %, at most | 6.00 | 3.89 | yes | four states 0.5-3.2 (Virginia); +2.8 |
+| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.25 | yes | four states 0.03-0.22; +1.8 |
 
 ## Weather at the held-out stations
 
@@ -23,10 +24,10 @@ Median absolute error (mean error), C, against the station on its own hours.
 | Stations | Way | Design dry-bulb | 0.4% wet bulb | Summer afternoon T | Mean dew point |
 |---|---|---|---|---|---|
 | land cells, corrected (18) | uncorrected | 0.68 (+0.21) | 0.24 (-0.10) | 0.46 (+0.13) | 0.21 (+0.22) |
-| land cells, corrected (18) | decided | 0.32 (+0.10) | 0.17 (-0.02) | 0.35 (+0.08) | 0.27 (-0.03) |
+| land cells, corrected (18) | decided | 0.32 (+0.10) | 0.18 (-0.17) | 0.35 (+0.08) | 0.30 (+0.03) |
 | land cells, no station (4) | uncorrected | 1.20 (-1.33) | 0.58 (-0.47) | 0.97 (-1.10) | 0.27 (-0.07) |
 | shore cells, corrected (12) | uncorrected | 1.07 (-1.16) | 0.41 (-0.29) | 0.44 (-0.60) | 0.24 (+0.45) |
-| shore cells, corrected (12) | decided | 0.45 (+0.01) | 0.52 (+0.26) | 0.22 (+0.15) | 0.42 (-0.05) |
+| shore cells, corrected (12) | decided | 0.45 (+0.01) | 0.34 (+0.04) | 0.22 (+0.15) | 0.46 (-0.05) |
 
 | Station | Source | Cell land | Design dry-bulb error (C) | Corrected from |
 |---|---|---|---|---|
@@ -71,17 +72,17 @@ The place's cell against the station's own record, p50 per 100 MW, % difference.
 
 | Place | Station (km) | Cell land | towers avg | towers peak | hybrid avg | hybrid peak | assist avg | assist peak |
 |---|---|---|---|---|---|---|---|---|
-| Virginia Beach city | Oceana Nas (4) | 0.51 | +0 | +1 | +3 | +3 | -1 | +0 |
-| Norfolk city | Norfolk International Airport (5) | 0.77 | +0 | +1 | +2 | +5 | -2 | +3 |
-| Newport News city | Nwpt News/Wimburg Intl Apt (7) | 0.67 | +0 | -1 | +0 | +4 | -9 | +2 |
-| Chincoteague town | Wallops Flight Facility Airport (10) | 0.58 | -0 | +1 | -0 | +1 | +12 | +6 |
-| Quantico town | Quantico Mcaf (2) | 0.87 | -0 | +0 | -9 | +2 | +1 | +3 |
-| Henrico County | Richmond International Airport (8) | 0.97 | +0 | -0 | +0 | +2 | -5 | +2 |
-| Charlottesville city | Charlottesville Albemarle Arpt (11) | 1.00 | -0 | -1 | -3 | -5 | -8 | -5 |
-| Herndon town | Washington Dulles International Ap (6) | 0.99 | -0 | +1 | -4 | +4 | -5 | -0 |
-| Occoquan town | Davison Aaf Airport (8) | 0.94 | -0 | +0 | +0 | +9 | -2 | +6 |
-| Alexandria city | Ronald Reagan Washington Natl Ap (5) | 0.94 | -1 | -1 | -16 | -12 | -16 | -12 |
-| Lynchburg city | Lynchburg Rgnl/Preston Glenn Fld Ap (9) | 0.99 | +0 | +1 | +5 | +10 | +8 | +8 |
-| Danville city | Danville Regional Airport (7) | 1.00 | +0 | +1 | +9 | +11 | +8 | +13 |
+| Virginia Beach city | Oceana Nas (4) | 0.51 | +0 | +1 | +3 | +2 | +4 | +2 |
+| Norfolk city | Norfolk International Airport (5) | 0.77 | -0 | +1 | +2 | +4 | -1 | +4 |
+| Newport News city | Nwpt News/Wimburg Intl Apt (7) | 0.67 | +0 | -0 | +0 | +4 | -8 | +3 |
+| Chincoteague town | Wallops Flight Facility Airport (10) | 0.58 | -0 | +1 | -2 | -1 | +14 | +5 |
+| Quantico town | Quantico Mcaf (2) | 0.87 | -0 | +1 | -9 | +1 | +0 | +3 |
+| Henrico County | Richmond International Airport (8) | 0.97 | +0 | -0 | +1 | +2 | -5 | +2 |
+| Charlottesville city | Charlottesville Albemarle Arpt (11) | 1.00 | -0 | -1 | -3 | -4 | -5 | -4 |
+| Herndon town | Washington Dulles International Ap (6) | 0.99 | +0 | +1 | -4 | +3 | -7 | +0 |
+| Occoquan town | Davison Aaf Airport (8) | 0.94 | -0 | +1 | +1 | +9 | -1 | +7 |
+| Alexandria city | Ronald Reagan Washington Natl Ap (5) | 0.94 | -1 | -1 | -17 | -10 | -17 | -10 |
+| Lynchburg city | Lynchburg Rgnl/Preston Glenn Fld Ap (9) | 0.99 | +0 | +1 | +5 | +11 | +7 | +7 |
+| Danville city | Danville Regional Airport (7) | 1.00 | +1 | +0 | +9 | +10 | +10 | +14 |
 
 A fail is a method question for Andrew; the command changes nothing. Criteria: `waterledger.national.era5_check.CRITERIA`.
