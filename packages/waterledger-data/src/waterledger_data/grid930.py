@@ -91,3 +91,24 @@ def hourly(ba):
         raise FileNotFoundError(f"no EIA-930 file for {ba!r}: run waterledger_data.grid930.build()")
     with np.load(path) as z:
         return {k: z[k] for k in z.files}
+
+
+def intensity(ba, factors=None):
+    """Water at power plants per MWh of a balancing authority's own generation, hour by hour (design 0007, part 1, step 3):
+    {"hour", "consumed", "withdrawn", "withdrawn_saline" (gal/MWh), "generation" (MW)}. Each hour is the sum over fuel
+    classes of generation x the class's factor for the month (energy.ba_fuel_water), over net generation. Imports are
+    not counted: the hour is the BA's own plants. An hour with no net generation, or under 1% of the BA's median, is NaN."""
+    from waterledger_data import energy
+    f = factors or energy.ba_fuel_water(ba)
+    if f is None:
+        raise KeyError(f"no plant water factors for {ba!r}")
+    d = hourly(ba)
+    month = (d["hour"].astype("datetime64[h]").astype("datetime64[M]").astype(int) % 12)
+    gen = np.nansum(np.vstack([d[k] for k in FUELS]), axis=0)
+    have = ~np.all(np.isnan(np.vstack([d[k] for k in FUELS])), axis=0)
+    out = {"hour": d["hour"], "generation": np.where(have, gen, np.nan)}
+    ok = have & (gen > 0.01 * np.nanmedian(np.where(have, gen, np.nan)))
+    for k in ("consumed", "withdrawn", "withdrawn_saline"):
+        water = sum(np.nan_to_num(d[fuel]) * f[fuel][k][month] for fuel in FUELS)
+        out[k] = np.where(ok, water / np.where(ok, gen, 1.0), np.nan)
+    return out
