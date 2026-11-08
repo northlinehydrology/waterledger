@@ -50,6 +50,7 @@ SOURCES = {
     "lbnl2024": ("Shehabi, A., et al. (2024). 2024 United States Data Center Energy Usage Report. Lawrence Berkeley National Laboratory, LBNL-2001637.", "https://doi.org/10.71468/P1WC7Q"),
     "lei2022": ("Lei, N., & Masanet, E. (2022). Climate- and technology-specific PUE and WUE estimations for U.S. data centers using a hybrid statistical and thermodynamics-based approach. Resources, Conservation and Recycling 182: 106323.", "https://doi.org/10.1016/j.resconrec.2022.106323"),
     "wa_energy_code": ("Washington State Energy Code, WAC 51-11C-403323 and C403.3.2.4, stated replica of ASHRAE 90.1 Table 6.8.1-3: minimum chiller efficiency and its part-load adjustment.", "https://lawfilesext.leg.wa.gov/Law/WACArchive/2024/pdf/WAC%20%2051%20-%2011C%20CHAPTER/WAC%20%2051%20-%2011C-403323.pdf"),
+    "dow_dowfrost": ("Dow (2019). DOWFROST Heat Transfer Fluid, Technical Data Sheet, Form No. 180-01314-1019: freezing points, and heat capacity and density at 30% and 40% propylene glycol by volume.", "https://cdn.shopify.com/s/files/1/0299/3356/8138/files/DOWFROST_Inhibited_Food_Grade_Propylene_Glycol_Heat_Transfer_Fluid_Technical_Data_Sheet.pdf"),
     "ashrae_tc99": ("ASHRAE TC 9.9 (2021). Water-Cooled Servers: Common Designs, Components, and Processes (white paper): ASHRAE water classes W17 to W45 and W+.", "https://www.ashrae.org/technical-resources/bookstore/datacom-series"),
     "hpe_nvl72": ("Hewlett Packard Enterprise. NVIDIA GB200 NVL72 by HPE, product page: 115 kW by liquid, 17 kW by air per rack.", "https://buy.hpe.com/us/en/compute/rack-scale-system/nvidia-nvl-system/nvidia-gb200-nvl72-by-hpe/p/1014890104"),
     "schneider_wp210": ("Schneider Electric. White Paper 210, p. 14: 20% of heat removed by air, as an illustration.", "https://www.se.com/ww/en/download/document/SPD_WP210_EN/"),
@@ -164,7 +165,7 @@ SOURCES = {
     "wleb_dap": ("MDARD, EGLE and DNR. Michigan's Domestic Action Plan for the Western Lake Erie Basin (2025 update): a 40% cut in phosphorus loads from 2008 levels.", "https://www.michigan.gov/mdard/environment/conservation/wleb"),
 }
 
-SHORT = {"lbnl2024": "LBNL 2024", "lei2021": "Lei & Masanet 2021", "wa_energy_code": "WAC 51-11C (ASHRAE 90.1)", "ashrae_tc99": "ASHRAE TC 9.9", "hpe_nvl72": "HPE NVL72", "schneider_wp210": "Schneider WP210", "lbnl2025": "LBNL 2025", "epri2026": "EPRI 2026", "iea2025": "IEA 2025", "google2025": "Google 2025",
+SHORT = {"dow_dowfrost": "Dow DOWFROST", "lbnl2024": "LBNL 2024", "lei2021": "Lei & Masanet 2021", "wa_energy_code": "WAC 51-11C (ASHRAE 90.1)", "ashrae_tc99": "ASHRAE TC 9.9", "hpe_nvl72": "HPE NVL72", "schneider_wp210": "Schneider WP210", "lbnl2025": "LBNL 2025", "epri2026": "EPRI 2026", "iea2025": "IEA 2025", "google2025": "Google 2025",
          "eia923_2024": "EIA-923 2024", "eia_sep2024": "EIA state profiles 2024", "epa_onsite2002": "EPA 2002", "mi_septic": "Michigan septic criteria", "gilroy2022": "Gilroy 2022",
          "meta_elpaso": "Meta 2026", "meta_richland": "Meta 2025", "oracle_saline2026": "Oracle 2026", "lei2022": "Lei & Masanet 2022", "lei2025": "Lei et al. 2025", "usgs2013": "USGS 2013", "femp_bmp10": "DOE FEMP",
          "femp_dc": "DOE FEMP", "epa_wsaw": "EPA 2012", "epa_ap42": "EPA AP-42", "crusoe2026": "Crusoe 2026", "us12426214": "US 12,426,214", "evapco2018": "EVAPCO 2019", "usgs_wu2015": "USGS 2015", "stull2011": "Stull 2011", "msft2026": "Microsoft 2026", "icprb2025": "ICPRB 2025",
@@ -184,7 +185,7 @@ PARAM_SOURCES = {
     "utilization": ["epri2026", "iea2025", "lbnl2024", "lbnl2025"], "load_factor": ["epri2026"],
     "er_adj": ["usgs2013"], "coc": ["lei2021", "han2026", "femp_bmp10"], "range_f": ["lei2021"], "drift": ["epa_wsaw", "epa_ap42"], "fill_gal_per_mw": ["crusoe2026"], "topup": ["nih_closedloop"],
     **{k: ["lei2021"] for k in ("ups", "dist_loss", "light", "supply_air", "air_rise", "coil_eff", "water_rise", "crah_pa", "fan_eff", "tower_fan_pa", "lg", "tower_approach", "hx_approach", "pump_chw_kpa", "pump_tower_kpa", "pump_econ_kpa", "pump_eff")},
-    "carnot_water": ["wa_energy_code", "lei2021"], "carnot_air": ["wa_energy_code"], "dc_approach": ["thermokey_sheet"], "dc_fan_pa": ["lei2021"],
+    "carnot_water": ["wa_energy_code", "lei2021"], "carnot_air": ["wa_energy_code"], "dc_approach": ["thermokey_sheet"], "dc_fan_pa": ["lei2021"], "glycol_share": ["dow_dowfrost"],
     "liquid_water": ["ashrae_tc99", "lbnl2024"], "liquid_air_share": ["hpe_nvl72", "schneider_wp210"], "liquid_share": [],
     "staff_core": ["jlarc2024", "gilroy2022"], "staff_per_mw": ["meta_richland", "meta_elpaso", "oracle_saline2026", "gilroy2022"],
     "staff_gpcd": ["epa_onsite2002", "mi_septic", "gilroy2022"], "staff_used": ["usgs_cu2007"],

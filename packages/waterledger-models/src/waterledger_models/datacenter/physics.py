@@ -90,6 +90,11 @@ POWER = {
     # sensitivity analysis [A]: approach, a catalogue point of 10 K (ThermoKey) to the 5 K makers quote for larger coils; air-side pressure and
     # efficiency by analogy with Lei and Masanet's tower fans. The air rise is ADIABATIC's selection-sheet range.
     "dc_approach": (5.0, 10.0), "dc_fan_pa": (100.0, 250.0),
+    # The dry coolers' glycol (model 1.10; water's properties through 1.9 [A]): propylene glycol at 30-40% by volume [A], from burst protection to
+    # freeze protection for a Great Lakes winter (Dow, DOWFROST Technical Data Sheet, Form No. 180-01314-1019: freezing points -12.7 C at 30% and
+    # -21.1 C at 40%). Its heat capacity and density are taken at 20 C from the same sheet (GLYCOL); thicker than water (4.5 mPa s at -10 C at
+    # 30%; water is about 1.8 near freezing), it would also take more pump pressure, which isn't modeled [A].
+    "glycol_share": (0.30, 0.40),
     # Liquid-cooled computers: facility water at ASHRAE TC 9.9 classes W32-W45 (LBNL 2024 Table 4.3: W45), the rest of the heat by air on a cooler
     # loop: 12.9% (HPE GB200 NVL72), 20% (Schneider WP210), 25-39% (ASME InterPACK2022, not read directly); 10-30% [A]. The share of computers
     # that are liquid-cooled at a campus is not published for any fleet, so all of 0-1 is sampled [A].
@@ -155,6 +160,7 @@ SOURCES = {
     "carnot_air": "EER 10.1; 0.55 [A]; fitted with the temperature offsets [A]",
     "dc_approach": "ThermoKey catalogue point (10 K); makers' quotes for larger coils (5 K) [A]",
     "dc_fan_pa": "By analogy with Lei and Masanet's tower fans [A]",
+    "glycol_share": "Burst to freeze protection [A]; freezing points, heat capacity and density from Dow's DOWFROST Technical Data Sheet, Form No. 180-01314-1019",
     "liquid_water": "ASHRAE TC 9.9 classes W32-W45; LBNL 2024 Table 4.3",
     "liquid_air_share": "HPE GB200 NVL72; Schneider WP210; ASME InterPACK2022, not read directly [A]",
     "liquid_share": "Not published for any fleet; all of 0-1 sampled [A]",
@@ -221,6 +227,19 @@ def hybrid_full(p):
 
 def _ramp(x, lo, hi):
     return np.clip((x - lo) / (hi - lo), 0.0, 1.0)
+
+
+# Propylene glycol solutions at 20 C, by volume: (heat capacity, kJ/kg/K; density, kg/m3), between Dow's 30% and 40% saturation tables (DOWFROST
+# Technical Data Sheet, Form No. 180-01314-1019; 30%: 3.821 and 3.903 at -10 and 40 C, 1033.71 and 1019.56; 40%: 3.668 and 3.768 at 10 and 40 C,
+# 1042.14 and 1026.49), linear in temperature and share.
+GLYCOL = {0.30: (3.870, 1025.2), 0.40: (3.701, 1036.9)}
+
+
+def glycol_properties(p):
+    """The glycol loop's (heat capacity, kJ/kg/K; density, kg/m3) at p["glycol_share"], between Dow's 30% and 40% values."""
+    (a, (ca, ra)), (b, (cb, rb)) = sorted(GLYCOL.items())
+    x = (p["glycol_share"] - a) / (b - a)
+    return ca + x * (cb - ca), ra + x * (rb - ra)
 
 
 CHILLER_COP_CAP = {"water": 8.0, "air": 5.0}          # FEMP's 5-8 for water-cooled; air-cooled part-load code minimums reach about 4.1-4.7 [A]
@@ -316,9 +335,11 @@ def _loop(load, supply, tdb, twb, coil_air, wet, design, p):
     tower_water = (load + chiller + pumps) * wet / (CP_WATER * tower_range - wet * pump_per_flow)
     tower_pump = tower_water * pump_per_flow
     # the dry coolers' glycol loop carries the economizer's heat and the economizer pump's (an air-cooled chiller rejects through its own condenser), its own pump's
-    # heat included; its range and pressure are the tower loop's, by analogy [A], with water's properties for the glycol's [A]
-    glycol = (load * free + econ_pump) * (1 - wet) / (CP_WATER * tower_range - (1 - wet) * pump_per_flow)
-    dry_pump = glycol * pump_per_flow
+    # heat included; its range and pressure are the tower loop's, by analogy [A], with the glycol's heat capacity and density (model 1.10)
+    cp_glycol, rho_glycol = glycol_properties(p)
+    glycol_per_flow = p["pump_tower_kpa"] / (rho_glycol * p["pump_eff"])
+    glycol = (load * free + econ_pump) * (1 - wet) / (cp_glycol * tower_range - (1 - wet) * glycol_per_flow)
+    dry_pump = glycol * glycol_per_flow
     # tower fans: a tower is sized for a design point and its fans slow when less air will do. Design: full heat through evaporation at the rating wet-bulb, with air
     # at the sampled water-to-air ratio, capped where air would leave hotter than saturated at the hot water. Each hour the air needed goes with the tower's heat over
     # the enthalpy the air can pick up, saturated at the hot water less the air coming in (Merkel's driving potential, with the design point's effectiveness); the

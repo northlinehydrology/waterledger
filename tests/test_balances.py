@@ -171,15 +171,16 @@ def test_the_glycol_loop_carries_the_heat_its_pump_adds():
     t, wb = np.array([-10.0]), np.array([-11.0])
     power, heat = ph.hourly_heat_power(t, wb, "dry", p)
     pump = power - ph.hourly_heat_power(t, wb, "dry", {**p, "pump_tower_kpa": 0.0})[0]
-    assert pump[0] == pytest.approx(heat[0] / (ph.CP_WATER * p["range_f"] / 1.8) * p["pump_tower_kpa"] / (ph.RHO_WATER * p["pump_eff"]))
+    cp, rho = ph.glycol_properties(p)
+    assert pump[0] == pytest.approx(heat[0] / (cp * p["range_f"] / 1.8) * p["pump_tower_kpa"] / (rho * p["pump_eff"]))
 
 
 def test_dry_heat_rejection_costs_at_least_the_towers_electricity():
-    """With the same loop pumps on both sides, a dry plant and towers take about the same electricity in freezing hours, the dry plant more above them, and
-    several percent more once its economizer runs out."""
+    """A dry plant takes more electricity than towers in every hour: a little more in freezing hours, where both run on the economizer and the dry plant's glycol
+    needs more flow than water for the same heat (model 1.10), and several percent more once its economizer runs out."""
     dry, towers = (ph.hourly_heat_power(T, W, d, CENTRAL)[0] for d in ("dry", "towers"))
-    assert (abs(dry - towers)[T < 0.0] < 0.001).all()
-    assert (dry[T >= -10.0] > towers[T >= -10.0]).all() and (dry[T >= 20.0] - towers[T >= 20.0] > 0.03).all()
+    assert (dry > towers).all() and ((dry - towers)[T < 0.0] < 0.003).all()
+    assert (dry[T >= 20.0] - towers[T >= 20.0] > 0.03).all()
 
 
 def _tower_fan(tdb, twb, **over):
