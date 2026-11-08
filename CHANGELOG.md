@@ -2,6 +2,12 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.12.1 (Nov 7, 2026; model 1.9)
+
+- **The nightly passes again.** `cells.runs` raises `cells.RunsMissing` (a `FileNotFoundError`, so callers are unchanged) when
+  cells have no run here, and the snapshot tests skip on it on machines without the runs (GitHub's), checking format 3 where
+  they are. The West Michigan reproduction reference is at model 1.9. No number changes.
+
 ## 3.12.0 (Nov 7, 2026; model 1.9)
 
 - **The dry coolers' glycol loop** (methods log, Nov 6). Dry, assist and hybrid plants now carry a plate exchanger's
