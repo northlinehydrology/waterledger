@@ -98,10 +98,13 @@ the water's. Steps, each its own commit:
   gap follows the difference between EIA-930's and EIA-923's generation for the BA. PSCO (+69%) and BPAT (-29%) are far
   off, from how the two surveys assign plants; flagged, not fixed.
 - Step 4: `waterledger_models.grid` and `GridWaterBmi`. Fit for MISO on the Gaines cell (42.75, -85.50), 2019–2024
-  (52,626 hours; the cell's ERA5 file ends Jan 1, 2025): average consumption 320–350 gal/MWh in July hours, 250–270
-  in January. The marginal plants consume 270–340 gal/MWh in summer but withdraw 12,000–16,000, from once-through
-  coal following load. The temperature at Gaines barely moves MISO's mix (the BA is too large); conditioning matters
-  more in small BAs.
+  (52,626 hours; the cell's ERA5 file ends Jan 1, 2025). Average: 334 gal/MWh consumed and 13,300 withdrawn in July
+  hours, 259 and 10,000 in January, 312 and 12,300 over the year. Marginal: 273 and 12,200 in July, 277 and 12,600
+  over the year. In MISO the plants that follow load use about the same water per MWh as the average mix; the large
+  withdrawal is once-through coal and nuclear in both. Within a month and hour, neither the temperature at Gaines
+  (correlation -0.15) nor MISO's own demand (-0.07) moves the mix much, and MISO's 20 highest-demand days ran 307
+  gal/MWh consumed against 313 on all days. The season moves it (summer 338). So MISO's peak-day plant water comes
+  from the campus's own peak power and the summer factors, not from a different mix on peak days. Small BAs may differ.
 
 ## Part 2: what gets built (its own study)
 
@@ -156,13 +159,18 @@ trackers and data products. The package supplies the grid-level numbers they nee
 3. Part 2, in its own repository, starting with MISO.
 4. Part 3, the grid-level derating first, then the Basin Ledger work.
 
-## Decisions for Andrew
+## Decisions (Andrew, Nov 8, 2026)
 
-1. Average hourly mix as the main number with marginal beside it, or the other way round.
-2. Weather years: condition on month, hour and load percentile (proposed), or report only 2019 on.
-3. Generators: run hours and fuel only, or air emissions too. Emissions widen Water Ledger beyond water and power.
-4. PyPSA-USA (proposed) or GenX for part 2.
-5. The grid component's name and whether it lives in `waterledger-models` (proposed) beside `CoolingWaterBmi`.
+1. **Average and peak.** For power, the average day and the peak day both matter, and the peak most. The average
+   hourly mix is the main number, reported for the average day and the 1-in-10-year peak day; the marginal mix is
+   beside it, also for both.
+2. **Match the 30 weather years to the grid's hours** by month, hour and a stand-in for how loaded the grid is. As
+   built, the stand-in is the temperature at the user; in MISO neither it nor MISO's demand moves the mix much
+   (progress notes above).
+3. **Generators: run hours and fuel, no air emissions for now.** An air quality model coupled through BMI may come
+   later; none is planned.
+4. **PyPSA-USA** for part 2.
+5. **`waterledger-models`** holds the grid component, beside the cooling model.
 
 ## References
 
