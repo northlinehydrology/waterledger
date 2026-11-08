@@ -92,8 +92,8 @@ the water's. Steps, each its own commit:
   wind and storage in July 2024 and its headers carry typos; columns are matched by word.
 - Step 2: the factors give back each BA's 2024 plant water within 0.4%, BPAT within 4%. Only Hawaii's two plants have no
   BA. Three plants report consumption with no withdrawal (Stanton, FL; Kings Mountain, NC; Ingleside Cogeneration,
-  TX); here their withdrawal is set to at least their consumption [A]. **The published state table keeps it at zero;
-  to be decided whether it follows** (it is the same evidence in every state).
+  TX); here their withdrawal is set to at least their consumption [A]. The state table takes the same rule at the
+  next release (Andrew, Nov 8: "match them"; branch `state-table-withdrawal`).
 - Step 3: 2024's hours give back the large BAs' plant water within 10% (MISO 97%, PJM 100%, ERCOT 94%, SOCO 99%). The
   gap follows the difference between EIA-930's and EIA-923's generation for the BA. PSCO (+69%) and BPAT (-29%) are far
   off, from how the two surveys assign plants; flagged, not fixed.

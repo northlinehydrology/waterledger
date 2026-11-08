@@ -21,7 +21,8 @@ Method
   hydro, solar, wind, storage: 0 (reservoir evaporation is not counted, as in the state table)
   withdrawal at least consumption, plant by plant [A]: three plants report consumption with no withdrawal (Stanton,
                            FL; Kings Mountain, NC; Ingleside Cogeneration, TX), most likely reclaimed or utility water that
-                           EIA's withdrawal leaves out. The state table keeps their withdrawal at zero; this one doesn't
+                           EIA's withdrawal leaves out. The same rule as the state table (states.py, from branch
+                           state-table-withdrawal); kept here so this table closes either way
   a month's factors x the BA's EIA-923 generation give back the BA's plant water, apart from the fallbacks: checked here
 """
 import os
