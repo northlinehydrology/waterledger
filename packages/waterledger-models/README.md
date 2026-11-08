@@ -4,13 +4,15 @@ The models behind [Water Ledger](https://waterledger.org): the water large new u
 starting with data centers.
 
 ```bash
-pip install waterledger-models          # numpy only
+pip install waterledger-models          # numpy and numba
 pip install "waterledger-models[all]"   # with xarray ensembles, BMI components and STAC publishing
 ```
 
 - `datacenter.physics`: the cooling equations and parameter ranges, vectorized (Rutberg evaporative ratio as in USGS
   SIR 2013-5188, DOE FEMP water balance, Stull wet bulb), for each cooling plant inside the building (`PLANTS`: a shared
   facility loop, the default; a separate warm liquid loop; conventional chilled water; design 0007).
+- `datacenter.kernel`: the Monte Carlo's hourly heat balance and water compiled with Numba, one pass per hour; it
+  agrees with `physics` to the last bit or two and is tested against it for every design and plant.
 - `datacenter.cooling`: the per-run Monte Carlo over decades of hourly weather for towers, hybrid, and closed loop with
   or without evaporative assist, for one plant (`run_location`) or each (`run_plants`); staff water at the campus's size.
 - `datacenter.lake`: lake-source (once-through) cooling with forced lake evaporation (USGS heat-balance method).

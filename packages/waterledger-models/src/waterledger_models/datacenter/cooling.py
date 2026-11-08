@@ -30,6 +30,7 @@ from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
 
+from waterledger_models.datacenter import kernel
 from waterledger_models.datacenter.physics import sample_staff
 from waterledger_models.datacenter.physics import (ADIABATIC, DEFAULT_PLANT, DRAWS, DESIGNS as _DESIGNS, PLANTS, HFG, KWH_BTU, LB_GAL, OUTSIDE, POWER, RANGES, STAFF, TOPUP, _ramp,  # noqa: F401
                                                    central_parameters, evaporative_ratio, hourly_heat_power, hourly_rates, for_location, hourly_water_with_air, peak_utilization, sample_parameters, wet_bulb)
@@ -151,9 +152,9 @@ def run_locations(weather, n=DRAWS, seed=7, mw=100.0, workers=None, plant=DEFAUL
         return {k: job.result() for k, job in jobs.items()}
 
 
-def run_plants(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=None, plants=None):
+def run_plants(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=None, plants=None, compiled=True):
     """run_location for each cooling plant (physics.PLANTS, the default first): {plant: results}. Each plant's draws share the same strata."""
-    return {k: run_location(times, temps, rhs, n=n, seed=seed, mw=mw, block=block or HOUR_BLOCK, plant=k)
+    return {k: run_location(times, temps, rhs, n=n, seed=seed, mw=mw, block=block or HOUR_BLOCK, plant=k, compiled=compiled)
             for k in (plants or [DEFAULT_PLANT] + [k for k in PLANTS if k != DEFAULT_PLANT])}
 
 
@@ -182,8 +183,10 @@ def _hourly_run(tdb, twb, rh, design, p, at_peak, block=HOUR_BLOCK):
     return out
 
 
-def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=HOUR_BLOCK, plant=DEFAULT_PLANT):
-    """Monte Carlo for every design at one location, per `mw` MW of IT capacity, for one cooling plant (physics.PLANTS). `block`: hours worked at a time (HOUR_BLOCK).
+def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=HOUR_BLOCK, plant=DEFAULT_PLANT, compiled=True):
+    """Monte Carlo for every design at one location, per `mw` MW of IT capacity, for one cooling plant (physics.PLANTS). `block`: hours worked at a time (HOUR_BLOCK)
+    on the NumPy path. compiled: the hours through kernel.py's compiled heat balance (model 1.10), which agrees with physics.py's NumPy path to about
+    1e-15 of each value; False runs physics.py itself.
 
     Returns {design: {stat: {"p10","p50","p90"}}} for withdrawn/consumed/returned average, peak and annual, and electricity,
     plus the central-parameter run. Peak = 1-in-10-year peak day (90th percentile of annual maxima) at the peak load, average load over the load factor; the record
@@ -203,6 +206,7 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=HOUR_BLOCK,
     year_ends = np.r_[np.flatnonzero(hour_years[1:] != hour_years[:-1]) + 1, len(hour_years)]
     by = (groups(years), groups(months))
     runs = sample(n, seed, plant)
+    weather = kernel.weather_terms(tdb, twb) if compiled else None
     out = {}
     for design in DESIGNS:
         acc = {}
@@ -212,7 +216,8 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=HOUR_BLOCK,
             # the peak day and the record day: the same weather at the peak load, average load over the load factor (model 1.7)
             at_peak = {**p, "utilization": float(peak_utilization(p))}
             kw_peak = mw * 1000 * at_peak["utilization"]
-            pue, w, c, r, cond, wp, cp, rp, condp, at_capacity, pue_peak = _hourly_run(tdb, twb, rh, design, p, at_peak, block)
+            pue, w, c, r, cond, wp, cp, rp, condp, at_capacity, pue_peak = (kernel.hourly_run(tdb, twb, rh, weather, design, p, at_peak) if compiled else
+                                                                             _hourly_run(tdb, twb, rh, design, p, at_peak, block))
             for name, arr in (("withdrawn", w), ("consumed", c), ("returned", r), ("condensate", cond)):
                 s = daily_stats(day_index, len(uniq), years, arr, kw, months if name in ("withdrawn", "consumed") else None, by)
                 for stat, v in s.items():

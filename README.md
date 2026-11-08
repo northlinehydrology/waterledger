@@ -30,7 +30,7 @@ pip install waterledger
 ```
 
 That installs all three packages. A framework that only needs the models can install `waterledger-models` (numpy
-only), adding `[ensemble]`, `[bmi]`, `[stac]` or `[all]` for the optional parts.
+and numba), adding `[ensemble]`, `[bmi]`, `[stac]` or `[all]` for the optional parts.
 
 | Package | Import | What it holds |
 |---|---|---|
