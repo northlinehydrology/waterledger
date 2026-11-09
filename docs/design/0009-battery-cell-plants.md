@@ -1,6 +1,6 @@
 # 0009: Battery cell plants, the second water user
 
-Status: **proposed Nov 9, 2026, for Andrew's review. No code yet.** Evidence: `docs/research/battery-plant-water.md`
+Status: **decided Nov 9, 2026 (Andrew; answers at the end), except the lake design (question 4, recommendation below). No code yet.** Evidence: `docs/research/battery-plant-water.md`
 (primary sources with page numbers). Cathode materials plants are a separate model with their own note (0010, to follow).
 
 ## What and why
@@ -171,3 +171,41 @@ says which parameters drive the result.
 4. **Designs.** Towers, hybrid and dry only?
 5. **Order.** Package and tests first, then the cell runs for Michigan, then the other states, then the site. Or the
    package first and the site's display decided later, as with grid water?
+
+
+## Answers From Andrew
+1. Interesting, and yes we want modular code. I think I see where its going, for industrail operators, there will be a"components" or similar thing that different types of users can share. the only reason to keep them seprate is if, for example a cooling tower at a data center != a cooling tower at the battery cell plant in some fundemental way. Its sounds like no, they are the same and should be made modular. 
+2. I agree with the untilization estimate plan
+3. Unit, like, is this the, "how big is the plant" estimate, if so we should go with industry conventions, if plants are reported in GWh / yr, then we should use that too. We can take care of all the math behind it obviously. We dont need to "normalize" everything to plant power in MW because data centers are, but we do need to make all the calcs we need. Stating a size in industry standard, useful, understandable way is good though.
+4. for designs beyond those should we inlcude lake / stream water cooling? 
+5. Package first, site decided later (we also may wait on adding battery plants to water ledger for a while, im not sure)
+
+### Follow-up on question 4: lake or stream cooling
+
+- **Lake (once-through from a Great Lake):** recommended as a fourth design, through the shared heat rejection code
+  that the data center `lake` design already uses (the withdrawal follows from heat and temperature rise; forced
+  evaporation follows Diehl et al. 2013).
+  - No battery plant in the evidence uses once-through cooling.
+  - At Lansing's size it would need roughly 100 MGD at a 10 F rise.
+  - A new plant that size falls under 40 CFR 125.81 (over 2 MGD design intake, at least 25% for cooling). The new-facility
+    rule then holds its intake to about what closed-cycle cooling would take.
+  - As with data centers, the number is shown true to the physics and the rule is a flagged note. The design shows why
+    plants use towers, and covers a plant sited on a Great Lake (Holland is near Lake Michigan).
+  - It costs little once the heat rejection code is shared.
+- **Stream (once-through from a river):** not recommended in the package. Whether a river can take the heat depends on
+  its low flow and the state's temperature limits at that reach. That is a coupled question for Basin Ledger, the same
+  one as Saline Township's proposed discharge.
+
+## Decisions (Nov 9, 2026)
+
+1. **Shared components.** The cooling tower, hybrid, dry-cooler and lake physics move to a shared module both water
+   users import. A tower is a tower: the physics depends on heat, weather and the tower's settings, not on what makes
+   the heat. Each user model keeps only what is its own: its heat and power, staff and process water. Every data
+   center result stays identical, held by an identity test.
+2. **Utilization.** Full output is the headline, the way every EA states its figure. A sourced utilization range of
+   about 0.6-1.0 [A] is sampled for plants below nameplate.
+3. **Size in the industry's unit.** A plant is stated in GWh/yr of cells. The package does whatever conversions the
+   calculation needs internally. Nothing is restated as MW to match data centers.
+4. **Designs.** Towers, hybrid and dry. Lake as recommended above, pending Andrew.
+5. **Order.** Package first. Whether and when battery plants go on waterledger.org is decided later.
+
