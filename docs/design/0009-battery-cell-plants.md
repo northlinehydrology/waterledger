@@ -1,6 +1,6 @@
 # 0009: Battery cell plants, the second water user
 
-Status: **decided Nov 9, 2026 (Andrew; answers at the end), except the lake design (question 4, recommendation below). No code yet.** Evidence: `docs/research/battery-plant-water.md`
+Status: **decided Nov 9, 2026 (Andrew; answers and decisions at the end). Built on branch battery-plant-model, not released.** Evidence: `docs/research/battery-plant-water.md`
 (primary sources with page numbers). Cathode materials plants are a separate model with their own note (0010, to follow).
 
 ## What and why
@@ -206,6 +206,30 @@ says which parameters drive the result.
    about 0.6-1.0 [A] is sampled for plants below nameplate.
 3. **Size in the industry's unit.** A plant is stated in GWh/yr of cells. The package does whatever conversions the
    calculation needs internally. Nothing is restated as MW to match data centers.
-4. **Designs.** Towers, hybrid and dry. Lake as recommended above, pending Andrew.
+4. **Designs.** Towers, hybrid, dry and lake (Andrew, Nov 9: yes to lake). Stream once-through is left to Basin Ledger.
 5. **Order.** Package first. Whether and when battery plants go on waterledger.org is decided later.
+6. **Operating settings are each user's own (Andrew, Nov 9).** The tower physics stays shared, but what an operator
+   chooses is not equipment: cycles of concentration and the hybrid's switch margin are set by each water user model
+   from its own evidence (`heat_rejection.OPERATING`). Data centers keep 3-6 cycles. Battery cell plants take 3-8,
+   from Lansing's EA (about 3, hard groundwater) and SK Bartow's air permit narrative (8). Where a plant's own
+   documents give a setting, a run fixes it (`plant.run_location(..., settings={"coc": 3.0})`).
 
+## Check at Lansing after decisions 4 and 6 (Nov 9, 2026)
+
+West Michigan weather (2023-2024), 43.75 GWh/yr at full output, towers, 200 draws, p10 / p50 / p90 in MGD. The EA
+figures are projections (DOE/EA-2189-S1, p. 19).
+
+| Run | Withdrawn | Consumed | Returned |
+|---|---|---|---|
+| Cycles 3-8 (the battery range) | 0.77 / 1.03 / 1.34 | 0.58 / 0.78 / 1.01 | 0.17 / 0.23 / 0.37 |
+| Lansing's own cycles, 3 | 0.92 / 1.19 / 1.55 | 0.58 / 0.78 / 1.01 | 0.33 / 0.42 / 0.54 |
+| EA | 1.5-1.7 | 0.94-1.14 | 0.56 |
+| Lake design, Lake Michigan temperatures | 45 / 64 / 92 | 0.37 / 0.49 / 0.62 (forced evaporation) | the rest |
+
+With Lansing's own cycles the discharge reaches the EA's at p90, and withdrawal reaches the EA's low end at p90.
+What is left is consumption, about 20% low at the median. That is the evaporative ratio below 1 (Rutberg et al.
+2011; the shared `er_adj`), the model's stated departure for every user: with all the heat evaporated, the central
+case gives 1.01 MGD (`docs/research/battery-cell-parameters.md`, sec. 8). Nothing was tuned to the EA.
+
+The lake design draws about 60 times what towers do and evaporates about two thirds as much. At this size it falls
+under 40 CFR 125.81; the number is shown true to the physics and the rule as a flagged note.
