@@ -66,6 +66,7 @@ est.household_wells              # the aquifer most household wells draw from, h
 site.by_design().best            # the cooling design that evaporates least in total, campus and power plants; also .designs and the closed loop figures
 est.equivalents.homes            # the water as homes at the state's own water for a home (.home_gpd: USGS 2015 over ACS 2015 households); also .golf_courses, .evaporated_share, .electricity_homes, .share_of_home_customers
 est.power_plants["state_mix"].consumed   # water at power plants for one power option, MGD; also .withdrawn, .returned; est.site.power names the one in use
+est.grid_water.consumed_peak_day         # the place's balancing authority, hour by hour (model 1.11): average day and peak day, average and marginal mix
 est.model_dump_json()            # the whole estimate as JSON
 
 ctx = place.context()            # the public water facts around the place, by category
@@ -89,6 +90,17 @@ They are validated, round-trip through JSON, and are described in
 | Virginia | 322 cities, towns and counties | ERA5, each place's own cell (148 cells) | [waterledger.org/methods/va](https://waterledger.org/methods/va/), [brief](docs/methods/va.pdf) |
 | Texas | 1,481 cities, towns and counties | ERA5, each place's own cell (616 cells) | [waterledger.org/methods/tx](https://waterledger.org/methods/tx/), [brief](docs/methods/tx.pdf) |
 | Wisconsin | 1,922 cities, villages, towns and counties | ERA5, each place's own cell (283 cells) | [waterledger.org/methods/wi](https://waterledger.org/methods/wi/), [brief](docs/methods/wi.pdf) |
+
+**Model 1.11** adds the campus's water at the power plants hour by hour, and every state's cells are rerun for it
+([design 0008](docs/design/0008-power-at-the-grid.md), part 1):
+- **The grid component** (`waterledger_models.grid`, `GridWaterBmi`) turns any user's hourly electricity into water at the
+  plants of a balancing authority (EIA-930 generation by fuel from 2019, with the BA's 2024 plant water per MWh by fuel and
+  month), binned by month, hour and the temperature at the user, on the average mix and the marginal one.
+- **In the cell runs**, for each BA serving the cell's places, so `est.grid_water` gives the place's BA's water for the
+  campus's own electricity on the average day and the 1-in-10-year peak day. The annual power options in
+  `est.power_plants` are unchanged.
+- **A power plant's withdrawal is at least its consumption** in the state tables, as in the BA table: three plants that
+  report consumption and no withdrawal (Florida 46.562 to 46.582 L/kWh withdrawn, North Carolina 33.057 to 33.077).
 
 **Model 1.10** changes the numbers in three ways, and every state's snapshot is rebuilt for it ([design 0007](docs/design/0007-cooling-plants.md)):
 - **The cooling plant inside the building is a choice** (`DataCenter(plant=...)`):
@@ -204,7 +216,7 @@ components and the command line) waits for 4.0 and does not ship in a 3.x minor 
 Three version numbers, each with one meaning:
 
 - **Package versions** (semver) change with the code: a major version for breaking changes.
-- **`waterledger_models.MODEL_VERSION`** (now 1.10) changes when the numbers change; the golden test fails until that is
+- **`waterledger_models.MODEL_VERSION`** (now 1.11) changes when the numbers change; the golden test fails until that is
   done deliberately. Every published estimate names the model version that produced it.
 - **The snapshot format version** (now 3, in each snapshot's manifest) changes when the structure of a state's data
   files does. Format 3 (from model 1.8) carries cooling by ERA5 cell (`cells/`). The package still reads format 2, which the

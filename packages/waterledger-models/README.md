@@ -15,6 +15,8 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
   agrees with `physics` to the last bit or two and is tested against it for every design and plant.
 - `datacenter.cooling`: the per-run Monte Carlo over decades of hourly weather for towers, hybrid, and closed loop with
   or without evaporative assist, for one plant (`run_location`) or each (`run_plants`); staff water at the campus's size.
+- `grid`: water at the power plants supplying any user's hourly electricity, at grid level (design 0008): a balancing
+  authority's table by month, UTC hour and the user's temperature, average and marginal, with `GridWaterBmi` (`[bmi]`).
 - `datacenter.lake`: lake-source (once-through) cooling with forced lake evaporation (USGS heat-balance method).
 - `datacenter.ensemble`: vectorized ensembles as xarray, dask across locations (`[ensemble]`).
 - `datacenter.bmi`: `CoolingWaterBmi` and `LakeCoolingBmi`, CSDMS BMI 2.0 with CSDMS Standard Names (`[bmi]`), on the public
@@ -30,5 +32,5 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
 - `weather`: hourly weather from the Open-Meteo archive, its best match (ERA5, ERA5-Land and, from 2017, IFS HRES); humidity
   conversions (Bolton 1980) and a record's design dry-bulb.
 
-`MODEL_VERSION` is Water Ledger's model version (1.10), which changes when the numbers do; the package version (semver)
+`MODEL_VERSION` is Water Ledger's model version (1.11), which changes when the numbers do; the package version (semver)
 changes with the code. They are independent.
