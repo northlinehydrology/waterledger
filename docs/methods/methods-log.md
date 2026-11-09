@@ -2043,6 +2043,10 @@ annual power options and these hours differ in basis. That will be stated where 
 - **Cooling results.** Every cooling result outside the grid matches model 1.10 in all 1,507 cells. Sixteen values differ
   in the last bit (at most 4e-16, relative), from summation order.
 - **Run time.** The grid adds about 12% to a run.
+- **ERA5 checks** (Nov 9, all five states; reports in [era5-checks/](era5-checks/)). Every state passes, with every
+  criterion's value the same as model 1.10's, since the weather and cooling are unchanged.
+- **Snapshots.** The 2026-11-09 snapshots pass their checks, with the same coverage as 2026-11-08's. Virginia's utility
+  coverage is 0.978: the seven places below.
 
 **Coverage.** Every place in Michigan, Ohio, Texas and Wisconsin has a BA. Seven of Virginia's 322 places have no utility
 in the snapshot's energy data, including Appalachia, Norton and Waynesboro, so two cells (37.00, -82.75 and 38.00,

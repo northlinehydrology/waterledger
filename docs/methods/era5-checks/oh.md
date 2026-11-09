@@ -1,6 +1,6 @@
 # ERA5 check: OH
 
-**PASS** (2026-11-08; model 1.10; design 0005's leave-one-station-out check; 41 stations).
+**PASS** (2026-11-09; model 1.11; design 0005's leave-one-station-out check; 41 stations).
 
 | Criterion | Test | Limit | Value | Pass | Limit set from |
 |---|---|---|---|---|---|
