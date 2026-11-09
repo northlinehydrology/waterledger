@@ -24,7 +24,7 @@ def _write(path, obj):
 def record(run):
     """A cell's snapshot record from its run file (a dict): what the page and the package read for a place in that cell."""
     w = run["weather"]
-    plants = {k: run[k] for k in ("plant", "per_100mw_plants") if k in run}          # model 1.10: the default plant's results and the others'
+    plants = {k: run[k] for k in ("plant", "per_100mw_plants", "grid") if k in run}  # model 1.10: the default plant's results and the others'; 1.11: the grid's BAs
     return {"format": CELL_FORMAT, "cell": run["cell"], **{k: run[k] for k in CELL_KEYS}, "per_100mw": run["per_100mw"], **plants,
             "source": {"dataset": "ERA5 hourly 2 m temperature and dew point", "copy": w["source"], "fetched": w["fetched"], "sha256": w["sha256"],
                        "citation": w["citation"], "licence": "CC-BY-4.0"},
