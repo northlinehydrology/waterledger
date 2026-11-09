@@ -1774,6 +1774,164 @@ P4, the hybrid peak day, sits near its limit in every state (Ohio 5.9 of 6), whe
 tested, is that the glycol loop moved the hybrid's dry-to-wet switch, so the same small temperature difference between a
 place's cell and its station moves more water. The limits were set from the earlier model and are not changed here.
 
+## Nov 8, 2026: the cooling plant inside the building, the dew point mapping and the glycol (model 1.10)
+
+The decisions and how they are built are in [design 0007](../design/0007-cooling-plants.md). This entry holds the evidence
+behind them, the checks and what they do to the numbers.
+
+**Decision (Andrew, Nov 8, 2026).**
+- The cooling plant inside the building is a choice of three, with each plant's ranges sampled within it: `shared` (the
+  default), `warm` and `chilled`.
+- The dew point is mapped on its own quantiles (qm-3).
+- The ERA5 check gains W7.
+- The dry coolers' glycol takes propylene glycol's properties.
+- One model version and one rerun cover all four.
+
+On the chilled plant: "If it's a legitimate option shouldn't we do it?"
+
+### Why the loops changed
+
+Through model 1.9 every campus ran supply air at 27-35 C and its liquid-cooled racks on their own loop at 32-45 C. Both
+ranges were cited, but neither is an operating point:
+
+- **Supply air.** 27-35 C is the upper bound of the band supply air floats in at Lei and Masanet's large sites (2022,
+  Table 3). Their lower bound is 10-18 C.
+- **Liquid loop.** ASHRAE's W classes are capability ceilings. Each runs from 2 C up to its number, and the equipment must
+  perform "over the entire environmental range" (ASHRAE TC 9.9, *Emergence and Expansion of Liquid Cooling in Mainstream
+  Data Centers*, 2021, p. 8). Sampling 32-45 C treats two ceilings as a range of setpoints. No source does that.
+- **What the model's liquid water is.** It is facility water, the water at the coolant unit's inlet (OCP, *30 C Coolant: A
+  Durable Roadmap for the Future*, Rev 1.0, Oct 2024, p. 18). NVIDIA's 45 C for Vera Rubin is the rack's own liquid inlet,
+  and facility water runs 3-8 K below it through the coolant unit (OCP 2024, p. 21: "around 4-8 C", 6 K in its study).
+
+At model 1.9, the liquid-cooled share and the liquid loop's temperature were the two largest drivers of hybrid and assist
+water in the sensitivity analysis (West Michigan, N = 8,192). Their total-order indices for hybrid's average day were 0.48
+and 0.22. So the warm-water assumption carried the headline number.
+
+### What the sources say about plants
+
+| | What it shows | Source |
+|---|---|---|
+| One facility loop for air units and coolant units | At 30 C rack coolant: facility water 24/34 C, supply air 30 C, return 42 C; 80% liquid | OCP 2024, Fig. 10, p. 22 |
+| | One heat rejection loop serving both the coolant units and the air handlers | Vertiv 360AI reference designs 006 and 007 (GB200; 2024-2025) |
+| | Operators "commonly" run 18-24 C at the coolant units, because one loop also carries the air loads | Uptime Intelligence Update 373, Jun 10, 2025, p. 2 |
+| A separate warm liquid loop | Fluid coolers at 37.2/47.2 C (adiabatic assist above 32 C), and a separate chilled water loop at 22.8/32.8 C for 27.8 C supply air | Schneider Electric Reference Design 109, Rev 11 (7.4 MW, GB200), pp. 1, 3-4, 7 (a third-party copy; Schneider's own PDF refused the download) |
+| | Rack liquid inlet 45 C | NVIDIA Technical Blog, Aug 24, 2026 (Vera Rubin NVL72) |
+| A conventional chilled-water plant | Recommended air for the H1 class 18-22 C | ASHRAE TC 9.9 2021, p. 14 |
+| | Mechanical load basis: 11 K air rise to 29 C return air, so about 18 C supply | ASHRAE 90.4-2022 Addendum g (Jan 31, 2024), p. 6, note 4 |
+| | Zone 5A worked example: air handler supply 18-19 C, chilled water 6.7/13.3 C | ASHRAE 90.4 supplemental file (Albany, NY; Sep 3, 2020), pp. 6-7 |
+| | 22% of operators use direct liquid cooling | Uptime Institute Cooling Survey 2024 (n = 964) |
+| Supply air in designs | Schneider 27.8 C; OCP 30 C; Meta's reference band 18.3-29.4 C; ASHRAE's recommended upper limit 27 C | Schneider RD109; OCP 2024; OCP/Meta liquid cooling deck (2021), p. 7; ASHRAE TC 9.9 2021, p. 15 |
+
+**Where the sources disagree.**
+- **Typical facility water.**
+  - Uptime, in practice, 2025: 18-24 C.
+  - Uptime, 2024: "converging around 32 C".
+  - Schneider's dedicated loop: 37 C.
+  - LBNL's 2024 report assumes W45 for liquid-cooled AI (Shehabi et al., Table 4.3, p. 43).
+- **Direction.** ASHRAE (2021, pp. 17, 20) expects facility water to fall. NVIDIA (2026) designs for higher.
+
+The plant choice is how the model takes that disagreement in, rather than settling it. The shared loop is the default
+because it is the most common documented plant, and it is conservative for water and power where a community needs it to
+be [judgment]. A warm loop stays available to an applicant who documents one.
+
+The plants' ranges and their sources are in design 0007's table. These are assumptions [A]:
+- the shared and warm plants' 24 C supply-air floor;
+- the warm plant's 30-42 C liquid loop (42 = NVIDIA's 45 C rack inlet less about 3 K) and its 0.7-1.0 liquid share;
+- the chilled plant's 0-0.2 liquid share.
+
+An air-cooled hall is the shared plant with a liquid share near 0, not a plant of its own. At West Michigan on Nov 7, an
+air-cooled range (0-0.2) gave hybrid water within 1% of the shared loop's.
+
+### The dew point mapping (qm-3) and W7
+
+**What was wrong.** qm-1 and qm-2 mapped temperature and the dew-point depression, each on its own quantiles. On a hot day
+the temperature correction raised the dew point with it. The diagnosis (Nov 7) put model 1.9's corrected peak days at
+model 1.9's checked places at +0.72 C of wet bulb in Michigan and +0.35 C in Ohio, against their stations. That is about
+37 more hours a year above a 22 C wet bulb.
+
+**The fix.** qm-3 maps the dew point on its own quantiles, kept at or below the temperature. The lapse rate moves
+temperature only [A].
+
+**W7.** The check now asks that corrected cells' mean error in the 1-in-10-year peak day's mean wet bulb be at most
+0.5 C [A]. qm-2's Michigan cells would fail it.
+
+**The check on model 1.10** (Nov 8, all five states; reports in [era5-checks/](era5-checks/)). Every state passes every
+criterion. The dry-bulb criteria (W2, W3, W5, W6) are unchanged from model 1.9, as they should be. These moved:
+
+| | W7 peak-day wet bulb | W4 0.4% wet bulb, 1.9 to 1.10 | P2 hybrid avg, % | P4 hybrid peak day, % |
+|---|---|---|---|---|
+| Limit | 0.5 C | 0.4 C | 8 | 6 |
+| Michigan | 0.17 | 0.22 to 0.10 | 5.4 to 4.3 | 5.3 to 4.1 |
+| Ohio | 0.16 | 0.10 to 0.13 | 1.9 to 2.5 | 5.9 to 5.1 |
+| Virginia | 0.02 | 0.18 to 0.20 | 3.2 to 3.1 | 4.6 to 3.9 |
+| Texas | 0.06 | 0.17 to 0.13 | 5.0 to 4.5 | 4.0 to 3.8 |
+| Wisconsin | 0.02 | 0.11 to 0.21 | 6.5 to 6.0 | 4.6 to 3.7 |
+
+**The trade-off.** Peak days are closer to the stations in every state, and so is hybrid's peak-day water. The 0.4% design
+wet bulb is a little looser in Ohio, Virginia and Wisconsin; Wisconsin's median doubled, to about half its limit. Mapping
+the dew point fits the hot humid days and gives some of that back at the design wet-bulb percentile. Peak-day water is
+what the pages report, so the trade is taken.
+
+The check's places were drawn from the Nov 7 snapshots, since no 1.10 snapshot existed yet. The weather, correction and
+model were 1.10's.
+
+**Still open.** Hybrid's peak day still runs 4-5% above the stations' own records in most states. The Nov 7 diagnosis
+found that half of it is in raw ERA5 and that the dew point accounts for little of it. A lead not yet tested: corrected hot
+days keep about 0.5 C less daily range, so their nights are warmer.
+
+### The glycol
+
+- **Through model 1.9.** The dry coolers' glycol loop took water's heat capacity and density [A].
+- **Now.** Propylene glycol at 30-40% by volume [A], between Dow's 30% and 40% tables at 20 C: 3.870 and 3.701 kJ/kg/K,
+  1,025.2 and 1,036.9 kg/m3 (DOWFROST Technical Data Sheet, Form No. 180-01314-1019).
+- **Why 30-40%.** That is the span from burst to freeze protection in a Great Lakes winter: Dow's freezing points are -12.7
+  and -21.1 C.
+- **Not counted.** Glycol's higher viscosity would also add pump pressure [A].
+- **Effect.** The pump moves a little more fluid in the dry plant's economizer hours. A dry plant takes 0.07-0.2% more
+  electricity than towers in freezing hours, where it took about the same.
+
+### What it does to the numbers
+
+The ERA5 cell runs, model 1.9 against model 1.10. The figures are each state's median across its cells of the p50, per
+100 MW of IT. Water is in MGD and power in MW. All five states' runs are complete (1,507 cells; Nov 8, about 7 hours on
+one machine on the compiled loop).
+
+**The default (shared loop) against model 1.9:**
+
+| | Hybrid avg day | Hybrid peak day | Towers avg day | Towers peak day | Hybrid power, avg | Hybrid power, peak day |
+|---|---|---|---|---|---|---|
+| Michigan | 0.033 to 0.046 (+39%) | 0.62 to 0.74 (+19%) | 0.65 to 0.66 (+1%) | 0.89 to 0.95 (+7%) | 74.2 to 76.2 | 86.3 to 92.9 |
+| Ohio | 0.050 to 0.068 (+36%) | 0.59 to 0.71 (+20%) | 0.66 to 0.68 (+2%) | 0.90 to 0.95 (+6%) | 74.6 to 77.3 | 86.5 to 93.2 |
+| Virginia | 0.063 to 0.085 (+34%) | 0.60 to 0.71 (+19%) | 0.68 to 0.69 (+3%) | 0.91 to 0.96 (+7%) | 75.1 to 78.1 | 86.6 to 93.3 |
+| Texas | 0.117 to 0.153 (+30%) | 0.63 to 0.74 (+16%) | 0.71 to 0.74 (+4%) | 0.93 to 0.99 (+6%) | 76.1 to 80.2 | 87.2 to 93.7 |
+| Wisconsin | 0.034 to 0.047 (+38%) | 0.63 to 0.75 (+19%) | 0.65 to 0.65 (+1%) | 0.90 to 0.96 (+6%) | 74.2 to 76.2 | 86.3 to 93.0 |
+
+**What changes in the three plants (Michigan, model 1.10):**
+
+| Plant | Hybrid avg day | Hybrid peak day | Towers avg day | Towers peak day | Hybrid power, avg | Hybrid power, peak day |
+|---|---|---|---|---|---|---|
+| warm | 0.033 | 0.61 | 0.65 | 0.88 | 73.8 | 84.9 |
+| shared (default) | 0.046 | 0.74 | 0.66 | 0.95 | 76.2 | 92.9 |
+| chilled | 0.048 | 0.78 | 0.71 | 1.00 | 82.4 | 97.1 |
+
+**What happens.**
+- **Hybrid and assist go wet more.** The shared loop's water is colder, so hybrid and assist reach their switch point
+  sooner. Average-day water rises by 30-40%, and peak-day water by about a fifth (Texas, already wetter, by less).
+- **Towers withdraw a little more.** The chillers run more hours, and their compressors' heat goes out through the towers.
+- **Every design takes more electricity.** On the peak day the default takes about 5-7 MW more per 100 MW of IT.
+- **Dry plants' water** (staff use and loop top-ups only) doesn't move.
+- **The plants span a wide range.** The chilled plant takes about 6 MW more than the shared loop on average.
+
+The warm plant comes out within 2% of model 1.9's hybrid water in every state. It isn't model 1.9's plant: its liquid
+share is 0.7-1.0 and its supply air 24-30 C. So this doesn't separate the weather and glycol changes from the plant's.
+
+The spread between plants is larger than the spread within one, as the Nov 7 study expected. So the default carries the
+headline number. That is why the cooling systems page describes the plants and the detailed calculator lets the reader
+pick one.
+
+**Not done for this release.** The sensitivity analysis at model 1.10 (Andrew, Nov 8: the calculations go out first). It
+ranks what drives the numbers and changes none of them. The detailed calculator's sensitivity section waits for it.
+
 ## Nov 8, 2026: the cooling runs' hours compiled (model 1.10's runs; the numbers unchanged)
 
 **Decision (Andrew, Nov 8, 2026: "Yes start 1 and 2").** The Monte Carlo's hourly heat balance and water run through a compiled
