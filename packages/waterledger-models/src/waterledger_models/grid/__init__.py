@@ -1,4 +1,4 @@
-"""The grid component (design 0007): water at the power plants supplying a water user's electricity, hour by hour, at
+"""The grid component (design 0008): water at the power plants supplying a water user's electricity, hour by hour, at
 grid level. One component for every water user: it takes any user's hourly electricity and the hour's air temperature
 at the user and returns the plants' water, consumed and withdrawn. It knows a balancing authority (BA) only through a
 GridTable; it never names a plant.

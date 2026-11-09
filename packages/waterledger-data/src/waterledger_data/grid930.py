@@ -1,6 +1,6 @@
 """Hourly demand and generation by fuel for every balancing authority in the lower 48: EIA-930, the Hourly Electric Grid
 Monitor (https://www.eia.gov/electricity/gridmonitor/). Read from EIA's six-month balance files, which need no key, and
-kept as one file a balancing authority under <cache>/grid930/ (design 0007, part 1).
+kept as one file a balancing authority under <cache>/grid930/ (design 0008, part 1).
 
 The adjusted columns are used: EIA's own values after its anomaly screening and imputation. Hours are UTC, at the end
 of the hour. Fuel classes: coal, gas, nuclear, oil (all petroleum products), hydro (with pumped storage), solar, wind,
@@ -94,7 +94,7 @@ def hourly(ba):
 
 
 def intensity(ba, factors=None):
-    """Water at power plants per MWh of a balancing authority's own generation, hour by hour (design 0007, part 1, step 3):
+    """Water at power plants per MWh of a balancing authority's own generation, hour by hour (design 0008, part 1, step 3):
     {"hour", "consumed", "withdrawn", "withdrawn_saline" (gal/MWh), "generation" (MW)}. Each hour is the sum over fuel
     classes of generation x the class's factor for the month (energy.ba_fuel_water), over net generation. Imports are
     not counted: the hour is the BA's own plants. An hour with no net generation, or under 1% of the BA's median, is NaN."""

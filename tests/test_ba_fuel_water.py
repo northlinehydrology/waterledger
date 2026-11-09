@@ -1,4 +1,4 @@
-"""Water by balancing authority, fuel class and month (design 0007, part 1, step 2): the table is complete where EIA-930
+"""Water by balancing authority, fuel class and month (design 0008, part 1, step 2): the table is complete where EIA-930
 has a class, holds to the physics of each fuel, and gives back each BA's plant water."""
 import csv
 

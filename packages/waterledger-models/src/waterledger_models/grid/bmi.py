@@ -1,4 +1,4 @@
-"""CSDMS Basic Model Interface (BMI 2.0) for the grid component (design 0007): water at the power plants supplying a water
+"""CSDMS Basic Model Interface (BMI 2.0) for the grid component (design 0008): water at the power plants supplying a water
 user's electricity, step by step. Couple it to any user that reports water_user__electric_power (CoolingWaterBmi does).
 
 Configuration (a YAML file, or the same keys as a dict passed to initialize):

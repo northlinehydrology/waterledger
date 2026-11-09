@@ -1,4 +1,4 @@
-"""Hourly power plant water by balancing authority (design 0007, part 1, step 3): a year of hours gives back the BA's
+"""Hourly power plant water by balancing authority (design 0008, part 1, step 3): a year of hours gives back the BA's
 plant-reported water. Needs the EIA-930 cache (waterledger_data.grid930.build(), about 600 MB); set WATERLEDGER_FETCH=1
 to build it, otherwise these are skipped. The nightly build fetches it."""
 import os

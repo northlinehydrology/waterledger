@@ -1,4 +1,4 @@
-"""The grid component (design 0007, part 1, step 4) on synthetic hours: the table gives back the fit hours' water, a hot
+"""The grid component (design 0008, part 1, step 4) on synthetic hours: the table gives back the fit hours' water, a hot
 hour meets the hot-hour mix, and the marginal slope finds the plant that follows load."""
 import numpy as np
 import pytest

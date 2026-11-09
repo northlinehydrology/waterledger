@@ -1999,7 +1999,7 @@ water type says so for that plant, and the other two are not confirmed. Plants t
 treatment (flagged consumption above withdrawal is still held to the withdrawal). The rule is the same in every state
 and every year the build reads (2022-2024).
 
-**Why.** The balancing-authority table for hourly grid water (design 0007) needed it to close, and Andrew decided (Nov 8)
+**Why.** The balancing-authority table for hourly grid water (design 0008) needed it to close, and Andrew decided (Nov 8)
 that both tables follow one rule.
 
 **Effect.** Withdrawn power plant water per kWh: Florida 46.562 to 46.582 L/kWh, North Carolina 33.057 to 33.077; Texas

@@ -1,4 +1,4 @@
-"""Power-plant water per MWh by balancing authority, EIA-930 fuel class and month, 2024 (design 0007, part 1, step 2).
+"""Power-plant water per MWh by balancing authority, EIA-930 fuel class and month, 2024 (design 0008, part 1, step 2).
 
 Inputs (read-only, in $WL_POWER_WORK as for states.py; run states.py first):
   out/plants_2024.csv          each plant's 2024 water, as reported and adjusted (states.py)

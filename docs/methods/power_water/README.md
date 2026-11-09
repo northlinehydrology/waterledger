@@ -19,7 +19,7 @@ Order: `fetch_eia.py`, `states.py` (state totals, plant flags, Macknick-filled a
 `combine.py` writes the package's state table, and `fuels.py` the coal and nuclear table (`tables/state_fuel_water_2024.csv`).
 `verify_table.py` checks `grid_water_2022.csv` against the Siddik et al. dataset. `ba_fuels.py`, after `states.py`,
 writes `tables/ba_fuel_water_2024.csv`: the same plant water by balancing authority, EIA-930 fuel class and month, for
-the hourly grid water of design 0007.
+the hourly grid water of design 0008.
 
 Rules, the same for every state:
 - A fresh-water plant that draws from and returns to a built reservoir is pond class, whatever its EIA code, unless it sits on a river main stem the plant is small against.

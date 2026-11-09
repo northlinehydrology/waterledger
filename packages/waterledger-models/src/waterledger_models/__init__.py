@@ -2,7 +2,7 @@
 
     datacenter.cooling   weather-driven cooling water by design, Monte Carlo over the published parameter ranges, staff water
     datacenter.lake      lake-source (once-through) cooling
-    grid                 water at the power plants supplying any user's electricity, hourly, at grid level (design 0007)
+    grid                 water at the power plants supplying any user's electricity, hourly, at grid level (design 0008)
     runoff              runoff, sediment, nutrients, salt and fuel from a developed site
     hydrology            screening hydrology: curve-number storm runoff, Theis drawdown, Glover stream depletion
     quantile_mapping     an ERA5 cell's temperature and dew point corrected toward nearby stations (shore stations for cells under 90% land)

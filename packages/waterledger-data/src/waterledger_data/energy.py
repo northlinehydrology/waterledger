@@ -105,7 +105,7 @@ BA_FUEL_TABLE = os.path.join(os.path.dirname(__file__), "tables", "ba_fuel_water
 
 
 def ba_fuel_water(ba):
-    """Water at power plants per MWh by EIA-930 fuel class and month in a balancing authority, 2024 (design 0007; built by
+    """Water at power plants per MWh by EIA-930 fuel class and month in a balancing authority, 2024 (design 0008; built by
     docs/methods/power_water/ba_fuels.py): {fuel: {"consumed", "withdrawn", "withdrawn_saline"}} of 12 monthly gal/MWh
     arrays, January first. A class the BA doesn't generate takes the U.S. factor; one with no water (hydro, solar, wind,
     storage) is zero. None for a BA not in the table (Alaska and Hawaii have none in EIA-930)."""

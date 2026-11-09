@@ -1,4 +1,4 @@
-# 0007: Power at the grid: hourly plant water, what gets built, heat and drought, on-site generators
+# 0008: Power at the grid: hourly plant water, what gets built, heat and drought, on-site generators
 
 Status: **proposed, Nov 8, 2026. Part 1 started the same day** on branch `grid-hourly`, on the proposals in decisions 1,
 2 and 5 (Andrew: "let's start", without choosing among them). Decisions 3 and 4 wait for parts 4 and 2. The build

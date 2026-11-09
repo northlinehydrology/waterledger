@@ -1,4 +1,4 @@
-"""EIA-930 headers to fuel classes (design 0007, part 1): both the pre-July-2024 headers and the split ones after,
+"""EIA-930 headers to fuel classes (design 0008, part 1): both the pre-July-2024 headers and the split ones after,
 EIA's typos included. No download."""
 import pytest
 
