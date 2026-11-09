@@ -152,9 +152,9 @@ def run_locations(weather, n=DRAWS, seed=7, mw=100.0, workers=None, plant=DEFAUL
         return {k: job.result() for k, job in jobs.items()}
 
 
-def run_plants(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=None, plants=None, compiled=True):
+def run_plants(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=None, plants=None, compiled=True, grid=None):
     """run_location for each cooling plant (physics.PLANTS, the default first): {plant: results}. Each plant's draws share the same strata."""
-    return {k: run_location(times, temps, rhs, n=n, seed=seed, mw=mw, block=block or HOUR_BLOCK, plant=k, compiled=compiled)
+    return {k: run_location(times, temps, rhs, n=n, seed=seed, mw=mw, block=block or HOUR_BLOCK, plant=k, compiled=compiled, grid=grid)
             for k in (plants or [DEFAULT_PLANT] + [k for k in PLANTS if k != DEFAULT_PLANT])}
 
 
@@ -183,7 +183,7 @@ def _hourly_run(tdb, twb, rh, design, p, at_peak, block=HOUR_BLOCK):
     return out
 
 
-def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=HOUR_BLOCK, plant=DEFAULT_PLANT, compiled=True):
+def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=HOUR_BLOCK, plant=DEFAULT_PLANT, compiled=True, grid=None):
     """Monte Carlo for every design at one location, per `mw` MW of IT capacity, for one cooling plant (physics.PLANTS). `block`: hours worked at a time (HOUR_BLOCK)
     on the NumPy path. compiled: the hours through kernel.py's compiled heat balance (model 1.10), which agrees with physics.py's NumPy path to about
     1e-15 of each value; False runs physics.py itself.
@@ -194,6 +194,12 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=HOUR_BLOCK,
     energy), power_mw_avg (at the run's utilization), pue_peak_1in10 and power_mw_peak_1in10 (the 1-in-10-year hottest hour, every computer
     running at capacity), and power_mw_peak_day_1in10 (the 1-in-10-year peak day's average power at the peak load, as the peak-day water; model 1.9).
     Each statistic takes its own days, so the peak power day and the peak water day are usually, not always, the same day.
+
+    grid: {balancing authority: {"consumed", "withdrawn", "marginal_consumed", "marginal_withdrawn"}}, gal/MWh at the BA's power plants for
+    each hour of `times` (waterledger_models.grid.lookup on the BA's GridTable; design 0008, model 1.11). Each adds the campus's water at those
+    plants, MGD per `mw`: grid_<BA>_<kind>_avg from the hourly electricity at the run's load, and grid_<BA>_<kind>_peak_1in10, the 1-in-10-year
+    peak day at the peak load, as the peak-day water and power. Hour by hour, plant water = facility MW x gal/MWh, so a year of it is the
+    year's electricity times its generation-weighted factor.
     """
     tdb = np.array(temps, dtype=float)
     rh = np.array(rhs, dtype=float)
@@ -207,6 +213,13 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=HOUR_BLOCK,
     by = (groups(years), groups(months))
     runs = sample(n, seed, plant)
     weather = kernel.weather_terms(tdb, twb) if compiled else None
+    if grid:                                                 # every BA's factors in one array: gal/MWh, (BA x kind, hour)
+        grid_keys = [f"grid_{ba}_{kind}" for ba, factors in grid.items() for kind in factors]
+        F = np.vstack([np.asarray(f, dtype=float) for factors in grid.values() for f in factors.values()])
+        year_starts = np.array([g.start for g in by[0]])  # groups() gives each year its run of days
+        whole = len(tdb) == 24 * len(uniq) and np.array_equal(day_index, np.repeat(np.arange(len(uniq)), 24))
+        daily = ((lambda x: x.reshape(len(x), len(uniq), 24).sum(axis=2)) if whole else
+                 (lambda x: np.vstack([np.bincount(day_index, weights=row, minlength=len(uniq)) for row in x])))
     out = {}
     for design in DESIGNS:
         acc = {}
@@ -238,6 +251,12 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=HOUR_BLOCK,
             acc.setdefault("power_mw_peak_1in10", []).append(peak * mw)
             day_mw = np.bincount(day_index, weights=pue_peak * kw_peak / 1000.0, minlength=len(uniq)) / np.bincount(day_index, minlength=len(uniq))
             acc.setdefault("power_mw_peak_day_1in10", []).append(float(np.quantile([day_mw[g].max() for g in by[0]], 0.9)))
+            if grid:                                         # water at the power plants for this hourly electricity (design 0008)
+                day_avg, day_peak = daily(F * (pue * (mw * p["utilization"]))), daily(F * (pue_peak * kw_peak / 1000.0))
+                avg, peak = day_avg.sum(axis=1) / len(uniq) / 1e6, np.quantile(np.maximum.reduceat(day_peak, year_starts, axis=1), 0.9, axis=1) / 1e6
+                for i, key in enumerate(grid_keys):
+                    acc.setdefault(f"{key}_avg", []).append(float(avg[i]))
+                    acc.setdefault(f"{key}_peak_1in10", []).append(float(peak[i]))
         res = {}
         for k, vals in acc.items():
             v = np.array(vals[:-1])
