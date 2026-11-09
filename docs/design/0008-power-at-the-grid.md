@@ -86,7 +86,10 @@ the water's. Steps, each its own commit:
 5. **Cell runs and the estimate:** the component in the Monte Carlo, the results in the snapshot, and a new power
    option in `est.power_plants`, with the average, the 1-in-10-year peak day and the marginal figure. Needs a rerun.
 
-**Progress, Nov 8, 2026.** Steps 1–5 are built and tested; step 5's rerun (model 1.11) runs overnight Nov 8–9.
+**Progress, Nov 9, 2026.** Steps 1–5 are built and tested, and step 5's rerun (model 1.11) is done in all five states.
+The table is fit on 2019–2024, the years the grid's hours and the cells' weather share. Andrew kept those six years over
+scaling each BA to its latest year (Nov 9): the last few years stand in for the next few [judgment]. They run about 10–16%
+above 2024's plant water per MWh. Results and checks are in the methods log, Nov 9.
 
 - Step 5: `cooling.run_location(..., grid=)` adds `grid_<BA>_<kind>_avg` and `_peak_1in10` for each BA serving a cell's
   places (`era5.cell_bas`; Michigan's cells MISO and PJM), with the table fit on the cell's own corrected temperature
