@@ -250,3 +250,22 @@ def loop(load, supply, tdb, twb, coil_air, wet, design, p):
     flow = load * free * (1 - wet) / (CP_AIR * rise)
     dry = _fan_kw(design_flow, p["dc_fan_pa"], p["fan_eff"]) * np.clip(flow / np.maximum(design_flow, 1e-12), 0.1, 1.0) ** 3
     return chiller, pumps + tower_pump + dry_pump, tower_fan + (0.0 if design == "towers" else dry)
+
+
+def lake_loop(load, supply, water_t, p):
+    """One facility water loop carrying `load` at `supply` C on once-through lake water at `water_t` C (once_through.py), in kW per kW of the water user's
+    own load: (chiller power, pump power), both ending up as heat in the lake water. The lake water cools the loop through a plate exchanger while it is
+    colder than the loop's return, as an economizer does (loop); a water-cooled chiller carries the rest with its condenser on the lake water leaving at
+    water_t + rise_c. No fans: no air is moved. The lake water's pumps run at the tower loop's pressure, by analogy [A]."""
+    ret = supply + p["water_rise"]
+    free = _ramp(ret - (water_t + p["hx_approach"]), 0.0, ret - supply)
+    chilled = load * (1 - free)
+    evaporator = supply - 2.0
+    cop = np.minimum(p["carnot_water"] * (evaporator + 273.15) / np.maximum(water_t + p["rise_c"] + 2.0 - evaporator, 1.0), CHILLER_COP_CAP["water"])
+    chiller = chilled / cop
+    pumps = (_pump_kw(load * free / (CP_WATER * p["water_rise"]), p["pump_econ_kpa"], p["pump_eff"])
+             + _pump_kw(chilled / (CP_WATER * p["water_rise"]), p["pump_chw_kpa"], p["pump_eff"]))
+    # the lake water carries all the loop's heat, its own pump's included: m x cp x rise = load + chiller + pumps + m x dP / eff
+    pump_per_flow = p["pump_tower_kpa"] / (RHO_WATER * p["pump_eff"])
+    lake_water = (load + chiller + pumps) / (CP_WATER * p["rise_c"] - pump_per_flow)
+    return chiller, pumps + lake_water * pump_per_flow

@@ -11,6 +11,11 @@ nearly all of it in electrode drying, dry rooms and formation. Each hour:
   outdoor air: the dry rooms and conditioned areas take make-up air that must be cooled and dried. Its load on the chilled water follows the
       outdoor air's enthalpy above the supply air's, sized as a share of the cooling load at the location's design enthalpy.
   the loops, chillers, pumps and fans, the towers, hybrid or dry coolers, and the water they take: heat_rejection, shared with data centers.
+  lake: once-through Great Lake water instead (once_through, shared with data centers): the loops reject to it through plate exchangers,
+      chillers carry what it cannot, the withdrawal follows from the heat and the water's rise, and the returned heat's forced evaporation
+      is the cooling's consumption. GLERL surface temperatures stand for the intake's [A]: a deep intake is colder, so its chillers run less.
+      A plant this size falls under 40 CFR 125.81, whose new-facility rule holds the intake to about what closed-cycle cooling would take;
+      the number is true to the physics and the rule is a flagged note (design 0009, Andrew, Nov 9, 2026).
   process water: purified water for anode slurry (evaporated in the dryers), water leaving in recovered NMP, other purified water (to
       sewer), the purification's reject (to sewer), boiler make-up (mostly lost as steam). Staff water follows the people on site.
 
@@ -24,8 +29,9 @@ battery-plant-water.md, the design in docs/design/0009-battery-cell-plants.md.
 import numpy as np
 
 from waterledger_models import heat_rejection as hr
+from waterledger_models import once_through as ot
 
-DESIGNS = ("dry", "hybrid", "towers")
+DESIGNS = ("dry", "hybrid", "towers", "lake")
 HOURS_A_YEAR = 8760.0
 CELLS_PER_HOUR = 1e6 / HOURS_A_YEAR          # kWh of cells an hour at full output, per GWh/yr of capacity
 L_GAL = 3.78541
@@ -113,7 +119,7 @@ SOURCES = {
     "switch_margin": "US 12,426,214 B1 (controller setting), as for data centers [A]",
     "utilization": "Korea Times, Aug 15, 2025 (company reports); Ultium pauses, 2026",
 }
-PARAMETERS = tuple(RANGES) + tuple(hr.EQUIPMENT)
+PARAMETERS = tuple(RANGES) + tuple(hr.EQUIPMENT) + tuple(ot.RANGES)
 
 
 def enthalpy(tdb, rh):
@@ -128,8 +134,8 @@ def for_location(p, tdb, rh):
 
 
 def ranges():
-    """Every parameter's range: the plant's own and the shared equipment's."""
-    return {**RANGES, **hr.EQUIPMENT}
+    """Every parameter's range: the plant's own, the shared equipment's and the lake's."""
+    return {**RANGES, **hr.EQUIPMENT, **ot.RANGES}
 
 
 def sample_parameters(n, seed=7):
@@ -146,15 +152,19 @@ def switch_point(p):
     return hr.switch_point(p, p["process_supply"] - p["dc_approach"] - p["hx_approach"])
 
 
-def hourly(tdb, twb, rh, design, p):
-    """Each hour, per GWh/yr of capacity at p["utilization"]: a dict of kW (energy and heat) and gallons (water) for the hour.
+def hourly(tdb, twb, rh, design, p, water_t=None):
+    """Each hour, per GWh/yr of capacity at p["utilization"]: a dict of kW (energy and heat) and gallons (water) for the hour. The lake design needs
+    `water_t`, the lake's surface temperature each hour, C.
 
     kW: "energy" (plant energy less the cooling plant), "electricity", "fuel", "outdoor_air" (its load on the chilled water), "heat" (rejected through
-    the water or dry coolers), "exhaust" (to exhaust air, flue and envelope), "fans" (heat rejection fans). Gallons: "withdrawn", "consumed", "returned",
-    and the parts "evap", "drift", "blow", "process_withdrawn", "process_consumed", "staff".
+    the water, dry coolers or lake water), "exhaust" (to exhaust air, flue and envelope), "fans" (heat rejection fans). Gallons: "withdrawn", "consumed",
+    "returned", and the parts "evap", "drift", "blow" (towers), "once_through" and "lake_evap" (lake: water through the exchangers and the forced
+    evaporation its heat drives), "process_withdrawn", "process_consumed", "staff".
     """
     if design not in DESIGNS:
         raise ValueError(f"design must be one of {DESIGNS}, not {design!r}")
+    if design == "lake" and water_t is None:
+        raise ValueError("the lake design needs the lake's surface temperature each hour (water_t)")
     u = p["utilization"]
     made = CELLS_PER_HOUR * u
     energy = p["energy"] * CELLS_PER_HOUR * (p["fixed_share"] + (1.0 - p["fixed_share"]) * u) * np.ones_like(tdb)
@@ -162,14 +172,21 @@ def hourly(tdb, twb, rh, design, p):
     design_load = p["to_water"] * p["energy"] * CELLS_PER_HOUR
     oa_design = p["oa_share"] / (1.0 - p["oa_share"]) * design_load
     outdoor_air = oa_design * np.maximum(enthalpy(tdb, rh) - p["oa_supply_enthalpy"], 0.0) / (p["design_h"] - p["oa_supply_enthalpy"])
-    wet = hr.wet_share(tdb, design, p, switch_point(p))
+    lake = design == "lake"
+    wet = np.zeros_like(tdb) if lake else hr.wet_share(tdb, design, p, switch_point(p))
     heat, cooling_power, fans = 0.0, 0.0, 0.0
     for loop_load, supply in ((p["chilled_share"] * load + outdoor_air, p["chilled_supply"]), ((1.0 - p["chilled_share"]) * load, p["process_supply"])):
-        chiller, pumps, fan = hr.loop(loop_load, supply, tdb, twb, tdb, wet, design, p)
+        if lake:
+            (chiller, pumps), fan = hr.lake_loop(loop_load, supply, water_t, p), np.zeros_like(tdb)
+        else:
+            chiller, pumps, fan = hr.loop(loop_load, supply, tdb, twb, tdb, wet, design, p)
         heat, cooling_power, fans = heat + loop_load + chiller + pumps, cooling_power + chiller + pumps + fan, fans + fan
     electricity = p["elec_share"] * energy + cooling_power
     fuel = (1.0 - p["elec_share"]) * energy
     evap, drift, blow = hr.tower_water(heat * hr.KWH_BTU, tdb, wet, p)
+    gal_hour = 3600.0 * ot.GAL_M3
+    once = ot.withdrawal_m3s(heat * 1000.0, p["rise_c"]) * gal_hour * np.ones_like(tdb) if lake else np.zeros_like(tdb)
+    lake_evap = ot.forced_evaporation_m3s(heat * 1000.0, water_t, p["wind_mph"], p["evap_error"]) * gal_hour if lake else np.zeros_like(tdb)
     purified = (p["anode_water"] + p["other_purified"] + p["shipped_water"]) * made
     ro_feed = purified / p["ro_recovery"]
     boiler = p["boiler_makeup"] * made
@@ -180,9 +197,9 @@ def hourly(tdb, twb, rh, design, p):
     return {
         "energy": energy, "electricity": electricity, "fuel": fuel * ones, "outdoor_air": outdoor_air, "heat": heat,
         "exhaust": (1.0 - p["to_water"]) * energy, "fans": fans,
-        "evap": evap, "drift": drift, "blow": blow, "process_withdrawn": process_withdrawn * ones, "process_consumed": process_consumed * ones,
-        "staff": staff * ones,
-        "withdrawn": evap + drift + blow + process_withdrawn + staff,
-        "consumed": evap + drift + process_consumed + staff * p["staff_used"],
-        "returned": blow + (process_withdrawn - process_consumed) + staff * (1.0 - p["staff_used"]),
+        "evap": evap, "drift": drift, "blow": blow, "once_through": once, "lake_evap": lake_evap,
+        "process_withdrawn": process_withdrawn * ones, "process_consumed": process_consumed * ones, "staff": staff * ones,
+        "withdrawn": evap + drift + blow + once + process_withdrawn + staff,
+        "consumed": evap + drift + lake_evap + process_consumed + staff * p["staff_used"],
+        "returned": blow + (once - lake_evap) + (process_withdrawn - process_consumed) + staff * (1.0 - p["staff_used"]),
     }

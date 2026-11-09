@@ -31,16 +31,21 @@ def draws(n=DRAWS, seed=7, utilization="full", settings=None):
     return [{**p, **settings} for p in runs]
 
 
-def run_location(times, temps, rhs, n=DRAWS, seed=7, gwh=1.0, utilization="full", designs=bp.DESIGNS, settings=None):
-    """Monte Carlo for each design at one location, per `gwh` GWh/yr of cell capacity. `settings` fixes parameters in every run (draws).
+def run_location(times, temps, rhs, n=DRAWS, seed=7, gwh=1.0, utilization="full", designs=None, settings=None, water_temps=None):
+    """Monte Carlo for each design at one location, per `gwh` GWh/yr of cell capacity. `settings` fixes parameters in every run (draws). The lake
+    design runs when `water_temps` is given: the lake's daily long-term average surface temperatures by day of year (366, as NOAA GLERL's;
+    once_through.glerl_temperatures). designs defaults to every design the inputs allow.
 
     Returns {design: {stat: {"p10", "p50", "p90", "central"}}}: withdrawn, consumed and returned (MGD) as avg, peak_1in10, record, annual_mg
     and, for withdrawn and consumed, max_month, max_90day and worst_year_mg; power_mw_avg and power_mw_peak_day_1in10 (electricity, MW); fuel_mw_avg;
     site_kwh_per_kwh (electricity and fuel per kWh of cells made, the cooling plant included); withdrawn_l_per_kwh and consumed_l_per_kwh (per kWh
     of cells made); utilization.
     """
+    if designs is None:
+        designs = tuple(d for d in bp.DESIGNS if d != "lake" or water_temps is not None)
     tdb, rh = np.array(temps, dtype=float), np.array(rhs, dtype=float)
     twb = hr.wet_bulb(tdb, rh)
+    water_t = None if water_temps is None else lake_hours(times, water_temps)
     days = np.array([t[:10] for t in times])
     uniq, day_index = np.unique(days, return_inverse=True)
     years, months = np.array([d[:4] for d in uniq]), np.array([d[:7] for d in uniq])
@@ -52,7 +57,7 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, gwh=1.0, utilization="full"
         acc = {}
         for p in runs:
             p = bp.for_location(p, tdb, rh)
-            h = bp.hourly(tdb, twb, rh, design, p)
+            h = bp.hourly(tdb, twb, rh, design, p, water_t)
             for name in ("withdrawn", "consumed", "returned"):
                 s = daily_stats(day_index, len(uniq), years, h[name], gwh, months if name != "returned" else None, by)
                 for stat, v in s.items():
@@ -69,3 +74,11 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, gwh=1.0, utilization="full"
         out[design] = {k: {"p10": float(np.quantile(v[:-1], 0.1)), "p50": float(np.quantile(v[:-1], 0.5)), "p90": float(np.quantile(v[:-1], 0.9)),
                            "central": float(v[-1])} for k, v in acc.items()}
     return out
+
+
+def lake_hours(times, water_temps):
+    """Each hour's lake surface temperature, C, from daily values by day of year (day 1 first)."""
+    t = np.asarray(water_temps, dtype=float)
+    day = np.array([x[:10] for x in times], dtype="datetime64[D]")
+    doy = (day - day.astype("datetime64[Y]").astype("datetime64[D]")).astype(int)
+    return t[np.minimum(doy, t.size - 1)]
