@@ -81,6 +81,21 @@ def flow(D, region, cool, key, mw):
     return {"lo": b["lo"] + s["p10"] * k, "mid": b["mid"] + s["p50"] * k, "hi": b["hi"] + s["p90"] * k}
 
 
+GRID_KINDS = ("consumed", "withdrawn", "marginal_consumed", "marginal_withdrawn")
+
+
+def grid_water(D, region, cool, mw, ba):
+    """Water at the power plants of balancing authority `ba` for the campus's own hourly electricity (design 0008, model 1.11), lo/mid/hi MGD at
+    `mw` MW of IT capacity: {kind: {"avg", "peak_day"}} for consumed and withdrawn, on the BA's average hourly mix and on its marginal one. None for
+    lake-source cooling, a BA the cell's run didn't cover, or data from before model 1.11."""
+    if cool == "lake" or not ba:
+        return None
+    r = D["regions"][region]["per_100mw"].get(cool) or {}
+    if f"grid_{ba}_consumed_avg" not in r:
+        return None
+    return {k: {"avg": band(r[f"grid_{ba}_{k}_avg"], mw / 100), "peak_day": band(r[f"grid_{ba}_{k}_peak_1in10"], mw / 100)} for k in GRID_KINDS}
+
+
 def electricity(D, region, cool, mw):
     """Facility electricity at `mw` MW of IT capacity at a region's weather, lo/mid/hi: {"mw", "peak_mw", "pue", "peak_pue"}, and "peak_day_mw"
     where the results have it (model 1.9; not lake-source cooling), or None for data from before model 1.4. Lake-source cooling has its own heat balance (lake.run_lake), the same at every region. Same as WQ.elec on the page."""

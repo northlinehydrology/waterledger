@@ -18,6 +18,7 @@ pip install waterledger-data
 | `era5` | ERA5 hourly temperature and dew point at a place's 0.25-degree cell (the nearest at least half land), from Open-Meteo's open copy on AWS (`[era5]`), with a raw cache |
 | `r2` | optional saving to a private Cloudflare R2 bucket, through wrangler or the S3 API (`[r2]`), skipped by checksum |
 | `energy` | electric utility territories (HIFLD), EIA-861 sales and peaks, power-plant water per kWh by grid region (Siddik et al. 2024) |
+| `grid930` | EIA-930 hourly demand and generation by fuel for every balancing authority, 2019 on, and the BA's power plant water by fuel class and month from EIA's 2024 plant reports, so its plant water hour by hour (design 0008) |
 | `power` | EIA-861 retail sales and residential use for any state (`state_retail_mwh`, `residential`); Michigan's MPSC territories |
 | `wateruse` | water use by county and category: USGS's revised 2015 estimates for every state (`usgs_2015`), and the states' own figures for Ohio (ODNR registration, `ohio`), Texas (TWDB Water Use Survey, `texas`) and Virginia (DEQ locality totals, `virginia`), each with its basis (year, reported or estimate, withdrawals or use) |
 | `places`, `waters` | Michigan's own layers (cities and townships, EGLE water use and wells) |

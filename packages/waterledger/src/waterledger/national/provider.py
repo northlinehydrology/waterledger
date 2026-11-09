@@ -210,7 +210,7 @@ def estimate(state, site):
     import datetime
 
     from waterledger import scenario as sc
-    from waterledger.estimate import Estimate, electricity, water_use
+    from waterledger.estimate import Estimate, electricity, grid_water, water_use
     f, place = site.facility, site.place
     sd = state_data(state)
     d, runs = _cooling(state, place)
@@ -239,4 +239,12 @@ def estimate(state, site):
     acres, before = sc.land_default(place.incorporated)
     resolved = site.model_copy(update={"source": src, "wastewater": dest, "acres": site.acres or acres, "land_before": site.land_before or before})
     power = electricity(sc.electricity(D, d, f.cooling, f.it_mw))
-    return Estimate(site=resolved, water=water, electricity=power, model_version=sd.model_version(), data_date=sd.date or datetime.date.today().isoformat())
+    ba = place_ba(ctx)
+    grid = grid_water(sc.grid_water(D, d, f.cooling, f.it_mw, ba), ba)
+    return Estimate(site=resolved, water=water, electricity=power, grid_water=grid, model_version=sd.model_version(), data_date=sd.date or datetime.date.today().isoformat())
+
+
+def place_ba(ctx):
+    """The place's balancing authority: its first utility's (the place's own first, then by area; energy.ranked), or None."""
+    energy = getattr(ctx, "energy", None)
+    return next((u.balancing_authority for u in energy.utilities if u.balancing_authority), None) if energy else None

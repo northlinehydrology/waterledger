@@ -2,6 +2,26 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.15.0 (Nov 9, 2026; model 1.11)
+
+- **The grid's water hour by hour** ([design 0008](docs/design/0008-power-at-the-grid.md), part 1; methods log, Nov 9).
+  `Estimate.grid_water` (`GridWater`) is the water at the power plants of the place's balancing authority for the campus's
+  own hourly electricity. It covers the average day and the 1-in-10-year peak day, consumed and withdrawn, for the average
+  mix and the marginal mix. It is None for lake-source cooling and for data from before model 1.11. The annual power
+  options are unchanged.
+  - **Data.** `waterledger_data.grid930`: EIA-930 hourly demand and generation by fuel for every balancing authority,
+    2019 on, and its plant water by BA, fuel class and month from the 2024 plant reports behind the state table.
+  - **Model.** `waterledger_models.grid`: the table, binned by month, hour and the user's temperature, with
+    `GridWaterBmi`.
+  - **Cell runs.** `cooling.run_location(..., grid=)` and `run_plants(..., grid=)` add `grid_<BA>_<kind>_avg` and
+    `_peak_1in10`. `era5.cell_bas` gives each cell its places' BAs; Michigan's cells take MISO and PJM. The table is fit on
+    2019-2024, the years the grid's hours and the cells' weather share; that runs about 10-16% above 2024's plant water per
+    MWh. The grid adds about 12% to a run. Every other cooling result matches model 1.10.
+  - **Gap.** Seven Virginia places have no utility in the snapshot's energy data and have no hourly grid water.
+- **A power plant's withdrawal is at least its consumption** [A], in the state table and the BA table. Three plants report
+  water consumed and none withdrawn: Stanton, FL; Kings Mountain, NC; Ingleside Cogeneration, TX. Withdrawn L/kWh: Florida
+  46.562 to 46.582, North Carolina 33.057 to 33.077. No other state changes.
+
 ## 3.14.0 (Nov 8, 2026; model 1.10)
 
 - **The cooling plant inside the building is a choice** ([design 0007](docs/design/0007-cooling-plants.md); methods log, Nov 8).

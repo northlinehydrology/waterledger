@@ -34,15 +34,19 @@ def place(geoid):
 
 def estimate(site):
     """Water use for a site at a Michigan place, through waterledger.scenario (the page's est())."""
-    from waterledger.estimate import Estimate, electricity, water_use
+    from waterledger.estimate import Estimate, electricity, grid_water, water_use
+    from waterledger.national.provider import place_ba
     f = site.facility
     S = sc.scenario(site.place.geoid, mw=f.it_mw, cool=f.cooling, src=site.source, dest=site.wastewater, acres=site.acres,
                     before=site.land_before, imp=site.impervious, plant=f.plant)
     water = water_use(S["E"])
     resolved = site.model_copy(update={"source": S["src"], "wastewater": S["dest"], "acres": S["acres"], "land_before": S["before"]})
     D = sc.data("estimates")
-    power = electricity(sc.electricity(*sc.cooling(S["place"], D, f.plant), f.cooling, f.it_mw))
-    return Estimate(site=resolved, water=water, electricity=power, model_version=D["model_version"], data_date=D["generated"])
+    Dc, region = sc.cooling(S["place"], D, f.plant)
+    power = electricity(sc.electricity(Dc, region, f.cooling, f.it_mw))
+    ba = place_ba(site.place.context())
+    grid = grid_water(sc.grid_water(Dc, region, f.cooling, f.it_mw, ba), ba)
+    return Estimate(site=resolved, water=water, electricity=power, grid_water=grid, model_version=D["model_version"], data_date=D["generated"])
 
 
 # Michigan's utilities in PJM, from the same sources as every state: the service territory layer's control area (HIFLD: Dowagiac, Midwest Energy Cooperative, Niles, Paw Paw,

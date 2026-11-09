@@ -1,9 +1,12 @@
-"""Model 1.10's cooling runs: the cooling Monte Carlo on each place's ERA5 cell (design 0004), corrected toward nearby stations by quantile
-mapping (design 0005; shore cells from model 1.8, land cells from 1.9), one result file per cell. `waterledger era5 run ST --part k/n --workers 10` runs one part by hand.
+"""Model 1.11's cooling runs: the cooling Monte Carlo on each place's ERA5 cell (design 0004), corrected toward nearby stations by quantile
+mapping (design 0005; shore cells from model 1.8, land cells from 1.9), one result file per cell. From model 1.11 a run also gives the
+campus's water at the power plants of each balancing authority serving the cell's places, hour by hour (design 0008, part 1, step 5). `waterledger era5 run ST --part k/n --workers 10` runs one part by hand.
 
     state_cells(ST)         {cell: {"cell": era5.cell's record, "places": [geoid, ...]}} for every place in the state's snapshot
     part(cells, k, n)       the k-th of n parts: the cells in id order, cut into n runs of near-equal size
     anchors(cells)          the stations that can correct these cells, qualified and fitted once (cached)
+    cell_bas(ST, cells)     {cell: [balancing authority, ...]}: the BAs of the utilities serving the cell's places (design 0008)
+    grid_factors(cid, ...)  each BA's hourly plant water per MWh over the run's hours, fit on the cell's own weather
     run_part(ST, k, n)      fetch the part's weather, correct it, run each cell and write CACHE/era5/runs/model<RUN_MODEL>/<cell>.json
 
 A cell's result is written the moment it finishes, so a stopped part resumes where it stopped. With R2 set up (waterledger_data.r2:
@@ -18,7 +21,7 @@ import numpy as np
 from waterledger_data import era5
 from waterledger_data.config import CACHE
 
-RUN_MODEL = "1.10"          # the cooling model on ERA5 cell weather, corrected toward stations near the shore and, from 1.9, inland; from 1.10 each cooling plant: what these runs are for
+RUN_MODEL = "1.11"          # the cooling model on ERA5 cell weather, corrected toward stations near the shore and, from 1.9, inland; from 1.10 each cooling plant; from 1.11 the grid's water hour by hour: what these runs are for
 SEED, MW = 7, 100.0
 
 
@@ -70,6 +73,49 @@ def state_cells(state, date=None, places=None):
         e["places"].append({"geoid": p["geoid"], "name": p.get("name"), "km": round(c["km"], 2), "moved": c["moved"],
                             **({"nearest": c["nearest"]["id"], "nearest_km": round(c["nearest"]["km"], 2), "nearest_land": c["nearest"]["land"]} if c["moved"] else {})})
     return dict(sorted(out.items()))
+
+
+def cell_bas(state, cells, date=None):
+    """{cell: sorted balancing authorities} serving the cell's places (design 0008): every utility's EIA-930 code on the place in the state's
+    snapshot (energy.json's by_place), so the estimate finds whichever utility comes first. Michigan's are MISO and PJM, by its own rule
+    (states.mi.provider.balancing_authority), so its cells take both. A cell with none takes none, and its estimate has no hourly grid water."""
+    state = state.upper()
+    if state == "MI":
+        return {c: ["MISO", "PJM"] for c in cells}
+    from waterledger.national.data import fetch_snapshot
+    try:
+        by_place = json.load(open(os.path.join(fetch_snapshot(state, date), "energy.json")))["by_place"]
+    except Exception as e:                                  # noqa: BLE001  no snapshot: no hourly grid water, said once
+        _say(f"{state}: no snapshot energy data ({type(e).__name__}); the runs have no hourly grid water")
+        return {c: [] for c in cells}
+    return {c: sorted({u["balancing_authority"] for p in v["places"] for u in by_place.get(p["geoid"], []) if u.get("balancing_authority")})
+            for c, v in cells.items()}
+
+
+def grid_factors(cid, times, temps, bas):
+    """{BA: {"consumed", "withdrawn", "marginal_consumed", "marginal_withdrawn"}} gal/MWh at the BA's power plants for each run hour (design
+    0008, part 1, step 5). Each BA's GridTable is fit on its EIA-930 hours (2019 on) paired with the cell's own corrected temperature in the
+    same UTC hours, then applied to all the run's hours, so the 30 weather years meet the grid's mix by month, hour and temperature. The run's
+    times are local standard time at the cell's longitude (era5.local); the table's hours are UTC. A BA with no EIA-930 file or plant
+    water table, or under a year of hours in common, is left out. A month-hour-bin the fit left empty takes the BA's mean for that kind."""
+    from waterledger_data import grid930
+    from waterledger_models import grid as G
+    utc = np.array(times, dtype="datetime64[m]").astype("datetime64[h]") - np.timedelta64(round(era5.indexes(cid)[1] / 4 / 15), "h")
+    t = np.asarray(temps, dtype=float)
+    month, hod, _ = G.calendar(utc)
+    out = {}
+    for ba in bas:
+        try:
+            hours = grid930.intensity(ba)
+        except (FileNotFoundError, KeyError):
+            continue
+        common, ia, ib = np.intersect1d(hours["hour"].astype("datetime64[h]"), utc, return_indices=True)
+        if len(common) < 8760:
+            continue
+        table = G.fit(ba, common, hours["consumed"][ia], hours["withdrawn"][ia], hours["generation"][ia], t[ib])
+        f = {k: np.asarray(v, dtype=float) for k, v in G.lookup(table, month, hod, t).items()}
+        out[ba] = {k: np.where(np.isfinite(v), v, np.nanmean(v)) for k, v in f.items()}
+    return out
 
 
 def part(cells, k, n):
@@ -216,7 +262,8 @@ def _record(cid, cells, times, temps, note, res, draws):
     c = cells[cid]["cell"]
     return {"cell": cid, "lat": c["lat"], "lon": c["lon"], "land": c["land"], "elev_m": era5.elevation(cid), "model_version": RUN_MODEL,
             "draws": draws, "seed": SEED, "mw": MW, "period": f"{era5.FIRST}-{era5.LAST}", "hours": len(times), "time": "local standard",
-            "design_dry_bulb_c": design_dry_bulb(temps), "correction": note,
+            "design_dry_bulb_c": design_dry_bulb(temps), "correction": note, "grid": {"bas": cells[cid].get("bas", []), "design": "0008",
+            "years": "EIA-930 2019 on, with the cell's weather", "note": "each BA's own generation; imports not counted"},
             "weather": {"source": meta["request"]["source"], "fetched": meta["fetched"], "sha256": meta["sha256"], "attribution": era5.ATTRIBUTION,
                         "citation": era5.CITATION},
             **by_plant(res)}
@@ -283,6 +330,11 @@ def _stop(pool):
         p.join(5)
 
 
+def _grid_kw(cid, cells, times, temps):
+    bas = cells[cid].get("bas")
+    return {"grid": grid_factors(cid, times, temps, bas)} if bas else {}
+
+
 def run_part(state, k=1, n=1, workers=6, draws=None, store=None, cells=None, run=None, fetch=None):
     """Run part k of n of a state's cells, every cooling plant (cooling.run_plants); return {cell: result path}. `run` and `fetch` stand in for cooling.run_plants and
     era5.fetch in tests; `cells` for state_cells(state).
@@ -295,8 +347,12 @@ def run_part(state, k=1, n=1, workers=6, draws=None, store=None, cells=None, run
     from waterledger_models.datacenter import cooling
     from waterledger_models.datacenter.physics import DRAWS
     draws = draws or DRAWS
+    real = run is None                                      # the package's own run, not a stand-in from a test
     run, fetch = run or cooling.run_plants, fetch or era5.fetch
     cells = cells if cells is not None else state_cells(state)
+    if real:                                         # the grid's water hour by hour (model 1.11): each cell's balancing authorities
+        for c, bas in cell_bas(state, cells).items():
+            cells[c]["bas"] = bas
     ids = part(cells, k, n)
     _say(f"{state.upper()} part {k}/{n}: {len(ids)} cells" + (f"; R2 ({store.name}) on" if store else "; R2 off"))
     if store:
@@ -333,7 +389,7 @@ def run_part(state, k=1, n=1, workers=6, draws=None, store=None, cells=None, run
         if workers <= 1:
             for cid in todo:
                 times, temps, rhs, note = weather(cid, stations)
-                finish(cid, times, temps, note, run(times, temps, rhs, n=draws, seed=SEED, mw=MW))
+                finish(cid, times, temps, note, run(times, temps, rhs, n=draws, seed=SEED, mw=MW, **_grid_kw(cid, cells, times, temps)))
             return out
         pool = ProcessPoolExecutor(workers, initializer=_ignore_interrupts)
         try:
@@ -342,7 +398,7 @@ def run_part(state, k=1, n=1, workers=6, draws=None, store=None, cells=None, run
                 while queue and len(live) < 2 * workers:        # weather for a few cells ahead, not the whole part, in memory
                     cid = queue.pop(0)
                     times, temps, rhs, note = weather(cid, stations)
-                    live[pool.submit(run, times, temps, rhs, n=draws, seed=SEED, mw=MW)] = (cid, times, temps, note)
+                    live[pool.submit(run, times, temps, rhs, n=draws, seed=SEED, mw=MW, **_grid_kw(cid, cells, times, temps))] = (cid, times, temps, note)
                 done = next(as_completed(live))
                 cid, times, temps, note = live.pop(done)
                 finish(cid, times, temps, note, done.result())

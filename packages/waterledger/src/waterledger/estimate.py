@@ -145,6 +145,33 @@ class PlantWater(BaseModel):
     sources: list[str] = []
 
 
+class GridWater(BaseModel):
+    """Water at the power plants of the place's balancing authority for the campus's own electricity, hour by hour (design 0008, model 1.11), MGD. Each
+    hour of the campus's electricity meets the BA's mix in that month and hour at that temperature (EIA-930 from 2019, with the BA's 2024 plant water
+    per MWh by fuel and month). `consumed` and `withdrawn` are on the average mix: the plants running, shared among all load. The marginal figures are
+    the water of the generation that follows a change in load (Siler-Evans et al. 2012). The BA's own plants; imports are not counted."""
+    model_config = ConfigDict(frozen=True)
+    balancing_authority: str
+    consumed: Range
+    withdrawn: Range
+    consumed_peak_day: Range
+    withdrawn_peak_day: Range
+    marginal_consumed: Range
+    marginal_withdrawn: Range
+    marginal_consumed_peak_day: Range
+    marginal_withdrawn_peak_day: Range
+    note: str = "the balancing authority's own generation; imports not counted"
+    sources: list[str] = ["eia930", "eia923_2024", "macknick2012", "silerevans2012"]
+
+
+def grid_water(g, ba):
+    """A GridWater from scenario.grid_water's lo/mid/hi bands, or None."""
+    if not g:
+        return None
+    R = lambda b: Range(p10=b["lo"], p50=b["mid"], p90=b["hi"])
+    return GridWater(balancing_authority=ba, **{f"{k}{'_peak_day' if t == 'peak_day' else ''}": R(g[k][t]) for k in g for t in ("avg", "peak_day")})
+
+
 class DesignTotal(BaseModel):
     """One cooling design at a site: water evaporated at the campus and at power plants, MGD, and its electricity, MW."""
     model_config = ConfigDict(frozen=True)
@@ -199,6 +226,7 @@ class Estimate(BaseModel):
     levels: dict[str, Any] = {}    # what a reader sees, by card (waterledger.levels): words, numbers and flags. Never changes an estimate
     not_covered: dict[str, str] = {}   # what isn't covered yet for this state, in words: labeled, not silently empty
     power_plants: dict[str, PlantWater] = {}    # every power option for the state; site.power says which one the site uses
+    grid_water: GridWater | None = None         # the place's balancing authority, hour by hour (model 1.11); None for lake-source cooling and older data
     weather: str = "region"     # "region": the stored results for the place's weather region or division; "local": the model run at the place (Open-Meteo best match)
     model_version: str
     data_date: str

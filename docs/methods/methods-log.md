@@ -1988,3 +1988,93 @@ is the kernel (about 60%) and the daily statistics (about 30%).
   any digit Water Ledger shows, and the real cell's results matched to the bit either way.
 
 **Dependency.** `waterledger-models` now requires `numba` (0.60 or later) with `numpy`.
+
+## Nov 8, 2026: a power plant's withdrawal is at least its consumption (next release; built, not released)
+
+**What.** Three plants in EIA's 2024 cooling data report water consumed and none withdrawn: Stanton Energy Center, FL
+(1,270 MG consumed; EIA water type "Reclaimed"), Kings Mountain Energy Center, NC (631 MG) and Ingleside Cogeneration, TX
+(622 MG). A plant can't consume water it didn't take in, so their withdrawal is now set to their consumption [A], and they
+are flagged. The likely cause is water that EIA's withdrawal leaves out, reclaimed or bought from a utility; Stanton's
+water type says so for that plant, and the other two are not confirmed. Plants that report a withdrawal keep their
+treatment (flagged consumption above withdrawal is still held to the withdrawal). The rule is the same in every state
+and every year the build reads (2022-2024).
+
+**Why.** The balancing-authority table for hourly grid water (design 0008) needed it to close, and Andrew decided (Nov 8)
+that both tables follow one rule.
+
+**Effect.** Withdrawn power plant water per kWh: Florida 46.562 to 46.582 L/kWh, North Carolina 33.057 to 33.077; Texas
+moves under the table's rounding. The added water is fresh. Consumption, the coal and nuclear options, and every other
+state are unchanged. The build before the change reproduces the published tables exactly from the same inputs.
+
+## Nov 9, 2026: the grid's water hour by hour in the cell runs (model 1.11)
+
+The design is [0008](../design/0008-power-at-the-grid.md), part 1. This entry holds the run, its checks and what it gives.
+
+**What.** Every ERA5 cell run now gives the campus's water at the power plants of each balancing authority (BA) serving
+the cell's places, for its own hourly electricity. Each draw is reported on the average day and the 1-in-10-year peak day
+(at the peak load), as consumed and withdrawn, with the average mix and the marginal mix.
+- **The BAs.** A cell takes the BAs of the utilities on its places, from the snapshot's energy data. Michigan's cells take
+  MISO and PJM by Michigan's own rule.
+- **The fit.** Each BA's table is fit on its EIA-930 hours, binned by month, hour and the cell's own corrected
+  temperature, then applied to the run's 30 weather years.
+- **The hours.** The run's local standard time is shifted to UTC by round(lon / 15) hours to meet EIA-930's.
+- **What it leaves out.** Imports are not counted: each BA's own generation stands for the power it delivers.
+- **What doesn't change.** The annual power options (the state table) are unchanged.
+
+**Which years (Andrew, Nov 9).** The table is fit on every hour the grid data and the cell's weather share, 2019-2024.
+The ERA5 files end Jan 1, 2025. Plant water per MWh fell over those years as coal retired. Generation-weighted, from the
+EIA-930 hours (gal/MWh consumed / withdrawn):
+
+| BA | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 | 2025 |
+|---|---|---|---|---|---|---|---|
+| MISO | 344 / 13,779 | 320 / 12,504 | 329 / 13,364 | 305 / 12,217 | 292 / 11,341 | 283 / 10,832 | 286 / 11,183 |
+| PJM | 298 / 10,479 | 288 / 10,138 | 289 / 10,056 | 280 / 9,775 | 269 / 9,467 | 263 / 9,288 | 264 / 9,350 |
+| ERCOT | 269 / 4,139 | 254 / 3,846 | 249 / 3,814 | 234 / 3,553 | 222 / 3,313 | 206 / 3,070 | 204 / 3,045 |
+
+The six-year fit runs about 10-16% above 2024 for consumption. Scaling each BA to its latest year was considered. Andrew
+kept the six years: the number is for the years a campus runs, and the last few years are a fair stand-in for the next
+few [judgment]. The trend has fallen every year to 2024, so the six-year figure is likely a little high for the coming
+years. 2025 held level with 2024, and coal retirements are being deferred for new load. The 2024 plant table behind the
+annual power options and these hours differ in basis. That will be stated where the two appear together.
+
+**Checks.**
+- **Closure.** A test holds each draw's plant water to the campus's electricity times a constant factor, on the average
+  day and the peak day, to 1e-12.
+- **Cooling results.** Every cooling result outside the grid matches model 1.10 in all 1,507 cells. Sixteen values differ
+  in the last bit (at most 4e-16, relative), from summation order.
+- **Run time.** The grid adds about 12% to a run.
+- **ERA5 checks** (Nov 9, all five states; reports in [era5-checks/](era5-checks/)). Every state passes, with every
+  criterion's value the same as model 1.10's, since the weather and cooling are unchanged.
+- **Snapshots.** The 2026-11-09 snapshots pass their checks, with the same coverage as 2026-11-08's. Virginia's utility
+  coverage is 0.978: the seven places below.
+
+**Coverage.** Every place in Michigan, Ohio, Texas and Wisconsin has a BA. Seven of Virginia's 322 places have no utility
+in the snapshot's energy data, including Appalachia, Norton and Waynesboro, so two cells (37.00, -82.75 and 38.00,
+-79.00) have no grid water. Those places' estimates have no hourly grid water; the rest of their numbers are unaffected.
+This is a gap in the service-territory data, left for the utility service-area work.
+
+**What it gives.** Medians across each state's cells of the p50, per 100 MW of IT, shared loop. The gal/MWh column is plant
+water over the campus's own electricity, hybrid cooling.
+
+| State | BA (cells) | gal/MWh consumed / withdrawn / marginal consumed | Hybrid consumed, avg / peak day (MGD) | Hybrid withdrawn, avg (MGD) | Towers consumed, avg / peak day (MGD) |
+|---|---|---|---|---|---|
+| Michigan | MISO (272) | 313 / 12,379 / 277 | 0.573 / 0.776 | 22.65 | 0.557 / 0.739 |
+| | PJM (272) | 283 / 9,951 / 177 | 0.517 / 0.699 | 18.21 | 0.503 / 0.672 |
+| Ohio | PJM (203) | 283 / 9,964 / 177 | 0.525 / 0.702 | 18.48 | 0.506 / 0.673 |
+| Virginia | PJM (144) | 283 / 9,967 / 176 | 0.530 / 0.704 | 18.68 | 0.509 / 0.674 |
+| Texas | ERCOT (523) | 238 / 3,609 / 237 | 0.458 / 0.623 | 6.95 | 0.436 / 0.590 |
+| | SPP (184) | 229 / 6,774 / 275 | 0.435 / 0.638 | 12.88 | 0.413 / 0.600 |
+| | MISO (99) | 313 / 12,389 / 278 | 0.608 / 0.787 | 24.02 | 0.579 / 0.761 |
+| Wisconsin | MISO (283) | 313 / 12,365 / 277 | 0.573 / 0.771 | 22.63 | 0.557 / 0.734 |
+
+Smaller BAs: Ohio has MISO (8 cells) and LGEE (2). Virginia has TVA (5), DUK (1) and CPLE (1). Texas has EPE (8) and
+PNM (5). Wisconsin has PJM (10) and SPP (1).
+
+**What it means.**
+- **Against hybrid cooling.** A hybrid campus's water at the power plants is about ten times its own average-day cooling
+  water (0.046 MGD at Michigan's median, model 1.10). It is close to what a tower campus uses on site (0.66 MGD).
+- **Withdrawal.** MISO's and PJM's withdrawal is large, from once-through coal and nuclear. It is returned to its source,
+  not used up.
+- **Dry plants.** A dry plant draws more power, so it takes slightly more water at the power plants than hybrid (Michigan
+  MISO 0.576 MGD).
+- **The marginal mix.** It sits below the average in PJM (177 against 283) and about level in MISO and ERCOT.
