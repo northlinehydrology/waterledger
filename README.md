@@ -97,7 +97,9 @@ They are validated, round-trip through JSON, and are described in
   plants of a balancing authority (EIA-930 generation by fuel from 2019, with the BA's 2024 plant water per MWh by fuel and
   month), binned by month, hour and the temperature at the user, on the average mix and the marginal one.
 - **In the cell runs**, for each BA serving the cell's places, so `est.grid_water` gives the place's BA's water for the
-  campus's own electricity on the average day and the 1-in-10-year peak day. The annual power options in
+  campus's own electricity on the average day and the 1-in-10-year peak day. The table is fit on 2019-2024, the years the
+  grid's hours and the cells' weather share, so it runs about 10-16% above 2024's plant water per MWh (methods log,
+  Nov 9). Seven Virginia places have no utility in the snapshot and no hourly grid water. The annual power options in
   `est.power_plants` are unchanged.
 - **A power plant's withdrawal is at least its consumption** in the state tables, as in the BA table: three plants that
   report consumption and no withdrawal (Florida 46.562 to 46.582 L/kWh withdrawn, North Carolina 33.057 to 33.077).
@@ -243,9 +245,9 @@ Paths (download cache, site output) come from `WATERLEDGER_CACHE` / `WATERLEDGER
 
 ### The ERA5 runs
 
-The cooling numbers come from one run per ERA5 cell and cooling plant: about 7 hours for the five states' 1,507 cells and
-model 1.10's three plants at twelve workers on one machine, on the compiled hourly loop (`datacenter.kernel`), in parts
-started by hand ([design 0004](docs/design/0004-era5-weather.md), section 3). Each part fetches its cells from Open-Meteo's open
+The cooling numbers come from one run per ERA5 cell and cooling plant: about 9 hours for the five states' 1,507 cells,
+model 1.11's three plants and the grid's hourly water, at twelve workers on one machine, on the compiled hourly loop
+(`datacenter.kernel`), in parts started by hand ([design 0004](docs/design/0004-era5-weather.md), section 3). Each part fetches its cells from Open-Meteo's open
 copy of ERA5, corrects them toward nearby stations ([design 0005](docs/design/0005-era5-quantile-mapping.md)), runs them and writes
 `CACHE/era5/runs/model<version>/<cell>.json` as each finishes, so a stopped part resumes where it stopped:
 

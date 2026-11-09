@@ -89,7 +89,7 @@ have, so they stop; the snapshot is written here.
 
 ### 2. Run the ERA5 cells, in parts
 
-One run per cell covers the three cooling plants, 400 draws each: about 16-21 s a cell over a long run at twelve workers on Andrew's Mac on the compiled loop (model 1.10, Nov 8). Split the state into parts of about 205 cells (about an hour each),
+One run per cell covers the three cooling plants, 400 draws each: about 19-22 s a cell over a long run at twelve workers on Andrew's Mac on the compiled loop, with the grid's hourly water (model 1.11, Nov 8-9). Split the state into parts of about 205 cells (about an hour each),
 `n = ceil(cells / 205)` parts, and start each by hand, an evening or overnight:
 
 ```bash
