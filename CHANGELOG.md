@@ -2,6 +2,29 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.14.0 (Nov 8, 2026; model 1.10)
+
+- **The cooling plant inside the building is a choice** ([design 0007](docs/design/0007-cooling-plants.md); methods log, Nov 8).
+  `physics.PLANTS`: `shared`, the default (one facility water loop for the air handlers and the liquid racks, supply air
+  24-30 C [A]), `warm` (a separate warm liquid loop at 30-42 C [A], liquid share 0.7-1.0 [A]) and `chilled` (a conventional
+  chilled-water plant, 7-13 C water, 18-22 C supply air). Through model 1.9 every plant ran the warm-water best case
+  (supply air 27-35 C, liquid racks 32-45 C). `DataCenter(plant=)` through both providers, `weather='local'` and the BMI
+  (`plant:`); `cooling.run_location(..., plant=)` and `cooling.run_plants`; `scenario.for_plant`. Each ERA5 cell's run covers
+  every plant: `per_100mw` holds the default's results, as before, and `per_100mw_plants` the others'. Results from before
+  model 1.10 answer only for their own plant. With the default, hybrid and assist water rises 30-40% on the average day and
+  about 20% on the peak day against model 1.9, towers' peak day 6-7%, and peak-day power 5-7 MW per 100 MW of IT.
+- **The weather correction maps the dew point** (`quantile_mapping` method `qm-3`), not the dew-point depression, so a
+  hot-day temperature correction no longer makes peak days humid (model 1.9's Michigan peak days ran 0.72 C of wet bulb
+  high). The lapse rate moves temperature only [A]. Station fits are cached by what they fit (`quantile_mapping.FIT`).
+- **ERA5 check W7**: corrected cells' mean error in the 1-in-10-year peak day's mean wet bulb, at most 0.5 C [A]. All five
+  states pass every criterion on model 1.10 (`docs/methods/era5-checks/`).
+- **The dry coolers' glycol** has propylene glycol's heat capacity and density, 30-40% by volume [A] (Dow's DOWFROST data
+  sheet), not water's.
+- **The cooling runs are compiled** (`datacenter.kernel`, Numba): about 4.5x faster per draw, with the same numbers (a real
+  cell matches all 1,512 values to the bit; the tests hold every hourly series to `physics.py`). `run_location(...,
+  compiled=False)` runs `physics.py`. `waterledger-models` now requires `numba` (0.60 or later).
+- **Sensitivity analysis by plant** (`--plant`). Its model 1.10 results follow this release.
+
 ## 3.13.0 (Nov 7, 2026; model 1.9)
 
 - **Peak-day power on the estimate.** `Estimate.electricity.peak_day_mw`, the 1-in-10-year peak day's average power at the

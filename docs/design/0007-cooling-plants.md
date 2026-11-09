@@ -1,7 +1,7 @@
 # 0007: The cooling plant inside the building, and the weather and glycol fixes that ride with it (model 1.10)
 
-Status: **decided Nov 8, 2026 (Andrew); built Nov 8 on branch `plant-choice`; not released.** The cell runs, snapshots and site
-follow. Research behind it: the cooling-loop study of Nov 7 (primary sources with page numbers in the methods log entry of Nov 8).
+Status: **decided Nov 8, 2026 (Andrew); released in 3.14.0 (Nov 8, 2026), with every state's cells rerun and its snapshot
+rebuilt.** Research behind it: the cooling-loop study of Nov 7 (primary sources with page numbers in the methods log entry of Nov 8).
 
 ## What was wrong
 
