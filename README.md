@@ -98,7 +98,9 @@ They are validated, round-trip through JSON, and are described in
 
   Through model 1.9 every plant ran supply air at 27-35 C and liquid racks at 32-45 C, the warm-water best case. Each cell
   is now run for every plant, and the snapshots carry them all (`per_100mw` for the default, `per_100mw_plants` for the
-  others).
+  others). Against model 1.9, the default's hybrid and assist water rises 30-40% on the average day and about 20% on the
+  peak day, towers' peak day 6-7%, and peak-day power 5-7 MW per 100 MW of IT; the warm plant stays within 2% of model
+  1.9's water (methods log, Nov 8).
 - **The weather correction maps the dew point itself** (qm-3), not the dew-point depression, so a hot-day temperature
   correction no longer makes peak days humid. The ERA5 check gains W7, a peak-day wet-bulb criterion.
 - **The dry coolers' glycol** has propylene glycol's heat capacity and density (30-40% by volume; Dow's data sheet), not
@@ -229,7 +231,8 @@ Paths (download cache, site output) come from `WATERLEDGER_CACHE` / `WATERLEDGER
 
 ### The ERA5 runs
 
-The cooling numbers come from one run per ERA5 cell and cooling plant: about 13 hours a plant at ten workers for the five states' 1,507 cells (model 1.9, one machine), so about 40 for model 1.10's three plants, in parts
+The cooling numbers come from one run per ERA5 cell and cooling plant: about 7 hours for the five states' 1,507 cells and
+model 1.10's three plants at twelve workers on one machine, on the compiled hourly loop (`datacenter.kernel`), in parts
 started by hand ([design 0004](docs/design/0004-era5-weather.md), section 3). Each part fetches its cells from Open-Meteo's open
 copy of ERA5, corrects them toward nearby stations ([design 0005](docs/design/0005-era5-quantile-mapping.md)), runs them and writes
 `CACHE/era5/runs/model<version>/<cell>.json` as each finishes, so a stopped part resumes where it stopped:
