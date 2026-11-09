@@ -214,7 +214,7 @@ def estimate(state, site):
     f, place = site.facility, site.place
     sd = state_data(state)
     d, runs = _cooling(state, place)
-    D = {"regions": runs, "staff": {"runs": sd.staff_runs()}, "lake_source": sd.lake_source()}
+    D = {"regions": {**runs, d: sc.for_plant(runs[d], f.plant)}, "staff": {"runs": sd.staff_runs()}, "lake_source": sd.lake_source()}
     ctx = place.context()
     lake = ctx.receiving.great_lake
     src = site.source

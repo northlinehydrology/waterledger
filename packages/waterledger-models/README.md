@@ -4,14 +4,17 @@ The models behind [Water Ledger](https://waterledger.org): the water large new u
 starting with data centers.
 
 ```bash
-pip install waterledger-models          # numpy only
+pip install waterledger-models          # numpy and numba
 pip install "waterledger-models[all]"   # with xarray ensembles, BMI components and STAC publishing
 ```
 
 - `datacenter.physics`: the cooling equations and parameter ranges, vectorized (Rutberg evaporative ratio as in USGS
-  SIR 2013-5188, DOE FEMP water balance, Stull wet bulb).
+  SIR 2013-5188, DOE FEMP water balance, Stull wet bulb), for each cooling plant inside the building (`PLANTS`: a shared
+  facility loop, the default; a separate warm liquid loop; conventional chilled water; design 0007).
+- `datacenter.kernel`: the Monte Carlo's hourly heat balance and water compiled with Numba, one pass per hour; it
+  agrees with `physics` to the last bit or two and is tested against it for every design and plant.
 - `datacenter.cooling`: the per-run Monte Carlo over decades of hourly weather for towers, hybrid, and closed loop with
-  or without evaporative assist; staff water at the campus's size.
+  or without evaporative assist, for one plant (`run_location`) or each (`run_plants`); staff water at the campus's size.
 - `datacenter.lake`: lake-source (once-through) cooling with forced lake evaporation (USGS heat-balance method).
 - `datacenter.ensemble`: vectorized ensembles as xarray, dask across locations (`[ensemble]`).
 - `datacenter.bmi`: `CoolingWaterBmi` and `LakeCoolingBmi`, CSDMS BMI 2.0 with CSDMS Standard Names (`[bmi]`), on the public
@@ -22,10 +25,10 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
 - `hydrology`: screening hydrology: SCS curve-number runoff, Theis drawdown and Glover stream depletion (on arrays).
 - `runoff`: runoff, sediment, nutrients, road salt and fuel from a developed site.
 - `quantile_mapping`: an ERA5 cell's hourly temperature and dew point corrected toward the stations within 100 km: shore
-  stations for cells under 90% land, land stations for the rest (design 0005; land cells from model 1.9); the dew point never
-  passes the temperature.
+  stations for cells under 90% land, land stations for the rest (design 0005; land cells from model 1.9); temperature and dew
+  point are each mapped on their own quantiles (from model 1.10), and the dew point never passes the temperature.
 - `weather`: hourly weather from the Open-Meteo archive, its best match (ERA5, ERA5-Land and, from 2017, IFS HRES); humidity
   conversions (Bolton 1980) and a record's design dry-bulb.
 
-`MODEL_VERSION` is Water Ledger's model version (1.9), which changes when the numbers do; the package version (semver)
+`MODEL_VERSION` is Water Ledger's model version (1.10), which changes when the numbers do; the package version (semver)
 changes with the code. They are independent.

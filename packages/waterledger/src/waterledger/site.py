@@ -36,7 +36,7 @@ def local_weather(est):
     if f.cooling == "lake":
         raise ValueError("Lake-source cooling does not depend on air weather; weather='local' does not apply")
     t, T, RH = hourly_weather(p.lat, p.lon, "1995-01-01", "2024-12-31", f"place_{p.geoid}")
-    D = {"regions": {"local": {"per_100mw": cooling.run_location(t, T, RH, mw=100.0)}}, "staff": {"runs": cooling.staff_runs()}}
+    D = {"regions": {"local": {"per_100mw": cooling.run_location(t, T, RH, mw=100.0, plant=f.plant)}}, "staff": {"runs": cooling.staff_runs()}}
     return est.model_copy(update={"water": water_use(scenario.cooling_estimate(D, "local", f.cooling, f.it_mw, est.site.wastewater)),
                                   "electricity": electricity(scenario.electricity(D, "local", f.cooling, f.it_mw)), "weather": "local"})
 
@@ -97,7 +97,7 @@ class Site(BaseModel):
             cfg = {"it_capacity_mw": f.it_mw, "end_time": end_time or 365 * 86400}
         else:
             entry = "waterledger_models.datacenter.bmi:CoolingWaterBmi"
-            cfg = {"design": f.cooling, "it_capacity_mw": f.it_mw, "time_step": 3600, "end_time": end_time or 365 * 86400}
+            cfg = {"design": f.cooling, "plant": f.plant, "it_capacity_mw": f.it_mw, "time_step": 3600, "end_time": end_time or 365 * 86400}
         if forcing:
             cfg["forcing"] = str(forcing)
         if design_db is not None and f.cooling != "lake":

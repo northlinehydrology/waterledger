@@ -37,11 +37,11 @@ def estimate(site):
     from waterledger.estimate import Estimate, electricity, water_use
     f = site.facility
     S = sc.scenario(site.place.geoid, mw=f.it_mw, cool=f.cooling, src=site.source, dest=site.wastewater, acres=site.acres,
-                    before=site.land_before, imp=site.impervious)
+                    before=site.land_before, imp=site.impervious, plant=f.plant)
     water = water_use(S["E"])
     resolved = site.model_copy(update={"source": S["src"], "wastewater": S["dest"], "acres": S["acres"], "land_before": S["before"]})
     D = sc.data("estimates")
-    power = electricity(sc.electricity(*sc.cooling(S["place"], D), f.cooling, f.it_mw))
+    power = electricity(sc.electricity(*sc.cooling(S["place"], D, f.plant), f.cooling, f.it_mw))
     return Estimate(site=resolved, water=water, electricity=power, model_version=D["model_version"], data_date=D["generated"])
 
 

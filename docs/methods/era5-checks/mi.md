@@ -1,20 +1,21 @@
 # ERA5 check: MI
 
-**PASS** (2026-11-07; model 1.9; design 0005's leave-one-station-out check; 36 stations).
+**PASS** (2026-11-08; model 1.10; design 0005's leave-one-station-out check; 36 stations).
 
 | Criterion | Test | Limit | Value | Pass | Limit set from |
 |---|---|---|---|---|---|
 | W1 | land stations held out, at least | 5 | 18 | yes | too few to judge below this |
 | W2 | land cells: median |error| in the 0.4% design dry-bulb, C, at most | 0.75 | 0.27 | yes | four states 0.30-0.68 (Virginia); +0.07 |
 | W3 | land cells: |mean error| in the design dry-bulb, C, at most | 0.50 | 0.03 | yes | four states 0.07-0.33 (Texas); +0.17 |
-| W4 | land cells: median |error| in the 0.4% wet bulb, C, at most | 0.40 | 0.22 | yes | four states 0.10-0.25 (Virginia); +0.15 |
+| W4 | land cells: median |error| in the 0.4% wet bulb, C, at most | 0.40 | 0.10 | yes | four states 0.10-0.25 (Virginia); +0.15 |
 | W5 | corrected shore cells (3 or more): median |error| in the design dry-bulb, C, at most | 0.50 | 0.48 | yes | four states 0.19-0.32 (Michigan); +0.18 |
 | W6 | corrected shore cells (3 or more): median |error| no worse than uncorrected | - | 0.48 vs 1.55 | yes | the reason to correct |
+| W7 | corrected cells: |mean error| in the 1-in-10-year peak day's mean wet bulb, C, at most | 0.50 | 0.17 | yes | model 1.10 [A]: qm-2's Michigan peak days ran 0.72 C humid, mapping the dew point brought Michigan and Ohio to 0.23 (methods log, Nov 8, 2026) |
 | P1 | places sampled, at least | 5 | 12 | yes | too few to judge below this |
-| P2 | places: median |difference| in the hybrid average day, %, at most | 8.00 | 5.43 | yes | four states 1.9-4.6 (Virginia); +3.4 |
-| P3 | places: |mean difference| in the hybrid average day, %, at most | 6.00 | 0.07 | yes | four states 0.6-4.9 (Virginia); +1.1 |
-| P4 | places: median |difference| in the hybrid peak day, %, at most | 6.00 | 5.34 | yes | four states 0.5-3.2 (Virginia); +2.8 |
-| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.22 | yes | four states 0.03-0.22; +1.8 |
+| P2 | places: median |difference| in the hybrid average day, %, at most | 8.00 | 4.31 | yes | four states 1.9-4.6 (Virginia); +3.4 |
+| P3 | places: |mean difference| in the hybrid average day, %, at most | 6.00 | 0.08 | yes | four states 0.6-4.9 (Virginia); +1.1 |
+| P4 | places: median |difference| in the hybrid peak day, %, at most | 6.00 | 4.11 | yes | four states 0.5-3.2 (Virginia); +2.8 |
+| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.27 | yes | four states 0.03-0.22; +1.8 |
 
 ## Weather at the held-out stations
 
@@ -23,10 +24,10 @@ Median absolute error (mean error), C, against the station on its own hours.
 | Stations | Way | Design dry-bulb | 0.4% wet bulb | Summer afternoon T | Mean dew point |
 |---|---|---|---|---|---|
 | land cells, corrected (15) | uncorrected | 0.35 (-0.34) | 0.09 (-0.11) | 0.27 (-0.29) | 0.15 (+0.04) |
-| land cells, corrected (15) | decided | 0.14 (+0.03) | 0.19 (+0.07) | 0.25 (+0.13) | 0.16 (-0.01) |
+| land cells, corrected (15) | decided | 0.14 (+0.03) | 0.08 (-0.08) | 0.25 (+0.13) | 0.21 (-0.01) |
 | land cells, no station (3) | uncorrected | 0.60 (-0.33) | 0.35 (-0.25) | 0.33 (-0.34) | 0.41 (+0.12) |
 | shore cells, corrected (11) | uncorrected | 1.55 (-1.37) | 0.21 (-0.16) | 0.66 (-0.73) | 0.40 (+0.42) |
-| shore cells, corrected (11) | decided | 0.48 (-0.09) | 0.22 (+0.36) | 0.71 (+0.14) | 0.24 (-0.07) |
+| shore cells, corrected (11) | decided | 0.48 (-0.09) | 0.22 (-0.01) | 0.71 (+0.14) | 0.41 (-0.01) |
 | shore cells, no shore station (7) | uncorrected | 1.95 (-1.66) | 0.36 (-0.22) | 1.41 (-1.04) | 0.63 (+0.31) |
 
 | Station | Source | Cell land | Design dry-bulb error (C) | Corrected from |
@@ -74,17 +75,17 @@ The place's cell against the station's own record, p50 per 100 MW, % difference.
 
 | Place | Station (km) | Cell land | towers avg | towers peak | hybrid avg | hybrid peak | assist avg | assist peak |
 |---|---|---|---|---|---|---|---|---|
-| Romulus city | Detroit Metro Wayne County Airport (3) | 0.88 | -0 | +1 | -3 | +10 | -7 | +6 |
-| Hamtramck city | Detroit City Airport (4) | 0.88 | -1 | -1 | -21 | -1 | -26 | -9 |
-| Harrison charter township | Selfridge Air National Guard Base (2) | 0.62 | +1 | +2 | +17 | +12 | +21 | +7 |
-| Holland city | Tulip City Airport (1) | 0.81 | -0 | +1 | -8 | +1 | -19 | -8 |
-| Benton charter township | Sw Michigan Regional Arpt (2) | 0.65 | +0 | +1 | +6 | +6 | +4 | -3 |
-| Norton Shores city | Muskegon County Airport (0) | 0.72 | +0 | +4 | +5 | +14 | +6 | +12 |
-| Van Buren charter township | Willow Run Airport (4) | 0.99 | -0 | +0 | -6 | +9 | -13 | +2 |
-| Lansing city | Capital City Airport (1) | 0.99 | +0 | +1 | +3 | +4 | -1 | +2 |
-| Blackman charter township | Jakson Co-Rynolds Fld Arpt (4) | 0.99 | +0 | +1 | +5 | +5 | +4 | +9 |
-| Springfield city | W K Kellogg Airport (2) | 0.98 | -0 | +1 | +4 | +7 | +0 | +6 |
-| Cascade charter township | Gerald R Ford International Airport (3) | 0.98 | +0 | +1 | +3 | +3 | +2 | -1 |
-| Portage city | Klmazo/Btl Creek Intl Arpt (5) | 0.97 | -0 | +0 | -5 | +4 | -9 | +1 |
+| Romulus city | Detroit Metro Wayne County Airport (3) | 0.88 | -0 | +1 | -3 | +10 | -6 | +6 |
+| Hamtramck city | Detroit City Airport (4) | 0.88 | -1 | -1 | -20 | +1 | -27 | -9 |
+| Harrison charter township | Selfridge Air National Guard Base (2) | 0.62 | +1 | +2 | +17 | +9 | +26 | +7 |
+| Holland city | Tulip City Airport (1) | 0.81 | -0 | +0 | -7 | -0 | -16 | -4 |
+| Benton charter township | Sw Michigan Regional Arpt (2) | 0.65 | -0 | +1 | +6 | +5 | +6 | -0 |
+| Norton Shores city | Muskegon County Airport (0) | 0.72 | +0 | +2 | +5 | +9 | +9 | +17 |
+| Van Buren charter township | Willow Run Airport (4) | 0.99 | -0 | +0 | -5 | +8 | -10 | +3 |
+| Lansing city | Capital City Airport (1) | 0.99 | +0 | +1 | +3 | +3 | +0 | +4 |
+| Blackman charter township | Jakson Co-Rynolds Fld Arpt (4) | 0.99 | +0 | +1 | +4 | +4 | +3 | +6 |
+| Springfield city | W K Kellogg Airport (2) | 0.98 | -0 | +1 | +2 | +6 | +0 | +6 |
+| Cascade charter township | Gerald R Ford International Airport (3) | 0.98 | +0 | +1 | +3 | +2 | +3 | +2 |
+| Portage city | Klmazo/Btl Creek Intl Arpt (5) | 0.97 | -0 | +0 | -4 | +3 | -8 | +0 |
 
 A fail is a method question for Andrew; the command changes nothing. Criteria: `waterledger.national.era5_check.CRITERIA`.

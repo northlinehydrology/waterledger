@@ -33,7 +33,7 @@ CELL = {"lat": 42.0, "lon": -83.0, "land": 0.6, "elev_m": 180.0}
 def test_a_station_with_the_cells_own_weather_changes_nothing():
     times, t, td = _weather()
     tc, tdc, note = Q.correct(times, t, td, CELL, [_station(times, t, td)])
-    assert note["applied"] and note["method"] == "qm-2"
+    assert note["applied"] and note["method"] == "qm-3"
     assert np.allclose(tc, t, atol=1e-9) and np.allclose(tdc, td, atol=1e-9)
 
 
@@ -65,10 +65,21 @@ def test_the_mapping_keeps_each_hours_rank_in_its_bin():
         assert (np.diff(tc[sel][order]) >= -1e-9).all()
 
 
-def test_lapse_moves_a_station_100_m_above_the_cell_0_65_c_warmer():
+def test_lapse_moves_a_station_100_m_above_the_cell_0_65_c_warmer_and_leaves_its_dew_point():
+    """The lapse rate moves temperature only; the dew point is mapped as it is (qm-3), where through model 1.9 the depression kept it moving with T."""
     times, t, td = _weather()
     tc, tdc, _ = Q.correct(times, t, td, CELL, [_station(times, t, td, elev=280.0)])
-    assert np.allclose(tc, t + 0.65, atol=1e-9) and np.allclose(tc - tdc, t - td, atol=1e-9)
+    assert np.allclose(tc, t + 0.65, atol=1e-9) and np.allclose(tdc, td, atol=1e-9)
+
+
+def test_a_hot_day_correction_leaves_the_dew_point_alone():
+    """The reason for qm-3: a station whose hot hours are 2 C hotter than the cell's, with the same dew points, warms those hours and
+    leaves their dew point; mapping the depression would have carried the dew point up 2 C with them."""
+    times, t, td = _weather()
+    hot = t + 2.0 * (t > np.quantile(t, 0.9))
+    tc, tdc, _ = Q.correct(times, t, td, CELL, [_station(times, hot, np.minimum(td, hot))])
+    top = t > np.quantile(t, 0.95)
+    assert tc[top].mean() > t[top].mean() + 1.0 and abs(tdc[top].mean() - td[top].mean()) < 0.2
 
 
 def test_land_cells_are_corrected_from_land_stations_near():

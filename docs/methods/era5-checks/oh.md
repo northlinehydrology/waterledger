@@ -1,20 +1,21 @@
 # ERA5 check: OH
 
-**PASS** (2026-11-07; model 1.9; design 0005's leave-one-station-out check; 41 stations).
+**PASS** (2026-11-08; model 1.10; design 0005's leave-one-station-out check; 41 stations).
 
 | Criterion | Test | Limit | Value | Pass | Limit set from |
 |---|---|---|---|---|---|
 | W1 | land stations held out, at least | 5 | 33 | yes | too few to judge below this |
 | W2 | land cells: median |error| in the 0.4% design dry-bulb, C, at most | 0.75 | 0.26 | yes | four states 0.30-0.68 (Virginia); +0.07 |
 | W3 | land cells: |mean error| in the design dry-bulb, C, at most | 0.50 | 0.04 | yes | four states 0.07-0.33 (Texas); +0.17 |
-| W4 | land cells: median |error| in the 0.4% wet bulb, C, at most | 0.40 | 0.10 | yes | four states 0.10-0.25 (Virginia); +0.15 |
+| W4 | land cells: median |error| in the 0.4% wet bulb, C, at most | 0.40 | 0.13 | yes | four states 0.10-0.25 (Virginia); +0.15 |
 | W5 | corrected shore cells (3 or more): median |error| in the design dry-bulb, C, at most | 0.50 | 0.35 | yes | four states 0.19-0.32 (Michigan); +0.18 |
 | W6 | corrected shore cells (3 or more): median |error| no worse than uncorrected | - | 0.35 vs 0.95 | yes | the reason to correct |
+| W7 | corrected cells: |mean error| in the 1-in-10-year peak day's mean wet bulb, C, at most | 0.50 | 0.16 | yes | model 1.10 [A]: qm-2's Michigan peak days ran 0.72 C humid, mapping the dew point brought Michigan and Ohio to 0.23 (methods log, Nov 8, 2026) |
 | P1 | places sampled, at least | 5 | 12 | yes | too few to judge below this |
-| P2 | places: median |difference| in the hybrid average day, %, at most | 8.00 | 1.87 | yes | four states 1.9-4.6 (Virginia); +3.4 |
-| P3 | places: |mean difference| in the hybrid average day, %, at most | 6.00 | 1.46 | yes | four states 0.6-4.9 (Virginia); +1.1 |
-| P4 | places: median |difference| in the hybrid peak day, %, at most | 6.00 | 5.94 | yes | four states 0.5-3.2 (Virginia); +2.8 |
-| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.14 | yes | four states 0.03-0.22; +1.8 |
+| P2 | places: median |difference| in the hybrid average day, %, at most | 8.00 | 2.46 | yes | four states 1.9-4.6 (Virginia); +3.4 |
+| P3 | places: |mean difference| in the hybrid average day, %, at most | 6.00 | 1.56 | yes | four states 0.6-4.9 (Virginia); +1.1 |
+| P4 | places: median |difference| in the hybrid peak day, %, at most | 6.00 | 5.10 | yes | four states 0.5-3.2 (Virginia); +2.8 |
+| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.22 | yes | four states 0.03-0.22; +1.8 |
 
 ## Weather at the held-out stations
 
@@ -23,9 +24,9 @@ Median absolute error (mean error), C, against the station on its own hours.
 | Stations | Way | Design dry-bulb | 0.4% wet bulb | Summer afternoon T | Mean dew point |
 |---|---|---|---|---|---|
 | land cells, corrected (33) | uncorrected | 0.30 (-0.30) | 0.16 (-0.03) | 0.22 (-0.16) | 0.19 (+0.11) |
-| land cells, corrected (33) | decided | 0.26 (+0.04) | 0.10 (+0.09) | 0.25 (+0.13) | 0.16 (-0.02) |
+| land cells, corrected (33) | decided | 0.26 (+0.04) | 0.13 (-0.07) | 0.25 (+0.13) | 0.21 (+0.01) |
 | shore cells, corrected (7) | uncorrected | 0.95 (-0.93) | 0.15 (-0.19) | 0.59 (-0.46) | 0.44 (+0.44) |
-| shore cells, corrected (7) | decided | 0.35 (-0.06) | 0.14 (+0.12) | 0.77 (+0.02) | 0.24 (-0.04) |
+| shore cells, corrected (7) | decided | 0.35 (-0.06) | 0.08 (-0.01) | 0.77 (+0.02) | 0.33 (+0.05) |
 | shore cells, no shore station (1) | uncorrected | 2.25 (-2.25) | 0.06 (+0.06) | 1.21 (-1.21) | 1.18 (+1.18) |
 
 | Station | Source | Cell land | Design dry-bulb error (C) | Corrected from |
@@ -78,17 +79,17 @@ The place's cell against the station's own record, p50 per 100 MW, % difference.
 
 | Place | Station (km) | Cell land | towers avg | towers peak | hybrid avg | hybrid peak | assist avg | assist peak |
 |---|---|---|---|---|---|---|---|---|
-| New Russia township | Lorain County Rgnl Airport (4) | 0.81 | +0 | +1 | +1 | +11 | -3 | +3 |
-| Brook Park city | Cleveland-Hopkins International Ap (3) | 0.65 | +0 | +1 | +1 | +18 | -9 | +9 |
-| Madison township | Mansfield Lahm Regional Airport (4) | 0.99 | +1 | +2 | +13 | +6 | +16 | +15 |
-| Whitehall city | Port Columbus International Airport (2) | 0.99 | -0 | -1 | -4 | +5 | -11 | +2 |
-| Perry township | Zanesville Municipal Arpt (4) | 1.00 | +0 | +0 | +5 | +5 | +2 | +8 |
-| Lake township | Metcalf Field Airport (2) | 0.96 | -0 | +1 | -1 | +6 | -2 | +2 |
-| Vandalia city | J.M.Cox Dayton International Airport (4) | 1.00 | -0 | +1 | -4 | +2 | -6 | -1 |
-| Greenfield township | Fairfield County Airport (3) | 1.00 | +0 | +1 | +5 | +9 | +9 | +12 |
-| Clinton County | Airborne Airpark Airport (2) | 1.00 | -0 | +1 | +2 | +8 | +3 | +5 |
-| Fairfax village | Cina Muni Apt/Lukn Fd Apt (4) | 0.99 | +0 | +0 | +2 | +8 | +1 | +3 |
-| Perry township | Lima Allen County Airport (4) | 1.00 | -0 | +0 | +0 | +0 | +2 | +0 |
-| Green city | Akron-Canton Regional Airport (5) | 0.99 | -0 | +1 | -1 | +5 | -8 | -1 |
+| New Russia township | Lorain County Rgnl Airport (4) | 0.81 | +0 | +1 | +3 | +9 | -3 | +1 |
+| Brook Park city | Cleveland-Hopkins International Ap (3) | 0.65 | +0 | +1 | +2 | +15 | -10 | +6 |
+| Madison township | Mansfield Lahm Regional Airport (4) | 0.99 | +1 | +2 | +12 | +5 | +14 | +10 |
+| Whitehall city | Port Columbus International Airport (2) | 0.99 | -0 | -0 | -4 | +4 | -10 | +3 |
+| Perry township | Zanesville Municipal Arpt (4) | 1.00 | +0 | +0 | +5 | +5 | +3 | +11 |
+| Lake township | Metcalf Field Airport (2) | 0.96 | -0 | +0 | -1 | +4 | -2 | +1 |
+| Vandalia city | J.M.Cox Dayton International Airport (4) | 1.00 | -0 | +1 | -5 | +2 | -7 | -2 |
+| Greenfield township | Fairfield County Airport (3) | 1.00 | +0 | +1 | +5 | +8 | +9 | +12 |
+| Clinton County | Airborne Airpark Airport (2) | 1.00 | -0 | +1 | +2 | +7 | +2 | +3 |
+| Fairfax village | Cina Muni Apt/Lukn Fd Apt (4) | 0.99 | -0 | -0 | +2 | +8 | +4 | +5 |
+| Perry township | Lima Allen County Airport (4) | 1.00 | -0 | -0 | -0 | +0 | +2 | +0 |
+| Green city | Akron-Canton Regional Airport (5) | 0.99 | -0 | +1 | -1 | +4 | -6 | +1 |
 
 A fail is a method question for Andrew; the command changes nothing. Criteria: `waterledger.national.era5_check.CRITERIA`.

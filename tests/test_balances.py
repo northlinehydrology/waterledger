@@ -9,6 +9,7 @@ T = np.arange(-25.0, 41.0, 1.0)
 W = ph.wet_bulb(T, np.full_like(T, 55.0))
 DESIGN_DB = 33.0      # C, a test location's 0.4% design dry-bulb
 DRAWS = {**{k: v[:, None] for k, v in ph.sample_parameters(100).items()}, "design_db": DESIGN_DB}
+PLANT_DRAWS = {k: {**{n: v[:, None] for n, v in ph.sample_parameters(100, plant=k).items()}, "design_db": DESIGN_DB} for k in ph.PLANTS}
 CENTRAL = {**ph.central_parameters(), "design_db": DESIGN_DB}
 GAL_KG = 3.78541
 
@@ -17,18 +18,21 @@ def _rates(design):
     return ph.hourly_rates(T, W, design, DRAWS)
 
 
+@pytest.mark.parametrize("plant", ph.PLANTS)
 @pytest.mark.parametrize("design", ph.DESIGNS)
-def test_water_taken_plus_condensate_is_water_used_up_and_returned(design):
-    w, c, r = _rates(design)
-    condensate = ph.hourly_water_with_air(T, W, DRAWS)[1]
+def test_water_taken_plus_condensate_is_water_used_up_and_returned(design, plant):
+    p = PLANT_DRAWS[plant]
+    w, c, r = ph.hourly_rates(T, W, design, p)
+    condensate = ph.hourly_water_with_air(T, W, p)[1]
     assert np.allclose(w + condensate, c + r)
     assert (w >= 0).all() and (c >= 0).all() and (r >= -1e-12).all() and (condensate >= 0).all()
 
 
+@pytest.mark.parametrize("plant", ph.PLANTS)
 @pytest.mark.parametrize("design", ph.DESIGNS)
-def test_every_kw_is_accounted_for(design):
-    """Facility power + what outside air brings = heat through the water or coil + heat rejection fans, whose heat goes straight to the exhaust air."""
-    p = DRAWS
+def test_every_kw_is_accounted_for(design, plant):
+    """Facility power + what outside air brings = heat through the water or coil + heat rejection fans, whose heat goes straight to the exhaust air, in every plant."""
+    p = PLANT_DRAWS[plant]
     power, heat = ph.hourly_heat_power(T, W, design, p)
     assert (power >= 1.0).all() and (heat > 0.0).all()
     q = 1 / p["ups"] + 1 / (1 - p["dist_loss"]) - 1 + p["light"]
@@ -39,7 +43,7 @@ def test_every_kw_is_accounted_for(design):
     outside, latent = ph.hourly_outside_air_heat(T, W, p)
     wet = ph._wet_share(T, design, p)
     coil = T - (p["assist_eff"] * np.maximum(T - W, 0) * (T >= ph.switch_point(p)) if design == "assist" else 0.0)
-    water = p["supply_air"] + p["air_rise"] - p["air_rise"] / p["coil_eff"]
+    water = ph.air_loop_water(p)
     air_load = room + crah + outside
     electric, fans = q + crah, 0.0
     for load, supply in ((np.maximum(air_load, 0), water), (1 - air + np.minimum(air_load, 0), p["liquid_water"]), (latent, ph.DEHUMIDIFY_WATER)):
@@ -171,15 +175,16 @@ def test_the_glycol_loop_carries_the_heat_its_pump_adds():
     t, wb = np.array([-10.0]), np.array([-11.0])
     power, heat = ph.hourly_heat_power(t, wb, "dry", p)
     pump = power - ph.hourly_heat_power(t, wb, "dry", {**p, "pump_tower_kpa": 0.0})[0]
-    assert pump[0] == pytest.approx(heat[0] / (ph.CP_WATER * p["range_f"] / 1.8) * p["pump_tower_kpa"] / (ph.RHO_WATER * p["pump_eff"]))
+    cp, rho = ph.glycol_properties(p)
+    assert pump[0] == pytest.approx(heat[0] / (cp * p["range_f"] / 1.8) * p["pump_tower_kpa"] / (rho * p["pump_eff"]))
 
 
 def test_dry_heat_rejection_costs_at_least_the_towers_electricity():
-    """With the same loop pumps on both sides, a dry plant and towers take about the same electricity in freezing hours, the dry plant more above them, and
-    several percent more once its economizer runs out."""
+    """A dry plant takes more electricity than towers in every hour: a little more in freezing hours, where both run on the economizer and the dry plant's glycol
+    needs more flow than water for the same heat (model 1.10), and several percent more once its economizer runs out."""
     dry, towers = (ph.hourly_heat_power(T, W, d, CENTRAL)[0] for d in ("dry", "towers"))
-    assert (abs(dry - towers)[T < 0.0] < 0.001).all()
-    assert (dry[T >= -10.0] > towers[T >= -10.0]).all() and (dry[T >= 20.0] - towers[T >= 20.0] > 0.03).all()
+    assert (dry > towers).all() and ((dry - towers)[T < 0.0] < 0.003).all()
+    assert (dry[T >= 20.0] - towers[T >= 20.0] > 0.03).all()
 
 
 def _tower_fan(tdb, twb, **over):

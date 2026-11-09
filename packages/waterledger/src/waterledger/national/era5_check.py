@@ -4,7 +4,7 @@ Two parts, as docs/methods/qm-check's cv_weather and cv_places did for the first
 - Weather. Every qualifying station (ISD under one ID or linked, and ECCC) in the state or within 100 km of one of its places is held
   out in turn, with any other within 5 km. Its cell (the land rule's) gets the method as decided: shore cells corrected from the shore
   stations left, and from model 1.9 land cells from the land stations left within 100 km. The cell is compared with the station on the station's own hours: the 0.4% design
-  dry-bulb, the 0.4% wet bulb, the mean summer afternoon and the mean dew point.
+  dry-bulb, the 0.4% wet bulb, the mean summer afternoon, the mean dew point and, from model 1.10, the 1-in-10-year peak day's mean wet bulb.
 - Places. For up to `n` stations in the state, the nearest place within PLACE_KM, through the cooling model: the place's cell
   (corrected without that station) against the station's own record (cooling.run_location, 400 draws, seed 7, per 100 MW).
 
@@ -32,6 +32,8 @@ CRITERIA = [
     ("W4", "land cells: median |error| in the 0.4% wet bulb, C, at most", 0.4, "four states 0.10-0.25 (Virginia); +0.15"),
     ("W5", "corrected shore cells (3 or more): median |error| in the design dry-bulb, C, at most", 0.5, "four states 0.19-0.32 (Michigan); +0.18"),
     ("W6", "corrected shore cells (3 or more): median |error| no worse than uncorrected", None, "the reason to correct"),
+    ("W7", "corrected cells: |mean error| in the 1-in-10-year peak day's mean wet bulb, C, at most", 0.5,
+     "model 1.10 [A]: qm-2's Michigan peak days ran 0.72 C humid, mapping the dew point brought Michigan and Ohio to 0.23 (methods log, Nov 8, 2026)"),
     ("P1", "places sampled, at least", 5, "too few to judge below this"),
     ("P2", "places: median |difference| in the hybrid average day, %, at most", 8.0, "four states 1.9-4.6 (Virginia); +3.4"),
     ("P3", "places: |mean difference| in the hybrid average day, %, at most", 6.0, "four states 0.6-4.9 (Virginia); +1.1"),
@@ -120,8 +122,13 @@ def weather_stats(times, t, td):
     from waterledger_models.datacenter.physics import wet_bulb
     times, t, td = np.asarray(times), np.asarray(t, float), np.asarray(td, float)
     summer_pm = np.array([x[5:7] in ("06", "07", "08") and 12 <= int(x[11:13]) < 18 for x in times])
-    return {"ddb": float(np.quantile(t, 0.996)), "wb": float(np.quantile(wet_bulb(t, era5.rh_from(t, td)), 0.996)),
-            "summer_pm": float(t[summer_pm].mean()), "td": float(td.mean())}
+    wb = wet_bulb(t, era5.rh_from(t, td))
+    days, at = np.unique(np.array([x[:10] for x in times]), return_inverse=True)
+    day_wb = np.bincount(at, wb) / np.bincount(at)
+    years = np.array([d[:4] for d in days])
+    return {"ddb": float(np.quantile(t, 0.996)), "wb": float(np.quantile(wb, 0.996)),
+            "summer_pm": float(t[summer_pm].mean()), "td": float(td.mean()),
+            "wb_peak_day": float(np.quantile([day_wb[years == y].max() for y in np.unique(years)], 0.9))}
 
 
 def _rest(stations, held):
@@ -209,6 +216,9 @@ def judge(weather, places):
     e = lambda rows, way, k: np.array([r[way][k] for r in rows])
     v = {"W1": len(land), "W2": med(e(land, "decided", "ddb")), "W3": abs(float(e(land, "decided", "ddb").mean())) if land else None,
          "W4": med(e(land, "decided", "wb"))}
+    corrected = [r for r in weather if r["corrected"] and "wb_peak_day" in r["decided"]]
+    if corrected:
+        v["W7"] = abs(float(e(corrected, "decided", "wb_peak_day").mean()))
     if len(shore) >= 3:
         v["W5"] = med(e(shore, "decided", "ddb"))
         v["W6"] = [v["W5"], med(e(shore, "uncorrected", "ddb"))]

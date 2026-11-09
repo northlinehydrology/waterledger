@@ -30,6 +30,7 @@ from pathlib import Path
 import numpy as np
 
 HERE = Path(__file__).resolve().parent
+OUT = HERE              # where the results go: HERE for the default plant, HERE/<plant> for another (--plant)
 ROOT = HERE.parents[2]
 sys.path.insert(0, str(ROOT / "packages" / "waterledger-models" / "src"))
 
@@ -54,10 +55,15 @@ NC_OUTPUTS = ("nc_withdrawn", "nc_consumed")
 
 # ---------------------------------------------------------------- parameter spaces (read from the package at run time)
 
+PLANT = ph.DEFAULT_PLANT     # the cooling plant (model 1.10); --plant sets it
+
+
 def cooling_space():
-    """[(name, low, high)] for the cooling model: physics.RANGES, topup and physics.ADIABATIC, in the order of physics.PARAMETERS. All are independent uniforms on one design."""
-    bounds = {**ph.RANGES, "topup": ph.TOPUP, **ph.ADIABATIC, **ph.POWER, **ph.OUTSIDE}
-    return [(k, float(bounds[k][0]), float(bounds[k][1])) for k in ph.PARAMETERS]
+    """[(name, low, high)] for the cooling model's plant (physics.plant_ranges), in the order of physics.PARAMETERS. All are independent uniforms on one design.
+    Where the liquid racks share the air loop, liquid_water follows the air loop (physics.with_plant) and is not a factor."""
+    bounds = ph.plant_ranges(PLANT)
+    skip = {"liquid_water"} if ph.SHARED[PLANT] else set()
+    return [(k, float(bounds[k][0]), float(bounds[k][1])) for k in ph.PARAMETERS if k in bounds and k not in skip]
 
 
 def staff_space():
@@ -93,7 +99,7 @@ def cooling_outputs(wx, design, X, space):
     ys = np.unique(wx["years"])
     for i in range(0, len(X), BATCH):
         xb = X[i:i + BATCH]
-        p = ph.for_location({k: xb[:, j:j + 1] for j, k in enumerate(names)}, wx["tdb"])      # the location's design dry-bulb
+        p = ph.for_location(ph.with_plant({k: xb[:, j:j + 1] for j, k in enumerate(names)}, PLANT), wx["tdb"])      # the plant's link; the location's design dry-bulb
         w, c, _ = ph.hourly_rates(wx["tdb"], wx["twb"], design, p, wx["rh"])
         kw = MW * 1000.0 * p["utilization"]
         wd = (w * kw).reshape(len(xb), nd, 24).sum(-1)      # gal per day
@@ -128,7 +134,7 @@ def check_against_package(wx, space, rng):
     for design in ph.DESIGNS:
         mine = cooling_outputs(wx, design, X, space)
         for r in range(len(X)):
-            p = ph.for_location(dict(zip(names, X[r])), wx["tdb"])
+            p = ph.for_location(ph.with_plant(dict(zip(names, X[r])), PLANT), wx["tdb"])
             stats = lambda arr, kw: cw.daily_stats(day_index, len(wx["days"]), wx["years"], arr, kw)
             w, c, _ = cw.hourly(wx["tdb"], wx["twb"], design, p, wx["rh"])
             kw = MW * 1000 * p["utilization"]
@@ -281,7 +287,7 @@ def run(quick=False):
                 warnings.append(f"{design}/{o}: ST < S1 for " + ", ".join(np.array([s[0] for s in space])[ST < S1 - tol]))
 
     def write(name, data):
-        with open(HERE / name, "w", newline="") as f:
+        with open(OUT / name, "w", newline="") as f:
             wr = csv.DictWriter(f, fieldnames=list(data[0]))
             wr.writeheader()
             for d in data:
@@ -297,7 +303,7 @@ def run(quick=False):
     except OSError:
         commit = ""
     runtime = time.time() - t_start
-    info = {"model_version": MODEL_VERSION, "code_commit": commit, "numpy": np.__version__, "seed": SEED,
+    info = {"model_version": MODEL_VERSION, "plant": PLANT, "code_commit": commit, "numpy": np.__version__, "seed": SEED,
             "weather": wx["source"], "hours": len(wx["tdb"]), "n_base_cooling": n_cool, "n_base_noncooling": n_staff,
             "morris_trajectories": r_morris, "morris_levels": LEVELS, "bootstrap": N_BOOT,
             "model_runs_per_design": n_cool * (kc + 2) + r_morris * (kc + 1),
@@ -305,9 +311,9 @@ def run(quick=False):
             "noncooling_parameters": {n: [lo, hi] for n, lo, hi in sspace},
             "runtime_s": round(runtime, 1), "quick": quick, "warnings": warnings}
     if not quick:
-        (HERE / "run_info.json").write_text(json.dumps(info, indent=1) + "\n")
+        (OUT / "run_info.json").write_text(json.dumps(info, indent=1) + "\n")
 
-    print(f"\nmodel {MODEL_VERSION}, N = {n_cool} (cooling, {kc} parameters), {n_staff} (non-cooling, {ks}), "
+    print(f"\nmodel {MODEL_VERSION}, plant {PLANT}, N = {n_cool} (cooling, {kc} parameters), {n_staff} (non-cooling, {ks}), "
           f"Morris r = {r_morris}, {runtime:.0f} s\n")
     for s in srows:
         sub = [r for r in rows if r["design"] == s["design"] and r["output"] == s["output"]]
@@ -321,4 +327,10 @@ def run(quick=False):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--quick", action="store_true", help="small sample sizes, prints only, for checking the script")
-    run(ap.parse_args().quick)
+    ap.add_argument("--plant", default=ph.DEFAULT_PLANT, choices=list(ph.PLANTS), help="the cooling plant (model 1.10); results for a plant other "
+                    "than the default go in a folder of its own")
+    a = ap.parse_args()
+    PLANT = a.plant
+    OUT = HERE if PLANT == ph.DEFAULT_PLANT else HERE / PLANT
+    OUT.mkdir(exist_ok=True)
+    run(a.quick)
