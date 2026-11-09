@@ -1,5 +1,5 @@
 """The shared heat rejection code (design 0009): data center results are the same as before it moved out of datacenter/physics.py, the data
-center model reads the shared equipment ranges rather than copies, and the tower water closes on its own."""
+center model reads the shared equipment ranges rather than copies, each water user sets the operating settings itself, and the tower water closes on its own."""
 import json
 import os
 
@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 from waterledger_models import heat_rejection as hr
+from waterledger_models.battery import physics as bp
 from waterledger_models.datacenter import physics as ph
 
 HERE = os.path.dirname(__file__)
@@ -35,9 +36,18 @@ def test_data_center_reads_the_shared_ranges():
     assert ph.wet_bulb is hr.wet_bulb and ph.evaporative_ratio is hr.evaporative_ratio and ph._loop is hr.loop
 
 
+@pytest.mark.parametrize("ranges", [ph.RANGES, bp.RANGES], ids=["datacenter", "battery"])
+def test_each_user_sets_the_operating_settings(ranges):
+    """Operators choose cycles of concentration and the switch, so they are each user's own ranges, never the shared equipment's."""
+    assert not set(hr.OPERATING) & set(hr.EQUIPMENT)
+    for k in hr.OPERATING:
+        a, b = ranges[k]
+        assert a < b, k
+
+
 def test_tower_water_closes():
     """Blowdown and drift carry out the dissolved solids evaporation leaves behind: (blowdown + drift) x (cycles - 1) = evaporation."""
-    p = {**{k: (a + b) / 2 for k, (a, b) in hr.EQUIPMENT.items()}, "design_db": hr.design_dry_bulb(TDB)}
+    p = {**{k: (a + b) / 2 for k, (a, b) in hr.EQUIPMENT.items()}, "coc": 4.5, "design_db": hr.design_dry_bulb(TDB)}
     btu = np.full(TDB.shape, hr.KWH_BTU)
     for design in ("towers", "hybrid", "dry"):
         wet = hr.wet_share(TDB, design, p, switch=25.0)
@@ -48,7 +58,7 @@ def test_tower_water_closes():
 
 
 def test_hybrid_switches_on_its_own_setting():
-    p = {**{k: (a + b) / 2 for k, (a, b) in hr.EQUIPMENT.items()}, "design_db": 31.0}
+    p = {**{k: (a + b) / 2 for k, (a, b) in hr.EQUIPMENT.items()}, "switch_margin": 0.0, "design_db": 31.0}
     assert hr.switch_point(p, 24.0) == pytest.approx(24.0 + p["switch_margin"])
     assert hr.switch_point(p, 10.0) == hr.SWITCH_SETTINGS[0]               # within the settings controllers allow
     assert hr.switch_point({**p, "switch_on": 26.0}, 20.0) == 26.0

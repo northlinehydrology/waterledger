@@ -78,3 +78,15 @@ def test_monte_carlo_reads_the_hours():
     assert s["utilization"]["p10"] < 1.0 and s["withdrawn_avg"]["p50"] < c["withdrawn_avg"]["p50"]
     with pytest.raises(ValueError):
         plant.run_location(TIMES, TDB, RH, n=2, utilization="half")
+
+
+def test_settings_fix_a_plants_own_operating_values():
+    """A plant's documents can set its cycles of concentration: every run takes them, fewer cycles bleed off more water and evaporate the same."""
+    runs = plant.draws(10, settings={"coc": 3.0})
+    assert all(p["coc"] == 3.0 and p["utilization"] == 1.0 for p in runs)
+    three = plant.run_location(TIMES, TDB, RH, n=10, gwh=10.0, designs=("towers",), settings={"coc": 3.0})["towers"]
+    six = plant.run_location(TIMES, TDB, RH, n=10, gwh=10.0, designs=("towers",), settings={"coc": 6.0})["towers"]
+    assert three["withdrawn_avg"]["p50"] > six["withdrawn_avg"]["p50"]
+    assert three["consumed_avg"]["central"] == pytest.approx(six["consumed_avg"]["central"], rel=1e-12)
+    with pytest.raises(ValueError):
+        plant.draws(2, settings={"cycles": 3.0})

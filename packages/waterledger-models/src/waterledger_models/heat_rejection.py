@@ -11,6 +11,9 @@ from datacenter/physics.py unchanged, and every data center result is the same t
 
 Designs differ in when they evaporate: towers always, hybrid in warm weather (from the switch point to full at the location's design dry-bulb),
 dry never. Data centers add their own assist design (datacenter/physics.py).
+
+The equipment's ranges are shared (EQUIPMENT); the operating settings (OPERATING: cycles of concentration, the hybrid's switch) are each user's own,
+since operators choose them and the evidence differs by industry.
 """
 import zlib
 
@@ -24,6 +27,12 @@ HFG = 1050.0          # latent heat near tower temperatures, BTU/lb
 LB_GAL = 8.34
 GAL_M3 = 264.172       # gallons per cubic meter
 
+# Operating settings: chosen by whoever runs the plant, not fixed by the equipment, so each water user model sets their ranges from its own evidence
+# (datacenter/physics.py, battery/physics.py) and a plant's own documents can fix them for a scenario. The physics here reads them as it reads the equipment's.
+#   coc            cycles of concentration: how far the tower water concentrates before it is bled off. Source water and treatment set the real limit.
+#   switch_margin  K from the user's loop limit to the dry-bulb where a hybrid (or a data center's assist) goes wet (switch_point).
+OPERATING = ("coc", "switch_margin")
+
 # (low, high) ranges of the equipment parameters, sampled in each water user's Monte Carlo. Each user model draws them with its own.
 EQUIPMENT = {
     # Evaporative ratio adjustment (model 1.3, was +/-0.05): asymmetric because Rutberg et al.'s fit (Poppe runs at 40 °C inlet water,
@@ -31,18 +40,10 @@ EQUIPMENT = {
     # Leung and Moore method (p. 24); 15% added to the modeled tower suite (p. 28); +/-18% for towers is consumption with the error in heat included (p. 29), and
     # USGS's 18% for the evaporative ratio itself is for water surfaces. LBNL and Lei and Masanet evaporate all the heat; this ratio is the model's stated departure.
     "er_adj": (-0.10, 0.05),
-    # Cycles of concentration, about 3-6 (model 1.7, was 3-7). Lei and Masanet's Table 3, case 2, allows 3-15; the consumptive ratios Han et al. (2026, Table 2) report
-    # for operators, 0.72-0.91, are about 3.6-11 cycles, median about 4.5; ICPRB's 75% is 4. DOE FEMP BMP #10's typical range is lower, two to four, with six or more
-    # possible. Nothing is published for large campuses, and source water sets the real limit, so 3-6 is the part of the operators' values that is common practice [A].
-    "coc": (3.0, 6.0),
     "range_f": (7.2, 10.8),            # tower range, °F (model 1.7, was 7-15, whose top had no source): Lei and Masanet preprint, Table 3, 4-6 °C; the 10 °F rating sits inside it
     # Drift as a share of circulating flow (model 1.7, was 0.0005-0.02%, whose low end was ten times under the source): modern eliminators at 0.005% (EPA WaterSense at
     # Work 2012, section 6.3, p. 6-9: less than 0.005%; the end of Lei and Masanet's Table 3) to EPA AP-42 13.4's induced-draft 0.020% (Table 13.4-1).
     "drift": (0.00005, 0.0002),
-    # When a dry cooler goes wet is an operator's setting, not a property of the equipment (EVAPCO 2019, p. 2: a selection and control output;
-    # US 12,426,214 B1: a controller threshold with a range of embodiments). It is tied to the loop (model 1.7): the setting sits at the dry-bulb where the dry coil can no longer hold loop
-    # supply, each user model's loop limit (switch_point), give or take this margin in K for operators who go wet early or trim with chillers a while longer [A]. Same for assist and hybrid.
-    "switch_margin": (-2.0, 2.0),
     # Hybrid dry coolers: wet mode from the switch point up (above). Fully evaporative at each location's own 0.4% design dry-bulb (design_dry_bulb; model 1.7, was 30-33 °C everywhere,
     # which is West Michigan's), give or take this many K [A]: the source gives no such point, so this says the dry section is sized to carry part of the load
     # up to the hottest weather the plant is designed for.

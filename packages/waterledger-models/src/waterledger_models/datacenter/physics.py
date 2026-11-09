@@ -27,7 +27,7 @@ DESIGNS = ("dry", "assist", "hybrid", "towers")
 # (low, high) ranges sampled in the Monte Carlo (sample_parameters: Latin hypercube, uniform in each range); central values are the midpoints.
 RANGES = {
     # Equipment parameters (towers, hybrid and dry coolers, loops, pumps, fans, chillers) are shared with every water user: their ranges and sources are
-    # in heat_rejection.EQUIPMENT.
+    # in heat_rejection.EQUIPMENT. The operating settings (heat_rejection.OPERATING: cycles of concentration, the switch margin) are the data center's own, below.
     # average IT draw ÷ IT capacity at full build-out (model 1.3; was 0.60-0.90). EPRI 2026 measured 75% of nameplate at a large hyperscale
     # site and 57% at co-location sites; IEA 2025 puts hyperscale at 53-56%; LBNL's server parameters give about 40% (AI inference) to 60%
     # (AI training). Load over a site's own peak (EPRI: 88-94%) is a different ratio and does not bound this one.
@@ -36,7 +36,10 @@ RANGES = {
     # runs at utilization / load factor (peak_utilization): EPRI's own pairs give 0.75 / 0.94 = 0.80 and 0.57 / 0.88 = 0.65. Every computer at capacity all day is the upper case.
     "load_factor": (0.88, 0.94),
     "er_adj": EQUIPMENT["er_adj"],
-    "coc": EQUIPMENT["coc"],
+    # Cycles of concentration, about 3-6 (model 1.7, was 3-7), a data center operating setting (heat_rejection.OPERATING). Lei and Masanet's Table 3, case 2,
+    # allows 3-15; the consumptive ratios Han et al. (2026, Table 2) report for operators, 0.72-0.91, are about 3.6-11 cycles, median about 4.5; ICPRB's 75% is 4. DOE FEMP BMP #10's typical range is lower, two to four, with six or more
+    # possible. Nothing is published for large campuses, and source water sets the real limit, so 3-6 is the part of the operators' values that is common practice [A].
+    "coc": (3.0, 6.0),
     "range_f": EQUIPMENT["range_f"],
     "drift": EQUIPMENT["drift"],
     # Closed loop volume, gal per MW of IT capacity (model 1.3, was 2,000-6,000): Crusoe (2026) about 1.7 million gal for a typical system, which is 8,500 if that is
@@ -44,7 +47,10 @@ RANGES = {
     # that 8,500 and a margin, for lack of a filing that states a volume and a capacity together [A]. Vantage's 11.8 million gal, used until model 1.7, is out: it was a
     # TV tour of its Sterling, Virginia site, not Port Washington, with no capacity given.
     "fill_gal_per_mw": (2000.0, 12000.0),
-    "switch_margin": EQUIPMENT["switch_margin"],
+    # When a dry cooler goes wet is an operator's setting (heat_rejection.OPERATING), not a property of the equipment (EVAPCO 2019, p. 2: a selection and
+    # control output; US 12,426,214 B1: a controller threshold with a range of embodiments). It is tied to the loop (model 1.7): the setting sits at the dry-bulb where the dry coil can no longer hold loop
+    # supply, each user model's loop limit (switch_point), give or take this margin in K for operators who go wet early or trim with chillers a while longer [A]. Same for assist and hybrid.
+    "switch_margin": (-2.0, 2.0),
     # Dry coolers with adiabatic pre-cooling (model 1.3). Microsoft's 85 °F is for its direct-air evaporative design, a
     # different system, and is not used here. Pad saturation effectiveness: EVAPCO (presented at CTI, Feb 2019, p. 2) measured 72-78% at 400-700 fpm across 10
     # pads, a maker's own test; ASHRAE (2016, ch. 41) gives 70 to over 95% for rigid media.

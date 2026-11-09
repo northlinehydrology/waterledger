@@ -15,17 +15,24 @@ DRAWS = 400       # as for data centers (datacenter.physics.DRAWS)
 UTILIZATION = ("full", "sampled")
 
 
-def draws(n=DRAWS, seed=7, utilization="full"):
-    """The Monte Carlo draws, run by run, then the central run last: [{name: value}]."""
+def draws(n=DRAWS, seed=7, utilization="full", settings=None):
+    """The Monte Carlo draws, run by run, then the central run last: [{name: value}]. `settings` fixes parameters in every run, for a scenario: a plant's
+    own operating settings (cycles of concentration, its hybrid's switch_on dry-bulb) or any value its documents give."""
     if utilization not in UTILIZATION:
         raise ValueError(f"utilization must be one of {UTILIZATION}, not {utilization!r}")
+    settings = dict(settings or {})
+    unknown = set(settings) - set(bp.PARAMETERS) - {"switch_on"}
+    if unknown:
+        raise ValueError(f"unknown settings: {sorted(unknown)}")
     v = bp.sample_parameters(n, seed)
     runs = [{k: float(a[i]) for k, a in v.items()} for i in range(n)] + [bp.central_parameters()]
-    return [{**p, "utilization": 1.0} for p in runs] if utilization == "full" else runs
+    if utilization == "full":
+        runs = [{**p, "utilization": 1.0} for p in runs]
+    return [{**p, **settings} for p in runs]
 
 
-def run_location(times, temps, rhs, n=DRAWS, seed=7, gwh=1.0, utilization="full", designs=bp.DESIGNS):
-    """Monte Carlo for each design at one location, per `gwh` GWh/yr of cell capacity.
+def run_location(times, temps, rhs, n=DRAWS, seed=7, gwh=1.0, utilization="full", designs=bp.DESIGNS, settings=None):
+    """Monte Carlo for each design at one location, per `gwh` GWh/yr of cell capacity. `settings` fixes parameters in every run (draws).
 
     Returns {design: {stat: {"p10", "p50", "p90", "central"}}}: withdrawn, consumed and returned (MGD) as avg, peak_1in10, record, annual_mg
     and, for withdrawn and consumed, max_month, max_90day and worst_year_mg; power_mw_avg and power_mw_peak_day_1in10 (electricity, MW); fuel_mw_avg;
@@ -39,7 +46,7 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, gwh=1.0, utilization="full"
     years, months = np.array([d[:4] for d in uniq]), np.array([d[:7] for d in uniq])
     by = (groups(years), groups(months))
     counts = np.bincount(day_index, minlength=len(uniq))
-    runs = draws(n, seed, utilization)
+    runs = draws(n, seed, utilization, settings)
     out = {}
     for design in designs:
         acc = {}
