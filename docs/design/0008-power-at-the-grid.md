@@ -86,7 +86,14 @@ the water's. Steps, each its own commit:
 5. **Cell runs and the estimate:** the component in the Monte Carlo, the results in the snapshot, and a new power
    option in `est.power_plants`, with the average, the 1-in-10-year peak day and the marginal figure. Needs a rerun.
 
-**Progress, Nov 8, 2026.** Steps 1–4 are built and tested; step 5 is not started.
+**Progress, Nov 8, 2026.** Steps 1–5 are built and tested; step 5's rerun (model 1.11) runs overnight Nov 8–9.
+
+- Step 5: `cooling.run_location(..., grid=)` adds `grid_<BA>_<kind>_avg` and `_peak_1in10` for each BA serving a cell's
+  places (`era5.cell_bas`; Michigan's cells MISO and PJM), with the table fit on the cell's own corrected temperature
+  (`era5.grid_factors`; the run's local standard hours shifted to UTC). `est.grid_water` reads the place's BA. A test holds
+  the plant water to the campus's electricity times the factor, average day and peak day. Gaines (shared loop, 100 MW,
+  20 draws): towers 73.9 MW give 0.55 MGD consumed at MISO's plants on the average day and 0.72 on the peak day; the
+  annual power options are unchanged. The grid adds about 12% to a run.
 
 - Step 1: 67 BAs, 2019–2025. Fuel classes sum to EIA's net generation within 0.004% (MISO). EIA split hydro, solar,
   wind and storage in July 2024 and its headers carry typos; columns are matched by word.
