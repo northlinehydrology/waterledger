@@ -4,6 +4,7 @@
     datacenter.lake      lake-source (once-through) cooling
     battery              battery cell plants: heat, power and water hour by hour, per GWh/yr of cells (design 0009)
     heat_rejection       cooling towers, hybrid and dry coolers, loops, chillers, pumps and fans, shared by every water user
+    once_through         once-through cooling from a Great Lake: withdrawal, forced evaporation, GLERL temperatures, shared by every water user
     daily                daily totals and their statistics, shared by every water user
     grid                 water at the power plants supplying any user's electricity, hourly, at grid level (design 0008)
     runoff              runoff, sediment, nutrients, salt and fuel from a developed site

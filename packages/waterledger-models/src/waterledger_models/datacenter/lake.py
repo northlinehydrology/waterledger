@@ -1,58 +1,26 @@
-"""Lake-source (once-through) cooling: water taken from a Great Lake, run through heat exchangers once, and returned warmer.
+"""Lake-source (once-through) cooling at a data center: the campus's heat, all of it, into Great Lake water run through heat exchangers once.
 
-Withdrawal follows from the heat load and the temperature rise: flow = heat / (density x specific heat x rise).
-Nearly all of it is returned. The returned heat drives extra ("forced") evaporation from the lake surface, estimated with
-the heat-balance form USGS gives for once-through power plants (Diehl et al. 2013, Eqs. 10-20, after Harbeck 1964 and Ward 1980):
-the share of added heat that leaves as evaporation is dE / (dE + dC + dR), where evaporation and conduction share the same
-wind function and radiation does not. Natural surface temperatures are NOAA GLERL daily long-term averages for each lake.
-
-The wind function departs from USGS's practice. This module uses Ward's (1980), which USGS prints as an example (Eq. 14), while its own estimates for lakes used Webster
-and Sherman (1995), and it did not use functions that reach zero at no wind (p. 27). Ward's is kept here because winds are sampled at 5-15 mph, away from zero, where USGS
-puts the spread between wind functions at about 12% or less (p. 28), inside the error carried below. Webster and Sherman's coefficients are not in the USGS report and were not read.
+The lake physics (withdrawal from heat and rise, forced evaporation after Diehl et al. 2013, GLERL temperatures) is shared by every water user
+and lives in once_through.py; it moved there unchanged (design 0009). This module keeps what is the data center's: the heat, from IT load,
+utilization and the campus's heat factor.
 """
 
 import numpy as np
 
+from waterledger_models import once_through as ot
 from waterledger_models.datacenter import cooling as cw
 from waterledger_models.datacenter.physics import DRAWS, latin_hypercube
+from waterledger_models.once_through import (BOWEN, CP, EMIS, GAL_M3, GLERL, GLERL_CODES, LV, MPH_PER_MS, P_MB, RHO, SIGMA,  # noqa: F401
+                                             _es, evaporation_ratio, glerl_temperatures)
 
-RHO, CP, LV = 1000.0, 4186.0, 2.45e6  # kg/m3, J/(kg K), J/kg
-GAL_M3 = 264.172
-P_MB = 1013.0
-BOWEN = P_MB * 0.24 / (0.622 * 585.0)  # psychrometric constant in mb per deg C (cp of air 0.24 cal/g/K, L 585 cal/g)
-SIGMA = 1.17e-7 / 86400.0  # cal/(cm2 s K4)
-EMIS = 0.97
-
-MPH_PER_MS = 2.23694
-GLERL = "https://apps.glerl.noaa.gov/erddap/tabledap/glerlLTAvgTemp.csv?lake,dayOfYear,temperature"
-GLERL_CODES = {"Lake Superior": "s", "Lake Michigan": "m", "Lake Huron": "h", "Lake Erie": "e", "Lake Ontario": "o"}
-
-# Ranges: utilization reuses the cooling-water model; rise and wind are estimates (see methods page). All the campus's electricity leaves in the
+# Ranges: utilization reuses the cooling-water model; rise, wind and the evaporation error are the lake's own (once_through.RANGES). All the campus's electricity leaves in the
 # lake water, so the heat factor is also its PUE: IT, power losses, lighting, air handler fans and pumps from the cooling model's heat balance over
 # its POWER ranges (5th to 95th percentile about 1.06-1.16), with no chillers or heat rejection fans because the lake water is colder than the loops.
 RANGES = {
     "utilization": cw.RANGES["utilization"],
     "heat_factor": (1.05, 1.17),      # model 1.5, was 1.03-1.25
-    "rise_c": (6.0, 10.0),
-    "wind_mph": (5.0, 15.0),
-    # USGS's error for the evaporation ratio from water surfaces: 18%, or 21% for once-through plants on the Great Lakes, where natural temperature adds uncertainty (p. 29). Model 1.7.
-    "evap_error": (0.79, 1.21),
+    **ot.RANGES,
 }
-
-
-def _es(t):
-    """Saturation vapor pressure over water, mb (Magnus)."""
-    return 6.112 * np.exp(17.62 * t / (243.12 + t))
-
-
-def evaporation_ratio(t, wind_mph):
-    """Share of added heat lost by evaporation at natural water temperature t (deg C), linearized heat balance (Ward 1980; USGS 2013 eqs. 12-20), before evap_error."""
-    f = 7.0e-8 * wind_mph  # Ward's wind function (USGS 2013 eq. 14), g/(cm2 s mb)
-    de = (_es(t + 0.5) - _es(t - 0.5))  # mb per deg C
-    d_e = 585.0 * f * de
-    d_c = 585.0 * f * BOWEN
-    d_r = 4 * EMIS * SIGMA * (t + 273.15) ** 3
-    return d_e / (d_e + d_c + d_r)
 
 
 def run_lake(water_temps, n=DRAWS, seed=11, mw=100.0):
@@ -119,17 +87,3 @@ def run_lake_ensemble(water_temps, n=DRAWS, seed=11, mw=100.0):
     for k, v in p.items():
         ds[f"param_{k}"] = (("run",), v[:, 0])
     return ds
-
-
-def glerl_temperatures(lake, source=GLERL):
-    """NOAA GLERL long-term average daily surface temperature for one Great Lake, as an xarray DataArray on day of year."""
-    import urllib.request
-
-    import xarray as xr
-    code = GLERL_CODES[lake]
-    with urllib.request.urlopen(source, timeout=120) as r:
-        text = r.read().decode()
-    rows = [line.split(",") for line in text.splitlines()[2:] if line]
-    days = sorted((int(d), float(v)) for c, d, v in rows if c == code)
-    return xr.DataArray([v for _, v in days], coords={"dayofyear": [d for d, _ in days]}, dims="dayofyear",
-                        name="water_temperature", attrs={"units": "degC", "lake": lake, "source": "NOAA GLERL"})
