@@ -2,7 +2,8 @@
 from ERA5's radiation and 100 m wind at the user's own cell. They use little water, so they are profiles, not water user types; a new gas
 plant is a type (waterledger_models.gas).
 
-    pv     PVWatts' chain (Dobos 2014), tested against pvlib
-    wind   the IEA 3.4 MW reference turbine's power curve
+    pv         PVWatts' chain (Dobos 2014), tested against pvlib
+    wind       the IEA 3.4 MW reference turbine's power curve
+    scenario   supply scenarios as the shared runner's extra: dispatch hour by hour, sizing, what each scenario reports
 """
-from waterledger_models.supply import pv, wind  # noqa: F401
+from waterledger_models.supply import pv, scenario, wind  # noqa: F401

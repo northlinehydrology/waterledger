@@ -111,35 +111,46 @@ def cell_temperature(poa, temp_air, wind_10m, a=-3.56, b=-0.075, delta=3.0):
     return module + poa / 1000.0 * delta
 
 
-def hourly(times_utc, lat, lon, ghi, beam_horizontal, temp_air, wind_100m, p, mount="tracking", tilt=None):
-    """AC output per MW AC each hour, as a share of the AC rating (0-1), for the hour ending at each UTC time. ghi and beam_horizontal in W/m2,
-    preceding-hour means; temp_air in C; wind_100m in m/s. p: RANGES' parameters (scalars or (n, 1) arrays). mount: "tracking" or "fixed" (tilt
-    defaults to the latitude)."""
-    t = np.asarray(times_utc, dtype="datetime64[s]") - np.timedelta64(1800, "s")      # mid-hour
+def geometry(times_utc, lat, lon, mount="tracking", tilt=None):
+    """The sun and the array for each hour ending at the UTC times, worked once per place: {zenith, cos_zenith, cos_aoi, surface_tilt,
+    extraterrestrial, iam}. mount: "tracking" or "fixed" (tilt defaults to the latitude)."""
+    t = np.asarray(times_utc, dtype="datetime64[s]") - np.timedelta64(1800, "s")      # mid-hour: ERA5 radiation is the preceding hour's mean
     zen, az = solar_position(t, lat, lon)
-    ghi = np.asarray(ghi, float) * p["resource"]
-    beam_h = np.minimum(np.asarray(beam_horizontal, float) * p["resource"], ghi)
-    dhi = np.maximum(ghi - beam_h, 0.0)
-    cos_zen = np.cos(_rad(zen))
-    dni = np.where(zen < 85.0, beam_h / np.maximum(cos_zen, 1e-6), 0.0)
     if mount == "tracking":
         st, _, cos_aoi = tracker(zen, az)
     elif mount == "fixed":
         st, _, cos_aoi = fixed(zen, az, abs(lat) if tilt is None else tilt)
     else:
         raise ValueError("mount must be 'tracking' or 'fixed'")
+    cos_aoi = np.where(zen < 90.0, cos_aoi, 0.0)
+    return {"zenith": zen, "cos_zenith": np.cos(_rad(zen)), "cos_aoi": cos_aoi, "surface_tilt": st, "extraterrestrial": extraterrestrial(t),
+            "iam": iam_physical(cos_aoi)}
+
+
+def output(g, ghi, beam_horizontal, temp_air, wind_100m, p):
+    """AC output per MW AC each hour (0-1) on a geometry(): ghi and beam_horizontal in W/m2, preceding-hour means; temp_air in C; wind_100m in
+    m/s. p: RANGES' parameters (scalars or (n, 1) arrays)."""
+    zen, cos_zen, cos_aoi, st = g["zenith"], g["cos_zenith"], g["cos_aoi"], g["surface_tilt"]
+    ghi = np.asarray(ghi, float) * p["resource"]
+    beam_h = np.minimum(np.asarray(beam_horizontal, float) * p["resource"], ghi)
+    dhi = np.maximum(ghi - beam_h, 0.0)
+    dni = np.where(zen < 85.0, beam_h / np.maximum(cos_zen, 1e-6), 0.0)
     up = zen < 90.0
-    cos_aoi = np.where(up, cos_aoi, 0.0)
     beam = dni * np.maximum(cos_aoi, 0.0)
-    ai = dni / extraterrestrial(t)                                         # Hay and Davies' anisotropy index
+    ai = dni / g["extraterrestrial"]                                       # Hay and Davies' anisotropy index
     rb = np.maximum(cos_aoi, 0.0) / np.maximum(cos_zen, 0.01745)
     sky = dhi * (ai * rb + (1 - ai) * (1 + np.cos(_rad(st))) / 2)
     ground = ghi * p["albedo"] * (1 - np.cos(_rad(st))) / 2
     poa = np.where(up, beam + sky + ground, 0.0)
-    effective = np.where(up, beam * iam_physical(cos_aoi) + sky + ground, 0.0)
+    effective = np.where(up, beam * g["iam"] + sky + ground, 0.0)
     t_cell = cell_temperature(poa, np.asarray(temp_air, float), np.asarray(wind_100m, float) * (10.0 / 100.0) ** (1 / 7))
     pdc = p["ilr"] * effective / 1000.0 * (1 + p["gamma"] * (t_cell - 25.0)) * (1 - p["losses"])     # per MW AC
     pdc0 = 1.0 / ETA_INV                                                   # the inverter's DC rating per MW AC
     zeta = np.maximum(pdc, 1e-12) / pdc0
     eta = ETA_INV / ETA_INV_REF * (-0.0162 * zeta - 0.0059 / zeta + 0.9858)
     return np.clip(np.where(pdc > 0, eta * pdc, 0.0), 0.0, 1.0)
+
+
+def hourly(times_utc, lat, lon, ghi, beam_horizontal, temp_air, wind_100m, p, mount="tracking", tilt=None):
+    """AC output per MW AC each hour, as a share of the AC rating (0-1), for the hour ending at each UTC time: geometry() then output()."""
+    return output(geometry(times_utc, lat, lon, mount, tilt), ghi, beam_horizontal, temp_air, wind_100m, p)
