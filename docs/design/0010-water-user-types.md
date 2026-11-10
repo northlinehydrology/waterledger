@@ -78,7 +78,7 @@ settled once, here.
 5. **Types are registered by kind.** `Site.facility` accepts any registered type (a pydantic union discriminated on
    `kind`). Adding a type is writing its three pieces and registering it.
 
-## The standard treatment (Nov 10, 2026; for Andrew's review)
+## The standard treatment (Nov 10, 2026; agreed by Andrew the same day)
 
 Andrew (Nov 10): the aim is one standard way to add large water users to the packages and to waterledger.org, a modular
 system with calculations compatible across types, so the site stays honest and useful. Data centers came first; the same
@@ -260,7 +260,7 @@ The number came early, but it is what users see, so the packages are held to it 
 2. Grid water as a shared function on any hourly electricity; the data center run calls it.
 2a. The shared runner (`runs`), with the standard loads; data centers onto it with their kernel, numbers identical; battery
    cell plants onto it, gaining grid water, the full-capacity peak and the `assist` design (proposed Nov 10, so the
-   battery model is released on the standard rather than beside it).
+   battery model is released on the standard rather than beside it; Andrew, Nov 10: 3.16.0 waits for it).
 3. The registry and the `Facility` contract; `DataCenter` onto it (`results`, `bmi_config`, hooks); providers reduced to
    the place side.
 4. Downstream onto the hooks: `before_after`, runoff loads, `by_design`, `to_bmi_config`.
