@@ -329,14 +329,16 @@ def _get(url, timeout=30):
 
 
 def snapshot_for_model(pointer):
-    """Which snapshot this package reads: the newest for its own model version. If the state has none, its newest snapshot of any model, with a note saying so, and the
-    estimate reports that model. `latest` is what packages before 3.8.1 read, so it stays on the last model they understand."""
-    from waterledger_models import MODEL_VERSION
-    own = pointer.get("by_model", {}).get(MODEL_VERSION)
+    """Which snapshot this package reads: the newest for its own model version, or for the version it reads when it skips the snapshots
+    (waterledger_models.MODELS: model 1.12 reads 1.11's). If the state has none, its newest snapshot of any model, with a note saying so, and
+    the estimate reports that model. `latest` is what packages before 3.8.1 read, so it stays on the last model they understand."""
+    from waterledger_models import snapshot_model
+    model = snapshot_model()
+    own = pointer.get("by_model", {}).get(model)
     if own:
         return own
     date = pointer.get("current") or pointer["latest"]
-    print(f"Water Ledger: {pointer.get('state', 'this state')} has no snapshot for model {MODEL_VERSION}; reading {date}, built on another model", file=sys.stderr)
+    print(f"Water Ledger: {pointer.get('state', 'this state')} has no snapshot for model {model}; reading {date}, built on another model", file=sys.stderr)
     return date
 
 

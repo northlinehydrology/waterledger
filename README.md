@@ -154,7 +154,8 @@ Adding a state from start to publication, step by step with what each step write
 
 Each state's data is a dated snapshot at [data.waterledger.org](https://data.waterledger.org), checked against its
 manifest and cached on first use ([design 0003](docs/design/0003-data-releases.md)). A published snapshot never changes, and a
-package reads the newest one for its own model version, so a new model's numbers don't reach an older package. An estimate's `model_version` is the model of the data it read. Offline, the newest cached snapshot is
+package reads the newest one for its own model version (or, for a version that skips the snapshots, the version it names
+in `waterledger_models.MODELS`), so a new model's numbers don't reach an older package. An estimate's `model_version` is the model of the data it read. Offline, the newest cached snapshot is
 used. If no snapshot can be had, the package can build the state from the public sources instead (15 to 30 minutes the
 first time, resumable):
 
@@ -218,8 +219,12 @@ components and the command line) waits for 4.0 and does not ship in a 3.x minor 
 Three version numbers, each with one meaning:
 
 - **Package versions** (semver) change with the code: a major version for breaking changes.
-- **`waterledger_models.MODEL_VERSION`** (now 1.11) changes when the numbers change; the golden test fails until that is
-  done deliberately. Every published estimate names the model version that produced it.
+- **`waterledger_models.MODEL_VERSION`** (now 1.12) changes when the numbers change; the golden test fails until that is
+  done deliberately. Every published estimate names the model version that produced it. One version covers every water
+  user type. `waterledger_models.MODELS` records, from 1.12, which types a version changes and the model of the snapshots it
+  reads: a version that leaves the snapshots' numbers alone (data centers, the places' water and power) skips them and reads
+  the last rebuilt ones. Model 1.12 adds battery cell plants and reads model 1.11's snapshots and cell runs, so a data center
+  estimate still names model 1.11.
 - **The snapshot format version** (now 3, in each snapshot's manifest) changes when the structure of a state's data
   files does. Format 3 (from model 1.8) carries cooling by ERA5 cell (`cells/`). The package still reads format 2, which the
   published model 1.7 snapshots are.

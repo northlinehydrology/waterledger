@@ -21,7 +21,7 @@ import numpy as np
 from waterledger_data import era5
 from waterledger_data.config import CACHE
 
-RUN_MODEL = "1.11"          # the cooling model on ERA5 cell weather, corrected toward stations near the shore and, from 1.9, inland; from 1.10 each cooling plant; from 1.11 the grid's water hour by hour: what these runs are for
+RUN_MODEL = "1.11"          # the cooling model on ERA5 cell weather, corrected toward stations near the shore and, from 1.9, inland; from 1.10 each cooling plant; from 1.11 the grid's water hour by hour: what these runs are for; waterledger_models.snapshot_model(), held by a test (model 1.12 skips the snapshots)
 SEED, MW = 7, 100.0
 
 

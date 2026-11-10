@@ -121,14 +121,14 @@ def test_a_format_2_snapshot_still_cools_by_division(monkeypatch):
 
 def test_latest_json_files_a_snapshot_under_its_own_model(tmp_path, capsys):
     from waterledger import cli
-    from waterledger_models import MODEL_VERSION
+    from waterledger_models import snapshot_model
     (tmp_path / "OH" / "2026-11-05").mkdir(parents=True)
     (tmp_path / "OH" / "2026-11-05" / "manifest.json").write_text(json.dumps({"model_version": "1.8"}))
     cli.main(["latest-json", "OH", "2026-11-05", "--dir", str(tmp_path)])
     got = json.loads(capsys.readouterr().out)
     assert got["by_model"] == {"1.8": "2026-11-05"}
     cli.main(["latest-json", "OH", "2026-11-05"])
-    assert json.loads(capsys.readouterr().out)["by_model"] == {MODEL_VERSION: "2026-11-05"}
+    assert json.loads(capsys.readouterr().out)["by_model"] == {snapshot_model(): "2026-11-05"}
 
 
 def test_the_statewide_checks_fail_a_format_3_snapshot_on_its_cells(tmp_path, runs):
