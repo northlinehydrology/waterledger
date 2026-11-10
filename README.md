@@ -18,7 +18,7 @@ sewer plants, weather and design storms.
 - **CSDMS Basic Model Interface (BMI 2.0) components**, so coupling frameworks such as NOAA's NextGen can drive the
   models step by step.
 - **Public data for any U.S. place**, fetched once and cached: Census, EPA, USGS, NOAA and EIA, with each place's
-  downstream path traced across state lines. Michigan, Ohio, Virginia, Texas and Wisconsin are published as checked snapshots.
+  downstream path traced across state lines. Michigan, Ohio, Virginia, Texas, Wisconsin and Indiana are published as checked snapshots.
 - **Reproducible**: tests reproduce the published Water Ledger estimates exactly, and the data sources are checked nightly.
 
 [waterledger.org](https://waterledger.org) is powered by these packages.
@@ -90,6 +90,7 @@ They are validated, round-trip through JSON, and are described in
 | Virginia | 322 cities, towns and counties | ERA5, each place's own cell (148 cells) | [waterledger.org/methods/va](https://waterledger.org/methods/va/), [brief](docs/methods/va.pdf) |
 | Texas | 1,481 cities, towns and counties | ERA5, each place's own cell (616 cells) | [waterledger.org/methods/tx](https://waterledger.org/methods/tx/), [brief](docs/methods/tx.pdf) |
 | Wisconsin | 1,922 cities, villages, towns and counties | ERA5, each place's own cell (283 cells) | [waterledger.org/methods/wi](https://waterledger.org/methods/wi/), [brief](docs/methods/wi.pdf) |
+| Indiana | 1,661 cities, towns, townships and counties | ERA5, each place's own cell (183 cells) | [waterledger.org/methods/in](https://waterledger.org/methods/in/), [brief](docs/methods/in.pdf) |
 
 **Model 1.11** adds the campus's water at the power plants hour by hour, and every state's cells are rerun for it
 ([design 0008](docs/design/0008-power-at-the-grid.md), part 1):
