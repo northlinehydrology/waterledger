@@ -51,8 +51,10 @@ settled once, here.
    | constituents | `water_user_return_water_<name>__mass_flux` | optional, one per constituent |
 
    Two additions, both needed by battery plants and both general:
-   - **Return by destination.** `to_sewer` (wastewater: blowdown, process, sanitary) and `to_source` (water handed
-     back where it came from: once-through lake water). `returned = to_sewer + to_source`. Today a data center's lake
+   - **Return by destination.** `to_sewer` (wastewater: blowdown, process, sanitary), `to_source` (water handed
+     back where it came from: once-through lake water) and, from Nov 10 (Andrew, design 0014 decision 10), `to_stream`
+     (a permitted direct discharge to surface water other than the source, as 13% of new tower-cooled gas plants have).
+     `returned = to_sewer + to_source + to_stream`; `to_stream` is used only where a default or a setting chooses it. Today a data center's lake
      design is the only `to_source`, and it is handled by a special case (`lake_estimate`).
    - **Fuel.** `fuel_mw`, energy burned on site (a cell plant's ovens and boilers). Zero for data centers, apart from
      generators, which stay their own item.

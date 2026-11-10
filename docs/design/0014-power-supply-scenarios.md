@@ -313,7 +313,7 @@ become public API in the release that carries them, under the 3.x rules (0010, d
     a stream, zero liquid discharge), by plant size and technology, before the default is set. A permitted discharge to
     a different stream than the intake is neither `to_sewer` nor `to_source` as those roles read now; if it is common,
     that is a gap in the roles to settle for every type, not a gas plant special case.
-    **Research done (research note §8, Nov 10); the defaults below are proposals for Andrew, not decided.** The steam
+    **Research done (research note §8, Nov 10); the defaults below agreed by Andrew the same day ("all as proposed").** The steam
     electric guidelines (40 CFR 423) cover combined cycle only. Of 108 tower-cooled combined cycle plants in service
     since 2005 (EIA-860, aggregate), 42 discharge to the same water body as the intake, 18 to a sewer, 14 to a different
     water body and 11 nothing (ZLD, ponds, injection); 23 do not say. Proposed: combined cycle on towers or hybrid
@@ -321,8 +321,11 @@ become public API in the release that carries them, under the 3.x rules (0010, d
     rule (`to_sewer`), with a stream discharge and no discharge as settings (15, 10 and 10 of 35 such plants), ZLD more
     likely in the arid West; dry combined cycle, simple-cycle turbines, engines and fuel cells send their small process
     flows `to_sewer` [A]. The different-water case is 13% of new tower plants, mostly wells or utility water discharged
-    to a local stream, so it is common enough to be the roles gap for every type that this decision anticipated; how to
-    name and route it is open.
+    to a local stream, so it is common enough to be the roles gap for every type that this decision anticipated.
+    **Settled (Andrew, Nov 10): a new optional return role for every type, `to_stream`**, a permitted direct discharge to
+    surface water other than the source, so returned = to_sewer + to_source + to_stream. It is used only where a
+    default or a setting chooses it (0010, principle 1). A zero-discharge plant evaporates its blowdown, which then
+    counts as consumed.
 11. **Construction water is a one-time total**, reported apart from annual water; upstream fuel water is not added.
     Agreed: construction is always separate.
 
@@ -336,7 +339,7 @@ become public API in the release that carries them, under the 3.x rules (0010, d
 - **Wind.** The smallest footprint per MWh: turbine pads, crane paths and access roads, and the collection system.
   Construction water is mostly foundation concrete. The runoff change is small and local to the roads and pads.
 - **Sourced (research note §9, Nov 10).** Reported per project as land, a change in annual runoff and sediment, and
-  one-time construction water, all apart from annual operating water. **Proposed defaults for Andrew, not decided**
+  one-time construction water, all apart from annual operating water. **Defaults agreed by Andrew, Nov 10 ("all as proposed")**
   (ranges and sources in §9d):
   - PV array area 5.5 acres/MWac tracking and 3.6 fixed (LBNL's 2019 medians at an inverter loading ratio of 1.3 [A]);
     fenced area the array ÷ 0.7 [A]; roads, pads and substation 4% of the fenced area [A].
