@@ -78,6 +78,58 @@ settled once, here.
 5. **Types are registered by kind.** `Site.facility` accepts any registered type (a pydantic union discriminated on
    `kind`). Adding a type is writing its three pieces and registering it.
 
+## The standard treatment (Nov 10, 2026; for Andrew's review)
+
+Andrew (Nov 10): the aim is one standard way to add large water users to the packages and to waterledger.org, a modular
+system with calculations compatible across types, so the site stays honest and useful. Data centers came first; the same
+work is being done for a group of large users. New models are not patched in one at a time.
+
+Battery cell plants showed the gap. The model was built beside the data centers' and lacked three things they have: water
+at the power plants, a full-capacity peak when utilization is sampled, and the assist design. Each was missing because each
+type wrote its own Monte Carlo loop. So:
+
+**Every type gets what data centers get, from shared code, unless its physics has no counterpart.** An exception is
+written down with its reason. The type supplies only what is its own: its hourly physics, its parameters and their
+evidence, and its checks.
+
+| | What every type gets | Where it comes from |
+|---|---|---|
+| 1 | Every design the shared equipment allows: `dry`, `assist`, `hybrid`, `towers` (`heat_rejection`), and `lake` (`once_through`) | shared; a type leaves one out only for a stated physical reason |
+| 2 | One Monte Carlo runner: Latin hypercube draws with the central run, every design, the standard loads, daily statistics, grid water, the standard statistic names | shared (`waterledger_models.runs`, new); the type passes its `hourly` and its parameter space |
+| 3 | The standard loads: the run's own (full output or sampled utilization), the peak day at the peak load, and full capacity | shared runner |
+| 4 | Water at the power plants for the user's own hourly electricity, by balancing authority | shared (`grid`), through the runner |
+| 5 | Mass and energy balances that close every hour, and the role and statistic names | the type's physics; held for every type by the shared conformance test |
+| 6 | A BMI component reporting the roles, with a withdrawal limit, dry mode, and intake concentrations giving the return's dissolved mass and temperature (0006) | `ScalarPointBmi` and shared limit and mass code; the type supplies where its heat goes under a cap |
+| 7 | Runs on every state's ERA5 cells and stored results in the snapshots, when stored results are decided for the type | one cell runner over any registered type; `MODELS` records the snapshot rebuild |
+| 8 | A place-based estimate (`Site`, `Estimate`) through the facility contract below | shared; the type writes its facility |
+| 9 | Parameters with ranges and sources, each sampled, set or an input, with a research note | the type's own evidence |
+| 10 | A check against real figures (projections, permits, metered use), nothing tuned | the type's own evidence, as a script in `examples/` |
+| 11 | Sobol' and Morris sensitivity with the shared functions | the type's own run of `docs/methods/sensitivity/` |
+| 12 | The methods log entry, long and short; the site's pages when the type goes on the site | the type's own; the site standard is note 0013 (below) |
+
+**Exceptions so far.** Data centers' cooling plant inside the building (`PLANTS`: shared loop, warm loop, chilled water)
+is about how computer racks are cooled and has no counterpart at a cell plant, whose internal split (chilled water for
+formation, dry rooms and NMP condensers; a warmer process loop) is sampled instead. Staff water stays outside the per-size
+results for data centers because it doesn't scale with size; that is how they store results, not a difference in what
+is reported.
+
+**Battery cell plants against the list** (Nov 10): 1 lacks `assist`; 2-4 lack the shared runner, so no grid water and
+no full-capacity peak when utilization is sampled; 5, 9, 10 and 11 done; 6 has the roles but no limit or dissolved mass;
+7, 8 and 12 wait on this note and the site decision.
+
+**The shared runner.** `runs.run_location(model, times, temps, rhs, size, designs=None, utilization=..., settings=None,
+water_temps=None, grid=None, n, seed)`. `model` is the type's module: `DESIGNS`, its parameter space, `hourly` (per unit
+of size, every role and electricity, for a load), and how its size scales. The runner owns the draws, the loads, the
+blocks of hours, the daily statistics, the grid water and the names, so they are the same for every type. Data centers
+pass their compiled kernel as their hourly, and their numbers stay identical to the last bit (the identity test). A type
+that needs more speed compiles its own hourly; the runner doesn't change.
+
+**The site standard (0013, before any second type goes on waterledger.org).** Every type on the site shows the same
+things from the roles: the calculator's before-and-after table, the same comparisons and equivalents, power plant and
+grid water, the same rounding, a methods page per type built from the package. What is specific to a type (its size
+unit, its designs, its own measures such as PUE) is declared by the facility, so the pages are generated rather than
+written per type.
+
 ## The contract
 
 ### Level 1: the model (`waterledger-models`)
@@ -196,8 +248,9 @@ The number came early, but it is what users see, so the packages are held to it 
 
 ## Not in this note
 
-- **waterledger.org.** The site format stays data-center-only; whether battery plants go on the site is decided later
-  (0009, decision 5).
+- **waterledger.org.** The site format stays data-center-only for now; whether battery plants go on the site is decided
+  later (0009, decision 5). How any type goes on the site is note 0013, part of the same plan (the standard treatment,
+  above).
 - **Cathode materials plants:** 0012, on this contract.
 - **Michigan's own path:** 0011, done before this note's steps.
 
@@ -205,6 +258,9 @@ The number came early, but it is what users see, so the packages are held to it 
 
 1. The identity snapshot of today's estimates in every state.
 2. Grid water as a shared function on any hourly electricity; the data center run calls it.
+2a. The shared runner (`runs`), with the standard loads; data centers onto it with their kernel, numbers identical; battery
+   cell plants onto it, gaining grid water, the full-capacity peak and the `assist` design (proposed Nov 10, so the
+   battery model is released on the standard rather than beside it).
 3. The registry and the `Facility` contract; `DataCenter` onto it (`results`, `bmi_config`, hooks); providers reduced to
    the place side.
 4. Downstream onto the hooks: `before_after`, runoff loads, `by_design`, `to_bmi_config`.
