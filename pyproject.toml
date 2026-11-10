@@ -20,6 +20,7 @@ waterledger-data = { workspace = true }
 [dependency-groups]
 dev = [
     "bmi-tester>=0.5.10",
+    "pvlib>=0.11",          # the reference the PV model is tested against (design 0014); not a dependency of any package
     "reportlab>=4.0",
     "pytest>=7",
 ]
