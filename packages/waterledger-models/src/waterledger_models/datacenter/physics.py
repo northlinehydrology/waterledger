@@ -51,19 +51,16 @@ RANGES = {
     # control output; US 12,426,214 B1: a controller threshold with a range of embodiments). It is tied to the loop (model 1.7): the setting sits at the dry-bulb where the dry coil can no longer hold loop
     # supply, each user model's loop limit (switch_point), give or take this margin in K for operators who go wet early or trim with chillers a while longer [A]. Same for assist and hybrid.
     "switch_margin": (-2.0, 2.0),
-    # Dry coolers with adiabatic pre-cooling (model 1.3). Microsoft's 85 °F is for its direct-air evaporative design, a
-    # different system, and is not used here. Pad saturation effectiveness: EVAPCO (presented at CTI, Feb 2019, p. 2) measured 72-78% at 400-700 fpm across 10
-    # pads, a maker's own test; ASHRAE (2016, ch. 41) gives 70 to over 95% for rigid media.
-    "assist_eff": (0.70, 0.80),
+    # Dry coolers with adiabatic pre-cooling (model 1.3): the pads' effectiveness is shared equipment (heat_rejection.EQUIPMENT, from model 1.12).
+    "assist_eff": EQUIPMENT["assist_eff"],
     "hybrid_full_offset": EQUIPMENT["hybrid_full_offset"],
 }
 # Share of the loop volume lost to small leaks and topped up each year (NIH 2023 Technical Bulletin: "typically less than 5% of the
 # system's total volume in a year"; the 1% floor is an assumption), all of it counted as lost. Poorly kept loops can lose far more (NIH:
 # 25% a month "is not uncommon"), which the range does not cover.
 TOPUP = (0.01, 0.05)
-# Adiabatic pre-cooling. The air temperature rise across the dry cooler coil at design is shared equipment (heat_rejection.EQUIPMENT). Bleed as a share of evaporation: none for once-through
-# pads (Guentner; Spinazzola 2021), up to 0.5 for recirculating pads (SCE ET13SCE1020, 2015, p. 29: 10-50%; ASHRAE 2016 ch. 41 allows 5-100%).
-ADIABATIC = {"assist_dt_air": EQUIPMENT["assist_dt_air"], "assist_bleed": (0.0, 0.5)}
+# Adiabatic pre-cooling: the air temperature rise across the dry cooler coil at design and the pads' bleed are shared equipment (heat_rejection.EQUIPMENT).
+ADIABATIC = {"assist_dt_air": EQUIPMENT["assist_dt_air"], "assist_bleed": EQUIPMENT["assist_bleed"]}
 # Electricity and heat (model 1.4). Large-scale values are Lei and Masanet's Table 3, case 2 (preprint rs-769999/v1;
 # waterside economizer, 2.8-6.7 C tower approach, and so on), which LBNL 2024 also draws on, unless noted.
 POWER = {
@@ -271,10 +268,6 @@ def _wet_share(tdb, design, p):
     return hr.wet_share(tdb, design, p, switch_point(p))
 
 
-def _pad_depression(tdb, twb, p):
-    """How far assist's pads cool the air ahead of the coil, K: the pads' effectiveness x the wet-bulb depression, scaled by "wet_frac" under a water limit."""
-    depr = p["assist_eff"] * np.maximum(tdb - twb, 0.0)
-    return depr * p["wet_frac"] if "wet_frac" in p else depr
 
 
 
@@ -294,7 +287,7 @@ def hourly_heat_power(tdb, twb, design, p, rh=None):
     outside, latent = hourly_outside_air_heat(tdb, twb, p, rh)
     # supply air and the coil set the air loop's water temperature (Lei and Masanet); liquid-cooled heat goes to a warmer loop of its own
     air_water = air_loop_water(p)
-    coil_air = tdb - (_pad_depression(tdb, twb, p) * (tdb >= switch_point(p)) if design == "assist" else 0.0)
+    coil_air = hr.coil_air(tdb, twb, design, p, switch_point(p))
     wet = _wet_share(tdb, design, p)
     air_load = room + crah + outside                          # in rare, bitter hours outside air could cool more than the air loop carries; the rest comes off the liquid loop
     power, heat = q + crah + 0.0 * tdb, q + crah + outside + latent
@@ -325,18 +318,7 @@ def _rate_parts(tdb, twb, design, p, rh=None, heat=None):
     btu = KWH_BTU * (hourly_heat_power(tdb, twb, design, p, rh)[1] if heat is None else heat)
     evap, drift, blow = hr.tower_water(btu, tdb, _wet_share(tdb, design, p), p)
     if design == "assist":
-        # Water evaporated into the air ahead of the coil. The air cools by depr = effectiveness x wet-bulb depression; the fans slow until
-        # it leaves the coil where it would at the switch point (on + rise), so air flow = heat / (cp x (on + rise - tdb + depr)), and
-        # evaporation as a share of all the heat is depr over that same difference, at most 1. Pads have no tower drift.
-        # Under a water limit the pads' evaporation is cut in proportion, "wet_frac", and the air reaches the coil that much warmer (_pad_depression).
-        depr = p["assist_eff"] * np.maximum(tdb - twb, 0.0)
-        on = switch_point(p)
-        share = np.clip(depr / np.maximum(on + p["assist_dt_air"] - tdb + depr, 1e-6), 0.0, 1.0)
-        evap = btu * share / HFG / LB_GAL * (tdb >= on)
-        if "wet_frac" in p:
-            evap = evap * p["wet_frac"]
-        drift = np.zeros_like(evap)
-        blow = evap * p["assist_bleed"]
+        evap, drift, blow = hr.pad_water(btu, tdb, twb, p, switch_point(p))     # the pads' water (heat_rejection, shared from model 1.12)
     # loop top-up, gal/day per MW of capacity, as gal per IT kWh
     topup = p["fill_gal_per_mw"] * p["topup"] / 365.0 / (24 * 1000 * p["utilization"]) * np.ones(np.broadcast_shapes(np.shape(btu), np.shape(tdb), np.shape(p["er_adj"])))
     humidify, condensate = hourly_water_with_air(tdb, twb, p, rh)

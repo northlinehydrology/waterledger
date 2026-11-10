@@ -77,6 +77,13 @@ EQUIPMENT = {
     "glycol_share": (0.30, 0.40),
     # Air temperature rise across a dry cooler's coil at design, K: 9-13 from makers' selection sheets (Thermokey 11.2, Kelvion 12.8) [estimate].
     "assist_dt_air": (9.0, 13.0),
+    # Dry coolers with adiabatic pre-cooling, "assist" (model 1.3; shared from model 1.12). Pad saturation effectiveness: EVAPCO (presented at CTI,
+    # Feb 2019, p. 2) measured 72-78% at 400-700 fpm across 10 pads, a maker's own test; ASHRAE (2016, ch. 41) gives 70 to over 95% for rigid media.
+    # Microsoft's 85 F is for its direct-air evaporative design, a different system, and is not used here.
+    "assist_eff": (0.70, 0.80),
+    # The pads' bleed as a share of their evaporation: none for once-through pads (Guentner; Spinazzola 2021), up to 0.5 for recirculating pads
+    # (SCE ET13SCE1020, 2015, p. 29: 10-50%; ASHRAE 2016 ch. 41 allows 5-100%).
+    "assist_bleed": (0.0, 0.5),
 }
 
 TOWER_DESIGN_WB = 25.6     # C, the 78 F wet-bulb of the standard cooling tower rating (95/85/78 F) [A]; a site's own design wet-bulb differs by a few degrees
@@ -191,6 +198,31 @@ def wet_share(tdb, design, p, switch):
         ramp = _ramp(tdb, switch, hybrid_full(p, switch)) * np.ones_like(tdb)
         return ramp * p["wet_frac"] if "wet_frac" in p else ramp
     return np.zeros_like(tdb)
+
+
+def pad_depression(tdb, twb, p):
+    """How far assist's pads cool the air ahead of the coil, K: the pads' effectiveness x the wet-bulb depression, scaled by "wet_frac" under a water limit."""
+    depr = p["assist_eff"] * np.maximum(tdb - twb, 0.0)
+    return depr * p["wet_frac"] if "wet_frac" in p else depr
+
+
+def coil_air(tdb, twb, design, p, switch):
+    """The air reaching the dry coils, C: the outside air, or for assist above its switch point, the air its pads have cooled."""
+    return tdb - (pad_depression(tdb, twb, p) * (tdb >= switch) if design == "assist" else 0.0)
+
+
+def pad_water(btu, tdb, twb, p, switch):
+    """Assist's water, gallons per unit of the user's load-hour: (evaporation, drift, bleed), from the heat rejected in BTU. Water evaporates into the air
+    ahead of the coil. The air cools by depr = effectiveness x wet-bulb depression; the fans slow until it leaves the coil where it would at the switch
+    point (switch + rise), so air flow = heat / (cp x (switch + rise - tdb + depr)), and evaporation as a share of all the heat is depr over that same
+    difference, at most 1. Pads have no tower drift. Under a water limit the pads' evaporation is cut in proportion, "wet_frac", and the air reaches the
+    coil that much warmer (pad_depression)."""
+    depr = p["assist_eff"] * np.maximum(tdb - twb, 0.0)
+    share = np.clip(depr / np.maximum(switch + p["assist_dt_air"] - tdb + depr, 1e-6), 0.0, 1.0)
+    evap = btu * share / HFG / LB_GAL * (tdb >= switch)
+    if "wet_frac" in p:
+        evap = evap * p["wet_frac"]
+    return evap, np.zeros_like(evap), evap * p["assist_bleed"]
 
 
 def tower_water(btu, tdb, wet, p):
