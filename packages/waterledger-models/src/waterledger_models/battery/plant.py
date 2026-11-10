@@ -9,8 +9,7 @@ import numpy as np
 
 from waterledger_models import heat_rejection as hr
 from waterledger_models.battery import physics as bp
-from waterledger_models.daily import daily_stats, groups
-from waterledger_models.grid import RunWater
+from waterledger_models import runs
 
 DRAWS = 400       # as for data centers (datacenter.physics.DRAWS)
 UTILIZATION = ("full", "sampled")
@@ -59,50 +58,41 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, gwh=1.0, utilization="full"
     plant's water at those power plants, grid_<BA>_<kind>_avg and grid_<BA>_<kind>_peak_1in10 (MGD at `gwh`), from its hourly electricity through
     grid.RunWater. A cell plant has no load factor, so its peak day is at the run's own output.
     """
-    if designs is None:
-        designs = tuple(d for d in bp.DESIGNS if d != "lake" or water_temps is not None)
-    tdb, rh = np.array(temps, dtype=float), np.array(rhs, dtype=float)
-    twb = hr.wet_bulb(tdb, rh)
-    water_t = None if water_temps is None else lake_hours(times, water_temps)
-    days = np.array([t[:10] for t in times])
-    uniq, day_index = np.unique(days, return_inverse=True)
-    years, months = np.array([d[:4] for d in uniq]), np.array([d[:7] for d in uniq])
-    by = (groups(years), groups(months))
-    counts = np.bincount(day_index, minlength=len(uniq))
-    hour_years = np.array([t[:4] for t in times])
-    year_ends = np.r_[np.flatnonzero(hour_years[1:] != hour_years[:-1]) + 1, len(hour_years)]
-    runs = draws(n, seed, utilization, settings, chemistry)
-    plant_water = RunWater(grid, day_index, len(uniq), [g.start for g in by[0]]) if grid else None
-    out = {}
-    for design in designs:
-        acc = {}
-        for p in runs:
-            p = bp.for_location(p, tdb, rh)
-            h = bp.hourly(tdb, twb, rh, design, p, water_t)
-            full = h if p["utilization"] == 1.0 else bp.hourly(tdb, twb, rh, design, {**p, "utilization": 1.0}, water_t)
-            for name in ("withdrawn", "consumed", "returned", "to_sewer", "to_source"):
-                s = daily_stats(day_index, len(uniq), years, h[name], gwh, months if name in ("withdrawn", "consumed") else None, by)
-                for stat, v in s.items():
-                    acc.setdefault(f"{name}_{stat}", []).append(v)
-            acc.setdefault("withdrawn_peak_full_capacity", []).append(
-                acc["withdrawn_peak_1in10"][-1] if full is h else daily_stats(day_index, len(uniq), years, full["withdrawn"], gwh, by=by)["peak_1in10"])
-            day_mw = np.bincount(day_index, weights=h["electricity"], minlength=len(uniq)) / counts * gwh / 1000.0
-            acc.setdefault("power_mw_avg", []).append(float(h["electricity"].mean()) * gwh / 1000.0)
-            acc.setdefault("power_mw_peak_1in10", []).append(float(np.quantile([part.max() for part in np.split(full["electricity"], year_ends[:-1])], 0.9)) * gwh / 1000.0)
-            acc.setdefault("power_mw_peak_day_1in10", []).append(float(np.quantile([day_mw[g].max() for g in by[0]], 0.9)))
-            acc.setdefault("fuel_mw_avg", []).append(float(h["fuel"].mean()) * gwh / 1000.0)
-            made = bp.CELLS_PER_HOUR * p["utilization"]
-            acc.setdefault("site_kwh_per_kwh", []).append(float((h["electricity"] + h["fuel"]).mean()) / made)
-            acc.setdefault("withdrawn_l_per_kwh", []).append(float(h["withdrawn"].mean()) * bp.L_GAL / made)
-            acc.setdefault("consumed_l_per_kwh", []).append(float(h["consumed"].mean()) * bp.L_GAL / made)
-            acc.setdefault("utilization", []).append(p["utilization"])
-            if plant_water:                                  # water at the power plants for this hourly electricity (design 0008), as for data centers
-                mw = h["electricity"] * (gwh / 1000.0)
-                for key, v in plant_water.stats(mw, mw).items():
-                    acc.setdefault(key, []).append(v)
-        out[design] = {k: {"p10": float(np.quantile(v[:-1], 0.1)), "p50": float(np.quantile(v[:-1], 0.5)), "p90": float(np.quantile(v[:-1], 0.9)),
-                           "central": float(v[-1])} for k, v in acc.items()}
-    return out
+    model = _CellPlantRuns(n, seed, gwh, utilization, settings, chemistry, water_temps)
+    return runs.run_location(model, times, temps, rhs, designs=designs, grid=grid)
+
+
+class _CellPlantRuns:
+    """The cell plant's part of the shared runner (waterledger_models.runs): its draws, and each draw's hours from physics.hourly. Its loads: the run's
+    output, which is also its peak day's (a cell plant has no load factor); full output for the full-capacity withdrawal and the highest hour, worked
+    apart only when utilization is sampled."""
+
+    def __init__(self, n, seed, gwh, utilization, settings, chemistry, water_temps):
+        self.n, self.seed, self.gwh, self.utilization, self.settings, self.chemistry = n, seed, gwh, utilization, settings, chemistry
+        self.water_temps = water_temps
+        self.designs = tuple(d for d in bp.DESIGNS if d != "lake" or water_temps is not None)    # every design the inputs allow
+
+    def draws(self):
+        return draws(self.n, self.seed, self.utilization, self.settings, self.chemistry)
+
+    def setup(self, times, tdb, twb, rh):
+        self.tdb, self.twb, self.rh = tdb, twb, rh
+        self.water_t = None if self.water_temps is None else lake_hours(times, self.water_temps)
+
+    def run(self, design, p):
+        tdb, twb, rh, gwh = self.tdb, self.twb, self.rh, self.gwh
+        p = bp.for_location(p, tdb, rh)
+        h = bp.hourly(tdb, twb, rh, design, p, self.water_t)
+        full = None if p["utilization"] == 1.0 else bp.hourly(tdb, twb, rh, design, {**p, "utilization": 1.0}, self.water_t)
+        made = bp.CELLS_PER_HOUR * p["utilization"]
+        to_mw = gwh / 1000.0                            # kW per GWh/yr to MW at the plant's size
+        return runs.Hours(water={name: (h[name], gwh) for name in ("withdrawn", "consumed", "returned", "to_sewer", "to_source")},
+                          mw=h["electricity"] * to_mw, utilization=p["utilization"],
+                          full=None if full is None else (full["withdrawn"], gwh), mw_full=None if full is None else full["electricity"] * to_mw,
+                          extras={"fuel_mw_avg": float(h["fuel"].mean()) * gwh / 1000.0,
+                                  "site_kwh_per_kwh": float((h["electricity"] + h["fuel"]).mean()) / made,
+                                  "withdrawn_l_per_kwh": float(h["withdrawn"].mean()) * bp.L_GAL / made,
+                                  "consumed_l_per_kwh": float(h["consumed"].mean()) * bp.L_GAL / made})
 
 
 def lake_hours(times, water_temps):
