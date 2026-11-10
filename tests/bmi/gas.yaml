@@ -1,0 +1,7 @@
+# GasPlantBmi config for CSDMS bmi-tester: two 300 MW combined cycle units on cooling towers, one day of hourly steps, inputs set through set_value.
+technology: cc
+design: towers
+units: 2
+unit_mw: 300
+time_step: 3600
+end_time: 86400
