@@ -2,7 +2,10 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## Unreleased
+## 3.17.0 (Nov 10, 2026; model 1.13)
+
+waterledger-models and waterledger-data 3.17.0; waterledger is unchanged at 3.16.0.
+
 
 - **The shared Monte Carlo runner** ([design 0010](docs/design/0010-water-user-types.md), step 2a). `waterledger_models.runs.run_location(model,
   times, temps, rhs, designs=None, grid=None, extra=None)` runs any water user type: it owns the draws loop, the standard loads (the run's, the
