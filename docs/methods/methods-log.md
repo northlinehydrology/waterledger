@@ -2166,3 +2166,48 @@ the model of the data it read. The golden cooling data is identical apart from i
 cooling and daily statistics moved out of `datacenter` unchanged, held by tests against values from before the moves).
 waterledger.org is unchanged, and battery plants don't go on it until Andrew decides (0009, decision 5). The plant's
 place-based estimate comes with 0010's water user types.
+
+## Nov 10, 2026: battery cell plants under the standard treatment (model 1.12)
+
+**Decision (Andrew, Nov 10).** Every water user type gets what data centers get, from shared code, unless its physics has
+no counterpart, and the exception is stated ([0010](../design/0010-water-user-types.md), "The standard treatment"). Checked
+against that list, battery cell plants lacked three things data centers have: the assist design, water at the power plants,
+and a full-capacity peak when utilization is sampled. Each is closed through a shared piece, not inside the battery model,
+so the next type gets it the same way. The shared Monte Carlo runner itself comes in the next release, with the power
+supply types. No data center or place number changes.
+
+**Assist.** The data centers' adiabatic pads (model 1.3) move to `heat_rejection` unchanged: the pads cool the air ahead of
+the dry coils by their effectiveness times the wet-bulb depression above the switch point, evaporating in proportion to the
+heat, with a bleed of 0-0.5 of their evaporation [A] (EVAPCO 2019; ASHRAE 2016, ch. 41; SCE ET13SCE1020, 2015). A battery
+plant's switch point is its own (its process loop's limit plus the margin). Below it, assist is the dry design hour for
+hour; above it the cooler air takes chiller power off. At central values on the West Michigan test weather, a battery plant
+on assist consumes more than dry and about 10% more than hybrid, both going wet from the same switch point; data centers'
+assist and hybrid are about equal too (model 1.10). The 0009 note had left assist out as "the data centers' own"; that
+reason fell with the standard.
+
+**Water at the power plants.** `grid.RunWater` is the one function that turns a run's hourly electricity at its own and its
+peak-day load into each balancing authority's plant water, average day and 1-in-10-year peak day (design 0008). The data
+center run now calls it, and the battery run does too (`grid=`). A cell plant has no load factor, so its peak day is at
+the run's own output. A test holds it to closure: with a constant factor, every run's plant water is its electricity times
+the factor. As an estimate of the size (not a run with the fitted table): a 43.75 GWh/yr towers plant's 94 MW at full
+output, at the 313 gal/MWh consumed and 12,379 withdrawn of Michigan's MISO cells (model 1.11, methods log Nov 9), is about
+0.70 MGD consumed and 28 MGD withdrawn at the power plants. That is close to the plant's own 0.78 MGD consumed.
+
+**Full capacity.** `withdrawn_peak_full_capacity` and the 1-in-10-year highest hour of electricity are worked at full
+output, as data centers work theirs with every computer at capacity. At full output (the headline) they are the run's own;
+with `utilization="sampled"`, each run is also worked at full output.
+
+**The data centers' numbers.** Before the moves, the data center Monte Carlo was recorded on the West Michigan test weather,
+every cooling plant and design, 12 draws, compiled and NumPy, with two balancing authorities whose water per MWh changes
+hour by hour (`tests/data/datacenter_before_runner.json`). After the moves all 2,496 values match it to the bit on macOS.
+The test holds it to 1e-12, since CI's Linux NumPy differs from macOS in the last bit of some values; the heat rejection
+move's own record (Nov 9) is held the same way for the same reason.
+
+**Sensitivity, with assist** (`docs/methods/sensitivity/battery/`, N = 4096, no warnings). Assist's withdrawal is led by
+the plant energy per kWh (ST 0.16) and boiler make-up (0.15), then the share to the water (0.11); its sewer flow by the pads'
+bleed (0.23), which also moves its peak day (0.16) with the coil's air rise (0.12). The other designs' indices moved by
+sampling noise only (at most 0.034), since two shared parameters changed the sample.
+
+**Still open, stated in 3.16.0.** The battery Monte Carlo loop is still the type's own until the shared runner. The BMI
+component has the roles but no withdrawal limit, dry mode or dissolved mass, which need the plant's limited physics
+(design 0006). Battery plants are not on waterledger.org, so no short-form page changes.
