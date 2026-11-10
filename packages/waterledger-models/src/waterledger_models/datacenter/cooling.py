@@ -32,6 +32,7 @@ import numpy as np
 
 from waterledger_models.datacenter import kernel
 from waterledger_models.daily import daily_stats, groups, summarize  # noqa: F401  (shared with every water user, design 0009)
+from waterledger_models.grid import RunWater
 from waterledger_models.datacenter.physics import sample_staff
 from waterledger_models.datacenter.physics import (ADIABATIC, DEFAULT_PLANT, DRAWS, DESIGNS as _DESIGNS, PLANTS, HFG, KWH_BTU, LB_GAL, OUTSIDE, POWER, RANGES, STAFF, TOPUP, _ramp,  # noqa: F401
                                                    central_parameters, evaporative_ratio, hourly_heat_power, hourly_rates, for_location, hourly_water_with_air, peak_utilization, sample_parameters, wet_bulb)
@@ -176,13 +177,8 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=HOUR_BLOCK,
     by = (groups(years), groups(months))
     runs = sample(n, seed, plant)
     weather = kernel.weather_terms(tdb, twb) if compiled else None
-    if grid:                                                 # every BA's factors in one array: gal/MWh, (BA x kind, hour)
-        grid_keys = [f"grid_{ba}_{kind}" for ba, factors in grid.items() for kind in factors]
-        F = np.vstack([np.asarray(f, dtype=float) for factors in grid.values() for f in factors.values()])
-        year_starts = np.array([g.start for g in by[0]])  # groups() gives each year its run of days
-        whole = len(tdb) == 24 * len(uniq) and np.array_equal(day_index, np.repeat(np.arange(len(uniq)), 24))
-        daily = ((lambda x: x.reshape(len(x), len(uniq), 24).sum(axis=2)) if whole else
-                 (lambda x: np.vstack([np.bincount(day_index, weights=row, minlength=len(uniq)) for row in x])))
+    # water at the power plants, the function every water user's runs share (design 0008; design 0010's standard treatment); groups() gives each year its run of days
+    plant_water = RunWater(grid, day_index, len(uniq), [g.start for g in by[0]]) if grid else None
     out = {}
     for design in DESIGNS:
         acc = {}
@@ -214,12 +210,9 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=HOUR_BLOCK,
             acc.setdefault("power_mw_peak_1in10", []).append(peak * mw)
             day_mw = np.bincount(day_index, weights=pue_peak * kw_peak / 1000.0, minlength=len(uniq)) / np.bincount(day_index, minlength=len(uniq))
             acc.setdefault("power_mw_peak_day_1in10", []).append(float(np.quantile([day_mw[g].max() for g in by[0]], 0.9)))
-            if grid:                                         # water at the power plants for this hourly electricity (design 0008)
-                day_avg, day_peak = daily(F * (pue * (mw * p["utilization"]))), daily(F * (pue_peak * kw_peak / 1000.0))
-                avg, peak = day_avg.sum(axis=1) / len(uniq) / 1e6, np.quantile(np.maximum.reduceat(day_peak, year_starts, axis=1), 0.9, axis=1) / 1e6
-                for i, key in enumerate(grid_keys):
-                    acc.setdefault(f"{key}_avg", []).append(float(avg[i]))
-                    acc.setdefault(f"{key}_peak_1in10", []).append(float(peak[i]))
+            if plant_water:                                  # water at the power plants for this hourly electricity (design 0008)
+                for key, v in plant_water.stats(pue * (mw * p["utilization"]), pue_peak * kw_peak / 1000.0).items():
+                    acc.setdefault(key, []).append(v)
         res = {}
         for k, vals in acc.items():
             v = np.array(vals[:-1])

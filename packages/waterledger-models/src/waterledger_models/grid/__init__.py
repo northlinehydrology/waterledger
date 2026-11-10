@@ -123,3 +123,31 @@ def plant_water(table, mw, month, hour_utc_of_day, temp_c):
     f = lookup(table, month, hour_utc_of_day, temp_c)
     mw = np.asarray(mw, dtype=float)
     return {k: mw * v for k, v in f.items()}
+
+
+class RunWater:
+    """Water at the power plants in a location's Monte Carlo, the one function every water user's runs call (design 0010's standard treatment).
+
+    grid: {BA: {kind: gal/MWh for each hour}}, from lookup on each BA's GridTable; day_index, ndays and year_starts as the run's daily statistics
+    have them (each hour's day, the number of days, each year's first day). stats(mw, mw_peak) takes one run's hourly electricity at its own load
+    and at its peak-day load, MW, and gives grid_<BA>_<kind>_avg, the average day's plant water, and grid_<BA>_<kind>_peak_1in10, the 1-in-10-year
+    peak day at the peak load, MGD. Hour by hour, plant water = MW x gal/MWh, so a year of it is the year's electricity times its
+    generation-weighted factor."""
+
+    def __init__(self, grid, day_index, ndays, year_starts):
+        self.keys = [f"grid_{ba}_{kind}" for ba, factors in grid.items() for kind in factors]
+        self.factors = np.vstack([np.asarray(f, dtype=float) for factors in grid.values() for f in factors.values()])   # (BA x kind, hour)
+        self.ndays, self.year_starts = ndays, np.asarray(year_starts)
+        # daily sums by reshape where the hours are whole days in order, which is faster; otherwise by each hour's day
+        whole = len(day_index) == 24 * ndays and np.array_equal(day_index, np.repeat(np.arange(ndays), 24))
+        self._daily = ((lambda x: x.reshape(len(x), ndays, 24).sum(axis=2)) if whole else
+                       (lambda x: np.vstack([np.bincount(day_index, weights=row, minlength=ndays) for row in x])))
+
+    def stats(self, mw, mw_peak):
+        day_avg, day_peak = self._daily(self.factors * mw), self._daily(self.factors * mw_peak)
+        avg = day_avg.sum(axis=1) / self.ndays / 1e6
+        peak = np.quantile(np.maximum.reduceat(day_peak, self.year_starts, axis=1), 0.9, axis=1) / 1e6
+        out = {}
+        for i, key in enumerate(self.keys):
+            out[f"{key}_avg"], out[f"{key}_peak_1in10"] = float(avg[i]), float(peak[i])
+        return out
