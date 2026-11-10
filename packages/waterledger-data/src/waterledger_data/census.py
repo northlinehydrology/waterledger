@@ -1,7 +1,9 @@
 """Places in any state from the Census Bureau (TIGERweb), for the national tier (design 0001, decision 6; design 0002).
 
 A state's places are the units that decide land use:
-  incorporated places    cities, towns, villages and boroughs (FUNCSTAT A)
+  incorporated places    cities, towns, villages and boroughs (FUNCSTAT A), and the balance of a consolidated city
+                         (FUNCSTAT F, "Indianapolis city (balance)"): the land the consolidated government governs outside
+                         the cities that keep their own (Louisville, Nashville, Augusta, Athens, Butte and Milford too)
   county subdivisions    only those the Census marks as active governments (FUNCSTAT A): the townships and towns of the
                          roughly 20 states that have them. Fictitious subdivisions (F) that repeat a city are skipped, as
                          are statistical (S) and nonfunctioning (N) ones such as Texas census county divisions and
@@ -34,7 +36,8 @@ def _features(kind, state_fips):
     path = os.path.join(RAW, f"{state_fips}_{kind}.json")
     if os.path.exists(path):
         return json.load(open(path))
-    where = f"STATE='{state_fips}'" + ("" if kind == "county" else " AND FUNCSTAT='A'")
+    where = f"STATE='{state_fips}'" + {"county": "", "cousub": " AND FUNCSTAT='A'",
+                                       "place": " AND (FUNCSTAT='A' OR (FUNCSTAT='F' AND NAME LIKE '%(balance)'))"}[kind]
     out, offset = [], 0
     while True:
         d = _get(LAYERS[kind], {"where": where, "outFields": "GEOID,NAME,BASENAME,LSADC,FUNCSTAT,INTPTLAT,INTPTLON",
@@ -60,9 +63,15 @@ def _polygon(rings):
     return geom
 
 
-def _kind(a):
+def _base_kind(a):
+    """(base name, kind). A consolidated city's balance carries its whole name as its base ("Indianapolis city (balance)"):
+    its base is the name before "city" ("Indianapolis") and its kind city, or the whole name before "(balance)" and kind
+    consolidated government where no "city" ends it (Louisville/Jefferson County metro government)."""
     base, name = a["BASENAME"], a["NAME"]
-    return name[len(base):].strip() if name.startswith(base) else name
+    if name.endswith(" (balance)"):
+        whole = name.removesuffix(" (balance)")
+        return (whole.removesuffix(" city"), "city") if whole.endswith(" city") else (whole, "consolidated government")
+    return base, name[len(base):].strip() if name.startswith(base) else name
 
 
 def places(state_fips):
@@ -72,7 +81,8 @@ def places(state_fips):
     for kind in ("place", "cousub", "county"):
         for f in _features(kind, state_fips):
             a = f["a"]
-            rows.append({"geoid": a["GEOID"], "name": a["NAME"], "base": a["BASENAME"], "kind": _kind(a),
+            base, kind_ = _base_kind(a)
+            rows.append({"geoid": a["GEOID"], "name": a["NAME"], "base": base, "kind": kind_,
                          "level": {"place": "place", "cousub": "township", "county": "county"}[kind],
                          "lat": float(a["INTPTLAT"]), "lon": float(a["INTPTLON"]), "geometry": _polygon(f["rings"])})
     g = gpd.GeoDataFrame(rows, geometry="geometry", crs=4326)
