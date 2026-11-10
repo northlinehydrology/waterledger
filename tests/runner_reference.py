@@ -1,7 +1,7 @@
 """Write tests/data/datacenter_before_runner.json: the data center Monte Carlo's results, as they were before it moved onto the shared runner
 (waterledger_models.runs, design 0010's standard treatment): every cooling plant and design on the stored two years of West Michigan weather,
 12 draws, with two balancing authorities whose water per MWh changes hour by hour, through the compiled kernel and through physics.py.
-test_runs.py holds the runner to it. Written once, before the move (Nov 10, 2026); not rerun.
+test_datacenter_record.py holds the model to it. Written once, before the moves (Nov 10, 2026); not rerun.
 
     uv run python tests/runner_reference.py
 """
