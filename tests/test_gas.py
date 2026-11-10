@@ -37,7 +37,7 @@ def test_energy_and_water_close_every_hour(tech, design, cooling):
     for k in ("served", "unserved", "fuel", "aux", "condenser", "other", "evap", "blow", "once_through", "nox", "inlet"):
         assert (h[k] >= -1e-9).all(), k
     np.testing.assert_allclose(h["withdrawn"], h["consumed"] + h["returned"], rtol=1e-12, atol=1e-9)
-    np.testing.assert_allclose(h["returned"], h["to_sewer"] + h["to_source"], rtol=1e-12, atol=1e-9)
+    np.testing.assert_allclose(h["returned"], h["to_sewer"] + h["to_source"] + h["to_stream"], rtol=1e-12, atol=1e-9)
     np.testing.assert_allclose(h["served"] + h["unserved"], demand, rtol=1e-12)
     assert (h["unserved"] > 0).any() and (h["served"] <= h["capacity"] + 1e-9).all()
 
@@ -112,3 +112,21 @@ def test_the_monte_carlo_on_the_shared_runner():
         assert k in r, k
     assert r["net_mw_avg"]["p50"] == pytest.approx(0.8 * 600.0, rel=0.06)       # nearly all of it served at N+0 with outages
     assert r["withdrawn_avg"]["central"] == pytest.approx(r["consumed_avg"]["central"] + r["returned_avg"]["central"], rel=1e-9)
+
+
+def test_where_the_wastewater_goes():
+    """Decision 10 (agreed Nov 10): a combined cycle on wet cooling drawing surface water returns to its source, on wells or a utility's water
+    to the sewer; dry, simple cycle, engines and fuel cells to the sewer. The same wastewater, wherever it goes; zero liquid discharge
+    evaporates it, so withdrawal is unchanged and consumption takes it."""
+    assert gp.default_discharge("cc", "towers", "surface") == "source" and gp.default_discharge("cc", "towers", "ground") == "sewer"
+    assert gp.default_discharge("cc", "dry", "surface") == "sewer" and gp.default_discharge("ct", "none", "surface") == "sewer"
+    p = _p("cc", "towers")
+    h = {d: gp.hourly(500.0, T, TWB, RH, "cc", "towers", p, 2, 300.0, discharge=d) for d in gp.DISCHARGES}
+    waste = h["sewer"]["to_sewer"]
+    assert waste.sum() > 0
+    np.testing.assert_allclose(h["stream"]["to_stream"], waste) and np.testing.assert_allclose(h["source"]["to_source"], waste)
+    for d in gp.DISCHARGES:
+        np.testing.assert_allclose(h[d]["withdrawn"], h["sewer"]["withdrawn"])
+    np.testing.assert_allclose(h["none"]["consumed"], h["sewer"]["consumed"] + waste) and not h["none"]["returned"].any()
+    with pytest.raises(ValueError):
+        gp.hourly(500.0, T, TWB, RH, "cc", "towers", p, 2, 300.0, discharge="river")

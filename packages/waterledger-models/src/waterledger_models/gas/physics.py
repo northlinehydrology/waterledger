@@ -18,7 +18,14 @@ does. Every plant is hypothetical: a technology, a number of identical units, a 
       demineralized water, whose reject goes to the sewer; inlet cooling water (air flow x the rise in humidity ratio), evaporated
 
 Energy closes: fuel = net + auxiliary + condenser + other (exhaust, stack, generator), and no term is negative. Mass closes: withdrawn =
-consumed + returned, returned = to_sewer + to_source. Gas used to make the fuel, and water upstream of the plant, are outside the boundary
+consumed + returned, returned = to_sewer + to_source + to_stream.
+
+Where the wastewater goes (design 0014, decision 10; research note sec. 8, agreed by Andrew Nov 10): `discharge` is "sewer", "source" (back to
+the water the plant draws from), "stream" (a permitted discharge to another surface water) or "none" (zero liquid discharge: the blowdown and the
+demineralizer's reject are evaporated, so they count as consumed). default_discharge gives the agreed default by technology, design and supply:
+a combined cycle on wet cooling drawing surface water returns to its source (41 of 49 such plants since 2005, EIA-860 in aggregate); on wells or a
+utility's water it follows the place's sewer rule (15 of 35; 10 discharge to a stream and 10 nothing, as settings); everything else, small or
+near-zero flows, to the sewer [A]. A lake-cooled plant's once-through water always returns to the lake. Gas used to make the fuel, and water upstream of the plant, are outside the boundary
 (design 0014, decision 11). Ranges and sources: RANGES and SOURCES below; the evidence is in docs/research/power-supply-water.md.
 
 Departure from design 0014: the cooling's own fans and pumps are not worked from heat_rejection.loop, which models a facility water loop with
@@ -62,6 +69,17 @@ COMMON = {
 }
 # Operating settings (heat_rejection.OPERATING): cycles of concentration 3-6, central 4 (NETL Rev. 4a p. 35; Diehl and Harris 2014 p. 12).
 OPERATING = {"coc": (3.0, 6.0)}
+DISCHARGES = ("sewer", "source", "stream", "none")
+SUPPLIES = ("surface", "ground", "utility")
+
+
+def default_discharge(technology, design, supply="utility"):
+    """Where a plant's wastewater goes by default (module docstring): "source" for a combined cycle on wet cooling drawing surface water, else "sewer"."""
+    if supply not in SUPPLIES:
+        raise ValueError(f"supply must be one of {SUPPLIES}")
+    return "source" if technology == "cc" and design in ("towers", "hybrid", "assist") and supply == "surface" else "sewer"
+
+
 # NOx control is a setting, not a draw: dry low-NOx (0) or water injection at a water-to-fuel mass ratio of 0.5-1.0 (AP-42 sec. 3.1.4.1, p. 3.1-6).
 NOX = {"dln": 0.0, "water": (0.5, 1.0)}
 SOURCES = {
@@ -108,14 +126,16 @@ def _humidity_ratio(tdb, rh):
     return hr._humidity_ratio(hr._saturation_kpa(tdb) * np.clip(rh, 0.0, 100.0) / 100.0)
 
 
-def hourly(demand_mw, tdb, twb, rh, technology, design, p, units, unit_mw, inlet_cooling=False, water_t=None, available=None):
+def hourly(demand_mw, tdb, twb, rh, technology, design, p, units, unit_mw, inlet_cooling=False, water_t=None, available=None, discharge="sewer"):
     """Each hour, for `units` identical units of `unit_mw` net MW at ISO serving `demand_mw`: a dict of MW and gallons for the hour (module
     docstring). `available`: units up each hour (outages(), or None for every unit). The lake design needs `water_t`, the lake's surface
     temperature each hour, C; hybrid and assist need p["design_db"] (heat_rejection.for_location).
 
     MW: "served", "unserved", "fuel", "gross", "aux", "condenser", "other", "capacity" (available), "units_online", "inlet_t" (C).
-    Gallons: "withdrawn", "consumed", "returned" (= "to_sewer" + "to_source"), and the parts "evap", "drift", "blow", "once_through", "lake_evap",
-    "nox", "nox_reject", "inlet"."""
+    Gallons: "withdrawn", "consumed", "returned" (= "to_sewer" + "to_source" + "to_stream"), and the parts "evap", "drift", "blow", "once_through",
+    "lake_evap", "nox", "nox_reject", "inlet". discharge: where the blowdown and the demineralizer's reject go (DISCHARGES, default_discharge)."""
+    if discharge not in DISCHARGES:
+        raise ValueError(f"discharge must be one of {DISCHARGES}")
     if technology not in TECHNOLOGIES or design not in DESIGNS[technology]:
         raise ValueError(f"no {technology!r} plant with design {design!r}: {DESIGNS}")
     if design == "lake" and water_t is None:
@@ -182,15 +202,18 @@ def hourly(demand_mw, tdb, twb, rh, technology, design, p, units, unit_mw, inlet
         inlet = AIR_KG_H_PER_MW * turbine_mw * hr.CP_AIR * (tdb - inlet_t) / hr.LATENT_KJ / hr.KG_GAL
     else:
         inlet = zero
-    to_sewer = blow + nox_reject
-    to_source = once - lake_evap
+    waste = blow + nox_reject                       # the wastewater, wherever it goes
+    to_sewer = waste if discharge == "sewer" else zero
+    to_stream = waste if discharge == "stream" else zero
+    to_source = once - lake_evap + (waste if discharge == "source" else zero)
+    evaporated = waste if discharge == "none" else zero        # zero liquid discharge: evaporated on site
     return {
         "served": served, "unserved": unserved, "fuel": fuel, "gross": gross, "aux": aux, "condenser": condenser, "other": other,
         "capacity": capacity, "units_online": online, "inlet_t": inlet_t,
         "evap": evap, "drift": drift, "blow": blow, "once_through": once, "lake_evap": lake_evap, "nox": nox, "nox_reject": nox_reject, "inlet": inlet,
         "withdrawn": evap + drift + blow + once + nox + nox_reject + inlet,
-        "consumed": evap + drift + lake_evap + nox + inlet,
-        "returned": to_sewer + to_source, "to_sewer": to_sewer, "to_source": to_source,
+        "consumed": evap + drift + lake_evap + nox + inlet + evaporated,
+        "returned": to_sewer + to_source + to_stream, "to_sewer": to_sewer, "to_source": to_source, "to_stream": to_stream,
     }
 
 

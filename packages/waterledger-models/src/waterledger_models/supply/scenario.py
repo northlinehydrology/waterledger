@@ -47,6 +47,8 @@ class Gas:
     nox: str = "dln"
     inlet_cooling: bool = False
     outages: bool = True
+    supply: str = "utility"              # where its water comes from: sets where its wastewater goes unless discharge is given (decision 10)
+    discharge: str | None = None
 
 
 @dataclass
@@ -147,7 +149,8 @@ class Supply:
             demand = np.minimum(rest, g.firm_mw) if g.firm_mw is not None else rest
             p = hr.for_location(self.gas_draws[name][i], self.tdb)
             up = gp.outages(g.units, p["availability"], len(load), self.seed + 1000 * i) if g.outages else None
-            gh = gp.hourly(demand, self.tdb, self.twb, self.rh, g.technology, g.design, p, g.units, g.unit_mw, g.inlet_cooling, self.water_t, up)
+            gh = gp.hourly(demand, self.tdb, self.twb, self.rh, g.technology, g.design, p, g.units, g.unit_mw, g.inlet_cooling, self.water_t, up,
+                           g.discharge or gp.default_discharge(g.technology, g.design, g.supply))
             rest = rest - gh["served"]
         grid = rest if sc.residual == "grid" else 0.0 * rest
         unserved = rest - grid
@@ -182,7 +185,7 @@ class Supply:
             local_w, local_c = s["pv_washing_mgd"], s["pv_washing_mgd"]
             if d["gas"] is not None:
                 gh, ghp, g = d["gas"], dp["gas"], sc.gas
-                for role in ("withdrawn", "consumed", "returned", "to_sewer", "to_source"):
+                for role in ("withdrawn", "consumed", "returned", "to_sewer", "to_source", "to_stream"):
                     out.water[f"{pre}gas_{role}"] = (gh[role], 1.0)
                     out.peak[f"{pre}gas_{role}"] = (ghp[role], 1.0)
                 served = float(gh["served"].sum())

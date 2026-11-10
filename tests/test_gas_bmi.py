@@ -31,14 +31,14 @@ def test_steps_match_the_hourly_physics_and_close(design):
         out = _step(m, t, rh, demand, 12.0 if design == "lake" else None)
         p = {**m._params}
         h = gp.hourly(demand, np.array([t]), hr.wet_bulb(np.array([t]), np.array([rh])), np.array([rh]), "cc", design, p, 2, 300.0,
-                      water_t=np.array([12.0]) if design == "lake" else None)
+                      water_t=np.array([12.0]) if design == "lake" else None, discharge=m._discharge)
         for key, name in WATER.items():
             assert out[name] == pytest.approx(h[key][0] * TO_M3S, rel=1e-12, abs=1e-15), (design, key)
         assert out["power_plant__electric_power_output"] == pytest.approx(min(demand, h["capacity"][0]))
         w, c, r = (out[f"water_user_water__{k}_volume_flux"] for k in ("withdrawal", "consumption", "return"))
         assert w == pytest.approx(c + r, rel=1e-12, abs=1e-15)
-        assert r == pytest.approx(out["water_user_water__sewer_return_volume_flux"] + out["water_user_water__source_return_volume_flux"],
-                                  rel=1e-12, abs=1e-15)
+        assert r == pytest.approx(out["water_user_water__sewer_return_volume_flux"] + out["water_user_water__source_return_volume_flux"]
+                                  + out["water_user_water__stream_return_volume_flux"], rel=1e-12, abs=1e-15)
 
 
 def test_demand_above_capacity_is_unserved():
@@ -49,7 +49,8 @@ def test_demand_above_capacity_is_unserved():
 
 
 @pytest.mark.parametrize("cfg", [{"technology": "coal"}, {"technology": "ct", "design": "towers"}, {"technology": "cc", "design": "hybrid"},
-                                 {"technology": "engine", "design": "dry", "nox": "water"}, {"parameters": {"bogus": 1.0}}])
+                                 {"technology": "engine", "design": "dry", "nox": "water"}, {"parameters": {"bogus": 1.0}},
+                                 {"discharge": "river"}, {"supply": "sea"}])
 def test_bad_configurations_raise(cfg):
     with pytest.raises(ValueError):
         GasPlantBmi().initialize(cfg)

@@ -26,22 +26,24 @@ def draws(technology, design, n=DRAWS, seed=7, nox="dln", settings=None):
 
 
 def run_location(times, temps, rhs, technology, design, units, unit_mw, capacity_factor=1.0, n=DRAWS, seed=7, nox="dln", inlet_cooling=False,
-                 outages=False, water_temps=None, settings=None):
+                 outages=False, water_temps=None, settings=None, supply="utility", discharge=None):
     """Monte Carlo for one gas plant at one location: `units` identical units of `unit_mw` net MW at ISO, asked for `capacity_factor` of its ISO
     rating every hour. Results as runs.run_location gives them for the plant's water (MGD) and its own electricity (the auxiliary load, MW), with
     the plant's own measures: net_mw_avg, unserved_mw_avg, fuel_mw_avg, heat_rate_avg (Btu/kWh, HHV, fuel over net) and water per MWh net,
-    withdrawn_gal_per_mwh and consumed_gal_per_mwh. outages: draw each hour's units up at the sampled availability (physics.outages)."""
-    model = _GasRuns(technology, design, units, unit_mw, capacity_factor, n, seed, nox, inlet_cooling, outages, water_temps, settings)
+    withdrawn_gal_per_mwh and consumed_gal_per_mwh. outages: draw each hour's units up at the sampled availability (physics.outages). supply: where
+    its water comes from ("surface", "ground" or "utility"), which sets where its wastewater goes unless discharge is given (physics.default_discharge)."""
+    discharge = discharge or gp.default_discharge(technology, design, supply)
+    model = _GasRuns(technology, design, units, unit_mw, capacity_factor, n, seed, nox, inlet_cooling, outages, water_temps, settings, discharge)
     return runs.run_location(model, times, temps, rhs)
 
 
 class _GasRuns:
     """The gas plant's part of the shared runner: its draws and each draw's hours."""
 
-    def __init__(self, technology, design, units, unit_mw, capacity_factor, n, seed, nox, inlet_cooling, outages, water_temps, settings):
+    def __init__(self, technology, design, units, unit_mw, capacity_factor, n, seed, nox, inlet_cooling, outages, water_temps, settings, discharge="sewer"):
         self.technology, self.design, self.units, self.unit_mw, self.cf = technology, design, units, unit_mw, capacity_factor
         self.n, self.seed, self.nox, self.inlet_cooling, self.outages, self.settings = n, seed, nox, inlet_cooling, outages, settings
-        self.water_temps = water_temps
+        self.water_temps, self.discharge = water_temps, discharge
         self.designs = (design,)
 
     def draws(self):
@@ -58,10 +60,11 @@ class _GasRuns:
         up = gp.outages(self.units, p["availability"], len(self.tdb), self.seed + self.i) if self.outages else None
         self.i += 1
         demand = self.cf * self.units * self.unit_mw
-        h = gp.hourly(demand, self.tdb, self.twb, self.rh, self.technology, design, p, self.units, self.unit_mw, self.inlet_cooling, self.water_t, up)
+        h = gp.hourly(demand, self.tdb, self.twb, self.rh, self.technology, design, p, self.units, self.unit_mw, self.inlet_cooling, self.water_t, up,
+                      self.discharge)
         net = float(h["served"].sum())
         per_mwh = lambda x: float(x.sum()) / net if net > 0 else 0.0
-        return runs.Hours(water={name: (h[name], 1.0) for name in ("withdrawn", "consumed", "returned", "to_sewer", "to_source")},
+        return runs.Hours(water={name: (h[name], 1.0) for name in ("withdrawn", "consumed", "returned", "to_sewer", "to_source", "to_stream")},
                           mw=h["aux"], utilization=float(self.cf),
                           extras={"net_mw_avg": float(h["served"].mean()), "unserved_mw_avg": float(h["unserved"].mean()),
                                   "fuel_mw_avg": float(h["fuel"].mean()), "heat_rate_avg": per_mwh(h["fuel"]) * gp.KWH_BTU,

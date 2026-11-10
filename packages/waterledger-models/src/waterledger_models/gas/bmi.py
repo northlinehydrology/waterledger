@@ -13,6 +13,8 @@ Configuration (a YAML file, or the same keys as a dict passed to initialize):
     unit_mw: 300                                     (each unit's net rating at ISO, MW)
     nox: dln | water                                 (default dln; water injection for turbines)
     inlet_cooling: false                             (inlet evaporative cooling, turbines)
+    supply: surface | ground | utility               (default utility: where its water comes from, which sets discharge's default)
+    discharge: sewer | source | stream | none        (default physics.default_discharge: where the wastewater goes)
     time_step: 3600, end_time: 31536000              (seconds)
     humidity: relative | specific                    (which humidity inputs it reads; default relative)
     parameters: {coc: 4, design_db: 31.0, ...}       (overrides of the central values; hybrid and assist need design_db, the place's 0.4%
@@ -31,13 +33,15 @@ Variables (all on the one scalar grid point, float64):
     output  water_user_water__consumption_volume_flux                  m3 s-1
     output  water_user_water__return_volume_flux                       m3 s-1   the two returns below together
     output  water_user_water__sewer_return_volume_flux                 m3 s-1   tower blowdown, the demineralizer's reject
-    output  water_user_water__source_return_volume_flux                m3 s-1   the lake design's once-through water less its forced evaporation
+    output  water_user_water__source_return_volume_flux                m3 s-1   the lake design's once-through water less its forced evaporation,
+                                                                                and the wastewater with discharge: source
+    output  water_user_water__stream_return_volume_flux                m3 s-1   the wastewater with discharge: stream (another surface water)
     output  power_plant__electric_power_output                         MW       net output served
     output  power_plant__unserved_electric_power                       MW       demand the available units could not carry
     output  water_user__electric_power                                 MW       the plant's own auxiliary load (from its own output)
     output  water_user__fuel_power                                     MW       gas burned, HHV
     output  atmosphere_bottom_air__wet_bulb_temperature                degC
-Withdrawal equals consumption plus return, and return equals the sewer's plus the source's, every step.
+Withdrawal equals consumption plus return, and return equals the sewer's, the source's and the stream's, every step.
 """
 
 from waterledger_models import heat_rejection as hr
@@ -62,6 +66,7 @@ OUTPUTS = {
     "water_user_water__return_volume_flux": "m3 s-1",
     "water_user_water__sewer_return_volume_flux": "m3 s-1",
     "water_user_water__source_return_volume_flux": "m3 s-1",
+    "water_user_water__stream_return_volume_flux": "m3 s-1",
     "power_plant__electric_power_output": "MW",
     "power_plant__unserved_electric_power": "MW",
     "water_user__electric_power": "MW",
@@ -70,7 +75,7 @@ OUTPUTS = {
 }
 WATER = {"withdrawn": "water_user_water__withdrawal_volume_flux", "consumed": "water_user_water__consumption_volume_flux",
          "returned": "water_user_water__return_volume_flux", "to_sewer": "water_user_water__sewer_return_volume_flux",
-         "to_source": "water_user_water__source_return_volume_flux"}
+         "to_source": "water_user_water__source_return_volume_flux", "to_stream": "water_user_water__stream_return_volume_flux"}
 TO_M3S = 1.0 / ot.GAL_M3 / 3600.0      # gallons in the hour to m3 s-1
 
 
@@ -84,7 +89,7 @@ class GasPlantBmi(ScalarPointBmi):
     def __init__(self):
         super().__init__()
         self._tech, self._design, self._n_units, self._unit_mw = "cc", "towers", 2, 300.0
-        self._humidity, self._inlet = "relative", False
+        self._humidity, self._inlet, self._discharge = "relative", False, "sewer"
         self._params = gp.central_parameters("cc", "towers")
 
     def initialize(self, config_file=None):
@@ -100,6 +105,9 @@ class GasPlantBmi(ScalarPointBmi):
             raise ValueError(f"humidity must be one of {HUMIDITY}")
         self._n_units, self._unit_mw = int(cfg.get("units", 2)), float(cfg.get("unit_mw", 300.0))
         self._inlet = bool(cfg.get("inlet_cooling", False))
+        self._discharge = cfg.get("discharge") or gp.default_discharge(self._tech, self._design, cfg.get("supply", "utility"))
+        if self._discharge not in gp.DISCHARGES:
+            raise ValueError(f"discharge must be one of {gp.DISCHARGES}")
         given = {k: float(v) for k, v in (cfg.get("parameters") or {}).items()}
         unknown = set(given) - set(r) - {"design_db"}
         if unknown:
@@ -127,7 +135,7 @@ class GasPlantBmi(ScalarPointBmi):
         lake = self._design == "lake"
         p = {**self._params, "wind_mph": float(v["atmosphere_bottom_air_flow__speed"][0]) * ot.MPH_PER_MS} if lake else self._params
         h = gp.hourly(v["power_plant__electric_power_demand"].copy(), tdb, twb, rh, self._tech, self._design, p, self._n_units, self._unit_mw,
-                      self._inlet, v["lake_water_surface__temperature"].copy() if lake else None)
+                      self._inlet, v["lake_water_surface__temperature"].copy() if lake else None, discharge=self._discharge)
         for key, name in WATER.items():                           # the physics gives gallons in the hour: a rate, whatever the step
             v[name][0] = h[key][0] * TO_M3S
         v["power_plant__electric_power_output"][0] = h["served"][0]
