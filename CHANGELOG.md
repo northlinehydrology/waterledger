@@ -4,7 +4,16 @@ Package changes (code). Changes to the numbers are listed by model version on th
 
 ## 3.16.0 (Nov 10, 2026; model 1.12)
 
-waterledger-models and waterledger 3.16.0; waterledger-data is unchanged at 3.15.0.
+- **Indiana** is the sixth state published as a checked snapshot (data.waterledger.org/IN/2026-11-10, model 1.11;
+  1,661 places, 183 ERA5 cells), with its ERA5 check (`docs/methods/era5-checks/in.md`), its section in the national-tier
+  notes and its two-page brief (`docs/methods/in.pdf`). Two fixes it needed:
+  - **A consolidated city's balance is a place** (`waterledger_data.census`): Census FUNCSTAT F, such as "Indianapolis city
+    (balance)", the land the consolidated government governs outside the cities that keep their own. FUNCSTAT A alone left
+    it out. Its base name and kind come from the name. None of the five states published before has one; Louisville,
+    Nashville, Augusta, Athens, Butte and Milford will.
+  - **A new state's first ERA5 runs get the grid's water** (`national.era5.cell_bas`): before its first snapshot, the
+    balancing authorities come from the state's local build through the call the snapshot makes, instead of every cell
+    running with none.
 
 - **Battery cell plants** ([design 0009](docs/design/0009-battery-cell-plants.md); methods log, Nov 10), the second water
   user. `waterledger_models.battery`: `physics.hourly`, the plant's heat, electricity, fuel and water hour by hour per
