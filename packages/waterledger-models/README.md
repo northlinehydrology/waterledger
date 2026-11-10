@@ -1,7 +1,7 @@
 # waterledger-models
 
 The models behind [Water Ledger](https://waterledger.org): the water large new users take, use up and send back,
-starting with data centers.
+starting with data centers and battery cell plants.
 
 ```bash
 pip install waterledger-models          # numpy and numba
@@ -15,9 +15,18 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
   agrees with `physics` to the last bit or two and is tested against it for every design and plant.
 - `datacenter.cooling`: the per-run Monte Carlo over decades of hourly weather for towers, hybrid, and closed loop with
   or without evaporative assist, for one plant (`run_location`) or each (`run_plants`); staff water at the campus's size.
+- `battery`: battery cell plants (design 0009): `physics`, the plant's heat, electricity, fuel and water hour by hour per
+  GWh/yr of cells for NMC or LFP cells, with returns to the sewer and to the source; `plant.run_location`, the Monte Carlo at
+  one location; `bmi.BatteryCellBmi` (`[bmi]`).
+- `heat_rejection`: cooling towers, hybrid and dry coolers, the loops' chillers, pumps and fans, their equipment ranges,
+  psychrometrics and Latin hypercube sampling, shared by every water user; each user keeps its own operating settings
+  (`OPERATING`: cycles of concentration, the hybrid's switch margin).
+- `once_through`: once-through cooling from a Great Lake, shared by every water user: withdrawal from the heat and the rise,
+  forced evaporation (Diehl et al. 2013), the lake's ranges and NOAA GLERL temperatures.
+- `daily`: daily totals and their statistics (average, 1-in-10-year peak day, months, worst year), shared by every water user.
 - `grid`: water at the power plants supplying any user's hourly electricity, at grid level (design 0008): a balancing
   authority's table by month, UTC hour and the user's temperature, average and marginal, with `GridWaterBmi` (`[bmi]`).
-- `datacenter.lake`: lake-source (once-through) cooling with forced lake evaporation (USGS heat-balance method).
+- `datacenter.lake`: lake-source (once-through) cooling for a campus, on `once_through`.
 - `datacenter.ensemble`: vectorized ensembles as xarray, dask across locations (`[ensemble]`).
 - `datacenter.bmi`: `CoolingWaterBmi` and `LakeCoolingBmi`, CSDMS BMI 2.0 with CSDMS Standard Names (`[bmi]`), on the public
   `ScalarPointBmi` base for components built on them.
