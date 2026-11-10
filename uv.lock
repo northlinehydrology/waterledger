@@ -3020,7 +3020,7 @@ wheels = [
 
 [[package]]
 name = "waterledger"
-version = "3.15.0"
+version = "3.16.0"
 source = { editable = "packages/waterledger" }
 dependencies = [
     { name = "openpyxl" },
@@ -3092,7 +3092,7 @@ provides-extras = ["postgis", "era5", "r2"]
 
 [[package]]
 name = "waterledger-models"
-version = "3.15.0"
+version = "3.16.0"
 source = { editable = "packages/waterledger-models" }
 dependencies = [
     { name = "numba" },
