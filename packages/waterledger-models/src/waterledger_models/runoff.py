@@ -236,11 +236,13 @@ def listed(listings):
     return [x for x in listings or [] if x[0] in PARAMS["listed_groups"]]
 
 
-def storm_mg(acres, storm_in, imp=None):
+def storm_mg(acres, storm_in, imp=None, cn_pervious=None):
     """Runoff from one storm of `storm_in` inches on the finished site, million gallons (curve numbers, not the Simple Method, which is for the year).
-    Not routed: a volume, not a peak."""
+    Not routed: a volume, not a peak. cn_pervious: the pervious part's curve number (hydrology.CN_POST_PERV unless given, as for a solar array's
+    ground, design 0014)."""
     imp = PARAMS["after"]["imp"] if imp is None else imp
-    return hydrology.composite_runoff_in(storm_in, imp, hydrology.CN_POST_PERV) * acres * GAL_PER_AC_IN / 1e6
+    cn = hydrology.CN_POST_PERV if cn_pervious is None else cn_pervious
+    return hydrology.composite_runoff_in(storm_in, imp, cn) * acres * GAL_PER_AC_IN / 1e6
 
 
 def salt_events(days):
