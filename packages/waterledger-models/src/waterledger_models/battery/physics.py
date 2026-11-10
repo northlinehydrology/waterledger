@@ -16,6 +16,10 @@ nearly all of it in electrode drying, dry rooms and formation. Each hour:
       is the cooling's consumption. GLERL surface temperatures stand for the intake's [A]: a deep intake is colder, so its chillers run less.
       A plant this size falls under 40 CFR 125.81, whose new-facility rule holds the intake to about what closed-cycle cooling would take;
       the number is true to the physics and the rule is a flagged note (design 0009, Andrew, Nov 9, 2026).
+  chemistry: an LFP plant takes more energy per kWh of cells than an NMC or NCA plant, the same for the same electrode area but over more of it
+      per kWh (Degen et al. 2023: 5.2 kWh per m2 of electrode for every chemistry, 37.5 kWh/kWh for LFP against 22.4 for NMC811, 1.67 times).
+      Thicker LFP electrodes in large prismatic cells narrow that, so the factor is 1.2-1.7 [A]. It scales the plant energy and so its heat
+      and water; the anode slurry water is left as NMC's [A], about 1% of the plant's water.
   process water: purified water for anode slurry (evaporated in the dryers), water leaving in recovered NMP, other purified water (to
       sewer), the purification's reject (to sewer), boiler make-up (mostly lost as steam). Staff water follows the people on site.
 
@@ -39,6 +43,7 @@ from waterledger_models import heat_rejection as hr
 from waterledger_models import once_through as ot
 
 DESIGNS = ("dry", "hybrid", "towers", "lake")
+CHEMISTRIES = ("nmc", "lfp")                  # nmc stands for every nickel cathode, NMC and NCA, the chemistries of the EAs' plants
 HOURS_A_YEAR = 8760.0
 CELLS_PER_HOUR = 1e6 / HOURS_A_YEAR          # kWh of cells an hour at full output, per GWh/yr of capacity
 L_GAL = 3.78541
@@ -127,7 +132,11 @@ SOURCES = {
     "switch_margin": "US 12,426,214 B1 (controller setting), as for data centers [A]",
     "utilization": "Korea Times, Aug 15, 2025 (company reports); Ultium pauses, 2026",
 }
-PARAMETERS = tuple(RANGES) + tuple(hr.EQUIPMENT) + tuple(ot.RANGES)
+# LFP cells' energy per kWh over NMC's, sampled only for an LFP plant (plant.draws): Degen et al. 2023, Fig. 3 and source data (1.67 at the same
+# electrode design), narrowed for the thicker electrodes of large LFP prismatic cells [A] (docs/research/battery-cell-parameters.md, sec. 1).
+LFP = {"lfp_factor": (1.2, 1.7)}
+SOURCES["lfp_factor"] = "Degen et al. 2023, Fig. 3 (1.67), narrowed for thicker LFP electrodes [A]"
+PARAMETERS = tuple(RANGES) + tuple(hr.EQUIPMENT) + tuple(ot.RANGES) + tuple(LFP)
 
 
 def enthalpy(tdb, rh):
@@ -175,9 +184,10 @@ def hourly(tdb, twb, rh, design, p, water_t=None):
         raise ValueError("the lake design needs the lake's surface temperature each hour (water_t)")
     u = p["utilization"]
     made = CELLS_PER_HOUR * u
-    energy = p["energy"] * CELLS_PER_HOUR * (p["fixed_share"] + (1.0 - p["fixed_share"]) * u) * np.ones_like(tdb)
+    per_kwh = p["energy"] * p.get("lfp_factor", 1.0)     # an NMC plant's runs carry no lfp_factor
+    energy = per_kwh * CELLS_PER_HOUR * (p["fixed_share"] + (1.0 - p["fixed_share"]) * u) * np.ones_like(tdb)
     load = p["to_water"] * energy
-    design_load = p["to_water"] * p["energy"] * CELLS_PER_HOUR
+    design_load = p["to_water"] * per_kwh * CELLS_PER_HOUR
     oa_design = p["oa_share"] / (1.0 - p["oa_share"]) * design_load
     outdoor_air = oa_design * np.maximum(enthalpy(tdb, rh) - p["oa_supply_enthalpy"], 0.0) / (p["design_h"] - p["oa_supply_enthalpy"])
     lake = design == "lake"

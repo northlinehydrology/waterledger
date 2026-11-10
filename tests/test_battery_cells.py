@@ -141,3 +141,24 @@ def test_settings_fix_a_plants_own_operating_values():
     assert three["consumed_avg"]["central"] == pytest.approx(six["consumed_avg"]["central"], rel=1e-12)
     with pytest.raises(ValueError):
         plant.draws(2, settings={"cycles": 3.0})
+
+
+def test_lfp_scales_the_plant_energy():
+    """An LFP plant's energy per kWh is the NMC plant's times lfp_factor, and its heat and cooling water follow; an NMC plant's runs are the
+    draws they were before chemistry, with no lfp_factor."""
+    nmc, lfp = central(), central(lfp_factor=1.4)
+    a, b = bp.hourly(TDB, TWB, RH, "towers", nmc), bp.hourly(TDB, TWB, RH, "towers", lfp)
+    assert np.allclose(b["energy"], 1.4 * a["energy"], rtol=1e-12)
+    assert b["evap"].mean() / a["evap"].mean() == pytest.approx(1.4, rel=0.02)
+    assert np.allclose(b["process_withdrawn"], a["process_withdrawn"]) and np.allclose(b["staff"], a["staff"])
+    plain = plant.draws(6)
+    assert all("lfp_factor" not in p for p in plain)
+    with_lfp = plant.draws(6, chemistry="lfp")
+    assert all(1.2 <= p["lfp_factor"] <= 1.7 for p in with_lfp) and with_lfp[-1]["lfp_factor"] == pytest.approx(1.45)
+    assert [{k: v for k, v in p.items() if k != "lfp_factor"} for p in with_lfp] == plain
+    r = {c: plant.run_location(TIMES, TDB, RH, n=10, gwh=10.0, designs=("towers",), chemistry=c)["towers"] for c in bp.CHEMISTRIES}
+    assert r["lfp"]["withdrawn_avg"]["p50"] > 1.15 * r["nmc"]["withdrawn_avg"]["p50"]
+    with pytest.raises(ValueError):
+        plant.draws(2, chemistry="sodium")
+    with pytest.raises(ValueError):
+        plant.draws(2, settings={"lfp_factor": 1.5})

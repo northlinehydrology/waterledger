@@ -15,24 +15,34 @@ DRAWS = 400       # as for data centers (datacenter.physics.DRAWS)
 UTILIZATION = ("full", "sampled")
 
 
-def draws(n=DRAWS, seed=7, utilization="full", settings=None):
+def draws(n=DRAWS, seed=7, utilization="full", settings=None, chemistry="nmc"):
     """The Monte Carlo draws, run by run, then the central run last: [{name: value}]. `settings` fixes parameters in every run, for a scenario: a plant's
-    own operating settings (cycles of concentration, its hybrid's switch_on dry-bulb) or any value its documents give."""
+    own operating settings (cycles of concentration, its hybrid's switch_on dry-bulb) or any value its documents give. An LFP plant's runs also
+    draw lfp_factor (physics.LFP); an NMC plant's runs are the same draws without it."""
     if utilization not in UTILIZATION:
         raise ValueError(f"utilization must be one of {UTILIZATION}, not {utilization!r}")
+    if chemistry not in bp.CHEMISTRIES:
+        raise ValueError(f"chemistry must be one of {bp.CHEMISTRIES}, not {chemistry!r}")
     settings = dict(settings or {})
     unknown = set(settings) - set(bp.PARAMETERS) - {"switch_on"}
     if unknown:
         raise ValueError(f"unknown settings: {sorted(unknown)}")
+    if chemistry != "lfp" and set(settings) & set(bp.LFP):
+        raise ValueError("lfp_factor is an LFP plant's: use chemistry='lfp'")
     v = bp.sample_parameters(n, seed)
     runs = [{k: float(a[i]) for k, a in v.items()} for i in range(n)] + [bp.central_parameters()]
+    if chemistry == "lfp":
+        f = hr.latin_hypercube(bp.LFP, n, seed)
+        runs = [{**p, **({k: float(a[i]) for k, a in f.items()} if i < n else {k: (lo + hi) / 2 for k, (lo, hi) in bp.LFP.items()})}
+                for i, p in enumerate(runs)]
     if utilization == "full":
         runs = [{**p, "utilization": 1.0} for p in runs]
     return [{**p, **settings} for p in runs]
 
 
-def run_location(times, temps, rhs, n=DRAWS, seed=7, gwh=1.0, utilization="full", designs=None, settings=None, water_temps=None):
-    """Monte Carlo for each design at one location, per `gwh` GWh/yr of cell capacity. `settings` fixes parameters in every run (draws). The lake
+def run_location(times, temps, rhs, n=DRAWS, seed=7, gwh=1.0, utilization="full", designs=None, settings=None, water_temps=None, chemistry="nmc"):
+    """Monte Carlo for each design at one location, per `gwh` GWh/yr of cell capacity, for the plant's chemistry (physics.CHEMISTRIES: "nmc" for
+    NMC and NCA, "lfp"). `settings` fixes parameters in every run (draws). The lake
     design runs when `water_temps` is given: the lake's daily long-term average surface temperatures by day of year (366, as NOAA GLERL's;
     once_through.glerl_temperatures). designs defaults to every design the inputs allow.
 
@@ -54,7 +64,7 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, gwh=1.0, utilization="full"
     counts = np.bincount(day_index, minlength=len(uniq))
     hour_years = np.array([t[:4] for t in times])
     year_ends = np.r_[np.flatnonzero(hour_years[1:] != hour_years[:-1]) + 1, len(hour_years)]
-    runs = draws(n, seed, utilization, settings)
+    runs = draws(n, seed, utilization, settings, chemistry)
     out = {}
     for design in designs:
         acc = {}

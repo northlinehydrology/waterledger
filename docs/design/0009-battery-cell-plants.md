@@ -147,7 +147,7 @@ says which parameters drive the result.
   with the grid change in 1.11.
 - **`waterledger`:**
   - `BatteryCellPlant(Facility)` with `kind="battery_cells"`, `capacity_gwh`, `cooling` (`towers`, `hybrid`, `dry`) and
-    an optional `chemistry` (recorded, with no effect on water for now: the EAs show no difference by chemistry);
+    an optional `chemistry` (`nmc` for NMC and NCA, or `lfp`; see "Chemistry, revised" below);
   - `Site.estimate()` dispatches on the facility.
 
   Site and Estimate still assume a data center in a few places (for example `it_mw` in the site's BMI config). Those
@@ -220,6 +220,20 @@ says which parameters drive the result.
    scenario), or input (a fact about the plant or place: size, design, chemistry, water reuse, later source water).
    The sensitivity analysis moves parameters from sampled to set. A set parameter keeps its source and stays in
    the methods.
+
+## Chemistry, revised (Nov 10, 2026; for Andrew to agree)
+
+The note first said chemistry would be recorded with no effect, because the EAs show no difference. But every EA plant
+with a figure makes nickel cells (NMC at BlueOval SK, NCA at StarPlus, NMC slurry at Ultium), so the EAs cannot show
+one. Ford's Marshall plant, a Michigan case, makes LFP cells. The physics does show a difference: Degen et al. (2023)
+find the same energy per m² of electrode for every chemistry, and LFP needs about 1.67 times the electrode area per kWh
+(37.5 kWh/kWh against 22.4 for NMC811). Large LFP prismatic cells with thicker electrodes narrow that.
+
+So `chemistry="lfp"` samples an `lfp_factor` of 1.2-1.7 [A] on the plant's energy per kWh, and its heat and cooling
+water follow. The anode slurry water stays as NMC's [A], about 1% of the plant's water. An NMC plant's draws are
+unchanged. At West Michigan weather the median withdrawal of a 43.75 GWh/yr towers plant goes from 1.05 to 1.46 MGD (about 40%). No LFP
+plant has a public water figure to check it against; that gap is stated. Dropping the factor (back to recorded only)
+is one commit to revert.
 
 ## Check at Lansing after decisions 4, 6 and 7 (Nov 9, 2026)
 
