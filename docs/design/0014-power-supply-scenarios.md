@@ -273,8 +273,10 @@ become public API in the release that carries them, under the 3.x rules (0010, d
 ## Order of work, each step its own commit
 
 1. The hook changes in `runs` (setup, index, `Supplied`), with the runner's identity test green.
-2. The gas model: physics, parameters, `GasPlantBmi`, checks 1, 2 and 4, the sensitivity analysis.
-3. ERA5 radiation and 100 m wind in `waterledger_data.era5`; `supply/pv.py` and `supply/wind.py` against pvlib; check 5.
+2. The gas model: physics, parameters, `GasPlantBmi`, checks 1, 2 and 4, the sensitivity analysis; first, the research on where
+   new gas plants' blowdown goes (decision 10).
+3. ERA5 radiation and 100 m wind in `waterledger_data.era5`; `supply/pv.py` and `supply/wind.py` against pvlib; check 5; then
+   renewables' land, runoff and construction (decision 2's note: the research first, the runoff through `runoff`).
 4. Dispatch and scenarios as the runner's `extra`; balance tests; check 6.
 5. The EIA aggregate check (3), as a methods script writing only aggregates.
 6. `GasPlant` as a registered facility and `est.supply`; READMEs, docs, the methods log; a release on Andrew's word.
