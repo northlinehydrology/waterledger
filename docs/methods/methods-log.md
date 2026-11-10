@@ -2078,3 +2078,91 @@ PNM (5). Wisconsin has PJM (10) and SPP (1).
 - **Dry plants.** A dry plant draws more power, so it takes slightly more water at the power plants than hybrid (Michigan
   MISO 0.576 MGD).
 - **The marginal mix.** It sits below the average in PJM (177 against 283) and about level in MISO and ERCOT.
+
+## Nov 10, 2026: battery cell plants, and one model version for every water user type (model 1.12)
+
+The design is [0009](../design/0009-battery-cell-plants.md); the evidence is in
+[battery-plant-water.md](../research/battery-plant-water.md) and [battery-cell-parameters.md](../research/battery-cell-parameters.md).
+This entry is the long form of what model 1.12 adds. No data center or place number changes.
+
+**What.** `waterledger_models.battery` estimates a battery cell plant's heat, electricity, fuel and water hour by hour,
+per GWh/yr of cell capacity, at full output by default (0009, decision 2) or over a sampled utilization.
+- **Water follows heat.** Making a kWh of cells takes 23-42 kWh of electricity and fuel [A] (Kuki et al. 2025, Table 1;
+  UKBIC 2022; Degen et al. 2023; Dai et al. 2019), nearly all in electrode drying, dry rooms and formation. A share of
+  it (0.40-0.66 [A]) reaches the cooling water, part on chilled water and part on a warmer process loop. The dry rooms'
+  make-up air adds a load that follows the outdoor enthalpy. The towers, hybrid and dry coolers, loops, chillers, pumps
+  and fans are the data centers' (`heat_rejection`), and the lake design is the data centers' once-through cooling
+  (`once_through`, Diehl et al. 2013). The cycles of concentration are the data centers' 3-6 (Andrew, Nov 9), since the
+  plants' own documents don't support another range.
+- **Process and staff water**: purified water for anode slurry (evaporated in the dryers), water leaving in recovered
+  NMP, other purified water, the purification's reject, boiler make-up and blowdown; staff water follows the people on
+  site. Coil condensate is not counted [A] (under 1% of the plant's water).
+- **Returns by destination.** Tower blowdown, process returns and staff water go to the sewer, as every EA with a
+  discharge sends them (Lansing's 0.56 MGD to the sanitary sewer, DOE/EA-2189-S1, p. 19; BlueOval SK's to the Megasite
+  and Hardin County plants, DOE/EA-2201, pp. 22 and 36; DOE/EA-1690, Table 2-5). A plant with its own permit may
+  discharge blowdown directly [A]. The lake design's once-through water, less the evaporation its heat drives, goes back
+  to the source.
+- **Balances.** Energy closes every hour (electricity, fuel and the outdoor air's heat against the heat rejected, the
+  exhaust, flue and envelope losses and the fans' heat). Mass closes: withdrawn = consumed + returned, returned =
+  to_sewer + to_source. Both are held by tests.
+- **Coupling.** `BatteryCellBmi` (BMI 2.0) reports Basin Ledger's water user roles, the two returns, electricity and fuel;
+  each step matches the hourly physics to 1e-12. Water limits and dissolved mass wait for the plant's limited physics.
+
+**Chemistry (Andrew agreed, Nov 10).** 0009 first had chemistry recorded with no effect, because the EAs show no
+difference. Every EA plant with a water figure makes nickel cells, so the EAs cannot show one. Degen et al. (2023) find
+the same energy per m2 of electrode for every chemistry (5.2 kWh/m2) and LFP needing about 1.67 times the area per kWh
+(37.5 kWh/kWh against 22.4 for NMC811). Thicker LFP electrodes in large prismatic cells narrow that, so an LFP plant
+samples a factor of 1.2-1.7 [A] on its energy per kWh; its heat and cooling water follow. The anode slurry water stays as
+NMC's [A], about 1% of the plant's water. At West Michigan weather, a 43.75 GWh/yr towers plant's median withdrawal goes
+from 1.05 to 1.46 MGD. Considered: chemistry recorded only, which would give an LFP plant (Ford's Marshall plant, in
+Michigan) an NMC plant's water. Open: no LFP plant has a public water figure to check the factor against.
+
+**Checked, not fit** (Nov 10). Each plant with a projection in a DOE environmental assessment, at its own location
+(Open-Meteo hourly weather, 2015-2024) and size, towers, NMC, full output, 200 draws, p10-p90 (median) in MGD
+(`examples/battery_cell_plants_ea_check.py`). Every EA figure is a projection made before the plant ran.
+
+| Plant | GWh/yr | Withdrawn | Consumed | To sewer |
+|---|---|---|---|---|
+| BlueOval SK, Stanton, TN | 45 | 0.89-1.56 (1.20); EA 1.2 | 0.65-1.13 (0.87); EA 0.87 | 0.22-0.44 (0.30); EA 0.33 |
+| BlueOval SK, Glendale, KY | 82 | 1.59-2.73 (2.11); EA 2.4 | 1.14-1.99 (1.54); EA 1.74 | 0.39-0.78 (0.54); EA 0.66 |
+| Ultium, Spring Hill, TN | 50 [A] | 0.98-1.70 (1.31); EA 1.4 | | |
+| Ultium, Spring Hill, peak day | 50 [A] | 1.23-2.22 (1.66); EA 1.85 | | |
+| StarPlus, Kokomo, IN, maximum against the peak day | 67 | 1.65-3.00 (2.23); EA 2.59 | | |
+| KORE Power, Buckeye, AZ | 12 | 0.25-0.43 (0.33); EA 0.45 | | |
+| Ultium, Delta Twp (Lansing), MI | 43.75 | 0.80-1.38 (1.06); EA 1.5-1.7 | 0.58-1.01 (0.78); EA 0.94-1.14 | 0.20-0.40 (0.27); EA 0.56 |
+
+- Four of six inside the 80% range, and Stanton's three figures on the medians. Buckeye is just above, Lansing well above.
+- Lansing projects the most water per GWh/yr of any plant (34,300-38,900 gal/day against Stanton's 26,700 and Glendale's
+  29,300). The "consumption about 20% low" read from Lansing on Nov 9 was about Lansing's projection, not a bias: at
+  Stanton and Glendale the consumed share matches. The evaporative ratio below 1 (Rutberg et al. 2011) stays a stated
+  departure for every user.
+- Spring Hill's size is not in its EA; at GM's 50 GWh/yr (unverified) its median is 6% below. Its peak-to-average, 1.32,
+  against the model's 1.27-1.37 across these plants, is the one check of the peak day.
+- Buckeye's "closed-loop chiller water" describes the chilled loop, not how the heat leaves, so it is no check of the dry
+  design (which gives 0.05 MGD there). There is no public check of the dry design.
+- Kokomo's 2.59 MGD is a maximum, and its EA's own figures disagree (3,300 gpm is 4.75 MGD).
+
+**Sensitivity** (Nov 10; `docs/methods/sensitivity/battery/`). Sobol' (Saltelli et al. 2010, Jansen 1999) and Morris
+indices at full output, NMC, West Michigan weather, N = 4096, with the data center analysis's functions unchanged.
+- **Towers**: the plant energy per kWh (ST 0.50) and its share to the cooling water (0.35) carry about 85% of the
+  withdrawal's variance. Cycles carry the sewer flow (0.56) but little of the withdrawal (0.07). The outdoor air share
+  moves only the peak day (0.10-0.13).
+- **Dry and hybrid**: process water leads, boiler make-up first (withdrawal ST 0.27 dry, 0.19 hybrid).
+- **Electricity**: the plant energy and its electricity share, about 0.5 each.
+- The one warning is the lake design's withdrawal, whose S1 sum to 1.03-1.05: sampling error.
+- So the parameters to source next are the plant energy per kWh (a measured figure, when any plant reports one) and
+  boiler make-up. None has a single sourced value, so none moves from sampled to set (0009, decision 7).
+
+**One model version (Andrew, Nov 10).** Design 0010 had each water user type carry its own model version. Andrew set
+that aside: most number changes are to shared pieces (the heat rejection, the grid, the weather correction, the places'
+water and power), which would raise several versions at once, and the place data would need its own. So
+`MODEL_VERSION` stays one number for every type, raised by a minor step when any number changes, and
+`waterledger_models.MODELS` records from 1.12 the types each version changes and the model of the snapshots it reads.
+Model 1.12 changes battery plants only, so it skips the snapshots and reads model 1.11's snapshots and cell runs
+(`snapshot_model()`). Nothing is rebuilt to the same numbers, and a data center estimate under 1.12 names model 1.11,
+the model of the data it read. The golden cooling data is identical apart from its label.
+
+**What doesn't change.** Every data center result matches model 1.11 to the last bit (the heat rejection, once-through
+cooling and daily statistics moved out of `datacenter` unchanged, held by tests against values from before the moves).
+waterledger.org is unchanged, and battery plants don't go on it until Andrew decides (0009, decision 5). The plant's
+place-based estimate comes with 0010's water user types.
