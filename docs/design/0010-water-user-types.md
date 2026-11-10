@@ -113,9 +113,10 @@ formation, dry rooms and NMP condensers; a warmer process loop) is sampled inste
 results for data centers because it doesn't scale with size; that is how they store results, not a difference in what
 is reported.
 
-**Battery cell plants against the list** (Nov 10): 1 lacks `assist`; 2-4 lack the shared runner, so no grid water and
-no full-capacity peak when utilization is sampled; 5, 9, 10 and 11 done; 6 has the roles but no limit or dissolved mass;
-7, 8 and 12 wait on this note and the site decision.
+**Battery cell plants against the list** (Nov 10, for 3.16.0): 1, 3, 4, 5, 9, 10 and 11 done (assist through the shared
+pads, the full-capacity peak and grid water through the shared `grid.RunWater`); 2 waits for the shared runner (the loop
+is still the type's own); 6 has the roles but no limit or dissolved mass; 7, 8 and 12 wait on this note and the site
+decision.
 
 **The shared runner.** `runs.run_location(model, times, temps, rhs, size, designs=None, utilization=..., settings=None,
 water_temps=None, grid=None, n, seed)`. `model` is the type's module: `DESIGNS`, its parameter space, `hourly` (per unit
@@ -212,7 +213,7 @@ must also stay green.
 
 ## Battery cell plants as the first new type
 
-`BatteryCellPlant(capacity_gwh, design, chemistry="nmc", utilization="full", settings={})`, designs dry, hybrid,
+`BatteryCellPlant(capacity_gwh, design, chemistry="nmc", utilization="full", settings={})`, designs dry, assist, hybrid,
 towers and lake, runs at the place. Extras: site energy per kWh of cells, and water withdrawn and consumed per kWh.
 Grid water comes through the shared function, from the plant's own hourly electricity. Backup generators: none until a
 source sizes them [A]. Blowdown phosphorus: the plant's tower blowdown.
@@ -257,10 +258,13 @@ The number came early, but it is what users see, so the packages are held to it 
 ## Order of work, each step its own commit with the identity test green
 
 1. The identity snapshot of today's estimates in every state.
-2. Grid water as a shared function on any hourly electricity; the data center run calls it.
+2. Grid water as a shared function on any hourly electricity; the data center run calls it. **Done Nov 10**
+   (`grid.RunWater`; the battery run calls it too). With it, assist's pads moved to `heat_rejection`, and battery plants
+   took both, with the full-capacity peak: the data center Monte Carlo matches its record to the bit.
 2a. The shared runner (`runs`), with the standard loads; data centers onto it with their kernel, numbers identical; battery
-   cell plants onto it, gaining grid water, the full-capacity peak and the `assist` design (proposed Nov 10, so the
-   battery model is released on the standard rather than beside it; Andrew, Nov 10: 3.16.0 waits for it).
+   cell plants onto it. Andrew (Nov 10) first held 3.16.0 for it, then chose to ship battery plants in 3.16.0 with the
+   gaps closed through the shared pieces (step 2), and to build the runner with the power supply types in the next
+   release, since a supply scenario takes each run's hourly electricity, which the runner hands over.
 3. The registry and the `Facility` contract; `DataCenter` onto it (`results`, `bmi_config`, hooks); providers reduced to
    the place side.
 4. Downstream onto the hooks: `before_after`, runoff loads, `by_design`, `to_bmi_config`.

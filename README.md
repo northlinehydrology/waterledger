@@ -100,11 +100,15 @@ center or place number, so it skips the snapshots and reads model 1.11's (`water
 - **The plant** (`waterledger_models.battery`): the energy to make a kWh of cells (nearly all of it electrode drying, dry
   rooms and formation), the share of it reaching the cooling water and the outdoor air load, hour by hour on the shared
   heat rejection; process water (anode slurry, water leaving in recovered NMP, boiler make-up, other purified water and the
-  purification's reject) and staff water. Designs `dry`, `hybrid`,
-  `towers` and `lake`; full output by default, or a sampled utilization. LFP plants take 1.2-1.7 times the plant energy per
+  purification's reject) and staff water. Designs `dry`, `assist`, `hybrid`, `towers` and `lake`; full output by default,
+  or a sampled utilization. LFP plants take 1.2-1.7 times the plant energy per
   kWh [A] (Degen et al. 2023: the same energy per m2 of electrode, about 1.67 times the area per kWh).
 - **Returns by destination**: tower blowdown, process returns and staff water to the sewer; the lake design's once-through
   water, less its forced evaporation, to the source.
+- **What data centers get, battery plants get** ([design 0010](docs/design/0010-water-user-types.md)'s standard treatment,
+  Nov 10): water at the power plants (`grid=`, through the same `grid.RunWater`), the full-capacity peak day and highest
+  hour, and every design the shared equipment allows. Still to come: the shared Monte Carlo runner, and water limits and
+  dissolved mass in `BatteryCellBmi`.
 - **Checked, not fit**, at the six U.S. plants with projected water in a DOE environmental assessment, each at its own
   location and size (`examples/battery_cell_plants_ea_check.py`): four inside the model's 80% range, Stanton, TN on the
   medians, Buckeye, AZ just above, and Delta Township (Lansing), MI well above, the most water per GWh/yr of any
@@ -112,8 +116,9 @@ center or place number, so it skips the snapshots and reads model 1.11's (`water
 - **Sensitivity** (Sobol' and Morris, `docs/methods/sensitivity/battery/`): with towers, the plant energy per kWh and its
   share to the cooling water carry about 85% of the variance in withdrawal; cycles of concentration carry the sewer flow;
   boiler make-up leads the dry and hybrid designs.
-- **Shared by every water user**: the heat rejection (`heat_rejection`), Great Lake once-through cooling (`once_through`)
-  and daily statistics (`daily`) moved out of `datacenter` unchanged, and the old names still import. Cycles of
+- **Shared by every water user**: the heat rejection with assist's pads (`heat_rejection`), Great Lake once-through cooling
+  (`once_through`), daily statistics (`daily`) and water at the power plants in a run (`grid.RunWater`) moved out of
+  `datacenter` unchanged, and the old names still import. Cycles of
   concentration and the hybrid's switch margin are each user's own (`heat_rejection.OPERATING`).
 - The plant's place-based estimate (`wl.place(...)`) comes with design 0010's water user types; waterledger.org is
   unchanged.

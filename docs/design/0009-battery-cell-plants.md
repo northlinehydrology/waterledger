@@ -2,7 +2,8 @@
 
 Status: **decided Nov 9, 2026 (Andrew; answers and decisions at the end). The model is built on branch battery-plant-model
 (Nov 10: returns by destination, peak-hour power, chemistry, `BatteryCellBmi`, the check at every EA plant, the sensitivity
-analysis), in 3.16.0 as model 1.12. The facility in `waterledger` waits on 0010's contract. The chemistry revision
+analysis; then, under 0010's standard treatment, the assist design, water at the power plants and the full-capacity peak),
+in 3.16.0 as model 1.12. The facility in `waterledger` waits on 0010's contract. The chemistry revision
 below is agreed (Andrew, Nov 10).** Evidence: `docs/research/battery-plant-water.md`
 (primary sources with page numbers). Cathode materials plants are a separate model with their own note (0012, to follow).
 
@@ -89,7 +90,8 @@ For each hour of the cell's weather (the same ERA5 hours the data center model r
    - `hybrid`: dry most of the year, evaporative in warm weather;
    - `dry`: air-cooled chillers, as at KORE Power.
 
-   The `assist` and `lake` designs belong to data centers and are left out.
+   The `assist` and `lake` designs belong to data centers and are left out. (Revised: the lake design was added on Nov 9, and assist on
+   Nov 10 under 0010's standard treatment, since every type gets every design the shared equipment allows.)
 5. **Process water:**
    - purified water for anode slurry, evaporated in the dryers: consumed;
    - reverse osmosis reject and boiler blowdown: returned;

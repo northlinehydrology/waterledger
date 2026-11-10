@@ -17,15 +17,16 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
   or without evaporative assist, for one plant (`run_location`) or each (`run_plants`); staff water at the campus's size.
 - `battery`: battery cell plants (design 0009): `physics`, the plant's heat, electricity, fuel and water hour by hour per
   GWh/yr of cells for NMC or LFP cells, with returns to the sewer and to the source; `plant.run_location`, the Monte Carlo at
-  one location; `bmi.BatteryCellBmi` (`[bmi]`).
-- `heat_rejection`: cooling towers, hybrid and dry coolers, the loops' chillers, pumps and fans, their equipment ranges,
+  one location, with the data centers' designs, full-capacity peak and water at the power plants; `bmi.BatteryCellBmi` (`[bmi]`).
+- `heat_rejection`: cooling towers, hybrid and dry coolers, assist's adiabatic pads, the loops' chillers, pumps and fans, their equipment ranges,
   psychrometrics and Latin hypercube sampling, shared by every water user; each user keeps its own operating settings
   (`OPERATING`: cycles of concentration, the hybrid's switch margin).
 - `once_through`: once-through cooling from a Great Lake, shared by every water user: withdrawal from the heat and the rise,
   forced evaporation (Diehl et al. 2013), the lake's ranges and NOAA GLERL temperatures.
 - `daily`: daily totals and their statistics (average, 1-in-10-year peak day, months, worst year), shared by every water user.
 - `grid`: water at the power plants supplying any user's hourly electricity, at grid level (design 0008): a balancing
-  authority's table by month, UTC hour and the user's temperature, average and marginal, with `GridWaterBmi` (`[bmi]`).
+  authority's table by month, UTC hour and the user's temperature, average and marginal, with `GridWaterBmi` (`[bmi]`);
+  `RunWater`, the plant water in any user's Monte Carlo, which the data center and battery runs both call.
 - `datacenter.lake`: lake-source (once-through) cooling for a campus, on `once_through`.
 - `datacenter.ensemble`: vectorized ensembles as xarray, dask across locations (`[ensemble]`).
 - `datacenter.bmi`: `CoolingWaterBmi` and `LakeCoolingBmi`, CSDMS BMI 2.0 with CSDMS Standard Names (`[bmi]`), on the public

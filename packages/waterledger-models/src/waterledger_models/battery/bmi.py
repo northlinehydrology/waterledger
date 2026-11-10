@@ -7,7 +7,7 @@ One plant is one scalar grid point. A run uses a single parameter set (the centr
 configuration file); the Monte Carlo lives in waterledger_models.battery.plant.
 
 Configuration (a YAML file, or the same keys as a dict passed to initialize):
-    design: dry | hybrid | towers | lake        (default towers)
+    design: dry | assist | hybrid | towers | lake   (default towers)
     capacity_gwh: 10                            (cell capacity, GWh/yr; sets the plant's energy, its staff and so everything else)
     chemistry: nmc | lfp                        (default nmc, for NMC and NCA; lfp takes the central lfp_factor unless one is set)
     time_step: 3600                             (seconds; the model is hourly)

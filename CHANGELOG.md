@@ -17,22 +17,31 @@ Package changes (code). Changes to the numbers are listed by model version on th
 
 - **Battery cell plants** ([design 0009](docs/design/0009-battery-cell-plants.md); methods log, Nov 10), the second water
   user. `waterledger_models.battery`: `physics.hourly`, the plant's heat, electricity, fuel and water hour by hour per
-  GWh/yr of cells, for the `dry`, `hybrid`, `towers` and `lake` designs; `plant.run_location`, the Monte Carlo at one
+  GWh/yr of cells, for the `dry`, `assist`, `hybrid`, `towers` and `lake` designs; `plant.run_location`, the Monte Carlo at one
   location (full output by default, or `utilization="sampled"`; `settings=` fixes a plant's own values); `bmi.BatteryCellBmi`,
   BMI 2.0 on `ScalarPointBmi`, checked by the CSDMS bmi-tester in CI. Energy and mass close every hour, held by tests.
   - **Returns by destination**: `to_sewer` (tower blowdown, process returns, staff water) and `to_source` (the lake design's
     once-through water less its forced evaporation); `returned` is their sum.
   - **Chemistry**: `chemistry="nmc"` (NMC and NCA, the default) or `"lfp"`, which samples `lfp_factor` 1.2-1.7 [A] on the
     plant energy per kWh (Degen et al. 2023).
-  - **Peak-hour power**: `power_mw_peak_1in10`, the 1-in-10-year highest hour.
+  - **As data centers have it** ([design 0010](docs/design/0010-water-user-types.md)'s standard treatment): water at the
+    power plants through `grid=` (`grid_<BA>_<kind>_avg` and `_peak_1in10`); `withdrawn_peak_full_capacity` and
+    `power_mw_peak_1in10`, the 1-in-10-year highest hour, at full output, so a sampled-utilization run is also worked at
+    full output; and the `assist` design, the data centers' adiabatic pads on the plant's dry coolers.
+  - **Not yet**, on the shared runner in a coming release: the Monte Carlo loop is still the type's own, and
+    `BatteryCellBmi` has no withdrawal limit, dry mode or dissolved mass (design 0006), which need the plant's limited
+    physics.
   - `examples/battery_cell_plants_ea_check.py` runs the model at the six U.S. plants with a DOE EA water projection;
     `docs/methods/sensitivity/battery/` holds its Sobol' and Morris analysis.
   - The place-based estimate (`wl.place(...)`) comes with design 0010; waterledger.org is unchanged.
 - **Shared by every water user**, moved out of `datacenter` unchanged, the old names still importing:
   `heat_rejection` (towers, hybrid and dry coolers, loops, chillers, pumps and fans, psychrometrics, sampling), `once_through`
-  (Great Lake once-through cooling, GLERL temperatures) and `daily` (`groups`, `daily_stats`, `summarize`). Cycles of
+  (Great Lake once-through cooling, GLERL temperatures) and `daily` (`groups`, `daily_stats`, `summarize`); assist's pads
+  (`heat_rejection.pad_depression`, `coil_air`, `pad_water`, and the `assist_eff` and `assist_bleed` ranges in `EQUIPMENT`);
+  and water at the power plants, `grid.RunWater`, which the data center and battery runs both call. Cycles of
   concentration and the hybrid's switch margin are each user's own (`heat_rejection.OPERATING`); data centers keep 3-6.
-  Every data center result is identical to the last bit.
+  Every data center result is identical to the last bit, held by a record of the Monte Carlo from before the moves
+  (`tests/data/datacenter_before_runner.json`: every plant and design, compiled and NumPy, with hourly grid water).
 - **One model version for every type** (Andrew, Nov 10; design 0010, decision 6). `waterledger_models.MODELS` records,
   from 1.12, the types each version changes and the model of the snapshots it reads, and `snapshot_model()` gives it.
   Model 1.12 changes battery plants only and reads model 1.11's snapshots and cell runs: `national.data.snapshot_for_model`
