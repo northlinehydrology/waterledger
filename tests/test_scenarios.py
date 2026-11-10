@@ -96,3 +96,23 @@ def test_scenarios_must_be_sized_and_well_formed():
         S.Supply({"x": S.Scenario(pv_share=0.5)}, WX, LAT, LON, N)
     with pytest.raises(ValueError, match="residual"):
         S.Supply({"x": S.Scenario(residual="battery")}, WX, LAT, LON, N)
+
+
+def test_renewables_land_runoff_and_construction():
+    """Decision 2's note (defaults agreed Nov 10): a sized scenario's PV and wind land, the runoff on the land they change, a storm before and
+    after, and one-time construction sediment and water, apart from annual water."""
+    from waterledger_models.supply import land
+    sc = S.Scenario(pv_mw=100.0, wind_mw=101.1)
+    f = land.footprint(sc, rain_in=36.0, storm_in=2.5)
+    pv, wind = f["pv"], f["wind"]
+    assert pv["array_acres"] == pytest.approx(550.0) and pv["fenced_acres"] == pytest.approx(550.0 / 0.7)
+    assert 0.10 < pv["impervious_share"] < 0.20                      # rows along the contours, plus roads and pads
+    assert pv["runoff_gal"]["after"][1] > pv["runoff_gal"]["now"][1] and pv["storm_mg"]["after"] > pv["storm_mg"]["before"] * 0.5
+    assert pv["construction_water_gal"] == pytest.approx(100 * 0.5 * 325851.0)
+    assert pv["construction_sediment_with_basins_t"][1] < pv["construction_sediment_t"][1]
+    assert wind["turbines"] == 30 and wind["permanent_acres"] == pytest.approx(101.1 * 0.3 * 2.47105)
+    assert wind["construction_water_gal"] == 30 * 30000.0 and wind["foundation_concrete_m3"] == 30 * 700.0
+    assert wind["permanent_acres"] < 0.01 * wind["total_acres"]       # wind's footprint is small against its spread
+    assert land.pv_site(10, rows="across")["impervious_share"] > land.pv_site(10, rows="contour")["impervious_share"]
+    with pytest.raises(ValueError):
+        land.pv_site(10, mount="floating")

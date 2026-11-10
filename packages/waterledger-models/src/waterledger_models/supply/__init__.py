@@ -5,5 +5,6 @@ plant is a type (waterledger_models.gas).
     pv         PVWatts' chain (Dobos 2014), tested against pvlib
     wind       the IEA 3.4 MW reference turbine's power curve
     scenario   supply scenarios as the shared runner's extra: dispatch hour by hour, sizing, what each scenario reports
+    land       solar and wind projects' land, runoff and one-time construction water and sediment, through runoff
 """
-from waterledger_models.supply import pv, scenario, wind  # noqa: F401
+from waterledger_models.supply import land, pv, scenario, wind  # noqa: F401
