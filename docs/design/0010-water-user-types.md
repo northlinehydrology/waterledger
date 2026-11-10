@@ -1,7 +1,7 @@
 # 0010: Water user types: one contract for every large water user
 
-Status: **proposed, Nov 9, 2026. Decisions 4 and 8 agreed (Andrew, Nov 9); 6 revised after his question; the rest
-for review. No code yet.** Battery cell plants (0009) wait on it, so they are
+Status: **proposed, Nov 9, 2026. Decisions 1, 2, 3, 4, 7 and 8 agreed (Andrew, Nov 9); 6 revised after his question;
+5 explained further, for review. No code yet.** Battery cell plants (0009) wait on it, so they are
 the first type added under it rather than beside it. Cathode materials plants move to 0011.
 
 ## Why
@@ -213,16 +213,24 @@ The number came early, but it is what users see, so the packages are held to it 
 
 ## Decisions to agree
 
-1. **Roles.** Basin Ledger's roles at every level, plus return by destination (`to_sewer`, `to_source`) and `fuel_mw`.
-2. **Three pieces per type, a registry and a shared conformance test.** A type is added by writing its model, facility
+1. **Roles. Agreed (Andrew, Nov 9).** Basin Ledger's roles at every level, plus return by destination (`to_sewer`, `to_source`) and `fuel_mw`.
+2. **Three pieces per type, a registry and a shared conformance test. Agreed (Andrew, Nov 9).** A type is added by writing its model, facility
    and tests and registering it.
-3. **Downstream reads only roles and hooks.** The hooks to start: `backup_generator_mw` and `cooling_blowdown`. New
+3. **Downstream reads only roles and hooks. Agreed (Andrew, Nov 9).** The hooks to start: `backup_generator_mw` and `cooling_blowdown`. New
    hooks are added to the contract, with a "none" default, never as a branch on type.
 4. **Type-specific measures. Agreed (Andrew, Nov 9).** `Estimate.extras`, a dict of named ranges (`pue`, `peak_pue` for data centers;
    `site_kwh_per_kwh` for cell plants). `Electricity.pue` and `peak_pue` stay as they are for data centers through 3.x,
    so nothing that reads them breaks, and are None for other types. They move to `extras` only at 4.0.
-5. **Providers supply the place; facilities compute.** Michigan's page-parity rule code stays where the page mirrors
-   it.
+5. **Providers supply the place; facilities compute.** Today each provider does two jobs: the place's (stored results
+   for its cell, staff runs, lake results, the facts the default rules read: systems mapped, the nearest sizable
+   system, the nearest sewer plant and its spare design flow) and the data center's (which results for the design,
+   scaled by `it_mw`; the default rules on "towers or hybrid"; electricity and grid water). With both in each provider,
+   every provider must know every type: providers times types. Split, a provider knows places and a facility knows
+   its type, so adding a type touches no provider and adding a state touches no type. Michigan's page computes in the
+   browser, mirroring `scenario.py`, with parity tests; `DataCenter` keeps calling `scenario.py` in Michigan as today,
+   so the page is not touched, and new types use the general version of the same rules. The two copies of the rules
+   (Michigan's and the national one) exist today and can be merged when the page is next reworked. The alternative,
+   facilities reading snapshots themselves, would put each state's file layout into every type.
 6. **Models and stored results are managed separately** (revised after Andrew asked, Nov 9, whether pre-packaged
    results should be handled apart from the models). Today `MODEL_VERSION` does two jobs: it names the numbers, and
    it keys the snapshots so a package reads only data built on its own model. The second job exists only because data
@@ -239,7 +247,7 @@ The number came early, but it is what users see, so the packages are held to it 
      type never forces a rebuild, and a type gains stored results when they are worth precomputing (for battery
      plants, Andrew's call, with the site decision).
    - `latest.json`'s `by_model` stays keyed by the data center's version through 3.x, with a per-type map beside it.
-7. **Release.** Steps 1-5 change no numbers and add to the public API without breaking it, so they and battery plants
+7. **Release. Agreed (Andrew, Nov 9).** Steps 1-5 change no numbers and add to the public API without breaking it, so they and battery plants
    ship together as 3.16.0, a minor release.
 8. **Stability. Agreed (Andrew, Nov 9).** The contract is public API from 3.16, under the 3.x promise (public API has
    been committed since 1.x, and following it mostly serves the project); deprecations warn and wait for 4.0; the
