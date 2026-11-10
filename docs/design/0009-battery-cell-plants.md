@@ -1,6 +1,8 @@
 # 0009: Battery cell plants, the second water user
 
-Status: **decided Nov 9, 2026 (Andrew; answers and decisions at the end). Built on branch battery-plant-model, not released.** Evidence: `docs/research/battery-plant-water.md`
+Status: **decided Nov 9, 2026 (Andrew; answers and decisions at the end). The model is built on branch battery-plant-model
+(Nov 10: returns by destination, peak-hour power, chemistry, `BatteryCellBmi`, the check at every EA plant, the sensitivity
+analysis); not released. The facility in `waterledger` waits on 0010's contract. The chemistry revision below is for Andrew to agree.** Evidence: `docs/research/battery-plant-water.md`
 (primary sources with page numbers). Cathode materials plants are a separate model with their own note (0012, to follow).
 
 ## What and why
@@ -286,3 +288,12 @@ Nothing was tuned to these.
   no public check of the dry design.
 - **Kokomo's** 2.59 MGD is a maximum, and its EA's own two numbers disagree (3,300 gpm is 4.75 MGD). Against the
   model's 1-in-10-year peak day it falls inside the range.
+
+## Sensitivity (Nov 10, 2026)
+
+Sobol' indices at full output, NMC, West Michigan weather, N = 4096 (`docs/methods/sensitivity/battery/`). For towers
+the plant's energy per kWh (ST 0.50) and its share to the cooling water (0.35) carry about 85% of the withdrawal's
+variance; cycles of concentration carry the sewer flow (0.56) but little of the withdrawal (0.07). For dry and hybrid,
+process water leads, and boiler make-up (0.2-2.0 L/kWh [A]) leads it. So the parameters to source next are the plant
+energy figure (a measured one, when any plant reports it) and boiler make-up. Under decision 7 none of these moves from
+sampled to set yet: none has a single sourced value.

@@ -1,0 +1,688 @@
+{
+ "model": "battery cell plants, design 0009",
+ "code_commit": "1212fa5d953943c2cbe7287ef5ef732b9b3cb62b",
+ "numpy": "2.4.6",
+ "seed": 20261110,
+ "weather": "Open-Meteo archive, best match (ERA5, ERA5-Land and, from 2017, IFS HRES), hourly 2 m temperature and relative humidity (CC BY 4.0), 42.88 N 85.52 W (West Michigan), 2023-2024",
+ "hours": 17544,
+ "gwh": 10.0,
+ "utilization": 1.0,
+ "chemistry": "nmc",
+ "n_base": 4096,
+ "morris_trajectories": 100,
+ "morris_levels": 4,
+ "bootstrap": 1000,
+ "model_runs": {
+  "dry": 176132,
+  "hybrid": 176132,
+  "towers": 176132,
+  "lake": 188720
+ },
+ "parameters": {
+  "dry": {
+   "energy": [
+    23.0,
+    42.0
+   ],
+   "fixed_share": [
+    0.3,
+    0.5
+   ],
+   "elec_share": [
+    0.35,
+    0.7
+   ],
+   "to_water": [
+    0.4,
+    0.66
+   ],
+   "chilled_share": [
+    0.6,
+    0.85
+   ],
+   "chilled_supply": [
+    5.0,
+    10.0
+   ],
+   "process_supply": [
+    24.0,
+    32.0
+   ],
+   "oa_share": [
+    0.05,
+    0.3
+   ],
+   "oa_supply_enthalpy": [
+    18.0,
+    34.0
+   ],
+   "anode_water": [
+    1.0,
+    2.0
+   ],
+   "shipped_water": [
+    0.0,
+    1.0
+   ],
+   "other_purified": [
+    0.2,
+    1.0
+   ],
+   "ro_recovery": [
+    0.65,
+    0.8
+   ],
+   "boiler_makeup": [
+    0.2,
+    2.0
+   ],
+   "boiler_blowdown": [
+    0.1,
+    0.4
+   ],
+   "staff_per_gwh": [
+    25.0,
+    65.0
+   ],
+   "staff_gpcd": [
+    10.0,
+    30.0
+   ],
+   "staff_used": [
+    0.05,
+    0.15
+   ],
+   "coc": [
+    3.0,
+    6.0
+   ],
+   "switch_margin": [
+    -2.0,
+    2.0
+   ],
+   "er_adj": [
+    -0.1,
+    0.05
+   ],
+   "range_f": [
+    7.2,
+    10.8
+   ],
+   "drift": [
+    5e-05,
+    0.0002
+   ],
+   "hybrid_full_offset": [
+    -1.5,
+    1.5
+   ],
+   "water_rise": [
+    5.0,
+    10.0
+   ],
+   "fan_eff": [
+    0.65,
+    0.9
+   ],
+   "tower_fan_pa": [
+    100.0,
+    400.0
+   ],
+   "lg": [
+    0.2,
+    4.0
+   ],
+   "tower_approach": [
+    2.8,
+    6.7
+   ],
+   "hx_approach": [
+    1.7,
+    2.8
+   ],
+   "pump_chw_kpa": [
+    114.9,
+    172.4
+   ],
+   "pump_tower_kpa": [
+    166.9,
+    250.4
+   ],
+   "pump_econ_kpa": [
+    114.9,
+    172.4
+   ],
+   "pump_eff": [
+    0.6,
+    0.8
+   ],
+   "carnot_water": [
+    0.62,
+    0.78
+   ],
+   "carnot_air": [
+    0.45,
+    0.55
+   ],
+   "dc_approach": [
+    5.0,
+    10.0
+   ],
+   "dc_fan_pa": [
+    100.0,
+    250.0
+   ],
+   "glycol_share": [
+    0.3,
+    0.4
+   ],
+   "assist_dt_air": [
+    9.0,
+    13.0
+   ]
+  },
+  "hybrid": {
+   "energy": [
+    23.0,
+    42.0
+   ],
+   "fixed_share": [
+    0.3,
+    0.5
+   ],
+   "elec_share": [
+    0.35,
+    0.7
+   ],
+   "to_water": [
+    0.4,
+    0.66
+   ],
+   "chilled_share": [
+    0.6,
+    0.85
+   ],
+   "chilled_supply": [
+    5.0,
+    10.0
+   ],
+   "process_supply": [
+    24.0,
+    32.0
+   ],
+   "oa_share": [
+    0.05,
+    0.3
+   ],
+   "oa_supply_enthalpy": [
+    18.0,
+    34.0
+   ],
+   "anode_water": [
+    1.0,
+    2.0
+   ],
+   "shipped_water": [
+    0.0,
+    1.0
+   ],
+   "other_purified": [
+    0.2,
+    1.0
+   ],
+   "ro_recovery": [
+    0.65,
+    0.8
+   ],
+   "boiler_makeup": [
+    0.2,
+    2.0
+   ],
+   "boiler_blowdown": [
+    0.1,
+    0.4
+   ],
+   "staff_per_gwh": [
+    25.0,
+    65.0
+   ],
+   "staff_gpcd": [
+    10.0,
+    30.0
+   ],
+   "staff_used": [
+    0.05,
+    0.15
+   ],
+   "coc": [
+    3.0,
+    6.0
+   ],
+   "switch_margin": [
+    -2.0,
+    2.0
+   ],
+   "er_adj": [
+    -0.1,
+    0.05
+   ],
+   "range_f": [
+    7.2,
+    10.8
+   ],
+   "drift": [
+    5e-05,
+    0.0002
+   ],
+   "hybrid_full_offset": [
+    -1.5,
+    1.5
+   ],
+   "water_rise": [
+    5.0,
+    10.0
+   ],
+   "fan_eff": [
+    0.65,
+    0.9
+   ],
+   "tower_fan_pa": [
+    100.0,
+    400.0
+   ],
+   "lg": [
+    0.2,
+    4.0
+   ],
+   "tower_approach": [
+    2.8,
+    6.7
+   ],
+   "hx_approach": [
+    1.7,
+    2.8
+   ],
+   "pump_chw_kpa": [
+    114.9,
+    172.4
+   ],
+   "pump_tower_kpa": [
+    166.9,
+    250.4
+   ],
+   "pump_econ_kpa": [
+    114.9,
+    172.4
+   ],
+   "pump_eff": [
+    0.6,
+    0.8
+   ],
+   "carnot_water": [
+    0.62,
+    0.78
+   ],
+   "carnot_air": [
+    0.45,
+    0.55
+   ],
+   "dc_approach": [
+    5.0,
+    10.0
+   ],
+   "dc_fan_pa": [
+    100.0,
+    250.0
+   ],
+   "glycol_share": [
+    0.3,
+    0.4
+   ],
+   "assist_dt_air": [
+    9.0,
+    13.0
+   ]
+  },
+  "towers": {
+   "energy": [
+    23.0,
+    42.0
+   ],
+   "fixed_share": [
+    0.3,
+    0.5
+   ],
+   "elec_share": [
+    0.35,
+    0.7
+   ],
+   "to_water": [
+    0.4,
+    0.66
+   ],
+   "chilled_share": [
+    0.6,
+    0.85
+   ],
+   "chilled_supply": [
+    5.0,
+    10.0
+   ],
+   "process_supply": [
+    24.0,
+    32.0
+   ],
+   "oa_share": [
+    0.05,
+    0.3
+   ],
+   "oa_supply_enthalpy": [
+    18.0,
+    34.0
+   ],
+   "anode_water": [
+    1.0,
+    2.0
+   ],
+   "shipped_water": [
+    0.0,
+    1.0
+   ],
+   "other_purified": [
+    0.2,
+    1.0
+   ],
+   "ro_recovery": [
+    0.65,
+    0.8
+   ],
+   "boiler_makeup": [
+    0.2,
+    2.0
+   ],
+   "boiler_blowdown": [
+    0.1,
+    0.4
+   ],
+   "staff_per_gwh": [
+    25.0,
+    65.0
+   ],
+   "staff_gpcd": [
+    10.0,
+    30.0
+   ],
+   "staff_used": [
+    0.05,
+    0.15
+   ],
+   "coc": [
+    3.0,
+    6.0
+   ],
+   "switch_margin": [
+    -2.0,
+    2.0
+   ],
+   "er_adj": [
+    -0.1,
+    0.05
+   ],
+   "range_f": [
+    7.2,
+    10.8
+   ],
+   "drift": [
+    5e-05,
+    0.0002
+   ],
+   "hybrid_full_offset": [
+    -1.5,
+    1.5
+   ],
+   "water_rise": [
+    5.0,
+    10.0
+   ],
+   "fan_eff": [
+    0.65,
+    0.9
+   ],
+   "tower_fan_pa": [
+    100.0,
+    400.0
+   ],
+   "lg": [
+    0.2,
+    4.0
+   ],
+   "tower_approach": [
+    2.8,
+    6.7
+   ],
+   "hx_approach": [
+    1.7,
+    2.8
+   ],
+   "pump_chw_kpa": [
+    114.9,
+    172.4
+   ],
+   "pump_tower_kpa": [
+    166.9,
+    250.4
+   ],
+   "pump_econ_kpa": [
+    114.9,
+    172.4
+   ],
+   "pump_eff": [
+    0.6,
+    0.8
+   ],
+   "carnot_water": [
+    0.62,
+    0.78
+   ],
+   "carnot_air": [
+    0.45,
+    0.55
+   ],
+   "dc_approach": [
+    5.0,
+    10.0
+   ],
+   "dc_fan_pa": [
+    100.0,
+    250.0
+   ],
+   "glycol_share": [
+    0.3,
+    0.4
+   ],
+   "assist_dt_air": [
+    9.0,
+    13.0
+   ]
+  },
+  "lake": {
+   "energy": [
+    23.0,
+    42.0
+   ],
+   "fixed_share": [
+    0.3,
+    0.5
+   ],
+   "elec_share": [
+    0.35,
+    0.7
+   ],
+   "to_water": [
+    0.4,
+    0.66
+   ],
+   "chilled_share": [
+    0.6,
+    0.85
+   ],
+   "chilled_supply": [
+    5.0,
+    10.0
+   ],
+   "process_supply": [
+    24.0,
+    32.0
+   ],
+   "oa_share": [
+    0.05,
+    0.3
+   ],
+   "oa_supply_enthalpy": [
+    18.0,
+    34.0
+   ],
+   "anode_water": [
+    1.0,
+    2.0
+   ],
+   "shipped_water": [
+    0.0,
+    1.0
+   ],
+   "other_purified": [
+    0.2,
+    1.0
+   ],
+   "ro_recovery": [
+    0.65,
+    0.8
+   ],
+   "boiler_makeup": [
+    0.2,
+    2.0
+   ],
+   "boiler_blowdown": [
+    0.1,
+    0.4
+   ],
+   "staff_per_gwh": [
+    25.0,
+    65.0
+   ],
+   "staff_gpcd": [
+    10.0,
+    30.0
+   ],
+   "staff_used": [
+    0.05,
+    0.15
+   ],
+   "coc": [
+    3.0,
+    6.0
+   ],
+   "switch_margin": [
+    -2.0,
+    2.0
+   ],
+   "er_adj": [
+    -0.1,
+    0.05
+   ],
+   "range_f": [
+    7.2,
+    10.8
+   ],
+   "drift": [
+    5e-05,
+    0.0002
+   ],
+   "hybrid_full_offset": [
+    -1.5,
+    1.5
+   ],
+   "water_rise": [
+    5.0,
+    10.0
+   ],
+   "fan_eff": [
+    0.65,
+    0.9
+   ],
+   "tower_fan_pa": [
+    100.0,
+    400.0
+   ],
+   "lg": [
+    0.2,
+    4.0
+   ],
+   "tower_approach": [
+    2.8,
+    6.7
+   ],
+   "hx_approach": [
+    1.7,
+    2.8
+   ],
+   "pump_chw_kpa": [
+    114.9,
+    172.4
+   ],
+   "pump_tower_kpa": [
+    166.9,
+    250.4
+   ],
+   "pump_econ_kpa": [
+    114.9,
+    172.4
+   ],
+   "pump_eff": [
+    0.6,
+    0.8
+   ],
+   "carnot_water": [
+    0.62,
+    0.78
+   ],
+   "carnot_air": [
+    0.45,
+    0.55
+   ],
+   "dc_approach": [
+    5.0,
+    10.0
+   ],
+   "dc_fan_pa": [
+    100.0,
+    250.0
+   ],
+   "glycol_share": [
+    0.3,
+    0.4
+   ],
+   "assist_dt_air": [
+    9.0,
+    13.0
+   ],
+   "rise_c": [
+    6.0,
+    10.0
+   ],
+   "wind_mph": [
+    5.0,
+    15.0
+   ],
+   "evap_error": [
+    0.79,
+    1.21
+   ]
+  }
+ },
+ "runtime_s": 1978.8,
+ "warnings": [
+  "lake/withdrawn_avg: sum of S1 = 1.047",
+  "lake/withdrawn_peak_1in10: sum of S1 = 1.034"
+ ]
+}

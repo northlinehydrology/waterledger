@@ -209,8 +209,9 @@ The number came early, but it is what users see, so the packages are held to it 
    the place side.
 4. Downstream onto the hooks: `before_after`, runoff loads, `by_design`, `to_bmi_config`.
 5. The conformance test, over every registered type.
-6. Battery cell plants: the model's remaining pieces (sewer and source returns, peak-hour power, chemistry), the
-   facility, `BatteryCellBmi`, tests.
+6. Battery cell plants: the facility and its tests. The model's pieces are done ahead of steps 1-5 (Andrew, Nov 10:
+   battery work before the Michigan work): sewer and source returns, peak-hour power, chemistry, `BatteryCellBmi`, the
+   check at every EA plant and the sensitivity analysis (0009).
 7. READMEs, docs, CHANGELOG, the methods log; then a release on Andrew's word.
 
 ## Decisions to agree
