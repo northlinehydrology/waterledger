@@ -62,7 +62,7 @@ def eia(d):
     gen = d.drop_duplicates(["Plant Code", "Generator ID", "Month"]).groupby(["State", "Plant Code", "month"])["net"].sum()
     pm = water.join(gen, how="inner").reset_index()
     pm = pm[(pm.net > 0)]
-    gpm_c, gpm_w = pm[C] * 1e6 / pm.net, pm[W] * 1e6 / pm.net
+    gpm_c = pm[C] * 1e6 / pm.net
     keep = (pm[W] > 0) & (pm[C] <= pm[W]) & (gpm_c <= 1500)
     pm = pm[keep]
     rows = []
