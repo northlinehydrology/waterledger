@@ -19,8 +19,15 @@ nearly all of it in electrode drying, dry rooms and formation. Each hour:
   process water: purified water for anode slurry (evaporated in the dryers), water leaving in recovered NMP, other purified water (to
       sewer), the purification's reject (to sewer), boiler make-up (mostly lost as steam). Staff water follows the people on site.
 
+Returns go to two places. To the sewer: tower blowdown, the purification's reject, other purified water, boiler blowdown and staff water, as
+every EA with a discharge sends it (Lansing's 0.56 MGD to the sanitary sewer, DOE/EA-2189-S1, p. 19; BlueOval SK's to the Megasite and Hardin
+County plants, DOE/EA-2201, pp. 22 and 36; A123's table lists tower blowdown with the sanitary and process streams, DOE/EA-1690, Table 2-5).
+A plant with its own permit may discharge blowdown directly instead [A]. To the source: the lake design's once-through water, less the
+evaporation its heat drives, back to the lake.
+
 Energy closes: electricity + fuel + the heat outdoor air brings in = heat rejected through the water or dry coolers + heat to exhaust, flue
-and envelope + the heat rejection fans' heat, which goes straight to the exhaust air. Mass closes: withdrawn = consumed + returned.
+and envelope + the heat rejection fans' heat, which goes straight to the exhaust air. Mass closes: withdrawn = consumed + returned, and
+returned = to_sewer + to_source.
 Condensate from the make-up air coils is not counted [A]: it is under 1% of the plant's water (about 12,000 gal/day at Lansing's size).
 
 Parameter ranges and their sources: RANGES and SOURCES below; the evidence is in docs/research/battery-cell-parameters.md and
@@ -159,7 +166,7 @@ def hourly(tdb, twb, rh, design, p, water_t=None):
 
     kW: "energy" (plant energy less the cooling plant), "electricity", "fuel", "outdoor_air" (its load on the chilled water), "heat" (rejected through
     the water, dry coolers or lake water), "exhaust" (to exhaust air, flue and envelope), "fans" (heat rejection fans). Gallons: "withdrawn", "consumed",
-    "returned", and the parts "evap", "drift", "blow" (towers), "once_through" and "lake_evap" (lake: water through the exchangers and the forced
+    "returned" (= "to_sewer" + "to_source"), and the parts "evap", "drift", "blow" (towers), "once_through" and "lake_evap" (lake: water through the exchangers and the forced
     evaporation its heat drives), "process_withdrawn", "process_consumed", "staff".
     """
     if design not in DESIGNS:
@@ -195,6 +202,8 @@ def hourly(tdb, twb, rh, design, p, water_t=None):
     process_consumed = (p["anode_water"] * made + p["shipped_water"] * made + boiler * (1.0 - p["boiler_blowdown"])) / L_GAL
     staff = p["staff_per_gwh"] * p["staff_gpcd"] / 24.0
     ones = np.ones_like(tdb)
+    to_sewer = blow + (process_withdrawn - process_consumed) + staff * (1.0 - p["staff_used"])
+    to_source = once - lake_evap
     return {
         "energy": energy, "electricity": electricity, "fuel": fuel * ones, "outdoor_air": outdoor_air, "heat": heat,
         "exhaust": (1.0 - p["to_water"]) * energy, "fans": fans,
@@ -202,5 +211,5 @@ def hourly(tdb, twb, rh, design, p, water_t=None):
         "process_withdrawn": process_withdrawn * ones, "process_consumed": process_consumed * ones, "staff": staff * ones,
         "withdrawn": evap + drift + blow + once + process_withdrawn + staff,
         "consumed": evap + drift + lake_evap + process_consumed + staff * p["staff_used"],
-        "returned": blow + (once - lake_evap) + (process_withdrawn - process_consumed) + staff * (1.0 - p["staff_used"]),
+        "returned": to_sewer + to_source, "to_sewer": to_sewer, "to_source": to_source,
     }

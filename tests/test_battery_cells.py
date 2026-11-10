@@ -36,7 +36,22 @@ def test_energy_and_water_close(design, seed):
         assert np.allclose(h["electricity"] + h["fuel"] + h["outdoor_air"], h["heat"] + h["exhaust"] + h["fans"], rtol=1e-12, atol=1e-9)
         assert np.allclose(h["withdrawn"], h["consumed"] + h["returned"], rtol=1e-12, atol=1e-12)
         assert np.allclose(h["withdrawn"], h["evap"] + h["drift"] + h["blow"] + h["once_through"] + h["process_withdrawn"] + h["staff"], rtol=1e-12)
+        assert np.allclose(h["returned"], h["to_sewer"] + h["to_source"], rtol=1e-12, atol=1e-12)
         assert (h["returned"] >= 0).all() and (h["outdoor_air"] >= 0).all()
+
+
+@pytest.mark.parametrize("design", bp.DESIGNS)
+def test_returns_by_destination(design):
+    """The sewer takes blowdown, process returns and staff water; only the lake design returns water to its source, the once-through water less
+    the evaporation its heat drives."""
+    p = central()
+    h = bp.hourly(TDB, TWB, RH, design, p, WATER_T)
+    process_and_staff = h["process_withdrawn"] - h["process_consumed"] + h["staff"] * (1 - p["staff_used"])
+    assert np.allclose(h["to_sewer"], h["blow"] + process_and_staff, rtol=1e-12)
+    if design == "lake":
+        assert np.allclose(h["to_source"], h["once_through"] - h["lake_evap"], rtol=1e-12) and (h["to_source"] > 0).all()
+    else:
+        assert not h["to_source"].any()
 
 
 def test_designs_order():
@@ -96,6 +111,12 @@ def test_monte_carlo_reads_the_hours():
     assert c["power_mw_avg"]["central"] == pytest.approx(h["electricity"].mean() * 10 / 1000, rel=1e-12)
     assert c["utilization"]["p10"] == c["utilization"]["p90"] == 1.0
     assert c["withdrawn_peak_1in10"]["p50"] > c["withdrawn_avg"]["p50"]
+    assert c["returned_avg"]["central"] == pytest.approx(c["to_sewer_avg"]["central"] + c["to_source_avg"]["central"], rel=1e-12)
+    # the highest hour is above the highest day, which is above the average, and the hour is read from the hours
+    assert c["power_mw_peak_1in10"]["p50"] > c["power_mw_peak_day_1in10"]["p50"] > c["power_mw_avg"]["p50"]
+    years = np.array([t[:4] for t in TIMES])
+    assert c["power_mw_peak_1in10"]["central"] == pytest.approx(
+        np.quantile([h["electricity"][years == y].max() for y in np.unique(years)], 0.9) * 10 / 1000, rel=1e-12)
     s = plant.run_location(TIMES, TDB, RH, n=20, gwh=10.0, utilization="sampled", designs=("towers",))["towers"]
     assert s["utilization"]["p10"] < 1.0 and s["withdrawn_avg"]["p50"] < c["withdrawn_avg"]["p50"]
     with pytest.raises(ValueError):
