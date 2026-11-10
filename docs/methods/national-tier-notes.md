@@ -141,6 +141,38 @@ Northline repo, and the information is public on the site. The packages answer w
 a place; they don't carry tracker data, and Context's jurisdiction category does not list moratoria or proposals. The
 moratoria builder now in `waterledger.states.mi` moves to Northline.
 
+## Indiana (Nov 10, 2026)
+
+Added by the add-a-state steps at model 1.11, snapshot 2026-11-10 (Claude, overnight, on Andrew's instruction to run every
+step and publish).
+
+- **Places.** 1,661: 566 cities and towns, 1,003 townships (Indiana's civil townships are active governments in Census) and
+  92 counties. Indianapolis is a consolidated city: Census carries its land as "Indianapolis city (balance)" with functional
+  status F, which the places query (FUNCSTAT A) left out, so the first build had no Indianapolis. Places now take a balance
+  too, with its base name and kind read from the name (`census._base_kind`). Speedway, Lawrence and Beech Grove keep their
+  own governments inside Marion County and are places of their own. No published state has a balance; Kentucky
+  (Louisville), Tennessee (Nashville), Georgia (Augusta, Athens), Montana (Butte) and Connecticut (Milford) do.
+- **Water and sewer.** 742 community systems; 69% of places (1,143) lie in a mapped service area. 510 sewer plants, every place
+  within 40 km of one. Indianapolis is Citizens Water (about 867,000 people) and the city's plants on the White River.
+- **Receiving waters.** ATTAINS organization 21IND (IDEM), 2026 cycle; 1,430 watersheds, 1,065 downstream paths. 29 places
+  are on Lake Michigan.
+- **Electricity.** 119 utilities; the cells' balancing authorities are MISO (118 cells), MISO and PJM (52), PJM (11, Indiana
+  Michigan Power's northeast) and LG&E-KU with MISO (2, across the Ohio River from Louisville).
+- **Weather.** 183 ERA5 cells, 20 of them already run for Michigan and Ohio. 89 candidate stations, 35 qualify, 32 land
+  stations held out. The ERA5 check passes (`era5-checks/in.md`): land cells 0.26 C median error in the design dry-bulb
+  (mean -0.02), wet bulb 0.14 C. Only two corrected shore stations are in range, Waukegan and Chicago Midway, both in
+  Illinois, so W5 and W6 are not judged; the cells on Indiana's Lake Michigan shore are corrected toward them. Of the nine
+  places sampled, the hybrid peak day differs by a median of 3.7%, above the first four states (0.5-3.2%) and inside the 6%
+  limit; assist's peak day runs +12% and +13% at Lost Creek (Terre Haute) and Van Buren (Bloomington) townships.
+- **The first runs had no grid water.** Before a state's first snapshot, `era5.cell_bas` found no energy data and ran every
+  cell with no balancing authority. The runs were stopped before any finished; it now takes the authorities from the
+  state's local build through the call the snapshot makes, so a new state's runs match a rerun from its snapshot.
+- **Checks by hand.** Lebanon (Lebanon Utilities, its sewer plant to Prairie Creek and Sugar Creek, Duke Energy Indiana),
+  Indianapolis (above, Indianapolis Power & Light) and New Carlisle (its water works; the nearest sewer plants about 20 km
+  away at La Porte and South Bend; Indiana Michigan Power, PJM). 300 MW with cooling towers takes 2.01-2.10 million gallons a
+  day on average across five Indiana cities, against Ohio's 2.02-2.06 and Madison's 1.99, rising toward the warmer south
+  (Evansville highest).
+
 ## Still to decide or build
 
 - Per-state rules files (federal only at first; "state rules not yet reviewed").
