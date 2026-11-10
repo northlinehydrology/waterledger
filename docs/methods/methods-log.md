@@ -2211,3 +2211,82 @@ sampling noise only (at most 0.034), since two shared parameters changed the sam
 **Still open, stated in 3.16.0.** The battery Monte Carlo loop is still the type's own until the shared runner. The BMI
 component has the roles but no withdrawal limit, dry mode or dissolved mass, which need the plant's limited physics
 (design 0006). Battery plants are not on waterledger.org, so no short-form page changes.
+
+## Nov 10, 2026: the shared Monte Carlo runner (model 1.13)
+
+The design is [0010](../design/0010-water-user-types.md), step 2a, under its standard treatment. `waterledger_models.runs` owns
+the Monte Carlo at a location for every water user type: the draws loop, the standard loads (the run's, the peak day's, full
+capacity), the daily statistics, water at the power plants (`grid.RunWater`), the result names and the summary. A type gives
+its designs, its draws and each draw's hours. Data centers keep their compiled kernel. Both types were recorded before the
+move, every design, plant or chemistry, with hourly grid water (`tests/data/datacenter_before_runner.json`,
+`battery_before_runner.json`); after it, every value matches to the bit except the power figures, which the runner works from
+the hourly MW with one formula for every type (data centers' `power_mw_avg` and `power_mw_peak_1in10` within 4.1e-16 relative,
+cell plants' three within 4.9e-16). Keeping each type's own order of multiplication would have meant a scale per statistic in
+the contract; Andrew agreed it was not worth it. No number changes in any sense that matters, and the golden data moves only
+in those bits.
+
+## Nov 10, 2026: power supply scenarios: new gas, solar and wind (model 1.13)
+
+The design is [0014](../design/0014-power-supply-scenarios.md), decided by Andrew on Nov 10 with his notes; the evidence is the
+research note [power-supply-water.md](../research/power-supply-water.md). Andrew widened the scope the same day: hypothetical
+new supply is modeled from public data, while real plants, lines and substations are never profiled.
+
+**What.** A scenario is resources (new PV, new wind, a new gas plant) and a residual rule: the grid by default, since most
+campuses with their own power stay connected, or islanded, which is planned at some sites. For each Monte Carlo draw, hour by
+hour at the run's load and the peak day's: renewables serve first and their surplus is exported with no water credit; a gas
+plant serves a firm MW or the rest; what remains goes to the grid or is unserved, and unserved hours are always reported. Plants
+are sized once from the user's central draw: renewables by share of annual MWh, gas at N+1 for the 1-in-10-year highest hour at
+full capacity at the place's 0.4% design dry-bulb. The balance closes every hour, held by tests.
+
+**The gas plant** is a water user type on the shared cooling physics. Each hour: unit capacity derates above 15 C (combustion
+turbines 0.9-1.0%/K, EPA CHP Catalog p. 3-10; combined cycle 0.3-0.5%/K wet and about 0.7% dry, Sathaye et al. 2011); heat rate
+from new plants' ISO values (combined cycle 6,200-6,450 Btu/kWh HHV, EIA AEO2023 Table 1, NETL Rev. 4a) rising with temperature
+and part load; condenser heat a share of the losses (NETL B31A: 391 of 628 MW, sampled 0.55-0.65 [A]) through the shared towers,
+hybrid, assist, dry coolers or lake; NOx injection water at a water-to-fuel ratio of 0.5-1.0 (AP-42 sec. 3.1.4.1) and inlet
+cooling water from the air flow (NETL B31A) and the rise in humidity ratio. Cooling fans and pumps are in the auxiliary share,
+not worked from `heat_rejection.loop`, which models a facility loop with chillers; that departure from the design is stated.
+Outages are drawn hour by hour, independently [A]: real forced outages last days, so long runs of unserved hours are understated.
+
+**Where its wastewater goes** (decision 10, research note sec. 8, agreed). Of 108 combined cycle plants on towers in service since
+2005 (EIA-860 in aggregate), 42 discharge to the water they draw from, 18 to a sewer, 14 to a different water body and 11 nothing.
+Defaults: a combined cycle on wet cooling drawing surface water returns to its source; on wells or a utility's water it follows
+the sewer rule; dry combined cycle, turbines, engines and fuel cells send their small flows to the sewer [A]. The different-water
+case, 13% of plants, became a new optional return role for every type, `to_stream`; zero liquid discharge counts the wastewater
+as consumed.
+
+**Checks, nothing tuned.**
+- **Derate:** a combustion turbine at 100 F gives 78% of its rating, against the CHP Catalog's 80%.
+- **NETL at ISO weather:** a combined cycle on towers, 15 C, 60%, 4 cycles, NETL B31A's heat rate: 158 and 206 gal/MWh consumed
+  and withdrawn against NETL's 186 and 240, about 15% low. The gas sensitivity analysis puts the shared evaporative ratio first
+  (ST 0.52), 0.77 at 15 C, then the condenser share (0.37).
+- **EIA's fleet, 2024, in aggregate** (`docs/methods/power_supply/eia_check.py`; region-months of 35-45 plants): Great Lakes 195 /
+  242 gal/MWh reported against 155 / 196 at a new plant's heat rate and 218 / 275 at the fleet's own (7,507 Btu/kWh); Texas 203 /
+  241 against 170 / 215 and 286 / 362 (8,342, likely raised by cogeneration plants exporting steam). The level is mostly the heat
+  rate: the fleet is older than the new plants scenarios build. The model's summer-to-winter swing is smaller (1.16 against 1.34
+  in the Great Lakes): its heat rate rises little with temperature and the fleet runs duct burners and part load in summer. Open.
+- **A year of West Michigan weather** lands inside the published ranges (Macknick et al. 2012; Meldrum et al. 2013; USGS): towers
+  139-170 consumed and 178-220 withdrawn, the low side; lake 72-101 and 12,600-18,700; dry 0; hybrid and assist 2-15; a turbine
+  with water injection 29-50.
+- **N+1 sizing** carries the peak hour at the design dry-bulb; its overbuild follows the unit size (21% over the peak with 20 MW
+  engines, about 90% with 50 MW turbines), against the IEA's 30-70%, so it is reported beside the result rather than asserted.
+
+**Solar and wind.** PV follows the PVWatts chain (Dobos 2014) in numpy and matches pvlib's hour by hour within 0.04% of the AC
+rating over a test year; wind uses the IEA 3.4 MW reference turbine's curve (NREL turbine-models, commit e9e4ccc). Both read ERA5
+radiation and 100 m wind from the same open copy and cells as the user's weather: at West Michigan (42.75, -85.50, 1995-2024, no
+hour missing), tracking PV 22.3%, fixed 19.2%, wind 27.9% at central values, inside Michigan's brackets (about 15-22% and
+27-31%, research note sec. 5). Resource factors are sampled until ERA5 is checked against output at the cells (0014, check 5).
+
+**Land, runoff and construction** (decision 2's note, research note sec. 9, agreed). PV arrays take 5.5 acres per MW AC tracking
+and 3.6 fixed (LBNL 2019), fenced area the array over 0.7, roads and pads 4% [A], the array's effective impervious share 0.10-0.45
+by row orientation and 0.60 on gravel (Mile High Flood District 2023), curve number 69 under the panels; wind 34.5 ha per MW in
+the project and 0.3 permanent (Denholm et al. 2009). Construction water and sediment are one-time totals. **Open:** on former
+cropland the two runoff methods disagree in direction for PV: the annual Simple Method gives more runoff (it treats the ground as
+turf plus 11% impervious), while the storm curve numbers give less (grass under panels, CN 69, against row crops, CN 78). No
+measured runoff from solar sites was found, and the studies split the same way; both are reported, and the result depends on the
+land before.
+
+**Example** (a 300 MW hybrid campus at West Michigan, 30 years, 40 draws, medians; grid water at Michigan MISO's medians as flat
+factors, illustrative). Grid only: 1.74 MGD consumed at the grid's plants. Islanded on four 150 MW combined cycle units on
+towers: 1.02 MGD consumed locally, seven times the campus's own cooling, with 14 unserved hours a year from outages; on engines
+with radiators, none. PV sized for the year (1,029 MW) serves 41% of the hours' load, the grid 59%; with wind (618 and 495 MW),
+71%. Construction for that PV build: 8,085 fenced acres and about 168 MG of dust control water.
