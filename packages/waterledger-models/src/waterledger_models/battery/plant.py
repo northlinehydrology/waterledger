@@ -40,7 +40,8 @@ def draws(n=DRAWS, seed=7, utilization="full", settings=None, chemistry="nmc"):
     return [{**p, **settings} for p in runs]
 
 
-def run_location(times, temps, rhs, n=DRAWS, seed=7, gwh=1.0, utilization="full", designs=None, settings=None, water_temps=None, chemistry="nmc", grid=None):
+def run_location(times, temps, rhs, n=DRAWS, seed=7, gwh=1.0, utilization="full", designs=None, settings=None, water_temps=None, chemistry="nmc", grid=None,
+                 discharge="sewer"):
     """Monte Carlo for each design at one location, per `gwh` GWh/yr of cell capacity, for the plant's chemistry (physics.CHEMISTRIES: "nmc" for
     NMC and NCA, "lfp"). `settings` fixes parameters in every run (draws). The lake
     design runs when `water_temps` is given: the lake's daily long-term average surface temperatures by day of year (366, as NOAA GLERL's;
@@ -58,7 +59,7 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, gwh=1.0, utilization="full"
     plant's water at those power plants, grid_<BA>_<kind>_avg and grid_<BA>_<kind>_peak_1in10 (MGD at `gwh`), from its hourly electricity through
     grid.RunWater. A cell plant has no load factor, so its peak day is at the run's own output.
     """
-    model = _CellPlantRuns(n, seed, gwh, utilization, settings, chemistry, water_temps)
+    model = _CellPlantRuns(n, seed, gwh, utilization, settings, chemistry, water_temps, discharge)
     return runs.run_location(model, times, temps, rhs, designs=designs, grid=grid)
 
 
@@ -67,9 +68,9 @@ class _CellPlantRuns:
     output, which is also its peak day's (a cell plant has no load factor); full output for the full-capacity withdrawal and the highest hour, worked
     apart only when utilization is sampled."""
 
-    def __init__(self, n, seed, gwh, utilization, settings, chemistry, water_temps):
+    def __init__(self, n, seed, gwh, utilization, settings, chemistry, water_temps, discharge="sewer"):
         self.n, self.seed, self.gwh, self.utilization, self.settings, self.chemistry = n, seed, gwh, utilization, settings, chemistry
-        self.water_temps = water_temps
+        self.water_temps, self.discharge = water_temps, discharge
         self.designs = tuple(d for d in bp.DESIGNS if d != "lake" or water_temps is not None)    # every design the inputs allow
 
     def draws(self):
@@ -82,11 +83,11 @@ class _CellPlantRuns:
     def run(self, design, p):
         tdb, twb, rh, gwh = self.tdb, self.twb, self.rh, self.gwh
         p = bp.for_location(p, tdb, rh)
-        h = bp.hourly(tdb, twb, rh, design, p, self.water_t)
-        full = None if p["utilization"] == 1.0 else bp.hourly(tdb, twb, rh, design, {**p, "utilization": 1.0}, self.water_t)
+        h = bp.hourly(tdb, twb, rh, design, p, self.water_t, self.discharge)
+        full = None if p["utilization"] == 1.0 else bp.hourly(tdb, twb, rh, design, {**p, "utilization": 1.0}, self.water_t, self.discharge)
         made = bp.CELLS_PER_HOUR * p["utilization"]
         to_mw = gwh / 1000.0                            # kW per GWh/yr to MW at the plant's size
-        return runs.Hours(water={name: (h[name], gwh) for name in ("withdrawn", "consumed", "returned", "to_sewer", "to_source")},
+        return runs.Hours(water={name: (h[name], gwh) for name in ("withdrawn", "consumed", "returned", "to_sewer", "to_source", "to_stream")},
                           mw=h["electricity"] * to_mw, utilization=p["utilization"],
                           full=None if full is None else (full["withdrawn"], gwh), mw_full=None if full is None else full["electricity"] * to_mw,
                           extras={"fuel_mw_avg": float(h["fuel"].mean()) * gwh / 1000.0,

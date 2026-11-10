@@ -27,7 +27,8 @@ nearly all of it in electrode drying, dry rooms and formation. Each hour:
 Returns go to two places. To the sewer: tower blowdown (assist's pad bleed), the purification's reject, other purified water, boiler blowdown and staff water, as
 every EA with a discharge sends it (Lansing's 0.56 MGD to the sanitary sewer, DOE/EA-2189-S1, p. 19; BlueOval SK's to the Megasite and Hardin
 County plants, DOE/EA-2201, pp. 22 and 36; A123's table lists tower blowdown with the sanitary and process streams, DOE/EA-1690, Table 2-5).
-A plant with its own permit may discharge blowdown directly instead [A]. To the source: the lake design's once-through water, less the
+A plant with its own permit may discharge its blowdown and process returns to a stream instead (discharge="stream", the to_stream role,
+design 0014 decision 10); staff water stays with the sewer. To the source: the lake design's once-through water, less the
 evaporation its heat drives, back to the lake.
 
 Energy closes: electricity + fuel + the heat outdoor air brings in = heat rejected through the water or dry coolers + heat to exhaust, flue
@@ -44,7 +45,8 @@ from waterledger_models import heat_rejection as hr
 from waterledger_models import once_through as ot
 
 DESIGNS = ("dry", "assist", "hybrid", "towers", "lake")    # assist from model 1.12: dry coolers with adiabatic pads, shared with data centers
-CHEMISTRIES = ("nmc", "lfp")                  # nmc stands for every nickel cathode, NMC and NCA, the chemistries of the EAs' plants
+CHEMISTRIES = ("nmc", "lfp")
+DISCHARGES = ("sewer", "stream")             # where blowdown and process returns go (design 0014, decision 10); sewer is every EA plant's                  # nmc stands for every nickel cathode, NMC and NCA, the chemistries of the EAs' plants
 HOURS_A_YEAR = 8760.0
 CELLS_PER_HOUR = 1e6 / HOURS_A_YEAR          # kWh of cells an hour at full output, per GWh/yr of capacity
 L_GAL = 3.78541
@@ -170,7 +172,7 @@ def switch_point(p):
     return hr.switch_point(p, p["process_supply"] - p["dc_approach"] - p["hx_approach"])
 
 
-def hourly(tdb, twb, rh, design, p, water_t=None):
+def hourly(tdb, twb, rh, design, p, water_t=None, discharge="sewer"):
     """Each hour, per GWh/yr of capacity at p["utilization"]: a dict of kW (energy and heat) and gallons (water) for the hour. The lake design needs
     `water_t`, the lake's surface temperature each hour, C.
 
@@ -215,7 +217,12 @@ def hourly(tdb, twb, rh, design, p, water_t=None):
     process_consumed = (p["anode_water"] * made + p["shipped_water"] * made + boiler * (1.0 - p["boiler_blowdown"])) / L_GAL
     staff = p["staff_per_gwh"] * p["staff_gpcd"] / 24.0
     ones = np.ones_like(tdb)
-    to_sewer = blow + (process_withdrawn - process_consumed) + staff * (1.0 - p["staff_used"])
+    if discharge not in DISCHARGES:
+        raise ValueError(f"discharge must be one of {DISCHARGES}")
+    waste = blow + (process_withdrawn - process_consumed)           # tower blowdown and the process returns
+    sanitary = staff * (1.0 - p["staff_used"])
+    to_sewer = waste + sanitary if discharge == "sewer" else sanitary * ones
+    to_stream = waste * ones if discharge == "stream" else 0.0 * ones
     to_source = once - lake_evap
     return {
         "energy": energy, "electricity": electricity, "fuel": fuel * ones, "outdoor_air": outdoor_air, "heat": heat,
@@ -224,5 +231,5 @@ def hourly(tdb, twb, rh, design, p, water_t=None):
         "process_withdrawn": process_withdrawn * ones, "process_consumed": process_consumed * ones, "staff": staff * ones,
         "withdrawn": evap + drift + blow + once + process_withdrawn + staff,
         "consumed": evap + drift + lake_evap + process_consumed + staff * p["staff_used"],
-        "returned": to_sewer + to_source, "to_sewer": to_sewer, "to_source": to_source,
+        "returned": to_sewer + to_source + to_stream, "to_sewer": to_sewer, "to_source": to_source, "to_stream": to_stream,
     }

@@ -19,7 +19,7 @@ def test_the_data_center_monte_carlo_matches_its_record():
 
     def walk(a, b, path):
         if isinstance(b, dict):
-            assert a.keys() == b.keys(), path
+            assert b.keys() <= a.keys(), path          # names may be added (3.x: additions only); every recorded one keeps its value
             for k in b:
                 walk(a[k], b[k], f"{path}/{k}")
         else:

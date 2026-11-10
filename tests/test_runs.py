@@ -27,7 +27,7 @@ STANDARD = {f"{role}_{stat}" for role in ("withdrawn", "consumed", "returned") f
 
 def _close(got, want, path=""):
     if isinstance(want, dict):
-        assert got.keys() == want.keys(), path
+        assert want.keys() <= got.keys(), path          # names may be added (3.x: additions only); every recorded one keeps its value
         for k in want:
             _close(got[k], want[k], f"{path}/{k}")
     else:
@@ -70,7 +70,8 @@ def test_every_type_closes(flat_grid):
                 gain = c.get(f"condensate_{stat}", 0.0)
                 assert c[f"withdrawn_{stat}"] + gain == pytest.approx(c[f"consumed_{stat}"] + c[f"returned_{stat}"], rel=1e-9), (kind, design, stat)
                 if f"to_sewer_{stat}" in c:
-                    assert c[f"returned_{stat}"] == pytest.approx(c[f"to_sewer_{stat}"] + c[f"to_source_{stat}"], rel=1e-9), (kind, design, stat)
+                    split = c[f"to_sewer_{stat}"] + c[f"to_source_{stat}"] + c.get(f"to_stream_{stat}", 0.0)
+                    assert c[f"returned_{stat}"] == pytest.approx(split, rel=1e-9), (kind, design, stat)
             assert c["grid_MISO_consumed_avg"] == pytest.approx(c["power_mw_avg"] * 300.0 * 24 / 1e6, rel=1e-12), (kind, design)
             assert c["withdrawn_peak_full_capacity"] >= c["withdrawn_avg"] and c["power_mw_peak_1in10"] >= c["power_mw_avg"], (kind, design)
 
