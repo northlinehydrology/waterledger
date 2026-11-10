@@ -19,14 +19,16 @@ RH = np.array(_W["relative_humidity_2m"], dtype=float)
 
 @pytest.mark.parametrize("design", ph.DESIGNS)
 def test_data_center_results_are_unchanged(design):
-    """Hourly water, power and heat at central parameters, exactly as they were before the move (model 1.11)."""
+    """Hourly water, power and heat at central parameters as they were before the move (model 1.11). The record was written on macOS, where
+    the move matched it to the bit; Linux's NumPy builds differ in the last bit or two of some values (as macOS and Linux snapshot builds do,
+    methods log, Oct 30), so the record is held to 1e-12 of each value."""
     twb = ph.wet_bulb(TDB, RH)
     p = ph.for_location(ph.central_parameters(), TDB)
     w, c, r = ph.hourly_rates(TDB, twb, design, p, RH)
     power, heat = ph.hourly_heat_power(TDB, twb, design, p, RH)
     hours = REF["hours"]
     for name, got in (("withdrawn", w), ("consumed", c), ("returned", r), ("power", power), ("heat", heat)):
-        assert np.ravel(got)[hours].tolist() == REF["designs"][design][name], (design, name)
+        np.testing.assert_allclose(np.ravel(got)[hours], REF["designs"][design][name], rtol=1e-12, atol=0, err_msg=f"{design} {name}")
 
 
 def test_data_center_reads_the_shared_ranges():
