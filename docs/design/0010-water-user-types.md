@@ -1,6 +1,7 @@
 # 0010: Water user types: one contract for every large water user
 
-Status: **proposed, Nov 9, 2026, for Andrew's review. No code yet.** Battery cell plants (0009) wait on it, so they are
+Status: **proposed, Nov 9, 2026. Decisions 4 and 8 agreed (Andrew, Nov 9); 6 revised after his question; the rest
+for review. No code yet.** Battery cell plants (0009) wait on it, so they are
 the first type added under it rather than beside it. Cathode materials plants move to 0011.
 
 ## Why
@@ -217,17 +218,30 @@ The number came early, but it is what users see, so the packages are held to it 
    and tests and registering it.
 3. **Downstream reads only roles and hooks.** The hooks to start: `backup_generator_mw` and `cooling_blowdown`. New
    hooks are added to the contract, with a "none" default, never as a branch on type.
-4. **Type-specific measures.** Proposal: `Estimate.extras`, a dict of named ranges (`pue`, `peak_pue` for data centers;
+4. **Type-specific measures. Agreed (Andrew, Nov 9).** `Estimate.extras`, a dict of named ranges (`pue`, `peak_pue` for data centers;
    `site_kwh_per_kwh` for cell plants). `Electricity.pue` and `peak_pue` stay as they are for data centers through 3.x,
    so nothing that reads them breaks, and are None for other types. They move to `extras` only at 4.0.
 5. **Providers supply the place; facilities compute.** Michigan's page-parity rule code stays where the page mirrors
    it.
-6. **Model versions.** `MODEL_VERSION` names the numbers waterledger.org publishes, and snapshots are keyed on it. A
-   new type's numbers don't change any of those. Proposal: each type module carries its own `MODEL_VERSION`
-   (`battery.MODEL_VERSION = "1.0"`), and `Estimate.model_version` reports the type's. The package-wide one stays the
-   data center and site number, so adding a type never forces snapshot rebuilds. The methods log records each type's
-   versions.
+6. **Models and stored results are managed separately** (revised after Andrew asked, Nov 9, whether pre-packaged
+   results should be handled apart from the models). Today `MODEL_VERSION` does two jobs: it names the numbers, and
+   it keys the snapshots so a package reads only data built on its own model. The second job exists only because data
+   centers have always had stored results; under this contract a type may have none.
+   - **Each type has its own model version** (`datacenter.MODEL_VERSION`, `battery.MODEL_VERSION = "1.0"`), raised
+     only when that type's numbers change, with its own golden test. `Estimate.model_version` reports the type's.
+     `waterledger_models.MODEL_VERSION` stays through 3.x as the data center's, so nothing that reads it breaks.
+   - **Snapshots are data releases on their own cadence** (0003): dated, never changed. A manifest records which types
+     it holds stored results for, and each one's model version.
+   - **One rule for stored results:** the package uses a snapshot's results for a type only when its version for that
+     type matches the package's. Otherwise it runs the model at the place where the type can, or says it is reading
+     another model's data, as it does today.
+   - So stored results are an accelerator, and our own use of the package, not a condition of using a type. Adding a
+     type never forces a rebuild, and a type gains stored results when they are worth precomputing (for battery
+     plants, Andrew's call, with the site decision).
+   - `latest.json`'s `by_model` stays keyed by the data center's version through 3.x, with a per-type map beside it.
 7. **Release.** Steps 1-5 change no numbers and add to the public API without breaking it, so they and battery plants
    ship together as 3.16.0, a minor release.
-8. **Stability.** The contract is public API from 3.16, under the 3.x promise; deprecations warn and wait for 4.0; the
-   README's beta line is replaced by the policy above.
+8. **Stability. Agreed (Andrew, Nov 9).** The contract is public API from 3.16, under the 3.x promise (public API has
+   been committed since 1.x, and following it mostly serves the project); deprecations warn and wait for 4.0; the
+   README's beta line is replaced by the policy above. Where following it would hold the project up, the maintainer
+   can make an explicit exception, recorded in the CHANGELOG and the design note with the reason.
