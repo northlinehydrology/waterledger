@@ -39,9 +39,18 @@ pattern for every category. A layer lives in `waterledger_data` with the state's
 and category, and is recorded in the snapshot's manifest (`layers`: category, source, adds or replaces). The provider
 reads the layers wherever a snapshot has them; nothing in the provider asks which state it is.
 
-**A layer replaces the base only when it measures better**: compared against an independent check, not argued.
-Where the two are about equally good, the base is used, so there is one process. Each replacement is stated in the
-methods page with its reason and the comparison.
+**When a layer replaces the base** depends on what it is:
+
+- **The state's own records** (a regulator's reports, maps or rules: EGLE, MPSC, Wellogic, DNR) are kept unless they
+  measure worse than the base. The people who use a Michigan study (township boards, reviewers, utilities) know and cite
+  these sources, so they carry weight beyond their error rate (Andrew, Nov 9).
+- **Our own constructs** (groupings, default rules) are compared with the base against an independent check, and the
+  better one is used.
+- **Close averages do not make two sources interchangeable** (Andrew, Nov 9). A comparison reports where the two
+  differ, place by place, and which is closer there; a tie on average with large local differences is decided area by
+  area, not by default.
+
+Each replacement is stated in the methods page with its reason and the comparison.
 
 This is the add-state process in two passes (Andrew, Nov 9: "a nation flavor first addition. And a later second
 addition that deep dives on state level data"). A state first goes on with the national base alone. A later deep dive
@@ -64,7 +73,7 @@ From the code as of Nov 9. "Compare" means the numbers are measured side by side
 | Design storms | NOAA Atlas 14 | the same | Base |
 | County rainfall | NOAA Climate at a Glance by county | the same source | Compare |
 | Cooling weather | ERA5 cells | the same | Base (already shared) |
-| Road salt regions | Michigan's eight regions, stations chosen by hand, salt days by the national method | NOAA climate divisions (ten in Michigan), their ISD stations | Base: about a tie (measured below); NOAA's division names in every state |
+| Road salt regions | Michigan's eight regions, stations chosen by hand, salt days by the national method | NOAA climate divisions (ten in Michigan), their ISD stations | Layer (replaces), with the eastern Upper Peninsula split off; decision 3 (measured below) |
 | Golf course water | median of 453 EGLE-reported courses, 43,500 gal/day | GCSAA's North Central survey median, 36,200 gal/day (no Michigan entry in `wateruse.GOLF`) | Layer (replaces): reported beats a survey; measured below |
 | Electric utilities | MPSC service territories | HIFLD territories (PNNL's copy) | Layer (replaces): measured below; the base also gains an EIA-861 county screen in every state |
 | Balancing authority | a hand-kept list of Michigan's PJM utilities | HIFLD control area, then EIA-861 | Base, if it gives the same seven utilities (the list's comment says it came from these sources) |
@@ -93,11 +102,28 @@ region changes in 8 Texas places and none elsewhere.
 **Road salt.** Median winter days with precipitation at 1 C or below, 2005-2024 (NOAA ISD-Lite), the measure
 `runoff.salt_events` uses (0.6 events a day). Checked at the ten Michigan stations with whole records that neither
 grouping uses: mean absolute error 10.8 days for the eight regions (bias +6.6), 9.1 for the divisions (+4.5). At the 810
-places within 40 km of a station: 4.4 and 4.8 days. A day or two is about one salt event a winter, so this is a tie, and
-the base is used. The divisions split the Upper Peninsula, which the regions give one station (Hancock, 119 days, far
-above Sault Ste. Marie's 101, Menominee's 92 and Chatham's 82). Both groupings miss by 10 to 30 days at some stations;
-a place's own nearest station or cell would do better, a later question for every state. The divisions get NOAA's own
-names ("Southwest Lower") in every state, in place of "MI climate division 8".
+places within 40 km of a station: 4.4 and 4.8 days. Close on average, but not interchangeable: the two differ by 5 days
+or more at 539 of the 1,541 places, and by 20 to 30 days at 88. Area by area, against the nearest stations:
+
+| Where they differ | Places | Regions | Divisions | Nearest observed | Closer |
+|---|---|---|---|---|---|
+| Eastern Upper Peninsula | 38 | 119 | 93 | Chatham 82 (36 km) | Divisions |
+| Northeast region in the eastern UP division | 17 | 88 | 93 | Sault Ste. Marie 101 (24 km) | Divisions |
+| Southwest region in division 8 | 121 | 64 | 72 | Kellogg 63 (65 km), South Bend 60 | Regions |
+| Central region in division 9 | 107 | 71 | 62 | Lansing 71 (15 km) | Regions |
+| West region in division 9 | 36 | 72 | 62 | Grand Rapids 72 (30 km) | Regions |
+| West region in division 5 | 68 | 72 | 67 | Muskegon 67 (38 km) | Divisions |
+| Thumb region in division 10 | 49 | 64 | 59 | Flint 64 (22 km) | Regions |
+| North region in division 6 | 18 | 89 | 64 | Roscommon 96 (67 km) | Regions |
+| North region in division 5 | 32 | 89 | 67 | Muskegon 67 (91 km), Traverse City 89 (93 km) | Unclear |
+
+The regions are closer for more places; their one large miss is the Upper Peninsula, which they give a single station
+(Hancock, 119 days). So Michigan keeps its regions as a layer, with the eastern Upper Peninsula split off on its own
+station (decision 3). A place's own nearest station was tried and did not do better (10.7 days at all 32 stations,
+each predicted from the others); the station network is too thin for the lake-effect gradients. The per-place answer
+for every state is the place's own ERA5 cell, corrected to stations as cooling weather already is, once the cells'
+precipitation is pulled (later). The base gets NOAA's own division names ("Southwest Lower") in every state, in place of
+"MI climate division 8".
 
 **Golf.** EGLE's reported median (453 courses with a usable report) against GCSAA's survey figure. Splitting the
 median by region or division doesn't help: predicting each course from the others misses by about a factor of two
@@ -169,8 +195,10 @@ numbers, so Andrew checks it locally before any deploy.
 1. **Base plus layers, one builder.** Each layer adds or replaces, and replaces only with a stated reason.
 2. **No better estimate lost:** the before and after record, every difference with a cause, Andrew's review before
    release.
-3. **NOAA's divisions replace Michigan's eight regions** for road salt and the region shown on the page: measured
-   as a tie, so the base, with NOAA's division names in every state. The page's "climate region" label changes.
+3. **Michigan's regions stay as a layer, with the eastern Upper Peninsula split off** (its own station, Sault Ste.
+   Marie or Pellston, chosen by the same check). Close to the divisions on average, but closer at more places, and the
+   names are Michigan's. The split changes salt days at about 40 places, a correction recorded in the methods log.
+   Later, for every state: salt from each place's corrected ERA5 cell.
 4. **MPSC replaces HIFLD in Michigan** (measured: 1,540 of 1,540 against 1,062), and the base gains the EIA-861
    county screen in every state. EGLE's golf median replaces the survey.
 5. **Michigan's places and GEOIDs stay**; villages later.
