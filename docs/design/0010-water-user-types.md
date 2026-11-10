@@ -269,7 +269,7 @@ The number came early, but it is what users see, so the packages are held to it 
    - **Numbers.** Against records of both types' Monte Carlos from before the move, every value is identical to the bit except the power
      figures, which the runner works from the hourly MW with one formula for every type: data centers' `power_mw_avg` and
      `power_mw_peak_1in10` within 4.1e-16 relative, cell plants' three within 4.9e-16. Keeping each type's own order of multiplication
-     would mean a scale per statistic in the contract; the last bit was judged not worth that [for Andrew to agree].
+     would mean a scale per statistic in the contract; the last bit is not worth that (Andrew agreed, Nov 10).
    - **Not moved:** data centers' lake-source cooling (`datacenter.lake`) keeps its own loop; it comes onto the runner with the facility
      contract (step 3), where its `to_source` return is handled for every type.
 3. The registry and the `Facility` contract; `DataCenter` onto it (`results`, `bmi_config`, hooks); providers reduced to
