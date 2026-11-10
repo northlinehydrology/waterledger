@@ -10,7 +10,8 @@ nearly all of it in electrode drying, dry rooms and formation. Each hour:
       rest on a warmer process loop (compressors, hydraulics); the rest leaves in exhaust air, flue gas and the building envelope.
   outdoor air: the dry rooms and conditioned areas take make-up air that must be cooled and dried. Its load on the chilled water follows the
       outdoor air's enthalpy above the supply air's, sized as a share of the cooling load at the location's design enthalpy.
-  the loops, chillers, pumps and fans, the towers, hybrid or dry coolers, and the water they take: heat_rejection, shared with data centers.
+  the loops, chillers, pumps and fans, the towers, hybrid or dry coolers (with adiabatic pads for assist), and the water they take: heat_rejection,
+      shared with data centers.
   lake: once-through Great Lake water instead (once_through, shared with data centers): the loops reject to it through plate exchangers,
       chillers carry what it cannot, the withdrawal follows from the heat and the water's rise, and the returned heat's forced evaporation
       is the cooling's consumption. GLERL surface temperatures stand for the intake's [A]: a deep intake is colder, so its chillers run less.
@@ -23,7 +24,7 @@ nearly all of it in electrode drying, dry rooms and formation. Each hour:
   process water: purified water for anode slurry (evaporated in the dryers), water leaving in recovered NMP, other purified water (to
       sewer), the purification's reject (to sewer), boiler make-up (mostly lost as steam). Staff water follows the people on site.
 
-Returns go to two places. To the sewer: tower blowdown, the purification's reject, other purified water, boiler blowdown and staff water, as
+Returns go to two places. To the sewer: tower blowdown (assist's pad bleed), the purification's reject, other purified water, boiler blowdown and staff water, as
 every EA with a discharge sends it (Lansing's 0.56 MGD to the sanitary sewer, DOE/EA-2189-S1, p. 19; BlueOval SK's to the Megasite and Hardin
 County plants, DOE/EA-2201, pp. 22 and 36; A123's table lists tower blowdown with the sanitary and process streams, DOE/EA-1690, Table 2-5).
 A plant with its own permit may discharge blowdown directly instead [A]. To the source: the lake design's once-through water, less the
@@ -42,7 +43,7 @@ import numpy as np
 from waterledger_models import heat_rejection as hr
 from waterledger_models import once_through as ot
 
-DESIGNS = ("dry", "hybrid", "towers", "lake")
+DESIGNS = ("dry", "assist", "hybrid", "towers", "lake")    # assist from model 1.12: dry coolers with adiabatic pads, shared with data centers
 CHEMISTRIES = ("nmc", "lfp")                  # nmc stands for every nickel cathode, NMC and NCA, the chemistries of the EAs' plants
 HOURS_A_YEAR = 8760.0
 CELLS_PER_HOUR = 1e6 / HOURS_A_YEAR          # kWh of cells an hour at full output, per GWh/yr of capacity
@@ -175,7 +176,7 @@ def hourly(tdb, twb, rh, design, p, water_t=None):
 
     kW: "energy" (plant energy less the cooling plant), "electricity", "fuel", "outdoor_air" (its load on the chilled water), "heat" (rejected through
     the water, dry coolers or lake water), "exhaust" (to exhaust air, flue and envelope), "fans" (heat rejection fans). Gallons: "withdrawn", "consumed",
-    "returned" (= "to_sewer" + "to_source"), and the parts "evap", "drift", "blow" (towers), "once_through" and "lake_evap" (lake: water through the exchangers and the forced
+    "returned" (= "to_sewer" + "to_source"), and the parts "evap", "drift", "blow" (towers and hybrid; assist's pads: their evaporation and bleed), "once_through" and "lake_evap" (lake: water through the exchangers and the forced
     evaporation its heat drives), "process_withdrawn", "process_consumed", "staff".
     """
     if design not in DESIGNS:
@@ -191,17 +192,19 @@ def hourly(tdb, twb, rh, design, p, water_t=None):
     oa_design = p["oa_share"] / (1.0 - p["oa_share"]) * design_load
     outdoor_air = oa_design * np.maximum(enthalpy(tdb, rh) - p["oa_supply_enthalpy"], 0.0) / (p["design_h"] - p["oa_supply_enthalpy"])
     lake = design == "lake"
-    wet = np.zeros_like(tdb) if lake else hr.wet_share(tdb, design, p, switch_point(p))
+    switch = switch_point(p)
+    wet = np.zeros_like(tdb) if lake else hr.wet_share(tdb, design, p, switch)
+    coil = hr.coil_air(tdb, twb, design, p, switch)          # assist's pads cool the air ahead of the dry coils above the switch point
     heat, cooling_power, fans = 0.0, 0.0, 0.0
     for loop_load, supply in ((p["chilled_share"] * load + outdoor_air, p["chilled_supply"]), ((1.0 - p["chilled_share"]) * load, p["process_supply"])):
         if lake:
             (chiller, pumps), fan = hr.lake_loop(loop_load, supply, water_t, p), np.zeros_like(tdb)
         else:
-            chiller, pumps, fan = hr.loop(loop_load, supply, tdb, twb, tdb, wet, design, p)
+            chiller, pumps, fan = hr.loop(loop_load, supply, tdb, twb, coil, wet, design, p)
         heat, cooling_power, fans = heat + loop_load + chiller + pumps, cooling_power + chiller + pumps + fan, fans + fan
     electricity = p["elec_share"] * energy + cooling_power
     fuel = (1.0 - p["elec_share"]) * energy
-    evap, drift, blow = hr.tower_water(heat * hr.KWH_BTU, tdb, wet, p)
+    evap, drift, blow = (hr.pad_water(heat * hr.KWH_BTU, tdb, twb, p, switch) if design == "assist" else hr.tower_water(heat * hr.KWH_BTU, tdb, wet, p))
     gal_hour = 3600.0 * ot.GAL_M3
     once = ot.withdrawal_m3s(heat * 1000.0, p["rise_c"]) * gal_hour * np.ones_like(tdb) if lake else np.zeros_like(tdb)
     lake_evap = ot.forced_evaporation_m3s(heat * 1000.0, water_t, p["wind_mph"], p["evap_error"]) * gal_hour if lake else np.zeros_like(tdb)

@@ -121,9 +121,25 @@ def test_monte_carlo_reads_the_hours():
     assert s["utilization"]["p10"] < 1.0 and s["withdrawn_avg"]["p50"] < c["withdrawn_avg"]["p50"]
     with pytest.raises(ValueError):
         plant.run_location(TIMES, TDB, RH, n=2, utilization="half")
-    assert set(r) == {"dry", "hybrid", "towers"}
+    assert set(r) == {"dry", "assist", "hybrid", "towers"}
     lake = plant.run_location(TIMES, TDB, RH, n=4, gwh=10.0, water_temps=LAKE_MICHIGAN)
     assert set(lake) == set(bp.DESIGNS) and lake["lake"]["withdrawn_avg"]["p50"] > 20 * c["withdrawn_avg"]["p50"]
+
+
+def test_assist_evaporates_only_above_its_switch_point():
+    """Assist (model 1.12): the data centers' adiabatic pads on the plant's dry coolers. Below the switch point it is the dry design hour for hour;
+    above it the pads evaporate, the cooler air takes chiller power off, and their bleed goes to the sewer. It uses more water than dry and far less
+    than towers; against hybrid it can fall either side (at central values in West Michigan it uses about 10% more, both wet from the same switch point)."""
+    p = bp.for_location(bp.central_parameters() | {"utilization": 1.0}, TDB, RH)
+    twb = hr.wet_bulb(TDB, RH)
+    dry, assist, hybrid = (bp.hourly(TDB, twb, RH, d, p) for d in ("dry", "assist", "hybrid"))
+    below = TDB < bp.switch_point(p)
+    assert np.array_equal(assist["withdrawn"][below], dry["withdrawn"][below]) and np.array_equal(assist["electricity"][below], dry["electricity"][below])
+    above = ~below
+    assert above.any() and (assist["evap"][above] > 0).any() and (assist["electricity"][above] <= dry["electricity"][above] + 1e-12).all()
+    assert np.allclose(assist["blow"], assist["evap"] * p["assist_bleed"]) and not assist["drift"].any()
+    towers = bp.hourly(TDB, twb, RH, "towers", p)
+    assert dry["consumed"].sum() < assist["consumed"].sum() < 0.5 * towers["consumed"].sum() and dry["consumed"].sum() < hybrid["consumed"].sum()
 
 
 def test_lake_hours_follow_the_calendar():
