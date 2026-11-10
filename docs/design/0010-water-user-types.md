@@ -1,0 +1,233 @@
+# 0010: Water user types: one contract for every large water user
+
+Status: **proposed, Nov 9, 2026, for Andrew's review. No code yet.** Battery cell plants (0009) wait on it, so they are
+the first type added under it rather than beside it. Cathode materials plants move to 0011.
+
+## Why
+
+The packages are the product, and the point of them is every large new water user, not data centers alone: battery
+cell and materials plants next, then mines, fabs, food processing, hydrogen, and the declared "ghost" user for cases
+where modeling the process would take irresponsible assumptions. Andrew (Nov 9): adding a type in a way that makes
+sense, for this one and the ones after, matters more than speed.
+
+0001 already promised this: "`Facility` is a small protocol: inputs, `water_use(climate) -> WaterUse`,
+`electricity()`, and `land()` ... Battery plants, chip fabs, food processing and hydrogen can be added later without
+changing `Site` or `Estimate`." It was never built. `Facility` has one subclass, and data center fields are read in
+14 places outside it:
+
+| Where | What it reads |
+|---|---|
+| `site.py`: `Site.facility` | typed as `DataCenter` |
+| `site.py`: `local_weather` | calls `datacenter.cooling.run_location`; `f.cooling`, `f.plant`, `f.it_mw` |
+| `site.py`: `by_design` | data center designs |
+| `site.py`: `to_bmi_config` | `CoolingWaterBmi`, `LakeCoolingBmi`, `it_mw` |
+| `states/mi/provider.py`: `estimate` | `scenario.scenario(mw=, cool=, plant=)`, `sc.electricity`, `sc.grid_water` with `it_mw` |
+| `national/provider.py`: `estimate` | stored data center results, `f.cooling`, `f.plant`, `f.it_mw`; source and wastewater rules on "towers or hybrid" |
+| `comparisons.py`: `site_before_after` | `s.facility.it_mw`, for backup generator fuel |
+| `comparisons.py`: `site_runoff_loads` | `s.facility.cooling == "towers"`, for blowdown phosphorus |
+| `estimate.py`: `Electricity` | requires `pue` and `peak_pue` |
+
+Adding battery plants by branching on type in each of these would work once. By the fourth type, every downstream
+function would carry a branch per type, and a change to one type could quietly move another's numbers. The waterledger
+packages are what Northline, Water Ledger and Basin Ledger are all built on, so the way types are added should be
+settled once, here.
+
+## Principles
+
+1. **One set of roles, at every level, and they are Basin Ledger's.** Basin Ledger already reads any water user
+   through roles (`basinledger/users.py`), and `CoolingWaterBmi` already reports them as aliases:
+
+   | Role | BMI name (Basin Ledger) | In results |
+   |---|---|---|
+   | withdrawal | `water_user_water__withdrawal_volume_flux` | `withdrawn` |
+   | gain | `water_user_water__gain_volume_flux` | `gain` (a data center's condensate; ore moisture at a mine) |
+   | consumption | `water_user_water__consumption_volume_flux` | `consumed` |
+   | return | `water_user_water__return_volume_flux` | `returned`, split by destination (below) |
+   | storage | `water_user_water__volume` | `storage` (ponds, tailings), optional |
+   | temperature | `water_user_return_water__temperature` | optional |
+   | power | `water_user__electric_power` | `power_mw` |
+   | constituents | `water_user_return_water_<name>__mass_flux` | optional, one per constituent |
+
+   Two additions, both needed by battery plants and both general:
+   - **Return by destination.** `to_sewer` (wastewater: blowdown, process, sanitary) and `to_source` (water handed
+     back where it came from: once-through lake water). `returned = to_sewer + to_source`. Today a data center's lake
+     design is the only `to_source`, and it is handled by a special case (`lake_estimate`).
+   - **Fuel.** `fuel_mw`, energy burned on site (a cell plant's ovens and boilers). Zero for data centers, apart from
+     generators, which stay their own item.
+
+   The balance closes at every level, every step, and is held by tests:
+   withdrawn + gain = consumed + returned + change in storage.
+
+2. **A type is three pieces, one per layer, and nothing else changes when one is added.**
+   - **Model** (`waterledger_models/<type>/`, numpy only): the hourly physics, the Monte Carlo at a location, and a BMI
+     component reporting the roles.
+   - **Facility** (`waterledger/facilities/<type>.py`, pydantic): the inputs in the industry's own unit, the designs,
+     what the default rules need to know about the type, how results are obtained, and the type's own extras.
+   - **Tests**: the type's own (balance, physics), plus one shared conformance test run over every registered type.
+
+3. **Shared physics stays shared** (0009, decisions 1, 6 and 7): `heat_rejection`, `once_through`, `daily`, `grid`.
+   A type keeps only what is its own. Operating settings are the type's own ranges; every parameter is sampled, set or
+   an input.
+
+4. **Downstream reads only the roles.** Comparisons, equivalents, before/after, runoff loads, levels, power plant
+   water, grid water, the brief and the site never read a facility's own fields. What they need from a type comes
+   through a short list of declared hooks (below), each with a default that means "this type has none".
+
+5. **Types are registered by kind.** `Site.facility` accepts any registered type (a pydantic union discriminated on
+   `kind`). Adding a type is writing its three pieces and registering it.
+
+## The contract
+
+### Level 1: the model (`waterledger-models`)
+
+Each type's module provides:
+
+- `DESIGNS`; `RANGES` and `SOURCES` for its own parameters, including its operating settings; `sample_parameters`,
+  `central_parameters`. Shared equipment ranges come from `heat_rejection.EQUIPMENT` and `once_through.RANGES`.
+- `hourly(...)`: one run's hours, a dict keyed by role (and the type's own parts), per unit of size. The balance closes
+  hour by hour.
+- `run_location(times, temps, rhs, <size>, designs=None, settings=None, water_temps=None, grid=None, n, seed)`, the
+  size in the type's own unit and by its own name (`mw` for data centers, as today; `gwh` for cell plants), returning
+  `{design: {stat: {p10, p50, p90, central}}}` with the standard statistic names:
+  - water: `<role>_<stat>` for `withdrawn`, `consumed`, `returned`, `to_sewer`, `gain`, with `avg`, `peak_1in10`,
+    `record`, `annual_mg`, and for withdrawn and consumed `max_month`, `max_90day`, `worst_year_mg`;
+  - power: `power_mw_avg`, `power_mw_peak_1in10` (hour), `power_mw_peak_day_1in10`, `fuel_mw_avg`;
+  - grid: `grid_<BA>_<kind>_avg` and `_peak_1in10`, from one shared function that takes any user's hourly electricity
+    (today it lives inside the data center's run loop);
+  - the type's own, under its own names: `pue_avg` for data centers, `site_kwh_per_kwh` for cell plants.
+  The results are the user's whole water at that size, staff included. How a type stores results for reuse is its own
+  business: data centers keep "per 100 MW plus staff runs", because staff water doesn't scale with size.
+- A BMI component on `ScalarPointBmi` reporting the roles' names: `CoolingWaterBmi` and `LakeCoolingBmi` today,
+  `BatteryCellBmi` next. `bmi-tester` runs on each in CI (0001, decision 7).
+
+### Level 2: the facility (`waterledger`)
+
+```python
+class Facility(BaseModel):
+    kind: str                       # the registry key
+    design: str                     # one of the type's DESIGNS (DataCenter keeps `cooling` as its name for it)
+
+    DESIGNS: ClassVar[tuple]        # what by_design iterates
+    EVAPORATIVE: ClassVar[tuple]    # designs whose wastewater is mostly cooling blowdown (default-rule input)
+    size: (value, unit)             # for display: (300, "MW of IT capacity"), (43.75, "GWh/yr of cells")
+
+    def results(self, site, weather) -> Results        # standard bands for every role, plus the type's extras
+    def bmi_config(self, ...) -> (entry, cfg)         # site.to_bmi_config delegates here
+    # hooks, each defaulting to "none"
+    def backup_generator_mw(self) -> float | None     # before/after's fuel row
+    def cooling_blowdown(self, results) -> Range | None   # runoff loads' blowdown phosphorus
+```
+
+**Where results come from is the type's choice.** A data center reads stored results: Michigan's site files through
+`scenario` (which the page mirrors, so its parity tests stay), and the snapshots' cells elsewhere, or a run at the
+place with `weather="local"`. A cell plant has no stored results, so it runs at the place every time (Open-Meteo's
+best match, and GLERL temperatures for the lake design, both cached). A type can gain stored results later without
+changing anything downstream.
+
+**What a state provider does.** Today each provider computes the whole data center estimate. Under the contract a
+provider supplies the place: stored results for types that have them, the reference values, and the data the default
+rules use (systems mapped in the place, the nearest sizable system, the sewer plant and its spare design flow). The
+facility computes. Michigan keeps its rule code where the page mirrors it.
+
+**Default source and wastewater.** One rule in each place, fed by the type: "evaporative designs go to wells when no
+system is mapped" becomes `design in facility.EVAPORATIVE`, and "does the wastewater fit in the plant's spare design
+flow" uses the type's own `to_sewer`. For data centers this is what it is today.
+
+### Level 3: the estimate
+
+`Estimate` keeps its shape: `water` (`WaterUse`) and `electricity` (`Electricity`) are the roles at the site's size, and
+everything after them reads only those. Two changes:
+
+- `WaterUse` gains `to_source` (a `Flow`, None for types and designs that hand nothing back). `lake_source` keeps its
+  meaning, once-through cooling on a Great Lake, for every type.
+- `Electricity` gains `fuel_mw` (optional). PUE is a data center's own measure: see decision 4.
+
+## What changes for data centers
+
+Nothing in the numbers. Every item in the table above moves behind the facility or a hook:
+
+- `DataCenter.results()` holds what the two providers' `estimate` and `local_weather` do now.
+- `DataCenter.bmi_config()` holds `to_bmi_config`'s body; `backup_generator_mw()` is `it_mw` times the generator
+  ratio `runoff.fuel` uses; `cooling_blowdown()` is today's towers-only `returned.avg.p50`.
+- The providers keep the place-side parts.
+
+**Identity test, every state.** Before any of this moves, the full `Estimate` JSON is saved for a set of places in each
+published state (Michigan, Ohio, Virginia, Texas, Wisconsin): every design, every wastewater choice and both weather
+modes. After each step it must match to the last bit, as for the heat rejection move. The Michigan page parity tests
+must also stay green.
+
+## Battery cell plants as the first new type
+
+`BatteryCellPlant(capacity_gwh, design, chemistry="nmc", utilization="full", settings={})`, designs dry, hybrid,
+towers and lake, runs at the place. Extras: site energy per kWh of cells, and water withdrawn and consumed per kWh.
+Grid water comes through the shared function, from the plant's own hourly electricity. Backup generators: none until a
+source sizes them [A]. Blowdown phosphorus: the plant's tower blowdown.
+
+**The check that the contract works:** battery plants go in without touching `Site`, the comparisons, the levels or the
+providers, apart from registering the type. If anything downstream needs an edit, the contract is wrong there, and it
+is fixed in the contract, for every type.
+
+**Later, the declared user.** A type with no process model: withdrawal, return fraction and destination,
+concentrations and power, as declared ranges. Not built now; it is the test that the contract isn't shaped by cooling.
+If it can be written as a facility with `results()` from declared numbers, the contract is general enough.
+
+## Stability under 3.x
+
+The packages are at 3.x, and from 3.10 the README promises that a breaking change to the public API waits for 4.0.
+The number came early, but it is what users see, so the packages are held to it (Andrew, Nov 9). In practice:
+
+- **Additions only.** Everything here is added beside what exists: `Site.facility` widens from `DataCenter` to any
+  registered type; `WaterUse` and `Electricity` gain optional fields; `DataCenter` keeps every field, including
+  `cooling` and `it_mw`; `Site.estimate`, `by_design` and `to_bmi_config` keep their signatures; `CoolingWaterBmi`
+  and `LakeCoolingBmi` keep their names. `Electricity.pue` becomes optional in its type, but is always set for a data
+  center, as now.
+- **The contract becomes public API when it ships**, and is listed in the README beside `Place`, `Context`, `Site` and
+  `Estimate`: the `Facility` contract and its hooks, the role names, the standard statistic names and the BMI role
+  names. A change to any of them after 3.16 waits for 4.0. This is the reason to settle it carefully now.
+- **Deprecation, not removal.** A name replaced in 3.x keeps working, raises a `DeprecationWarning` that names its
+  replacement, and is listed under **Deprecated** in the CHANGELOG. It is removed only in 4.0.
+- **The README's "in beta, whatever the 3.x number suggests" line goes.** The Stability section says what is public,
+  what may change in a minor release (internal modules and functions with a leading underscore), and the deprecation
+  rule. Model results are versioned by `MODEL_VERSION`, not semver, as now.
+- **Numbers and API stay apart.** None of steps 1-5 changes a number; the identity test proves it. A type's own numbers
+  carry its own model version (decision 6).
+
+## Not in this note
+
+- **waterledger.org.** The site format stays data-center-only; whether battery plants go on the site is decided later
+  (0009, decision 5).
+- **Cathode materials plants:** 0011, on this contract.
+
+## Order of work, each step its own commit with the identity test green
+
+1. The identity snapshot of today's estimates in every state.
+2. Grid water as a shared function on any hourly electricity; the data center run calls it.
+3. The registry and the `Facility` contract; `DataCenter` onto it (`results`, `bmi_config`, hooks); providers reduced to
+   the place side.
+4. Downstream onto the hooks: `before_after`, runoff loads, `by_design`, `to_bmi_config`.
+5. The conformance test, over every registered type.
+6. Battery cell plants: the model's remaining pieces (sewer and source returns, peak-hour power, chemistry), the
+   facility, `BatteryCellBmi`, tests.
+7. READMEs, docs, CHANGELOG, the methods log; then a release on Andrew's word.
+
+## Decisions to agree
+
+1. **Roles.** Basin Ledger's roles at every level, plus return by destination (`to_sewer`, `to_source`) and `fuel_mw`.
+2. **Three pieces per type, a registry and a shared conformance test.** A type is added by writing its model, facility
+   and tests and registering it.
+3. **Downstream reads only roles and hooks.** The hooks to start: `backup_generator_mw` and `cooling_blowdown`. New
+   hooks are added to the contract, with a "none" default, never as a branch on type.
+4. **Type-specific measures.** Proposal: `Estimate.extras`, a dict of named ranges (`pue`, `peak_pue` for data centers;
+   `site_kwh_per_kwh` for cell plants). `Electricity.pue` and `peak_pue` stay as they are for data centers through 3.x,
+   so nothing that reads them breaks, and are None for other types. They move to `extras` only at 4.0.
+5. **Providers supply the place; facilities compute.** Michigan's page-parity rule code stays where the page mirrors
+   it.
+6. **Model versions.** `MODEL_VERSION` names the numbers waterledger.org publishes, and snapshots are keyed on it. A
+   new type's numbers don't change any of those. Proposal: each type module carries its own `MODEL_VERSION`
+   (`battery.MODEL_VERSION = "1.0"`), and `Estimate.model_version` reports the type's. The package-wide one stays the
+   data center and site number, so adding a type never forces snapshot rebuilds. The methods log records each type's
+   versions.
+7. **Release.** Steps 1-5 change no numbers and add to the public API without breaking it, so they and battery plants
+   ship together as 3.16.0, a minor release.
+8. **Stability.** The contract is public API from 3.16, under the 3.x promise; deprecations warn and wait for 4.0; the
+   README's beta line is replaced by the policy above.
