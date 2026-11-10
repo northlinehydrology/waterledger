@@ -23,6 +23,9 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
   (`OPERATING`: cycles of concentration, the hybrid's switch margin).
 - `once_through`: once-through cooling from a Great Lake, shared by every water user: withdrawal from the heat and the rise,
   forced evaporation (Diehl et al. 2013), the lake's ranges and NOAA GLERL temperatures.
+- `runs`: the Monte Carlo at one location for any water user type (design 0010): the draws, the standard loads, daily statistics,
+  water at the power plants and the result names; a type supplies its designs, draws and each draw's hours. `extra=` sees every draw's
+  hourly electricity.
 - `daily`: daily totals and their statistics (average, 1-in-10-year peak day, months, worst year), shared by every water user.
 - `grid`: water at the power plants supplying any user's hourly electricity, at grid level (design 0008): a balancing
   authority's table by month, UTC hour and the user's temperature, average and marginal, with `GridWaterBmi` (`[bmi]`);

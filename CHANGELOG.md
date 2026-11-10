@@ -2,6 +2,18 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## Unreleased
+
+- **The shared Monte Carlo runner** ([design 0010](docs/design/0010-water-user-types.md), step 2a). `waterledger_models.runs.run_location(model,
+  times, temps, rhs, designs=None, grid=None, extra=None)` runs any water user type: it owns the draws loop, the standard loads (the run's, the
+  peak day's, full capacity), the daily statistics, water at the power plants, the result names and the p10 / p50 / p90 / central summary. A type
+  gives a small model (its designs, its draws, each draw's `runs.Hours`). `cooling.run_location` and `battery.plant.run_location` keep their
+  signatures and results and now run through it. `extra(design, p, hours)` is called with every draw's hours, so a caller can work out more from
+  each draw's hourly electricity; its results are summarized with the rest.
+  - **Numbers.** The runner works every power figure from the hourly MW, one formula for every type, so `power_mw_avg` and `power_mw_peak_1in10`
+    (and a cell plant's `power_mw_peak_day_1in10`) differ from the types' own loops in the last bit: at most 4.9e-16 relative. Every other value
+    is identical to the bit, held by records of both types' Monte Carlos from before the move. No model version change.
+
 ## 3.16.0 (Nov 10, 2026; model 1.12)
 
 - **Indiana** is the sixth state published as a checked snapshot (data.waterledger.org/IN/2026-11-10, model 1.11;
