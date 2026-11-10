@@ -76,14 +76,34 @@ def test_every_type_closes(flat_grid):
 
 
 def test_extra_sees_every_draws_hourly_electricity():
-    """The hook the power supply scenarios use: called once per draw with that draw's Hours; what it returns is summarized with the rest."""
-    seen = []
+    """The hook the power supply scenarios use (design 0014): set up once, then called once per draw with that draw's Hours and index, the central
+    run last; what it returns is summarized with the rest."""
+    seen, setups = [], []
 
-    def extra(design, p, hours):
-        seen.append((design, hours.mw.shape))
-        return {"mwh_per_year": float(hours.mw.sum()) / (len(hours.mw) / 8766.0)}
+    class Extra:
+        def setup(self, times, tdb, twb, rh):
+            setups.append(len(times))
+
+        def __call__(self, design, p, hours, i):
+            seen.append((design, i, hours.mw.shape))
+            return {"mwh_per_year": float(hours.mw.sum()) / (len(hours.mw) / 8766.0)}
 
     model = plant._CellPlantRuns(4, 7, 10.0, "full", None, "nmc", None)
-    out = runs.run_location(model, TIMES, T, RH, designs=("towers",), extra=extra)["towers"]
-    assert len(seen) == 5 and all(s == (len(TIMES),) for _, s in seen)          # four draws and the central run
+    out = runs.run_location(model, TIMES, T, RH, designs=("towers",), extra=Extra())["towers"]
+    assert setups == [len(TIMES)] and [i for _, i, _ in seen] == [0, 1, 2, 3, 4] and all(s == (len(TIMES),) for _, _, s in seen)
     assert out["mwh_per_year"]["central"] == pytest.approx(out["power_mw_avg"]["central"] * 8766.0, rel=1e-9)
+
+
+def test_supplied_water_and_grid_go_through_the_runners_own_statistics(flat_grid):
+    """A Supplied's hourly water gets the same daily statistics as the type's, and its grid-served MW the same grid.RunWater: a stand-in plant
+    consuming 200 gal per MWh of the user's load, and the grid serving half the load, against the user's own figures."""
+    def extra(design, p, hours, i):
+        return runs.Supplied(water={"supply_s_gas_consumed": (hours.mw * 200.0, 1.0)},
+                             grid_mw={"supply_s": hours.mw * 0.5}, scalars={"supply_s_share": 0.5})
+
+    model = plant._CellPlantRuns(4, 7, 10.0, "full", None, "nmc", None)
+    r = runs.run_location(model, TIMES, T, RH, designs=("towers",), grid=flat_grid, extra=extra)["towers"]
+    for q in ("p10", "p50", "p90", "central"):
+        assert r["supply_s_gas_consumed_avg"][q] == pytest.approx(r["power_mw_avg"][q] * 200.0 * 24 / 1e6, rel=1e-9)
+        assert r["supply_s_grid_MISO_consumed_avg"][q] == pytest.approx(0.5 * r["grid_MISO_consumed_avg"][q], rel=1e-12)
+    assert {"supply_s_gas_consumed_max_month", "supply_s_gas_consumed_peak_1in10", "supply_s_share"} <= set(r)

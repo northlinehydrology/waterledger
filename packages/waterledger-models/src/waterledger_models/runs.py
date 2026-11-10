@@ -24,8 +24,11 @@ Results, {design: {stat: {"p10", "p50", "p90", "central"}}}:
     grid_<BA>_<kind>_avg and _peak_1in10                                                                                 with grid= (grid.RunWater)
     whatever `extra` returns                                                                                             with extra=
 
-`extra(design, p, hours)` is called for every draw with that draw's Hours, so a caller can work out more from each draw's hourly electricity
-(the power supply scenarios: what serves it, and the water that takes) without the runner keeping every draw's hours. It returns {stat: value}.
+`extra(design, p, hours, i)` is called for every draw with that draw's Hours and its index (the central run last), so a caller can work out more
+from each draw's hourly electricity (the power supply scenarios, design 0014: what serves it, and the water that takes) without the runner keeping
+every draw's hours, and can pair draws of its own with the type's by index. If `extra` has a setup(times, tdb, twb, rh), it is called once, after
+the model's. It returns {stat: value}, or a Supplied whose hourly water and grid-served MW the runner summarizes as it does the type's own:
+daily statistics under the names given, and water at the power plants through the same grid.RunWater, under "<prefix>_grid_<BA>_<kind>".
 """
 from dataclasses import dataclass, field
 
@@ -52,9 +55,20 @@ class Hours:
     extras: dict = field(default_factory=dict)   # the type's own measures for this draw, {stat: value}
 
 
+@dataclass
+class Supplied:
+    """What an extra hands back for one draw, beyond scalars (design 0014): hourly water as (gallons per unit of scale each hour, scale) at the run's
+    load, and at the peak day's load where it differs; hourly MW the grid serves, by name prefix, at the run's load and the peak day's."""
+    water: dict = field(default_factory=dict)        # {name: (hourly, scale)}; names ending in withdrawn or consumed also get months
+    peak: dict | None = None                         # {name: (hourly, scale)} at the peak day's load; None: the run's
+    grid_mw: dict = field(default_factory=dict)      # {prefix: hourly MW served by the grid}
+    grid_mw_peak: dict | None = None                 # {prefix: hourly MW} at the peak day's load; None: the run's
+    scalars: dict = field(default_factory=dict)      # {stat: value}
+
+
 def run_location(model, times, temps, rhs, designs=None, grid=None, extra=None):
     """Monte Carlo for each design at one location (module docstring). grid: {BA: {kind: gal/MWh for each hour of `times`}}, as grid.RunWater
-    takes it. extra: called as extra(design, p, hours) for every draw; its {stat: value} join the results."""
+    takes it. extra: called as extra(design, p, hours, i) for every draw; its results join the type's (module docstring)."""
     tdb = np.array(temps, dtype=float)
     rh = np.array(rhs, dtype=float)
     twb = wet_bulb(tdb, rh)
@@ -67,19 +81,26 @@ def run_location(model, times, temps, rhs, designs=None, grid=None, extra=None):
     year_ends = np.r_[np.flatnonzero(hour_years[1:] != hour_years[:-1]) + 1, len(hour_years)]
     plant_water = RunWater(grid, day_index, len(uniq), [g.start for g in by[0]]) if grid else None
     model.setup(times, tdb, twb, rh)
+    if extra is not None and hasattr(extra, "setup"):
+        extra.setup(times, tdb, twb, rh)
     runs = model.draws()
+
+    def water_stats(acc, water, peak):
+        for name, (arr, scale) in water.items():
+            monthly = name in MONTHLY or name.endswith(tuple("_" + m for m in MONTHLY))
+            s = daily_stats(day_index, len(uniq), years, arr, scale, months if monthly else None, by)
+            for stat, v in s.items():
+                acc.setdefault(f"{name}_{stat}", []).append(v)
+        for name, (arr, scale) in (peak or {}).items():
+            s = daily_stats(day_index, len(uniq), years, arr, scale, by=by)
+            acc[f"{name}_peak_1in10"][-1], acc[f"{name}_record"][-1] = s["peak_1in10"], s["record"]
+
     out = {}
     for design in designs or model.designs:
         acc = {}
-        for p in runs:
+        for i, p in enumerate(runs):
             h = model.run(design, p)
-            for name, (arr, scale) in h.water.items():
-                s = daily_stats(day_index, len(uniq), years, arr, scale, months if name in MONTHLY else None, by)
-                for stat, v in s.items():
-                    acc.setdefault(f"{name}_{stat}", []).append(v)
-            for name, (arr, scale) in (h.peak or {}).items():
-                s = daily_stats(day_index, len(uniq), years, arr, scale, by=by)
-                acc[f"{name}_peak_1in10"][-1], acc[f"{name}_record"][-1] = s["peak_1in10"], s["record"]
+            water_stats(acc, h.water, h.peak)
             acc.setdefault("withdrawn_peak_full_capacity", []).append(
                 acc["withdrawn_peak_1in10"][-1] if h.full is None else daily_stats(day_index, len(uniq), years, *h.full, by=by)["peak_1in10"])
             for k, v in h.extras.items():
@@ -94,8 +115,16 @@ def run_location(model, times, temps, rhs, designs=None, grid=None, extra=None):
             if plant_water:                              # water at the power plants for this hourly electricity (design 0008)
                 for k, v in plant_water.stats(h.mw, mw_peak).items():
                     acc.setdefault(k, []).append(v)
-            if extra:
-                for k, v in extra(design, p, h).items():
+            if extra is not None:
+                got = extra(design, p, h, i)
+                if isinstance(got, Supplied):
+                    water_stats(acc, got.water, got.peak)
+                    if plant_water:
+                        for prefix, mw in got.grid_mw.items():
+                            for k, v in plant_water.stats(mw, (got.grid_mw_peak or got.grid_mw)[prefix]).items():
+                                acc.setdefault(f"{prefix}_{k}", []).append(v)
+                    got = got.scalars
+                for k, v in got.items():
                     acc.setdefault(k, []).append(v)
         out[design] = {k: {"p10": float(np.quantile(v[:-1], 0.1)), "p50": float(np.quantile(v[:-1], 0.5)), "p90": float(np.quantile(v[:-1], 0.9)),
                            "central": float(v[-1])} for k, v in acc.items()}
