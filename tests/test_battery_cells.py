@@ -142,6 +142,31 @@ def test_assist_evaporates_only_above_its_switch_point():
     assert dry["consumed"].sum() < assist["consumed"].sum() < 0.5 * towers["consumed"].sum() and dry["consumed"].sum() < hybrid["consumed"].sum()
 
 
+def test_grid_water_closes_on_the_plants_electricity():
+    """Water at the power plants through grid.RunWater, the data centers' function (design 0010's standard treatment): with a constant factor, every
+    run's plant water is its electricity x the factor, on the average day and on the 1-in-10-year peak day."""
+    f = {"consumed": 300.0, "withdrawn": 12000.0}
+    out = plant.run_location(TIMES, TDB, RH, n=6, gwh=10.0, grid={"MISO": {k: np.full(len(TDB), v) for k, v in f.items()}})
+    for design, r in out.items():
+        for k, v in f.items():
+            for q in ("p10", "p50", "p90", "central"):
+                assert r[f"grid_MISO_{k}_avg"][q] == pytest.approx(r["power_mw_avg"][q] * v * 24 / 1e6, rel=1e-12), (design, k, q)
+                assert r[f"grid_MISO_{k}_peak_1in10"][q] == pytest.approx(r["power_mw_peak_day_1in10"][q] * v * 24 / 1e6, rel=1e-12), (design, k, q)
+    plain = plant.run_location(TIMES, TDB, RH, n=6, gwh=10.0)
+    assert all({k: v for k, v in out[d].items() if not k.startswith("grid_")} == plain[d] for d in plain)
+
+
+def test_full_capacity_is_worked_when_utilization_is_sampled():
+    """As for data centers: the full-capacity peak day and the highest hour at full output. At full output they are the run's own; sampled, each run
+    is also worked at full output, so they sit at or above the run's."""
+    full = plant.run_location(TIMES, TDB, RH, n=8, gwh=10.0, designs=("towers",))["towers"]
+    assert full["withdrawn_peak_full_capacity"] == full["withdrawn_peak_1in10"]
+    s = plant.run_location(TIMES, TDB, RH, n=8, gwh=10.0, utilization="sampled", designs=("towers",))["towers"]
+    for q in ("p10", "p50", "p90", "central"):
+        assert s["withdrawn_peak_full_capacity"][q] >= s["withdrawn_peak_1in10"][q] and s["power_mw_peak_1in10"][q] >= s["power_mw_peak_day_1in10"][q]
+    assert s["withdrawn_peak_full_capacity"]["p50"] == pytest.approx(full["withdrawn_peak_1in10"]["p50"], rel=0.1)
+
+
 def test_lake_hours_follow_the_calendar():
     t = plant.lake_hours(["2023-01-01T00:00", "2023-12-31T23:00", "2024-12-31T05:00"], np.arange(366.0))
     assert t.tolist() == [0.0, 364.0, 365.0]
