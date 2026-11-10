@@ -39,3 +39,10 @@ agency = "Wisconsin DNR"
 places = "cities and villages"
 subdivisions = "towns"
 weather_check = "ERA5 runs about 0.6 C cool in the inland design dry-bulb (the 0.4% hour) against Wisconsin's stations, so hybrid and closed loop with assist average days run about 7% low; cooling towers, which follow the wet bulb, are not affected. A station correction for inland cells is planned for a coming release (docs/methods/era5-checks/wi.md)."
+
+[IN]
+name = "Indiana"
+example = "Lebanon city, IN"
+attains = "21IND"
+agency = "Indiana IDEM"
+places = "cities and towns"

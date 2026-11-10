@@ -77,6 +77,21 @@ def test_michigan_cells_take_miso_and_pjm():
     assert E.cell_bas("MI", {"42.75_-85.50": {"places": []}}) == {"42.75_-85.50": ["MISO", "PJM"]}
 
 
+def test_a_new_state_takes_its_bas_from_its_local_build(monkeypatch):
+    """Before a state's first snapshot its cells are run from its local build (add-a-state step 2), so they must still get the grid."""
+    from waterledger.national import data
+    from waterledger_data import energy
+
+    def no_snapshot(state, date=None):
+        raise OSError("no snapshot")
+    monkeypatch.setattr(data, "fetch_snapshot", no_snapshot)
+    monkeypatch.setattr(data.LiveData, "places", lambda self: None)
+    monkeypatch.setattr(energy, "utilities_by_place", lambda state, pl: {"1": [{"balancing_authority": "PJM"}, {"balancing_authority": "MISO"}],
+                                                                        "2": [{"balancing_authority": None}]})
+    cells = {"40.00_-86.00": {"places": [{"geoid": "1"}, {"geoid": "2"}]}, "41.00_-86.00": {"places": [{"geoid": "2"}]}}
+    assert E.cell_bas("IN", cells) == {"40.00_-86.00": ["MISO", "PJM"], "41.00_-86.00": []}
+
+
 def test_the_estimate_reads_the_runs_grid_water():
     stat = lambda v: {"p10": 0.8 * v, "p50": v, "p90": 1.2 * v, "central": v}
     rec = {k: stat(1.0) for k in ("power_mw_avg",)}
