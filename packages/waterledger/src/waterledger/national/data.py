@@ -180,8 +180,9 @@ class LiveData:
         return census.places(_fips(self.state))
 
     def model_version(self):
-        from waterledger_models import MODEL_VERSION
-        return MODEL_VERSION
+        """The model of the numbers a live build gives: the snapshots' model (waterledger_models.snapshot_model())."""
+        from waterledger_models import snapshot_model
+        return snapshot_model()
 
     def places(self):
         return self._pl

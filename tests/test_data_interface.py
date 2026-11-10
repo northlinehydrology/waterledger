@@ -50,8 +50,8 @@ def test_each_model_version_names_its_types_and_a_rebuilt_snapshot_model():
 def test_an_estimate_reports_the_model_of_the_data_it_read():
     """A package reading older data says so: the numbers are that model's, as Michigan's estimate and design 0003 have it."""
     from waterledger.national import data
-    from waterledger_models import MODEL_VERSION
-    assert data.LiveData("OH").model_version() == MODEL_VERSION
+    from waterledger_models import snapshot_model
+    assert data.LiveData("OH").model_version() == snapshot_model()
     snap = data.SnapshotData.__new__(data.SnapshotData)
     snap.manifest = {"model_version": "1.5"}
     assert snap.model_version() == "1.5"

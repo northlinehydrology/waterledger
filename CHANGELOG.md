@@ -28,8 +28,10 @@ waterledger-models and waterledger 3.16.0; waterledger-data is unchanged at 3.15
   from 1.12, the types each version changes and the model of the snapshots it reads, and `snapshot_model()` gives it.
   Model 1.12 changes battery plants only and reads model 1.11's snapshots and cell runs: `national.data.snapshot_for_model`
   and `waterledger latest-json` key on `snapshot_model()`, so a 3.16.0 package reads the 2026-11-09 and 2026-11-10
-  snapshots without the other-model note, and a data center estimate names model 1.11. Code that compared a snapshot's
-  `model_version` with `MODEL_VERSION` should compare it with `snapshot_model()`.
+  snapshots without the other-model note, and a data center estimate names model 1.11. Live builds, Michigan's site data
+  and the station runs' cache are labeled with `snapshot_model()` too, so a snapshot rebuilt under 3.16.0 is filed under
+  1.11, where 3.16.0 reads. Code that compared a snapshot's `model_version` with `MODEL_VERSION` should compare it with
+  `snapshot_model()`.
 
 ## 3.15.0 (Nov 9, 2026; model 1.11)
 

@@ -84,10 +84,10 @@ def build(state, out=None, n=DRAWS, run_checks=True):
     from waterledger.national import climate as nc
     from waterledger.national.data import LiveData
     from waterledger_data import energy, greatlakes, receiving, supply, wastewater, wateruse
-    from waterledger_models import MODEL_VERSION
+    from waterledger_models import snapshot_model
     state = state.upper()
     fips = next(f for f, s in states.FIPS.items() if s == state)
-    report, t_all = {"state": state, "fips": fips, "model_version": MODEL_VERSION, "stages": {}}, time.time()
+    report, t_all = {"state": state, "fips": fips, "model_version": snapshot_model(), "stages": {}}, time.time()
 
     def stage(name, fn):
         t = time.time()

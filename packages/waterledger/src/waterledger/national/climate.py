@@ -46,9 +46,9 @@ def division_runs(state, n=DRAWS):
     """{division id: {"name", "station", "lat", "lon", "per_100mw"}}, per_100mw as cooling.run_location returns it."""
     from waterledger_data import climate, divisions
     from waterledger_data.config import CACHE
-    from waterledger_models import MODEL_VERSION
+    from waterledger_models import snapshot_model
     from waterledger_models.datacenter import cooling as cw
-    path = os.path.join(CACHE, "climate", f"{state}_runs_model{MODEL_VERSION}_n{n}.json")
+    path = os.path.join(CACHE, "climate", f"{state}_runs_model{snapshot_model()}_n{n}.json")
     if os.path.exists(path):
         return json.load(open(path))
     fips = next(f for f, s in states.FIPS.items() if s == state)

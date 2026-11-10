@@ -17,7 +17,7 @@ from waterledger.comparisons import HOUSEHOLD_GPD, it_mw_from_contract
 from waterledger_data import wateruse
 from waterledger.levels import LEVELS
 from waterledger.states.mi.provider import SALT_DAYS
-from waterledger_models import MODEL_VERSION
+from waterledger_models import MODEL_VERSION, snapshot_model  # noqa: F401  MODEL_VERSION re-exported (waterledger.states.mi); snapshot_model() labels the numbers (MODELS)
 STATE = "mi"      # Water Ledger is organized by state: site/waterledger/<state>/
 SITE = os.path.join(SITE_ROOT, STATE)
 OUT = os.path.join(SITE, "data", "estimates.json")
@@ -597,7 +597,7 @@ def main(n=DRAWS):
     lake_src = lake_results(["Lake Michigan", "Lake Superior", "Lake Huron", "Lake Erie", "Lake St. Clair"], lake_t, n)
     pue_design = pue_by_design(cells, lake_src["power"])
     data = {
-        "model_version": MODEL_VERSION,
+        "model_version": snapshot_model(),
         "generated": datetime.date.today().isoformat(),
         "units": "MGD = million gallons per day; per_100mw values are per 100 MW of IT capacity at the sampled utilization",
         "percentiles": "p10/p50/p90 over a Monte Carlo of the parameter ranges; central = all parameters at mid-range",
@@ -605,7 +605,7 @@ def main(n=DRAWS):
         "parameters": {k: {"range": list(v), "sources": PARAM_SOURCES.get(k, [])}
                        for k, v in list(cw.RANGES.items()) + [("topup", cw.TOPUP)] + [("staff_" + k, v) for k, v in cw.STAFF.items()]},
         "regions": regions,         # model 1.8: the regions' names and points, for salt, golf and the map; cooling is each place's cell (data/cells/<e>.json)
-        "cells": {"count": len(cells), "path": "cells/{cell}.json", "model_version": MODEL_VERSION, "rule": "nearest ERA5 cell at least half land; shore cells corrected (designs 0004, 0005)"},
+        "cells": {"count": len(cells), "path": "cells/{cell}.json", "model_version": snapshot_model(), "rule": "nearest ERA5 cell at least half land; shore cells corrected (designs 0004, 0005)"},
         "staff": {"runs": staff, "note": "Non-cooling water per run: [core people, people per MW of IT capacity, gallons per person a day, share lost, maintenance gallons a day, maintenance gallons a day per MW, maintenance share lost]; "
                                          "added to the per_100mw results at the campus's size (scenario.flow, WQ.flow)"},
         "power": POWER,
