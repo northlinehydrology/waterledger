@@ -1,0 +1,8 @@
+# BatteryCellBmi config for CSDMS bmi-tester: a 10 GWh/yr cell plant with cooling towers, one day of hourly steps, inputs set through set_value
+# (no forcing file, so the place's design enthalpy is given).
+design: towers
+capacity_gwh: 10
+time_step: 3600
+end_time: 86400
+parameters:
+  design_h: 70.0

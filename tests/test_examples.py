@@ -9,7 +9,7 @@ import xarray as xr
 from test_physics_properties import synthetic_weather
 
 EXAMPLES = pathlib.Path(__file__).parent.parent / "examples"
-WEATHER = ("michigan_eight_locations.py", "build_stac_catalog.py")
+WEATHER = ("michigan_eight_locations.py", "build_stac_catalog.py", "battery_cell_plants_ea_check.py")
 NETWORK = ("trace_plaster_creek_map.py",)
 
 

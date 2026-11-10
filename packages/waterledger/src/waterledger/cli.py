@@ -105,8 +105,8 @@ def main(argv=None):
     if a.cmd == "latest-json":
         import json
         from waterledger.national.snapshot import pointer
-        from waterledger_models import MODEL_VERSION
-        model = MODEL_VERSION
+        from waterledger_models import snapshot_model
+        model = snapshot_model()
         if a.dir:                                       # a snapshot is filed under the model of its numbers: a format 3 one under 1.8, so 1.7 packages never read it
             model = json.load(open(os.path.join(a.dir, a.state.upper(), a.snapshot_id, "manifest.json")))["model_version"]
         print(json.dumps(pointer(json.load(open(a.old)) if a.old and os.path.exists(a.old) else None, a.state.upper(), a.snapshot_id, model)))

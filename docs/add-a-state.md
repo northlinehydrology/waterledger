@@ -5,8 +5,8 @@ has a command, what it writes, a test that says it is done, and whether it needs
 rules, deploy, and the runner `engine/add_state.py`, which calls the commands here) is a Northline document.
 
 Checked against the code on Nov 7, 2026: 3.13.0 (model 1.9).
-The ERA5 path is the cells, the runs and the check below; the snapshot (step 4) is format 3 and carries the cell results. Five states
-are built: Michigan, Ohio, Virginia, Texas and Wisconsin, the first added by this process (Nov 6). Georgia and Wyoming have had tracker
+The ERA5 path is the cells, the runs and the check below; the snapshot (step 4) is format 3 and carries the cell results. Six states
+are built: Michigan, Ohio, Virginia, Texas, Wisconsin and Indiana, the first two added by this process (Nov 6 and Nov 10). Georgia and Wyoming have had tracker
 footprints only, with no build. Northline's test `tests/test_add_state.py` checks the runner's commands against the table at the end.
 
 ## What is automatic

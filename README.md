@@ -5,12 +5,15 @@
 [![PyPI](https://img.shields.io/pypi/v/waterledger.svg)](https://pypi.org/project/waterledger/)
 
 Open Python tools for estimating the water and electricity that large new users add, starting with data
-centers, and for assembling the public U.S. water data around any place: water systems, watersheds, impaired waters,
+centers and battery cell plants, and for assembling the public U.S. water data around any place: water systems, watersheds, impaired waters,
 sewer plants, weather and design storms.
 
 - **Weather-driven cooling water model** for cooling towers, hybrid, closed loop, and dry coolers with adiabatic pre-cooling,
   hour by hour over decades of weather, with Monte Carlo uncertainty over published parameter ranges; plus lake-source
   (once-through) cooling and staff water.
+- **Battery cell plant model**: the plant's heat, electricity, fuel and water hour by hour per GWh/yr of cells, on the same
+  cooling towers, hybrid and dry coolers and Great Lake once-through cooling, for NMC and LFP cells; where the water
+  returns (the sewer or the source); checked against every U.S. plant whose environmental assessment projects its water.
 - **Mass and energy balances** that close in every hour of every run, for every cooling design, held to it by `tests/test_balances.py`.
 - **Hourly electricity from the same heat balance**, by design and weather, after Lei and Masanet (2022): average power, PUE,
   and the hottest hour with every computer at capacity.
@@ -18,7 +21,7 @@ sewer plants, weather and design storms.
 - **CSDMS Basic Model Interface (BMI 2.0) components**, so coupling frameworks such as NOAA's NextGen can drive the
   models step by step.
 - **Public data for any U.S. place**, fetched once and cached: Census, EPA, USGS, NOAA and EIA, with each place's
-  downstream path traced across state lines. Michigan, Ohio, Virginia, Texas and Wisconsin are published as checked snapshots.
+  downstream path traced across state lines. Michigan, Ohio, Virginia, Texas, Wisconsin and Indiana are published as checked snapshots.
 - **Reproducible**: tests reproduce the published Water Ledger estimates exactly, and the data sources are checked nightly.
 
 [waterledger.org](https://waterledger.org) is powered by these packages.
@@ -90,6 +93,35 @@ They are validated, round-trip through JSON, and are described in
 | Virginia | 322 cities, towns and counties | ERA5, each place's own cell (148 cells) | [waterledger.org/methods/va](https://waterledger.org/methods/va/), [brief](docs/methods/va.pdf) |
 | Texas | 1,481 cities, towns and counties | ERA5, each place's own cell (616 cells) | [waterledger.org/methods/tx](https://waterledger.org/methods/tx/), [brief](docs/methods/tx.pdf) |
 | Wisconsin | 1,922 cities, villages, towns and counties | ERA5, each place's own cell (283 cells) | [waterledger.org/methods/wi](https://waterledger.org/methods/wi/), [brief](docs/methods/wi.pdf) |
+| Indiana | 1,661 cities, towns, townships and counties | ERA5, each place's own cell (183 cells) | [waterledger.org/methods/in](https://waterledger.org/methods/in/), [brief](docs/methods/in.pdf) |
+
+**Model 1.12** adds battery cell plants ([design 0009](docs/design/0009-battery-cell-plants.md)) and changes no data
+center or place number, so it skips the snapshots and reads model 1.11's (`waterledger_models.MODELS`):
+- **The plant** (`waterledger_models.battery`): the energy to make a kWh of cells (nearly all of it electrode drying, dry
+  rooms and formation), the share of it reaching the cooling water and the outdoor air load, hour by hour on the shared
+  heat rejection; process water (anode slurry, water leaving in recovered NMP, boiler make-up, other purified water and the
+  purification's reject) and staff water. Designs `dry`, `assist`, `hybrid`, `towers` and `lake`; full output by default,
+  or a sampled utilization. LFP plants take 1.2-1.7 times the plant energy per
+  kWh [A] (Degen et al. 2023: the same energy per m2 of electrode, about 1.67 times the area per kWh).
+- **Returns by destination**: tower blowdown, process returns and staff water to the sewer; the lake design's once-through
+  water, less its forced evaporation, to the source.
+- **What data centers get, battery plants get** ([design 0010](docs/design/0010-water-user-types.md)'s standard treatment,
+  Nov 10): water at the power plants (`grid=`, through the same `grid.RunWater`), the full-capacity peak day and highest
+  hour, and every design the shared equipment allows. Still to come: the shared Monte Carlo runner, and water limits and
+  dissolved mass in `BatteryCellBmi`.
+- **Checked, not fit**, at the six U.S. plants with projected water in a DOE environmental assessment, each at its own
+  location and size (`examples/battery_cell_plants_ea_check.py`): four inside the model's 80% range, Stanton, TN on the
+  medians, Buckeye, AZ just above, and Delta Township (Lansing), MI well above, the most water per GWh/yr of any
+  projection. No public figure checks the dry design.
+- **Sensitivity** (Sobol' and Morris, `docs/methods/sensitivity/battery/`): with towers, the plant energy per kWh and its
+  share to the cooling water carry about 85% of the variance in withdrawal; cycles of concentration carry the sewer flow;
+  boiler make-up leads the dry and hybrid designs.
+- **Shared by every water user**: the heat rejection with assist's pads (`heat_rejection`), Great Lake once-through cooling
+  (`once_through`), daily statistics (`daily`) and water at the power plants in a run (`grid.RunWater`) moved out of
+  `datacenter` unchanged, and the old names still import. Cycles of
+  concentration and the hybrid's switch margin are each user's own (`heat_rejection.OPERATING`).
+- The plant's place-based estimate (`wl.place(...)`) comes with design 0010's water user types; waterledger.org is
+  unchanged.
 
 **Model 1.11** adds the campus's water at the power plants hour by hour, and every state's cells are rerun for it
 ([design 0008](docs/design/0008-power-at-the-grid.md), part 1):
@@ -154,7 +186,8 @@ Adding a state from start to publication, step by step with what each step write
 
 Each state's data is a dated snapshot at [data.waterledger.org](https://data.waterledger.org), checked against its
 manifest and cached on first use ([design 0003](docs/design/0003-data-releases.md)). A published snapshot never changes, and a
-package reads the newest one for its own model version, so a new model's numbers don't reach an older package. An estimate's `model_version` is the model of the data it read. Offline, the newest cached snapshot is
+package reads the newest one for its own model version (or, for a version that skips the snapshots, the version it names
+in `waterledger_models.MODELS`), so a new model's numbers don't reach an older package. An estimate's `model_version` is the model of the data it read. Offline, the newest cached snapshot is
 used. If no snapshot can be had, the package can build the state from the public sources instead (15 to 30 minutes the
 first time, resumable):
 
@@ -178,6 +211,11 @@ s["withdrawn"].sel(design="towers", stat="peak_1in10")      # million gallons on
 
 from waterledger_models.datacenter import physics
 physics.RANGES["switch_margin"], physics.SOURCES["switch_margin"]    # a parameter's range and where it comes from
+
+from waterledger_models.battery import plant                             # a battery cell plant, per GWh/yr of cells
+times = [str(t)[:16] for t in w.time.values]
+r = plant.run_location(times, w.air_temperature.values, w.relative_humidity.values, gwh=43.75, chemistry="nmc")
+r["towers"]["withdrawn_avg"]["p50"], r["towers"]["to_sewer_avg"]["p50"]  # MGD: the median withdrawal and flow to the sewer
 ```
 
 ### Step by step through BMI
@@ -200,11 +238,16 @@ Under a water rule, set `water_user_water__withdrawal_volume_flux_limit` (m3 s-1
 plant sheds the load it can't cool. `data_center__unremoved_heat_power` reports what isn't removed. With intake concentrations
 set, the component reports the dissolved mass in its return and the return's temperature (design 0006).
 
+`waterledger_models.battery.bmi.BatteryCellBmi` runs a battery cell plant the same way (`design`, `capacity_gwh`,
+`chemistry`), reporting the water user roles, the return split to the sewer and to the source, electricity and fuel burned
+on site. It has no water limits yet.
+
 A component of your own at one point can build on `waterledger_models.datacenter.ScalarPointBmi`, which supplies every BMI
 function but `initialize()`; its docstring has the contract. `waterledger_models.hydrology.stream_depletion` takes arrays,
 for a well's response at every step of a run.
 
-More in [examples/](examples/): a BMI coupling loop, eight Michigan locations in parallel, and a STAC catalog of results.
+More in [examples/](examples/): a BMI coupling loop, eight Michigan locations in parallel, a STAC catalog of results, and the
+battery cell plant model at every U.S. plant with projected water.
 
 ## Stability
 
@@ -218,8 +261,12 @@ components and the command line) waits for 4.0 and does not ship in a 3.x minor 
 Three version numbers, each with one meaning:
 
 - **Package versions** (semver) change with the code: a major version for breaking changes.
-- **`waterledger_models.MODEL_VERSION`** (now 1.11) changes when the numbers change; the golden test fails until that is
-  done deliberately. Every published estimate names the model version that produced it.
+- **`waterledger_models.MODEL_VERSION`** (now 1.12) changes when the numbers change; the golden test fails until that is
+  done deliberately. Every published estimate names the model version that produced it. One version covers every water
+  user type. `waterledger_models.MODELS` records, from 1.12, which types a version changes and the model of the snapshots it
+  reads: a version that leaves the snapshots' numbers alone (data centers, the places' water and power) skips them and reads
+  the last rebuilt ones. Model 1.12 adds battery cell plants and reads model 1.11's snapshots and cell runs, so a data center
+  estimate still names model 1.11.
 - **The snapshot format version** (now 3, in each snapshot's manifest) changes when the structure of a state's data
   files does. Format 3 (from model 1.8) carries cooling by ERA5 cell (`cells/`). The package still reads format 2, which the
   published model 1.7 snapshots are.

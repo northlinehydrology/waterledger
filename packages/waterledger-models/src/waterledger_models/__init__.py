@@ -2,6 +2,10 @@
 
     datacenter.cooling   weather-driven cooling water by design, Monte Carlo over the published parameter ranges, staff water
     datacenter.lake      lake-source (once-through) cooling
+    battery              battery cell plants: heat, power and water hour by hour, per GWh/yr of cells (design 0009)
+    heat_rejection       cooling towers, hybrid and dry coolers, loops, chillers, pumps and fans, shared by every water user
+    once_through         once-through cooling from a Great Lake: withdrawal, forced evaporation, GLERL temperatures, shared by every water user
+    daily                daily totals and their statistics, shared by every water user
     grid                 water at the power plants supplying any user's electricity, hourly, at grid level (design 0008)
     runoff              runoff, sediment, nutrients, salt and fuel from a developed site
     hydrology            screening hydrology: curve-number storm runoff, Theis drawdown, Glover stream depletion
@@ -9,10 +13,25 @@
     weather              hourly weather from Open-Meteo's best match (ERA5, ERA5-Land, IFS HRES), as xarray, for the ensembles and BMI components
 
 MODEL_VERSION is Water Ledger's model version (the numbers); __version__ is the package version (the code, semver).
-They change independently. Every published estimate names the model version that produced it.
+They change independently. Every published estimate names the model version that produced it. One model version covers every
+water user type; MODELS says which types a version changes and whether the states' snapshots are rebuilt for it.
 """
-from waterledger_models import datacenter, grid, hydrology, quantile_mapping, runoff, weather
+from waterledger_models import battery, datacenter, grid, hydrology, quantile_mapping, runoff, weather
 
-__all__ = ["datacenter", "grid", "hydrology", "quantile_mapping", "runoff", "weather", "MODEL_VERSION"]
-MODEL_VERSION = "1.11"
-__version__ = "3.15.0"
+__all__ = ["battery", "datacenter", "grid", "hydrology", "quantile_mapping", "runoff", "weather", "MODEL_VERSION", "MODELS", "snapshot_model"]
+MODEL_VERSION = "1.12"
+
+# Each model version from 1.12 names the water user types whose numbers it changes and the model version of the snapshots it reads.
+# A version that changes nothing the snapshots carry (data centers, the places' water and power) skips them and reads the last
+# rebuilt ones, so no state is rebuilt to the same numbers. Every version before 1.12 changed the data center numbers and was rebuilt.
+MODELS = {
+    "1.12": {"types": ("battery",), "snapshots": "1.11"},
+}
+
+
+def snapshot_model(version=MODEL_VERSION):
+    """The model version of the snapshots and cell runs that `version` reads: its own if it rebuilt them, else the one it names."""
+    return MODELS.get(version, {}).get("snapshots", version)
+
+
+__version__ = "3.16.0"

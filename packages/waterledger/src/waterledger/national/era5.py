@@ -21,7 +21,7 @@ import numpy as np
 from waterledger_data import era5
 from waterledger_data.config import CACHE
 
-RUN_MODEL = "1.11"          # the cooling model on ERA5 cell weather, corrected toward stations near the shore and, from 1.9, inland; from 1.10 each cooling plant; from 1.11 the grid's water hour by hour: what these runs are for
+RUN_MODEL = "1.11"          # the cooling model on ERA5 cell weather, corrected toward stations near the shore and, from 1.9, inland; from 1.10 each cooling plant; from 1.11 the grid's water hour by hour: what these runs are for; waterledger_models.snapshot_model(), held by a test (model 1.12 skips the snapshots)
 SEED, MW = 7, 100.0
 
 
@@ -77,7 +77,8 @@ def state_cells(state, date=None, places=None):
 
 def cell_bas(state, cells, date=None):
     """{cell: sorted balancing authorities} serving the cell's places (design 0008): every utility's EIA-930 code on the place in the state's
-    snapshot (energy.json's by_place), so the estimate finds whichever utility comes first. Michigan's are MISO and PJM, by its own rule
+    snapshot (energy.json's by_place), so the estimate finds whichever utility comes first. A new state, with no snapshot yet, takes them
+    from its local build through the same call the snapshot makes. Michigan's are MISO and PJM, by its own rule
     (states.mi.provider.balancing_authority), so its cells take both. A cell with none takes none, and its estimate has no hourly grid water."""
     state = state.upper()
     if state == "MI":
@@ -85,9 +86,11 @@ def cell_bas(state, cells, date=None):
     from waterledger.national.data import fetch_snapshot
     try:
         by_place = json.load(open(os.path.join(fetch_snapshot(state, date), "energy.json")))["by_place"]
-    except Exception as e:                                  # noqa: BLE001  no snapshot: no hourly grid water, said once
-        _say(f"{state}: no snapshot energy data ({type(e).__name__}); the runs have no hourly grid water")
-        return {c: [] for c in cells}
+    except Exception as e:                                  # noqa: BLE001  a new state: its local build, as its snapshot will carry it
+        from waterledger_data import energy
+        from waterledger.national.data import LiveData
+        _say(f"{state}: no snapshot energy data ({type(e).__name__}); using the utilities of its local build")
+        by_place = energy.utilities_by_place(state, LiveData(state).places())
     return {c: sorted({u["balancing_authority"] for p in v["places"] for u in by_place.get(p["geoid"], []) if u.get("balancing_authority")})
             for c, v in cells.items()}
 
