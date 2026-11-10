@@ -14,6 +14,9 @@ sewer plants, weather and design storms.
 - **Battery cell plant model**: the plant's heat, electricity, fuel and water hour by hour per GWh/yr of cells, on the same
   cooling towers, hybrid and dry coolers and Great Lake once-through cooling, for NMC and LFP cells; where the water
   returns (the sewer or the source); checked against every U.S. plant whose environmental assessment projects its water.
+- **Power supply scenarios**: what serves a user's hourly electricity, hypothetical new gas plants (combined cycle, turbines,
+  engines, fuel cells, each a water user on the same cooling physics), new solar and wind from the same hourly weather, or the
+  grid, with the water each takes, unserved hours, and solar and wind projects' land, runoff and construction water.
 - **Mass and energy balances** that close in every hour of every run, for every cooling design, held to it by `tests/test_balances.py`.
 - **Hourly electricity from the same heat balance**, by design and weather, after Lei and Masanet (2022): average power, PUE,
   and the hottest hour with every computer at capacity.
@@ -94,6 +97,31 @@ They are validated, round-trip through JSON, and are described in
 | Texas | 1,481 cities, towns and counties | ERA5, each place's own cell (616 cells) | [waterledger.org/methods/tx](https://waterledger.org/methods/tx/), [brief](docs/methods/tx.pdf) |
 | Wisconsin | 1,922 cities, villages, towns and counties | ERA5, each place's own cell (283 cells) | [waterledger.org/methods/wi](https://waterledger.org/methods/wi/), [brief](docs/methods/wi.pdf) |
 | Indiana | 1,661 cities, towns, townships and counties | ERA5, each place's own cell (183 cells) | [waterledger.org/methods/in](https://waterledger.org/methods/in/), [brief](docs/methods/in.pdf) |
+
+**Model 1.13** adds power supply scenarios ([design 0014](docs/design/0014-power-supply-scenarios.md)) and the shared Monte
+Carlo runner, and changes no data center or place number, so it reads model 1.11's snapshots too:
+- **The shared runner** (`waterledger_models.runs`): one Monte Carlo loop for every water user type: the draws, the standard
+  loads (the run's, the peak day's, full capacity), the daily statistics, grid water and the result names
+  ([design 0010](docs/design/0010-water-user-types.md)'s standard treatment). Data centers and battery cell plants run through
+  it; every value matches their records from before, apart from the power figures, which differ in the last bit (at most
+  5e-16 relative). `extra=` hands a caller each draw's hourly electricity.
+- **New gas plants** (`waterledger_models.gas`): combined cycle (on towers, hybrid, assist, dry or lake cooling), simple-cycle
+  turbines (dry low-NOx or water injection, inlet cooling as a setting), engines and fuel cells, units dispatched hour by hour
+  with hot-weather derate, part load and outages, the condenser on the shared heat rejection. Wastewater goes where new plants'
+  does (EIA-860 in aggregate): back to the source for a combined cycle on surface water, the sewer otherwise, with a stream
+  discharge (the new `to_stream` return role) or zero discharge as settings. `GasPlantBmi`.
+  - **Checked, not tuned:** a turbine's output at 100 F is 78% of its rating (EPA CHP Catalog, 80%); a combined cycle on towers
+    at ISO weather gives 158 and 206 gal/MWh consumed and withdrawn against NETL's 186 and 240; against EIA's 2024 fleet, in
+    aggregate, 21% under in the Great Lakes at a new plant's heat rate and 12% over at the fleet's own
+    ([docs/methods/power_supply](docs/methods/power_supply/)); a year of weather lands inside the published ranges by design.
+- **New solar and wind** (`waterledger_models.supply`): PV by the PVWatts chain, within 0.04% of the AC rating of pvlib's in
+  every hour of a test year; wind through the IEA 3.4 MW reference turbine's curve; both from ERA5 radiation and 100 m wind
+  at the user's own cell (`waterledger_data.era5.fetch_supply`). At West Michigan, tracking PV runs at 22% and wind at 28%.
+  Land, runoff and one-time construction water and sediment by project size (`supply.land`).
+- **Scenarios** (`supply.scenario`): resources and a residual rule (the grid by default, or islanded), dispatched hour by
+  hour; plants sized once (gas N+1 at the design dry-bulb, renewables by share of annual MWh); surplus exported without water
+  credit; unserved hours reported. The grid-only scenario is today's grid water to the bit.
+- The place-based estimate (`est.supply`) comes with design 0010's facility contract; waterledger.org is unchanged.
 
 **Model 1.12** adds battery cell plants ([design 0009](docs/design/0009-battery-cell-plants.md)) and changes no data
 center or place number, so it skips the snapshots and reads model 1.11's (`waterledger_models.MODELS`):
@@ -240,7 +268,8 @@ set, the component reports the dissolved mass in its return and the return's tem
 
 `waterledger_models.battery.bmi.BatteryCellBmi` runs a battery cell plant the same way (`design`, `capacity_gwh`,
 `chemistry`), reporting the water user roles, the return split to the sewer and to the source, electricity and fuel burned
-on site. It has no water limits yet.
+on site. It has no water limits yet. `waterledger_models.gas.bmi.GasPlantBmi` serves the demand set each step
+(`power_plant__electric_power_demand`) and reports what it served and could not, its fuel and the water roles.
 
 A component of your own at one point can build on `waterledger_models.datacenter.ScalarPointBmi`, which supplies every BMI
 function but `initialize()`; its docstring has the contract. `waterledger_models.hydrology.stream_depletion` takes arrays,
@@ -261,12 +290,12 @@ components and the command line) waits for 4.0 and does not ship in a 3.x minor 
 Three version numbers, each with one meaning:
 
 - **Package versions** (semver) change with the code: a major version for breaking changes.
-- **`waterledger_models.MODEL_VERSION`** (now 1.12) changes when the numbers change; the golden test fails until that is
+- **`waterledger_models.MODEL_VERSION`** (now 1.13) changes when the numbers change; the golden test fails until that is
   done deliberately. Every published estimate names the model version that produced it. One version covers every water
   user type. `waterledger_models.MODELS` records, from 1.12, which types a version changes and the model of the snapshots it
   reads: a version that leaves the snapshots' numbers alone (data centers, the places' water and power) skips them and reads
   the last rebuilt ones. Model 1.12 adds battery cell plants and reads model 1.11's snapshots and cell runs, so a data center
-  estimate still names model 1.11.
+  estimate still names model 1.11. Model 1.13 adds gas plants and supply scenarios the same way.
 - **The snapshot format version** (now 3, in each snapshot's manifest) changes when the structure of a state's data
   files does. Format 3 (from model 1.8) carries cooling by ERA5 cell (`cells/`). The package still reads format 2, which the
   published model 1.7 snapshots are.

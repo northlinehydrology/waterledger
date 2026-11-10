@@ -1,7 +1,7 @@
 # waterledger-models
 
 The models behind [Water Ledger](https://waterledger.org): the water large new users take, use up and send back,
-starting with data centers and battery cell plants.
+starting with data centers and battery cell plants, and the power that serves them.
 
 ```bash
 pip install waterledger-models          # numpy and numba
@@ -16,8 +16,14 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
 - `datacenter.cooling`: the per-run Monte Carlo over decades of hourly weather for towers, hybrid, and closed loop with
   or without evaporative assist, for one plant (`run_location`) or each (`run_plants`); staff water at the campus's size.
 - `battery`: battery cell plants (design 0009): `physics`, the plant's heat, electricity, fuel and water hour by hour per
-  GWh/yr of cells for NMC or LFP cells, with returns to the sewer and to the source; `plant.run_location`, the Monte Carlo at
+  GWh/yr of cells for NMC or LFP cells, with returns to the sewer, the source or (with a permit of its own) a stream; `plant.run_location`, the Monte Carlo at
   one location, with the data centers' designs, full-capacity peak and water at the power plants; `bmi.BatteryCellBmi` (`[bmi]`).
+- `gas`: new gas plants (design 0014): `physics`, output, fuel, heat and water hour by hour for the demand served, by
+  technology (combined cycle, simple-cycle turbine, engine, fuel cell) and cooling design, where the wastewater goes;
+  `plant.run_location`, the Monte Carlo on the shared runner; `bmi.GasPlantBmi` (`[bmi]`).
+- `supply`: power supply scenarios (design 0014): `pv` (PVWatts, tested against pvlib) and `wind` (the IEA 3.4 MW reference
+  curve) from ERA5 radiation and 100 m wind; `scenario`, resources and a residual rule as the shared runner's `extra=`, with
+  sizing; `land`, solar and wind projects' land, runoff and construction water.
 - `heat_rejection`: cooling towers, hybrid and dry coolers, assist's adiabatic pads, the loops' chillers, pumps and fans, their equipment ranges,
   psychrometrics and Latin hypercube sampling, shared by every water user; each user keeps its own operating settings
   (`OPERATING`: cycles of concentration, the hybrid's switch margin).
@@ -45,6 +51,6 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
 - `weather`: hourly weather from the Open-Meteo archive, its best match (ERA5, ERA5-Land and, from 2017, IFS HRES); humidity
   conversions (Bolton 1980) and a record's design dry-bulb.
 
-`MODEL_VERSION` is Water Ledger's model version (1.12), which changes when the numbers do; the package version (semver)
+`MODEL_VERSION` is Water Ledger's model version (1.13), which changes when the numbers do; the package version (semver)
 changes with the code. They are independent. One model version covers every water user type; `MODELS` says which types a
 version changes and which model's snapshots it reads (`snapshot_model()`): model 1.12 adds battery cell plants and reads 1.11's.
