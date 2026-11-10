@@ -407,6 +407,152 @@ nor `to_source` (the receiving water is not the one drawn from). It is not speci
 cell plant on wells with its own stream discharge is the same case. Settling it is a roles question for every type
 (design 0010), for Andrew.
 
+## 9. Renewables' land, runoff and construction (design 0014, decision 2's note)
+
+Added Nov 10, 2026. Values for a hypothetical PV or wind project at the user's place, in the terms the shared runoff
+code takes: `runoff.runoff_in(rain_in, imp, cover)` and `runoff.loads(acres, rain_in, before, imp)` (Simple Method,
+an impervious share and a pervious cover's Rv), `runoff.storm_mg(acres, storm_in, imp)` and
+`hydrology.composite_runoff_in(p_in, impervious, cn_pervious)` (TR-55 curve numbers for the impervious and pervious
+parts, area-weighted), and `runoff.construction(acres_disturbed)` (tons of sediment a year of construction). No project
+is named; where a source is one project's document it is cited as an anonymized example.
+
+### 9a. Land per MW
+
+| # | Technology | Figure | Source | Status |
+|---|---|---|---|---|
+| L1 | PV, fixed tilt, >20 MW (2012 and earlier) | direct area 5.8 acres/MWac (7 projects), total area 7.5 (14 projects), capacity-weighted | Ong et al. (2013), NREL/TP-6A20-56290, Tables 3-4 p. 10 | reported, review |
+| L2 | PV, single-axis tracking, >20 MW | direct 9.0 acres/MWac (7 projects), total 8.3 (16); under 20 MW: direct 6.3, total 8.7 | same | reported, review |
+| L3 | All solar, total and direct | total 8.9 acres/MWac capacity-weighted, direct 7.3 (direct counts arrays, access roads, substations and buildings) | Ong et al. (2013), p. v | review |
+| L4 | PV built 2019, array area | median **2.8 acres/MWdc fixed tilt, 4.2 tracking** (power density 0.35 and 0.24 MWdc/acre); up 52% and 43% since 2011 | Bolinger and Bolinger (2022), IEEE J. Photovoltaics 12(2), summary slides p. 13; 736 plants of 5 MWac and up built 2007-2019 | reported (imagery) |
+| L5 | Array share of the site | polygons cover arrays and nearby inverter pads, "NOT ... the total leased or owned area"; one example in the slides has the array on 69% of the leased area | same, slide 7 | example |
+| L6 | PV, Western Interconnection, whole footprint with roads, fencing and buffers | mean 24.7 W per m² (about 10 acres/MW; AC or DC basis not stated in the summary) | Communications Earth & Environment (2025), 719 facilities, via a trade summary (pv magazine USA, Dec 15, 2025); UNVERIFIED | reported (imagery) |
+| L7 | Onshore wind, total project area | **34.5 ± 22.4 ha/MW (85 acres/MW)**, 161 projects, 25,438 MW; capacity density 3.0 ± 1.7 MW/km² | Denholm et al. (2009), NREL/TP-6A2-45834, Table 1 p. 10, p. 14 | reported |
+| L8 | Onshore wind, direct impact | **permanent 0.3 ± 0.3 ha/MW (0.7 acres/MW)**, 93 projects; **temporary 0.7 ± 0.6 ha/MW (1.7 acres/MW)**, 52 projects; together about 1.0 ± 0.7 ha/MW | same, Table 1 p. 10 and p. 12 | reported |
+| L9 | Wind, what the permanent area is | roads 79%, turbine pads 10%, substation 6%, transmission 2%, other 2%; temporary: roads 62%, staging 30%, substation and transmission construction 6% (23 and 17 projects with detail) | same, Tables 2-3 p. 13 | reported |
+| L10 | Wind, by prior land cover | permanent direct 0.24 ± 0.28 ha/MW on row crops, 0.24 ± 0.15 pasture, 0.36 ± 0.22 forest; temporary 0.87, 0.59 and 1.11 | same, Table 7 p. 18 | reported |
+
+Converting L4 to AC at an inverter loading ratio of 1.3 [A] gives about **3.6 acres/MWac of array for fixed tilt and 5.5
+for tracking**, against Ong's 5.8 and 9.0 for plants built before 2013. Denholm's wind projects mostly used turbines
+under 3 MW built before 2009; the average new U.S. turbine was 3.2 MW in 2022 (Jones and Li 2024, pp. 1-2, citing LBNL).
+Per-MW wind areas from newer projects were not found in a primary source in this session [A: L7-L8 kept as they are].
+
+### 9b. Runoff from solar sites
+
+**What the studies say.**
+
+- **Panels over established grass change little; bare ground or gravel changes a lot.** A cell model of panel rows on
+  grass (B soil, 1% slope, 2-hour 25-year storm) gives a runoff volume 0.35% higher and a peak 0.31% higher than the
+  same grass without panels. Gravel under the panels: volume +7%, peak +73%; gravel under the panels with healthy grass
+  between rows: volume +4%, peak +42%; bare ground under and between the panels (poor upkeep): volume +7%, peak +72%;
+  bare ground between rows: peak about +100%, as with gravel or pavement under the panels and patchy grass or bare
+  ground between them. Water dropping off a panel edge can carry "nearly 10 times" the kinetic energy of rain on open ground, so drip lines erode where soil is
+  bare (Cook and McCuen 2013, J. Hydrologic Engineering 18(5):536-541, results and conclusions; a model study, not
+  checked against field data).
+- **Measured and modeled at five U.S. solar farms**, runoff averaged 13%, 25% and 45% of the 2-, 10- and 100-year
+  design storm depths, and runoff with arrays was 14% above the same sites without them; the authors treat arrays as
+  disconnected impervious surface (Mulla et al. 2024, Vadose Zone Journal e20335, as summarized by the Chesapeake Bay
+  Program's Urban Stormwater Workgroup memo, Oct 11, 2024, pp. 2 and 6, and Pennsylvania DEP's FAQ, p. 6; paper not
+  read, UNVERIFIED). Their PV-SMaRT calculator returns a curve number for the whole array area from soil texture,
+  depth, bulk density, cover, panel width and spacing, orientation and slope (PA DEP FAQ, pp. 6-7).
+- **Effective imperviousness of the array area** from SWMM and the PV-SMaRT calculator, averaged and rounded, HSG C,
+  2-hour storms: native vegetation **10% with rows parallel to the contours, 20% diagonal, 45% perpendicular** (ranges
+  under 2% to 58%); gravel between and under panels **50%, 60% and 75%** (37% to 90%) (Earles, Olson and Howard 2023,
+  memorandum to the Mile High Flood District, Table 4 p. 8 and Table 7 p. 10). Roads and equipment pads are added on
+  top by area.
+- **Soils after construction run wetter.** Grading and heavy equipment compact the soil and strip organic matter; a
+  common adjustment is to raise the hydrologic soil group one letter (B to C) when picking curve numbers, which
+  Virginia DEQ requires during development and stabilization (Chesapeake Bay Program memo, 2024, pp. 1 and 4-5, citing
+  Daniels et al. 2024 and DEQ GM 22-2012; Virginia's memo not read, UNVERIFIED). The same memo finds no study of runoff
+  quality from solar sites (p. 1).
+
+**State guidance** (all treat the panels as disconnected impervious surface when the ground under and between them is
+vegetated and runoff stays as sheet flow; none treats gravel the same way):
+
+| State | What it says | Source |
+|---|---|---|
+| Pennsylvania | Vegetation under and between panels, preferably meadow, at 90% perennial cover; row gap at least the panel width; sites that meet the site restoration criteria (slopes 10% or less) leave the array area out of the stormwater analysis, others use PV-SMaRT curve numbers for it; access roads, gravel drip edges and buildings are computed separately; footings and posts need not be counted. Worked example: a shallow (20 in) silt loam on a 10% slope gives CN 92 for the array area | PA DEP, Solar Panel Projects FAQ, Version 1.3, Feb 19, 2026, pp. 4-10, 12-13 |
+| Ohio | Disconnection over deep-rooted grasses and forbs at a disconnection length of 2 × the panel's horizontal width, 1:1 panel to gap; soils in good hydrologic condition; not allowed over gravel or hard surfaces; roads and buildings managed separately | Ohio EPA, Post-Construction Stormwater Management for Solar Panel Fields, July 2024, pp. 1-2 |
+| Maryland | By statute (2012) only the foundation or base of a panel is impervious; access roads, pads and sheds within the limit of disturbance are; a splash pad or matting at the drip line; the whole work area is in the limit of disturbance even without grading | MDE Technical Memorandum #8, Mar 30, 2018, p. 1 |
+| New York | Arrays "may be designed to be disconnected impervious area" depending on table height, spacing, slope, soils and cover; the leading drip edge is the case to model | NYSDEC letter to the state solar industry association, Oct 23, 2024, pp. 1-2 |
+| North Carolina | Panels are impervious; disconnection length at least 80% of panel width; gravel is built-upon area | NCDEQ Stormwater Design Manual, E-6 Solar Farms, from search results; UNVERIFIED |
+| Minnesota | A disconnected impervious credit method for the water quality volume; gravel paths and roads are impervious | MPCA Minnesota Stormwater Manual solar pages, from search results; UNVERIFIED |
+| New Jersey, Michigan | No solar-specific stormwater guidance found from EGLE; New Jersey's not read | — |
+
+**Curve numbers for the parts of a solar site** (TR-55, USDA NRCS 1986, Table 2-2a p. 2-5 and Table 2-2c p. 2-7;
+soil group B, with C in brackets):
+
+| Surface | CN, B [C] | Use |
+|---|---|---|
+| Meadow, continuous grass, protected from grazing | 58 [71] | established native cover, little traffic |
+| Open space, good condition (grass cover over 75%) | 61 [74] | mowed turf, well kept |
+| Open space, fair (50-75%) | 69 [79] | patchy cover, or compacted soil |
+| Newly graded areas, no vegetation | 86 [91] | bare ground under panels or in drive aisles |
+| Gravel roads | 85 [89] | access roads, gravel drip edges, gravel under panels |
+| Paved, roofs | 98 | inverter and transformer pads, substation slab, buildings |
+
+### 9c. Construction
+
+- **Permits.** Construction stormwater coverage under an NPDES permit is required at one acre of disturbance or more,
+  including smaller parts of a larger common plan (40 CFR 122.26(b)(14)(x), five acres and up, and (b)(15), one to
+  five); the construction and development guidelines require controls to minimize exposed soil, compaction and
+  sediment discharge and to preserve topsoil (40 CFR 450.21(a)). Maryland counts a solar site's whole work area as
+  disturbed even without grading (MDE TM #8, p. 1). Michigan's Part 91 and permit-by-rule are already in
+  `runoff.PARAMS["construction"]["permits"]`.
+- **Sediment.** No measured sediment yield from solar or wind construction was found. Modeling studies find solar
+  development raises erosion: 21-75% during construction and 25-76% in operation on a hilly site (Liu et al. 2023,
+  Water Resources Research 59:e2023WR035067), and cumulative sediment load up 12-30% at 15-30% solar conversion of a
+  small basin (Mier-Valderrama et al. 2024, International Soil and Water Conservation Research 12(2):432-445); both as
+  summarized in the Chesapeake Bay Program memo (2024), pp. 5-6; papers not read, UNVERIFIED. So the
+  packages' construction yields (`runoff.construction`, gross erosion 30-200 t/acre-yr × delivery 0.1-0.33, EPA MM8
+  and measured active sites) remain the basis, applied to the bare share of the disturbed area [A].
+- **Dust control water.** Klise et al. (2013) give 1.3-5.7 AF/MW in the peak construction year in the desert Southwest
+  (K1). No figure for humid climates was found; there dust control is intermittent and the desert figure is an upper
+  bound [A].
+- **Wind turbine foundations.** A typical foundation drawing in a 2017 state utility commission siting docket gives 505
+  cubic yards (386 m³) of concrete per turbine (read this session: it confirms the top of K5's range; K5's 10,000-18,000
+  gal of mix water is superseded below). A foundation for a modern onshore turbine typically takes about 1,000 m³ of
+  concrete and 200 tonnes of steel (Carneiro, Mathern and Olsson 2022, Nordic Concrete Research Symposium, p. 1,
+  citing a Swedish source). Spread
+  foundations designed for a 140 m tower at a seismic California site hold 1,015 m³ (tapered) and 1,334 m³ (circular)
+  of ready-mix concrete (Jones and Li 2024, Wind Energy e2947, Table 2). Mix water at 160-190 kg per m³ of concrete [A:
+  ordinary structural mixes; the mix tables were not read] gives **about 16,000-50,000 gal per turbine** for 386-1,000
+  m³, before curing, washout and road dust control [derived, A].
+
+### 9d. Recommended parameter ranges
+
+| Parameter | Low | Central | High | Basis |
+|---|---|---|---|---|
+| PV array area, tracking, acres/MWac | 4.5 | 5.5 | 9.0 | L4 at ILR 1.3 [A]; Ong's 9.0 as high |
+| PV array area, fixed tilt, acres/MWac | 3.0 | 3.6 | 5.8 | same |
+| PV fenced or total area, acres/MWac | array ÷ 0.85 | array ÷ 0.7 | 10 | L5's 69% example [A]; L1-L3, L6 |
+| Roads, inverter and transformer pads, substation, share of fenced area | 0.02 | 0.04 | 0.10 | [A]; Pennsylvania's worked example uses 10% (FAQ #12, p. 13) |
+| Effective impervious share of the array area, vegetated, rows parallel / diagonal / perpendicular to contours | 0.02 / 0.02 / 0.20 | 0.10 / 0.20 / 0.45 | 0.35 / 0.40 / 0.58 | MHFD Table 4 (HSG C, 2-hour storms) |
+| Effective impervious share of the array area, gravel under and between panels | 0.37 | 0.60 | 0.90 | MHFD Table 7 |
+| Pervious cover under and between panels, storm CN (soil group B) | 58 (meadow) | 69 (open space, fair, for compaction) | 86 (bare) | TR-55; one soil group up for compaction [A, after Virginia DEQ] |
+| Pervious cover, Simple Method Rv | turf, 0.20 on B | turf, one soil group up [A; Runoff Reduction memo Table 4, C value not read here] | — | `runoff.PARAMS["rv"]` |
+| Roads and pads, storm CN / Simple Method | gravel 85 | gravel 85, paved pads 98 | 98 | TR-55; Rv 0.95 as impervious [A: Maryland, North Carolina and Minnesota count gravel as impervious] |
+| PV construction, disturbed area | array area | fenced area | fenced area | MDE TM #8 |
+| PV construction, bare share of the disturbed area in the season | 0.3 | 0.6 | 1.0 (mass grading) | [A] |
+| PV construction, duration, years | 0.5 | 1 | 1.5 | [A] |
+| PV dust control water, one-time, AF/MW | 0 | 0.5 [A] | 5.7 | K1 (desert peak year as high) |
+| Wind total project area, ha/MW | 12 | 34.5 | 57 | L7 (mean ± 1 s.d. rounded; 80% of capacity within 10-50) |
+| Wind permanent direct area, ha/MW | 0.06 | 0.3 | 0.6 | L8; p. 11: 0.06 to 2.4 across projects, 80% below 0.4 |
+| Wind temporary construction area, ha/MW | 0.1 | 0.7 | 1.3 | L8 |
+| Wind permanent area, impervious share | 0.8 | 1.0 | 1.0 | gravel roads and pads counted impervious [A] |
+| Wind foundation concrete, m³ per turbine | 386 | 700 [A] | 1,334 | 9c |
+| Wind foundation mix water, gal per turbine | 16,000 | 30,000 [A] | 67,000 | 9c at 160-190 kg/m³ [A] |
+
+How these meet the code: for PV, `imp` = effective impervious share × array share of the fenced area + roads and pads
+share, `cover` = turf (or one soil group up when the code takes soil groups), `acres` = fenced area, `before` = the
+land as it is; for storms, `impervious` the same and `cn_pervious` from the table. For wind, `acres` = the permanent
+direct area at `imp` near 1 on land that otherwise stays as it was, so the change in runoff is that small area's.
+Construction sediment = `runoff.construction(disturbed acres × bare share)` for the season.
+
+**What could not be sourced:** measured runoff or sediment from operating or under-construction solar sites (none
+published, per the Chesapeake memo); the share of a PV site in roads and pads; per-MW land for wind projects built
+since 2009; dust control water outside the desert Southwest; concrete mix water per m³ from a read source; and
+Michigan solar stormwater guidance.
+
 ## Sources
 
 Primary documents read in this session:
@@ -466,6 +612,40 @@ Primary documents read in this session:
   information and the 2024 cooling detail file. Used in aggregate only (§8b).
 - Environmental Integrity Project (2026). The Power Behind AI. July 1, 2026.
   https://environmentalintegrity.org/wp-content/uploads/2026/06/EIP_Report_ThePowerBehindAI_7.1.26.pdf
+- Ong, S., Campbell, C., Denholm, P., Margolis, R., and Heath, G. (2013). Land-Use Requirements for Solar Power Plants
+  in the United States. NREL/TP-6A20-56290. https://www.osti.gov/servlets/purl/1086349
+- Bolinger, M., and Bolinger, G. (2022). Land Requirements for Utility-Scale PV: An Empirical Update on Power and Energy
+  Density. IEEE Journal of Photovoltaics 12(2). doi:10.1109/JPHOTOV.2021.3136805. Summary slides, Feb 1, 2022:
+  https://emp.lbl.gov/sites/default/files/emp-files/land_requirements_for_utility-scale_pv.pdf
+- Denholm, P., Hand, M., Jackson, M., and Ong, S. (2009). Land-Use Requirements of Modern Wind Power Plants in the
+  United States. NREL/TP-6A2-45834. https://tethys.pnnl.gov/sites/default/files/publications/Denholm_et_al_2009.pdf
+- Cook, L. M., and McCuen, R. H. (2013). Hydrologic Response of Solar Farms. J. Hydrologic Engineering 18(5):536-541.
+  doi:10.1061/(ASCE)HE.1943-5584.0000530.
+  https://www.energy.gov/sites/default/files/2024-08/CFE%20CookMcCuen2013Hydrologic-Response-of-Solar-Farms.pdf
+- Earles, A., Olson, C., and Howard, M. (2023). Determination of Solar Panel Field Runoff Coefficients. Memorandum to
+  the Mile High Flood District, Oct 13, 2023.
+  https://mhfd.specialdistrict.org/files/3ce3b64e3/TECHNICAL-MEMORANDUM-DETERMINATION-OF-SOLAR-PANEL-FIELD-RUNOFF-COEFFICIENTS-2023.pdf
+- Chesapeake Bay Program, Urban Stormwater Workgroup (2024). Evaluating Options for Relative Land Use Loading Rates
+  from Solar Development Sites. Memo, Oct 11, 2024, with annotated bibliography.
+  https://dev.chesapeakebay.net/files/documents/MEMO_Relative-Loading-Rates-from-Solar-Development_2024-10-15-135203_qbgk.pdf
+- Pennsylvania DEP (2026). Chapter 102 Permitting for Solar Panel Projects, Frequently Asked Questions, Version 1.3,
+  Feb 19, 2026. https://files.dep.state.pa.us/water/BPNPSM/StormwaterManagement/ConstructionStormwater/Solar_Panel_Farms_FAQ.pdf
+- Ohio EPA (2024). Post-Construction Stormwater Management for Solar Panel Fields. July 2024.
+  https://dam.assets.ohio.gov/image/upload/epa.ohio.gov/Portals/35/storm/Guidance%20on%20Post-Construction%20Storm%20Water%20Controls%20for%20Solar%20Panel%20Arrays.pdf
+- Maryland Department of the Environment (2018). Technical Memorandum #8, Solar Panels. Mar 30, 2018.
+  https://stg-mde.maryland.gov/programs/water/StormwaterManagementProgram/Documents/Technical%20Memorandum%20No.%208%20-%20Solar%20Panels.pdf
+- New York State DEC (2024). Letter to the New York State Energy Industries Association on solar development and the
+  construction stormwater general permit, Oct 23, 2024.
+  https://nyseia.org/_files/ugd/a89dc9_ef24fb0a76cb44d691a8e196636bf382.pdf
+- USDA NRCS (1986). Urban Hydrology for Small Watersheds, TR-55, 2nd ed., Tables 2-2a and 2-2c.
+- 40 CFR 122.26(b)(14)(x) and (b)(15), and 40 CFR 450.21, eCFR current text as of Nov 1, 2026.
+- Carneiro, E., Mathern, A., and Olsson, N. (2022). Potential improvements in the life-cycle performance of support
+  structures for onshore wind turbines: an interview study in Sweden. Proceedings of the XXIV Nordic Concrete Research
+  Symposium. https://research.chalmers.se/publication/532015/file/532015_Fulltext.pdf
+- Jones, K. E. S., and Li, M. (2024). Life Cycle Assessment of Additively Manufactured Foundations for Ultratall Wind
+  Turbine Towers. Wind Energy, e2947. doi:10.1002/we.2947
+- A typical wind turbine foundation drawing in a 2017 state utility commission siting docket (the docket appendix
+  listed under the secondary sources below, now read).
 
 Cited from abstracts, summaries or secondary sources (figures marked UNVERIFIED where used):
 
@@ -495,3 +675,13 @@ Cited from abstracts, summaries or secondary sources (figures marked UNVERIFIED 
 - Moore, W. E., and Rittof, T. J. (2007). ZLD Today, Part 1: Matching Water Treatment Options to Power Plant
   Requirements. Water Technology, March 1, 2007 (trade article, read through a summary).
 - Simple-cycle evaporation ponds in the arid West: one Nevada NPDES permit fact sheet, from search results; not read.
+- Mulla, D., Galzki, J., Hanson, A., and Simunek, J. (2024). Measuring and modeling soil moisture and runoff at solar
+  farms using a disconnected impervious surface approach. Vadose Zone Journal e20335 (through the Chesapeake memo and
+  the PA DEP FAQ).
+- Liu, H., et al. (2023). Effect of solar farms on soil erosion in hilly environments. Water Resources Research
+  59:e2023WR035067; Mier-Valderrama, L., et al. (2024). International Soil and Water Conservation Research
+  12(2):432-445; Daniels, L., et al. (2024), Virginia solar site white paper; Virginia DEQ GM 22-2012 (all through the
+  Chesapeake memo).
+- Utility-scale solar land use in the Western Interconnection, Communications Earth & Environment (2025),
+  doi:10.1038/s43247-025-02862-5, through pv magazine USA, Dec 15, 2025.
+- NCDEQ Stormwater Design Manual, E-6 Solar Farms, and MPCA Minnesota Stormwater Manual solar pages (search results).
