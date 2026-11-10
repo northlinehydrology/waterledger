@@ -2,7 +2,8 @@
 
 Status: **proposed, Nov 9, 2026. Decisions 1, 2, 3, 4, 7 and 8 agreed (Andrew, Nov 9); 6 revised after his question;
 5 explained further, for review. No code yet.** Battery cell plants (0009) wait on it, so they are
-the first type added under it rather than beside it. Cathode materials plants move to 0011.
+the first type added under it rather than beside it. Michigan moves onto the base path first (0011), so this note
+has one path to refactor. Cathode materials plants move to 0012.
 
 ## Why
 
@@ -184,7 +185,7 @@ The number came early, but it is what users see, so the packages are held to it 
   center, as now.
 - **The contract becomes public API when it ships**, and is listed in the README beside `Place`, `Context`, `Site` and
   `Estimate`: the `Facility` contract and its hooks, the role names, the standard statistic names and the BMI role
-  names. A change to any of them after 3.16 waits for 4.0. This is the reason to settle it carefully now.
+  names. A change to any of them after 3.17 waits for 4.0. This is the reason to settle it carefully now.
 - **Deprecation, not removal.** A name replaced in 3.x keeps working, raises a `DeprecationWarning` that names its
   replacement, and is listed under **Deprecated** in the CHANGELOG. It is removed only in 4.0.
 - **The README's "in beta, whatever the 3.x number suggests" line goes.** The Stability section says what is public,
@@ -197,7 +198,8 @@ The number came early, but it is what users see, so the packages are held to it 
 
 - **waterledger.org.** The site format stays data-center-only; whether battery plants go on the site is decided later
   (0009, decision 5).
-- **Cathode materials plants:** 0011, on this contract.
+- **Cathode materials plants:** 0012, on this contract.
+- **Michigan's own path:** 0011, done before this note's steps.
 
 ## Order of work, each step its own commit with the identity test green
 
@@ -226,11 +228,10 @@ The number came early, but it is what users see, so the packages are held to it 
    system, the nearest sewer plant and its spare design flow) and the data center's (which results for the design,
    scaled by `it_mw`; the default rules on "towers or hybrid"; electricity and grid water). With both in each provider,
    every provider must know every type: providers times types. Split, a provider knows places and a facility knows
-   its type, so adding a type touches no provider and adding a state touches no type. Michigan's page computes in the
-   browser, mirroring `scenario.py`, with parity tests; `DataCenter` keeps calling `scenario.py` in Michigan as today,
-   so the page is not touched, and new types use the general version of the same rules. The two copies of the rules
-   (Michigan's and the national one) exist today and can be merged when the page is next reworked. The alternative,
-   facilities reading snapshots themselves, would put each state's file layout into every type.
+   its type, so adding a type touches no provider and adding a state touches no type. Michigan has no exception: it
+   reads through the national provider with its own layers once 0011 is done (Andrew, Nov 9, asked to bring Michigan
+   in line rather than carry it beside). The alternative, facilities reading snapshots themselves, would put each
+   state's file layout into every type.
 6. **Models and stored results are managed separately** (revised after Andrew asked, Nov 9, whether pre-packaged
    results should be handled apart from the models). Today `MODEL_VERSION` does two jobs: it names the numbers, and
    it keys the snapshots so a package reads only data built on its own model. The second job exists only because data
@@ -248,8 +249,8 @@ The number came early, but it is what users see, so the packages are held to it 
      plants, Andrew's call, with the site decision).
    - `latest.json`'s `by_model` stays keyed by the data center's version through 3.x, with a per-type map beside it.
 7. **Release. Agreed (Andrew, Nov 9).** Steps 1-5 change no numbers and add to the public API without breaking it, so they and battery plants
-   ship together as 3.16.0, a minor release.
-8. **Stability. Agreed (Andrew, Nov 9).** The contract is public API from 3.16, under the 3.x promise (public API has
+   ship together as a minor release: 3.17.0, after 0011's 3.16.0 (0011, decision 6).
+8. **Stability. Agreed (Andrew, Nov 9).** The contract is public API from 3.17, under the 3.x promise (public API has
    been committed since 1.x, and following it mostly serves the project); deprecations warn and wait for 4.0; the
    README's beta line is replaced by the policy above. Where following it would hold the project up, the maintainer
    can make an explicit exception, recorded in the CHANGELOG and the design note with the reason.

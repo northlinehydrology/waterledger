@@ -1,7 +1,7 @@
 # 0009: Battery cell plants, the second water user
 
 Status: **decided Nov 9, 2026 (Andrew; answers and decisions at the end). Built on branch battery-plant-model, not released.** Evidence: `docs/research/battery-plant-water.md`
-(primary sources with page numbers). Cathode materials plants are a separate model with their own note (0010, to follow).
+(primary sources with page numbers). Cathode materials plants are a separate model with their own note (0012, to follow).
 
 ## What and why
 
