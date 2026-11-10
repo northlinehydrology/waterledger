@@ -86,10 +86,11 @@ RANGES = {
     "staff_gpcd": (10.0, 30.0),
     "staff_used": (0.05, 0.15),
     # Operating settings (heat_rejection.OPERATING), the battery plant's own; a plant's documents can fix them (plant.run_location's settings).
-    # Cycles of concentration: Lansing's EA implies about 3 (DOE/EA-2189-S1, p. 19: 0.56 MGD discharged, less process and staff water, against about 0.96
-    # of evaporation; hard Saginaw Formation groundwater); SK Battery's Bartow air permit narrative takes 8 for its drift's dissolved solids (GA EPD App.
-    # 28655, p. 4), though its reported flows (UNVERIFIED) suggest 3-4. Source water and treatment set the real limit, so the range spans both [A].
-    "coc": (3.0, 8.0),
+    # Cycles of concentration, 3-6 as for data centers (Andrew, Nov 9): the plants' own documents don't support a different range. Lansing's EA implies
+    # about 3 (DOE/EA-2189-S1, p. 19: 0.56 MGD discharged, less process and staff water, against about 0.96 of evaporation; hard Saginaw Formation
+    # groundwater); SK Battery's Bartow air permit narrative takes 8, but only for its drift's dissolved solids (GA EPD App. 28655, p. 4), and its
+    # reported flows (UNVERIFIED) suggest 3-4. Source water and treatment set the real limit, which is a matter of place, not industry [A].
+    "coc": (3.0, 6.0),
     # The hybrid's switch margin, as for data centers: a controller setting (US 12,426,214 B1) [A].
     "switch_margin": (-2.0, 2.0),
     # Output over nameplate for a running plant: Korean makers' company-wide utilization, 44-88% in 2022-2025 (Korea Times, Aug 15, 2025); ramp-ups
@@ -115,7 +116,7 @@ SOURCES = {
     "staff_per_gwh": "DOE/EA-2189-S1, -2189, -2201, -2263 employment at full production",
     "staff_gpcd": "EPA 2002 Table 3-4; Michigan septic design criteria",
     "staff_used": "Shaffer and Runkle 2007, Table 9 [A]",
-    "coc": "DOE/EA-2189-S1, p. 19 (derived); GA EPD App. 28655, p. 4 [A]",
+    "coc": "As for data centers (Lei and Masanet; Han et al. 2026; DOE FEMP BMP #10); checked against DOE/EA-2189-S1, p. 19 (derived) and GA EPD App. 28655, p. 4 [A]",
     "switch_margin": "US 12,426,214 B1 (controller setting), as for data centers [A]",
     "utilization": "Korea Times, Aug 15, 2025 (company reports); Ultium pauses, 2026",
 }

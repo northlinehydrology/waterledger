@@ -210,18 +210,25 @@ says which parameters drive the result.
 5. **Order.** Package first. Whether and when battery plants go on waterledger.org is decided later.
 6. **Operating settings are each user's own (Andrew, Nov 9).** The tower physics stays shared, but what an operator
    chooses is not equipment: cycles of concentration and the hybrid's switch margin are set by each water user model
-   from its own evidence (`heat_rejection.OPERATING`). Data centers keep 3-6 cycles. Battery cell plants take 3-8,
-   from Lansing's EA (about 3, hard groundwater) and SK Bartow's air permit narrative (8). Where a plant's own
-   documents give a setting, a run fixes it (`plant.run_location(..., settings={"coc": 3.0})`).
+   from its own evidence (`heat_rejection.OPERATING`). Both take 3-6 cycles for now (Andrew, Nov 9): Lansing's EA
+   implies about 3, and SK Bartow's 8 is only an air permit's drift assumption, so the battery documents don't
+   support a different range. Cycles depend mostly on source water, a matter of place; setting them from the
+   place's water quality for every user is a later design question. Where a plant's own documents give a setting,
+   a run fixes it (`plant.run_location(..., settings={"coc": 3.0})`).
+7. **Sampled, set or input (Andrew, Nov 9).** Not every parameter has to be sampled. Each has a role: sampled
+   (uncertain, and it moves the results), set (one value with its source, overridable by a plant's documents or a
+   scenario), or input (a fact about the plant or place: size, design, chemistry, water reuse, later source water).
+   The sensitivity analysis moves parameters from sampled to set. A set parameter keeps its source and stays in
+   the methods.
 
-## Check at Lansing after decisions 4 and 6 (Nov 9, 2026)
+## Check at Lansing after decisions 4, 6 and 7 (Nov 9, 2026)
 
 West Michigan weather (2023-2024), 43.75 GWh/yr at full output, towers, 200 draws, p10 / p50 / p90 in MGD. The EA
 figures are projections (DOE/EA-2189-S1, p. 19).
 
 | Run | Withdrawn | Consumed | Returned |
 |---|---|---|---|
-| Cycles 3-8 (the battery range) | 0.77 / 1.03 / 1.34 | 0.58 / 0.78 / 1.01 | 0.17 / 0.23 / 0.37 |
+| Cycles 3-6 (the shared range) | 0.80 / 1.07 / 1.38 | 0.58 / 0.78 / 1.01 | 0.20 / 0.28 / 0.40 |
 | Lansing's own cycles, 3 | 0.92 / 1.19 / 1.55 | 0.58 / 0.78 / 1.01 | 0.33 / 0.42 / 0.54 |
 | EA | 1.5-1.7 | 0.94-1.14 | 0.56 |
 | Lake design, Lake Michigan temperatures | 45 / 64 / 92 | 0.37 / 0.49 / 0.62 (forced evaporation) | the rest |
