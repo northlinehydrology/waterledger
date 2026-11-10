@@ -39,9 +39,14 @@ pattern for every category. A layer lives in `waterledger_data` with the state's
 and category, and is recorded in the snapshot's manifest (`layers`: category, source, adds or replaces). The provider
 reads the layers wherever a snapshot has them; nothing in the provider asks which state it is.
 
-**A layer replaces the base only with a reason**: the state's source is primary (the regulator's own records), more
-recent, or measured where the base is estimated. Where the two are equally good, the base is used, so there is one
-process. Each replacement is stated in the methods page with its reason.
+**A layer replaces the base only when it measures better**: compared against an independent check, not argued.
+Where the two are about equally good, the base is used, so there is one process. Each replacement is stated in the
+methods page with its reason and the comparison.
+
+This is the add-state process in two passes (Andrew, Nov 9: "a nation flavor first addition. And a later second
+addition that deep dives on state level data"). A state first goes on with the national base alone. A later deep dive
+adds its own layers one at a time, each kept only where it measures better. Michigan is a state whose deep dive was
+done first; moving it onto the base keeps the layers that earn their place.
 
 ## Michigan, category by category
 
@@ -59,12 +64,45 @@ From the code as of Nov 9. "Compare" means the numbers are measured side by side
 | Design storms | NOAA Atlas 14 | the same | Base |
 | County rainfall | NOAA Climate at a Glance by county | the same source | Compare |
 | Cooling weather | ERA5 cells | the same | Base (already shared) |
-| Road salt and golf regions | Michigan's eight regions, stations chosen by hand, salt days by the national method | NOAA climate divisions (ten in Michigan), their ISD stations | Compare; decision 3 |
-| Golf course water | median of EGLE-reported courses | `wateruse.golf`: reported where the state reports, else GCSAA | Base (it already takes Michigan's reported median) |
-| Electric utilities | MPSC service territories | HIFLD territories (PNNL's copy) | Layer (replaces): the commission's own map; compare first |
+| Road salt regions | Michigan's eight regions, stations chosen by hand, salt days by the national method | NOAA climate divisions (ten in Michigan), their ISD stations | Base: about a tie (measured below); NOAA's division names in every state |
+| Golf course water | median of 453 EGLE-reported courses, 43,500 gal/day | GCSAA's North Central survey median, 36,200 gal/day (no Michigan entry in `wateruse.GOLF`) | Layer (replaces): reported beats a survey; measured below |
+| Electric utilities | MPSC service territories | HIFLD territories (PNNL's copy) | Layer (replaces): measured below; the base also gains an EIA-861 county screen in every state |
 | Balancing authority | a hand-kept list of Michigan's PJM utilities | HIFLD control area, then EIA-861 | Base, if it gives the same seven utilities (the list's comment says it came from these sources) |
 | State rules | reviewed: Part 327, Part 22 septic, the Compact | not covered | Layer (adds) |
 | Source citations | `states/mi/build.py`'s `SOURCES`, which `state_data.py` also imports | | Moved to a shared module; no change in content |
+
+## Measured, Nov 9
+
+Scripts and output: the session scratchpad (`mi/utilities.py`, `mi/salt.py`), from Michigan's 2026-11-09 snapshot.
+
+**Utilities.** Judged against EIA-861's Service Territory file (2025), where each utility lists the counties it serves:
+
+| | Top utility serves the place's county | Same top utility as MPSC |
+|---|---|---|
+| MPSC | 1,540 of 1,540 | |
+| HIFLD, ranked by customers (the base) | 1,062 of 1,541 | 819 |
+| HIFLD with an EIA-861 county screen | | 1,072 |
+
+HIFLD draws territories coarsely, and the base ranks a place's utilities by customers, so DTE comes first in 280
+Consumers Energy places and dozens in the Upper Peninsula. The balancing authority, which sets power-plant water,
+differs in 21 southwest Michigan places (Indiana Michigan Power and Midwest Energy Cooperative, in PJM). MPSC replaces
+the base in Michigan. The county screen goes into the base for every state (fix all states): the top utility misses
+EIA's county list in 5% of Ohio's places, 2% of Virginia's and Texas's and under 1% of Wisconsin's; screened, the grid
+region changes in 8 Texas places and none elsewhere.
+
+**Road salt.** Median winter days with precipitation at 1 C or below, 2005-2024 (NOAA ISD-Lite), the measure
+`runoff.salt_events` uses (0.6 events a day). Checked at the ten Michigan stations with whole records that neither
+grouping uses: mean absolute error 10.8 days for the eight regions (bias +6.6), 9.1 for the divisions (+4.5). At the 810
+places within 40 km of a station: 4.4 and 4.8 days. A day or two is about one salt event a winter, so this is a tie, and
+the base is used. The divisions split the Upper Peninsula, which the regions give one station (Hancock, 119 days, far
+above Sault Ste. Marie's 101, Menominee's 92 and Chatham's 82). Both groupings miss by 10 to 30 days at some stations;
+a place's own nearest station or cell would do better, a later question for every state. The divisions get NOAA's own
+names ("Southwest Lower") in every state, in place of "MI climate division 8".
+
+**Golf.** EGLE's reported median (453 courses with a usable report) against GCSAA's survey figure. Splitting the
+median by region or division doesn't help: predicting each course from the others misses by about a factor of two
+whichever grouping is used (median absolute log error 0.81 to 0.85). So the statewide reported median stays, as a
+layer like Ohio's ODNR figure.
 
 ## No better estimate lost: the check
 
@@ -114,8 +152,10 @@ numbers, so Andrew checks it locally before any deploy.
 ## Order of work, each step its own commit
 
 1. The before record: every Michigan number from today's path, for all places and designs, and the context fields.
-2. Layers in `waterledger_data`: Michigan's wells, trout streams, MPSC utilities and rules flag, registered by state
-   and category; EGLE moved into `wateruse.STATE_LAYERS`. The citation list moved to a shared module.
+2. Layers in `waterledger_data`: Michigan's wells, trout streams, MPSC utilities, golf median and rules flag,
+   registered by state and category; EGLE moved into `wateruse.STATE_LAYERS`. The citation list moved to a shared
+   module. In the base: the EIA-861 county screen and NOAA's division names, for every state (these change other
+   states' context, recorded in the methods log).
 3. The base builder reads layers and writes them into the snapshot, with the manifest's `layers`; the state places
    rule; `build-state MI` runs it.
 4. The national provider reads layers; Michigan uses it. The old readers warn.
@@ -129,9 +169,9 @@ numbers, so Andrew checks it locally before any deploy.
 1. **Base plus layers, one builder.** Each layer adds or replaces, and replaces only with a stated reason.
 2. **No better estimate lost:** the before and after record, every difference with a cause, Andrew's review before
    release.
-3. **Michigan's eight regions or NOAA's ten divisions** for road salt, golf and the region names on the page. My lean:
-   compare, then keep the eight as a Michigan layer only if their numbers are better; otherwise use the base. The names
-   ("West Michigan") show on the page, so this is visible either way.
-4. **MPSC replaces HIFLD in Michigan**, after the comparison, as the commission's own map.
+3. **NOAA's divisions replace Michigan's eight regions** for road salt and the region shown on the page: measured
+   as a tie, so the base, with NOAA's division names in every state. The page's "climate region" label changes.
+4. **MPSC replaces HIFLD in Michigan** (measured: 1,540 of 1,540 against 1,062), and the base gains the EIA-861
+   county screen in every state. EGLE's golf median replaces the survey.
 5. **Michigan's places and GEOIDs stay**; villages later.
 6. **Order:** this first as 3.16.0, then 0010 and battery plants as 3.17.0.
