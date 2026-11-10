@@ -1,6 +1,6 @@
 # 0014: Power supply scenarios: what serves a user's hourly electricity, and the water it takes
 
-Status: **proposed, Nov 10, 2026, for Andrew's review. Nothing is built.** Evidence: `docs/research/power-supply-water.md`.
+Status: **decided Nov 10, 2026 (Andrew; all eleven decisions agreed, with his notes on 2, 5, 9 and 10 below). Not built.** Evidence: `docs/research/power-supply-water.md`.
 Builds on 0008 (power at the grid), 0010 (water user types and the standard treatment) and the shared Monte Carlo runner
 (`waterledger_models.runs`, branch `shared-runner`, not merged). 0012 (cathode plants) and 0013 (the site standard) are
 reserved, so this is 0014.
@@ -279,27 +279,54 @@ become public API in the release that carries them, under the 3.x rules (0010, d
 5. The EIA aggregate check (3), as a methods script writing only aggregates.
 6. `GasPlant` as a registered facility and `est.supply`; READMEs, docs, the methods log; a release on Andrew's word.
 
-## Decisions to agree
+## Decisions (agreed by Andrew, Nov 10, 2026)
 
-1. **A scenario is resources plus a residual rule** (`grid`, `gas`, `none`), with scenario (a) unchanged.
+1. **A scenario is resources plus a residual rule** (`grid`, `gas`, `none`), with scenario (a) unchanged. Agreed.
 2. **The gas plant is a water user type on the standard treatment** (`waterledger_models/gas/`, `GasPlant`), with four
-   technologies (`cc`, `ct`, `engine`, `fuel_cell`) and the design exceptions in the table above.
+   technologies (`cc`, `ct`, `engine`, `fuel_cell`) and the design exceptions in the table above. Agreed, with Andrew's
+   note: **solar has runoff implications, and both solar and wind have construction implications; wind generally has the
+   lowest land impact.** So renewables get a land, runoff and construction part (below), not only a generation profile.
 3. **Renewables are generation profiles, not types** (`waterledger_models/supply/`), from ERA5 radiation and 100 m wind
-   in the open copy, fetched for the cells supply runs need rather than for every cell.
+   in the open copy, fetched for the cells supply runs need rather than for every cell. Agreed; with decision 2's note,
+   a project also carries its land, runoff and construction water.
 4. **Resources serve the load hour by hour;** annual matching is reported beside. Surplus is exported with no water
-   credit by default, and the grid water it would displace at the marginal mix is shown beside.
-5. **Unserved hours are reported, never filled silently.** An islanded scenario says how many hours and MWh its plant
-   cannot carry.
+   credit by default, and the grid water it would displace at the marginal mix is shown beside. Agreed.
+5. **Unserved hours are reported, never filled silently.** Agreed, with Andrew's note: most campuses with on-site or
+   nearby power will likely stay connected to the grid, so **`grid` is the default residual**: the grid serves what the
+   resources don't, and nothing is unserved. Islanded operation (`none`) is a real option, not a corner case: off-grid
+   builds are being planned (Andrew cites Alphabet's purchase of Intersect Power, announced late 2025, to verify). An
+   islanded scenario says how many hours and MWh its plant cannot carry.
 6. **Sizing defaults:** gas N+1 at the 0.4% design dry-bulb from the 1-in-10-year full-capacity peak hour (N+2 as an
-   option); renewables by share of annual MWh; plants sized once, from a first pass on the central draw.
+   option); renewables by share of annual MWh; plants sized once, from a first pass on the central draw. Agreed.
 7. **Four additions to the runner's hook:** `extra.setup`, the draw index, hourly series summarized by the runner, and
-   the residual's grid water through `RunWater`.
+   the residual's grid water through `RunWater`. Agreed.
 8. **On-site plant water is local water and is reported as such:** beside the user's own roles and in a combined
-   campus-plus-power line, not merged into the user's `withdrawn`.
-9. **Supply scenarios run at the place** and are not stored in the snapshots.
+   campus-plus-power line, not merged into the user's `withdrawn`. Agreed.
+9. **Supply scenarios run at the place** and are not stored in the snapshots. Agreed for now. Andrew's framing: the
+   calculator's values have limits and are mostly illustrative, but are meant to be accurate to a level that is
+   valuable.
 10. **The gas plant's return** follows the place's default wastewater rule like every type (sewer where it fits); a
-    direct discharge to the water it draws from is `to_source`. No new role.
+    direct discharge to the water it draws from is `to_source`. No new role. Agreed **as long as it is realistic**: the
+    research note is to check where new gas plants' blowdown actually goes (a municipal sewer, a permitted discharge to
+    a stream, zero liquid discharge), by plant size and technology, before the default is set. A permitted discharge to
+    a different stream than the intake is neither `to_sewer` nor `to_source` as those roles read now; if it is common,
+    that is a gap in the roles to settle for every type, not a gas plant special case.
 11. **Construction water is a one-time total**, reported apart from annual water; upstream fuel water is not added.
+    Agreed: construction is always separate.
+
+## Land, runoff and construction for renewables (from decision 2's note; research to do)
+
+- **Solar.** An array changes how its site sheds water: panel drip lines concentrate rain, access roads, inverter and
+  substation pads are impervious, grading compacts soil, and the ground cover under the panels changes. The site's
+  runoff, sediment and nutrients go through the shared `waterledger_models.runoff`, as for any developed site, with
+  PV-specific land cover and imperviousness from the literature [A]. Construction disturbs the whole fenced area for a
+  season: construction stormwater and sediment, and dust control water (the research note's one-time totals).
+- **Wind.** The smallest footprint per MWh: turbine pads, crane paths and access roads, and the collection system.
+  Construction water is mostly foundation concrete. The runoff change is small and local to the roads and pads.
+- **To source next:** land area and disturbed area per MW for PV (fixed and tracking) and wind; runoff coefficients or
+  curve numbers for land under panels; construction stormwater sediment loads; wind foundation concrete per turbine.
+  Reported per project as land, a change in annual runoff and sediment, and one-time construction water, all apart from
+  annual operating water.
 
 ## References
 
