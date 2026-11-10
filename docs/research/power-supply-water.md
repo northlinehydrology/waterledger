@@ -277,6 +277,282 @@ From public studies and standards, in general terms:
     holds intake near closed-cycle levels; the number stays true to the physics and the rule is a flagged note, as for
     other users (`once_through`).
 
+## 8. Where new gas plants' wastewater goes (design 0014, decision 10)
+
+Added Nov 10, 2026. Decision 10 sets the gas plant's return by the place's default wastewater rule, "as long as it is
+realistic". This section checks that against what new U.S. gas plants actually do with cooling tower blowdown,
+demineralizer and RO reject and other process wastewater. Patterns only: no plant is named, and the counts below were
+built from the federal forms by a script that writes only aggregates (kept outside the repository).
+
+### 8a. What the rules cover
+
+- **Combined cycle is under the steam electric guidelines; nothing else here is.** 40 CFR 423.10 applies to units using
+  "a thermal cycle employing the steam water system", and since 2015 says outright that it covers "both the combustion
+  turbine and steam turbine portions of a combined cycle generating unit" (eCFR, current text). EPA's 2015 technical
+  development document sorts "stand-alone combustion turbines, internal combustion engines, fuel cells, and wind
+  turbines" into the non-steam-electric group outside the category (EPA-821-R-15-007, p. 4-4). Their wastewater is
+  permitted case by case (best professional judgment in an NPDES permit, or a sewer authority's local limits).
+- **What a combined cycle discharges.** EPA lists "cooling water, boiler blowdown, metal cleaning wastes, and steam
+  condensate water treatment wastes", with no ash or FGD water (same, §4.2.2, p. 4-7). Ion exchange regeneration,
+  boiler blowdown, floor drains and tower basin cleaning are "low volume waste sources" (40 CFR 423.11(b)).
+- **New-source limits on a direct discharge** (40 CFR 423.15(a)): low volume wastes TSS 100 mg/L daily maximum and 30
+  monthly, oil and grease 20 and 15; cooling tower blowdown free available chlorine 0.5 maximum and 0.2 average, no
+  detectable amount of the 126 priority pollutants from tower chemicals except chromium 0.2 and zinc 1.0 mg/L, and
+  chlorine released from one unit at a time for no more than two hours a day. **To a sewer** (PSNS, 423.17(a)), the same
+  priority-pollutant limits on blowdown apply, plus the POTW's own local limits.
+- **Design studies assume conventional treatment is enough.** NETL's baseline finds "no additional control technology
+  considerations are required for NGCC compliance with the ELG rule" (Rev. 4a, p. 41). It assumes makeup "50 percent by
+  a publicly owned treatment works (POTW) and 50 percent from groundwater" and blowdown "treated and 90 percent returned
+  to the water source" (pp. 51-52). In case B31A the process discharge is 657 of 2,902 gpm withdrawn (23%), of which
+  651 gpm is tower blowdown and 5.6 gpm the deaerator vent; boiler feedwater makeup is 5.6 gpm, 0.5 gal/MWh net
+  (Exhibit 5-14, p. 567). So in a tower-cooled combined cycle, blowdown is almost all of the wastewater, and the
+  demineralizer reject is under 1% of it [derived: reject at 25-30% of a 5.6 gpm feed, A].
+
+### 8b. Combined cycle plants since 2005, from EIA-860 and EIA-923 (aggregate)
+
+**Method.** EIA-860 2024, Schedule 6 Part D (`6_2_EnviroEquip_Y2024.xlsx`, Cooling sheet) gives each cooling system's
+type, in-service year, water source code (SW surface, GW ground, PD "plant discharge water (ex: wastewater treatment
+plant discharge)", OT), water type (fresh, brackish, saline, reclaimed), and a free-text "Cooling Water Discharge".
+The instructions ask for the discharge water's name "if the discharge body of water is different than the source of
+the cooling water" (EIA-860 instructions, Schedule 6 Part D, lines 5-8, pp. 45-46), so a blank beside a named surface
+source reads as the same water body. Part D covers plants with 100 MW or more of steam-electric nameplate (p. 45), so
+plants of about 200 MW and up appear and simple-cycle, engine and fuel cell plants do not. I kept operating cooling
+systems in service 2005 or later and linked to natural gas combined cycle generators (EIA-923 2024 cooling detail
+file), then sorted each plant's discharge text into the classes below by hand-checked rules. Plant size is the plant's
+combined cycle nameplate (EIA-860 3_1, prime movers CA, CT and CS on gas).
+
+**The fleet.** 156 plants: 108 with wet towers (induced, forced or natural draft, four of them hybrid wet-dry), 37 with
+dry cooling only, 11 with once-through or cooling ponds (one plant has two kinds). Plant size: median 740 MW, quartiles
+590-1,150 MW; only 5 of the 108 tower plants are under 300 MW.
+
+**Where tower plants send their cooling water discharge** (plants; a plant with systems in two classes is counted
+under the first):
+
+| Destination | Plants | Share of 108 | Share of the 85 with a stated destination | Notes |
+|---|---|---|---|---|
+| Direct discharge to the same water body as the intake | 42 | 39% | 49% | 28 name the same water, 14 leave the field blank beside a named surface source; almost all (41) take surface water |
+| Municipal sewer (POTW) | 18 | 17% | 21% | 7 of them take reclaimed effluent from the same POTW and return blowdown to it; 6 take groundwater; 3 surface water |
+| Direct discharge to a different water body | 14 | 13% | 16% | 7 take groundwater and discharge to a stream or river; 3 take a utility's water or reclaimed effluent and discharge to a stream; 4 take one surface water and discharge to another |
+| No discharge: zero liquid discharge, evaporation or on-site ponds, deep injection | 11 | 10% | 13% | ZLD 5 (4 in the West), ponds 4, injection 2 |
+| Not stated or unclear | 23 | 21% | — | 15 blank beside a groundwater, reclaimed or utility source; 8 with text that names no water body |
+
+By region (states grouped as West: AZ CA CO ID MT NV NM OR UT WA WY; Texas; the rest), stated destinations among the
+tower plants are: rest of the country (77 plants) same water 33, sewer 14, different water 11, no discharge 5,
+unstated 14; West (21) same 4, sewer 3, different 2, no discharge 6, unstated 6; Texas (10) same 5, sewer 1,
+different 1, unstated 3. By supply: of 49 surface-supplied plants with a stated destination, 41 (84%) discharge to the
+same water; of 35 plants on groundwater, a utility or reclaimed effluent with a stated destination, 15 go to a sewer,
+10 to a stream and 10 discharge nothing. No pattern by size appears between 300-700 MW and 700 MW and up (sewer 8 and
+10, same water 14 and 14), and five plants under 300 MW are too few to read.
+
+**Volumes, EIA-923 Schedule 8D, 2024** (annual withdrawal and discharge summed over months, same cooling systems):
+85 tower plants report withdrawal. Of the 64 that also report a discharge, discharge is a median 19% of withdrawal
+(quartiles 14-27%), close to NETL's 23% at 4 cycles. 21 report no discharge at all: 5 of the 9 that state ZLD, ponds
+or injection, 9 of the 18 whose destination is unstated, 3 of 14 sewered plants (a sewer discharge may not be reported
+as a cooling discharge [A]) and 4 of 32 same-water plants (likely reporting gaps [A]). So between 10% and about 20% of
+new tower plants discharge nothing [A: the upper end counts the unstated plants that report zero].
+
+**Dry-cooled combined cycle.** EIA records no cooling water discharge for the 37 dry plants, as expected. Their
+wastewater is boiler blowdown, demineralizer reject, drains and sanitary, about 1 gal/MWh or less [derived from NETL's
+0.5 gal/MWh of feedwater makeup, A]. Where it goes is not in the federal forms.
+
+**Limits of this reading.** The discharge field is free text, and the forms describe the cooling system's discharge,
+not every process stream. A plant's NPDES permit is the record; counting outfalls from ECHO by plant type and receiving
+water is a further check (not done here; it would need the ECHO facility download matched to EIA plant codes, still
+in aggregate).
+
+### 8c. Simple-cycle turbines, engines and fuel cells
+
+No aggregate record of where their wastewater goes was found. What is sourced:
+
+- Their process water is small: NOx water injection at 24-56 gal/MWh with its demineralizer reject, and inlet
+  evaporative cooling at 7-16 gal/MWh in the hours it runs (§1b, S2 and S4); dry low-NOx units without inlet cooling,
+  radiator-cooled engines and fuel cells use almost none (S3, S5, S6).
+- Trade literature describes the wastewater of small combustion turbine plants as going to a city sewer through an oil
+  separator "depending on permit requirements and the availability of 'city sewer'", with demineralizer regeneration
+  left to the supplier of portable exchange units (Moore and Rittof 2007, a trade article, not a survey).
+- Permit fact sheets for simple-cycle plants in the arid West describe evaporation ponds for evaporative cooler
+  blowdown and RO reject (one Nevada NPDES fact sheet, from search results; UNVERIFIED as a pattern).
+
+### 8d. On-site generation at data centers
+
+Public sources rarely say where a data center plant's water goes. A 2026 survey of proposed gas plants serving data
+centers counts at least sixteen combined cycle plants (40,896 MW) among them, notes that the others "would not need
+water to run their turbines" and that "some power plants also plan to use air cooling", and says some water "may need
+to be treated before being released back into the environment", without saying where (Environmental Integrity Project,
+"The Power Behind AI", July 2026, p. 17; its 2,800 gal/MWh is the fleet's average withdrawal, A1, dominated by
+once-through plants, not a factor for a new tower plant). The technologies in public statements (§6) are mostly simple-
+cycle turbines, engines and fuel cells, which use little process water (§8c). Nothing found gives a destination for a
+campus plant's blowdown; a plant inside a campus would most simply share the campus's water and sewer connection [A].
+
+### 8e. Recommended default, and the roles gap
+
+| Technology and supply | Default return (proposed) | Alternatives as settings | Basis |
+|---|---|---|---|
+| Combined cycle, towers or hybrid, on a surface water | `to_source`: a direct discharge to the same water body | sewer; a different stream; ZLD | 41 of 49 surface-supplied plants with a stated destination (8b) |
+| Combined cycle, towers or hybrid, on groundwater or a utility's water | the place's wastewater rule (`to_sewer` where it fits) | a direct discharge to a nearby stream (about two-thirds as common as the sewer); no discharge, by ZLD or ponds (as common as the stream, more so in the West) | 15 sewer, 10 stream, 10 none of 35 (8b) |
+| Combined cycle, towers, arid West | as above, with ZLD more likely | — | 6 of 15 Western plants with a stated destination discharge nothing |
+| Combined cycle, dry | `to_sewer` for process wastewater of about 1 gal/MWh or less | hauled or evaporated where there is no sewer | NETL Exhibit 5-14 [A for the destination] |
+| Simple-cycle turbine with water injection or inlet cooling | `to_sewer` [A] | hauled or evaporation pond | 8c; no aggregate found |
+| Simple-cycle turbine with dry low-NOx and no inlet cooling; engines on radiators; fuel cells | `to_sewer` of a near-zero flow (washing, drains, sanitary) [A] | — | S3, S5, S6 |
+
+By size: the federal forms cover combined cycle plants of about 200 MW and up and show no difference between the
+300-700 MW and larger groups. Below that, and for every simple-cycle, engine and fuel cell plant, the default rests on
+the technology's small flows and is [A].
+
+**Is a discharge to a different water body common?** Yes, often enough to matter: 14 of 108 new tower plants (13%), and
+16% of those whose destination is stated. Most of them take groundwater or a utility's water and discharge blowdown to
+a local stream under their own NPDES permit, which is also NETL's design-study convention (half the makeup from a POTW,
+half from groundwater, blowdown "returned to the water source"). That case is neither `to_sewer` (no POTW in between)
+nor `to_source` (the receiving water is not the one drawn from). It is not special to gas plants: a data center or a
+cell plant on wells with its own stream discharge is the same case. Settling it is a roles question for every type
+(design 0010), for Andrew.
+
+## 9. Renewables' land, runoff and construction (design 0014, decision 2's note)
+
+Added Nov 10, 2026. Values for a hypothetical PV or wind project at the user's place, in the terms the shared runoff
+code takes: `runoff.runoff_in(rain_in, imp, cover)` and `runoff.loads(acres, rain_in, before, imp)` (Simple Method,
+an impervious share and a pervious cover's Rv), `runoff.storm_mg(acres, storm_in, imp)` and
+`hydrology.composite_runoff_in(p_in, impervious, cn_pervious)` (TR-55 curve numbers for the impervious and pervious
+parts, area-weighted), and `runoff.construction(acres_disturbed)` (tons of sediment a year of construction). No project
+is named; where a source is one project's document it is cited as an anonymized example.
+
+### 9a. Land per MW
+
+| # | Technology | Figure | Source | Status |
+|---|---|---|---|---|
+| L1 | PV, fixed tilt, >20 MW (2012 and earlier) | direct area 5.8 acres/MWac (7 projects), total area 7.5 (14 projects), capacity-weighted | Ong et al. (2013), NREL/TP-6A20-56290, Tables 3-4 p. 10 | reported, review |
+| L2 | PV, single-axis tracking, >20 MW | direct 9.0 acres/MWac (7 projects), total 8.3 (16); under 20 MW: direct 6.3, total 8.7 | same | reported, review |
+| L3 | All solar, total and direct | total 8.9 acres/MWac capacity-weighted, direct 7.3 (direct counts arrays, access roads, substations and buildings) | Ong et al. (2013), p. v | review |
+| L4 | PV built 2019, array area | median **2.8 acres/MWdc fixed tilt, 4.2 tracking** (power density 0.35 and 0.24 MWdc/acre); up 52% and 43% since 2011 | Bolinger and Bolinger (2022), IEEE J. Photovoltaics 12(2), summary slides p. 13; 736 plants of 5 MWac and up built 2007-2019 | reported (imagery) |
+| L5 | Array share of the site | polygons cover arrays and nearby inverter pads, "NOT ... the total leased or owned area"; one example in the slides has the array on 69% of the leased area | same, slide 7 | example |
+| L6 | PV, Western Interconnection, whole footprint with roads, fencing and buffers | mean 24.7 W per m² (about 10 acres/MW; AC or DC basis not stated in the summary) | Communications Earth & Environment (2025), 719 facilities, via a trade summary (pv magazine USA, Dec 15, 2025); UNVERIFIED | reported (imagery) |
+| L7 | Onshore wind, total project area | **34.5 ± 22.4 ha/MW (85 acres/MW)**, 161 projects, 25,438 MW; capacity density 3.0 ± 1.7 MW/km² | Denholm et al. (2009), NREL/TP-6A2-45834, Table 1 p. 10, p. 14 | reported |
+| L8 | Onshore wind, direct impact | **permanent 0.3 ± 0.3 ha/MW (0.7 acres/MW)**, 93 projects; **temporary 0.7 ± 0.6 ha/MW (1.7 acres/MW)**, 52 projects; together about 1.0 ± 0.7 ha/MW | same, Table 1 p. 10 and p. 12 | reported |
+| L9 | Wind, what the permanent area is | roads 79%, turbine pads 10%, substation 6%, transmission 2%, other 2%; temporary: roads 62%, staging 30%, substation and transmission construction 6% (23 and 17 projects with detail) | same, Tables 2-3 p. 13 | reported |
+| L10 | Wind, by prior land cover | permanent direct 0.24 ± 0.28 ha/MW on row crops, 0.24 ± 0.15 pasture, 0.36 ± 0.22 forest; temporary 0.87, 0.59 and 1.11 | same, Table 7 p. 18 | reported |
+
+Converting L4 to AC at an inverter loading ratio of 1.3 [A] gives about **3.6 acres/MWac of array for fixed tilt and 5.5
+for tracking**, against Ong's 5.8 and 9.0 for plants built before 2013. Denholm's wind projects mostly used turbines
+under 3 MW built before 2009; the average new U.S. turbine was 3.2 MW in 2022 (Jones and Li 2024, pp. 1-2, citing LBNL).
+Per-MW wind areas from newer projects were not found in a primary source in this session [A: L7-L8 kept as they are].
+
+### 9b. Runoff from solar sites
+
+**What the studies say.**
+
+- **Panels over established grass change little; bare ground or gravel changes a lot.** A cell model of panel rows on
+  grass (B soil, 1% slope, 2-hour 25-year storm) gives a runoff volume 0.35% higher and a peak 0.31% higher than the
+  same grass without panels. Gravel under the panels: volume +7%, peak +73%; gravel under the panels with healthy grass
+  between rows: volume +4%, peak +42%; bare ground under and between the panels (poor upkeep): volume +7%, peak +72%;
+  bare ground between rows: peak about +100%, as with gravel or pavement under the panels and patchy grass or bare
+  ground between them. Water dropping off a panel edge can carry "nearly 10 times" the kinetic energy of rain on open ground, so drip lines erode where soil is
+  bare (Cook and McCuen 2013, J. Hydrologic Engineering 18(5):536-541, results and conclusions; a model study, not
+  checked against field data).
+- **Measured and modeled at five U.S. solar farms**, runoff averaged 13%, 25% and 45% of the 2-, 10- and 100-year
+  design storm depths, and runoff with arrays was 14% above the same sites without them; the authors treat arrays as
+  disconnected impervious surface (Mulla et al. 2024, Vadose Zone Journal e20335, as summarized by the Chesapeake Bay
+  Program's Urban Stormwater Workgroup memo, Oct 11, 2024, pp. 2 and 6, and Pennsylvania DEP's FAQ, p. 6; paper not
+  read, UNVERIFIED). Their PV-SMaRT calculator returns a curve number for the whole array area from soil texture,
+  depth, bulk density, cover, panel width and spacing, orientation and slope (PA DEP FAQ, pp. 6-7).
+- **Effective imperviousness of the array area** from SWMM and the PV-SMaRT calculator, averaged and rounded, HSG C,
+  2-hour storms: native vegetation **10% with rows parallel to the contours, 20% diagonal, 45% perpendicular** (ranges
+  under 2% to 58%); gravel between and under panels **50%, 60% and 75%** (37% to 90%) (Earles, Olson and Howard 2023,
+  memorandum to the Mile High Flood District, Table 4 p. 8 and Table 7 p. 10). Roads and equipment pads are added on
+  top by area.
+- **Soils after construction run wetter.** Grading and heavy equipment compact the soil and strip organic matter; a
+  common adjustment is to raise the hydrologic soil group one letter (B to C) when picking curve numbers, which
+  Virginia DEQ requires during development and stabilization (Chesapeake Bay Program memo, 2024, pp. 1 and 4-5, citing
+  Daniels et al. 2024 and DEQ GM 22-2012; Virginia's memo not read, UNVERIFIED). The same memo finds no study of runoff
+  quality from solar sites (p. 1).
+
+**State guidance** (all treat the panels as disconnected impervious surface when the ground under and between them is
+vegetated and runoff stays as sheet flow; none treats gravel the same way):
+
+| State | What it says | Source |
+|---|---|---|
+| Pennsylvania | Vegetation under and between panels, preferably meadow, at 90% perennial cover; row gap at least the panel width; sites that meet the site restoration criteria (slopes 10% or less) leave the array area out of the stormwater analysis, others use PV-SMaRT curve numbers for it; access roads, gravel drip edges and buildings are computed separately; footings and posts need not be counted. Worked example: a shallow (20 in) silt loam on a 10% slope gives CN 92 for the array area | PA DEP, Solar Panel Projects FAQ, Version 1.3, Feb 19, 2026, pp. 4-10, 12-13 |
+| Ohio | Disconnection over deep-rooted grasses and forbs at a disconnection length of 2 × the panel's horizontal width, 1:1 panel to gap; soils in good hydrologic condition; not allowed over gravel or hard surfaces; roads and buildings managed separately | Ohio EPA, Post-Construction Stormwater Management for Solar Panel Fields, July 2024, pp. 1-2 |
+| Maryland | By statute (2012) only the foundation or base of a panel is impervious; access roads, pads and sheds within the limit of disturbance are; a splash pad or matting at the drip line; the whole work area is in the limit of disturbance even without grading | MDE Technical Memorandum #8, Mar 30, 2018, p. 1 |
+| New York | Arrays "may be designed to be disconnected impervious area" depending on table height, spacing, slope, soils and cover; the leading drip edge is the case to model | NYSDEC letter to the state solar industry association, Oct 23, 2024, pp. 1-2 |
+| North Carolina | Panels are impervious; disconnection length at least 80% of panel width; gravel is built-upon area | NCDEQ Stormwater Design Manual, E-6 Solar Farms, from search results; UNVERIFIED |
+| Minnesota | A disconnected impervious credit method for the water quality volume; gravel paths and roads are impervious | MPCA Minnesota Stormwater Manual solar pages, from search results; UNVERIFIED |
+| New Jersey, Michigan | No solar-specific stormwater guidance found from EGLE; New Jersey's not read | — |
+
+**Curve numbers for the parts of a solar site** (TR-55, USDA NRCS 1986, Table 2-2a p. 2-5 and Table 2-2c p. 2-7;
+soil group B, with C in brackets):
+
+| Surface | CN, B [C] | Use |
+|---|---|---|
+| Meadow, continuous grass, protected from grazing | 58 [71] | established native cover, little traffic |
+| Open space, good condition (grass cover over 75%) | 61 [74] | mowed turf, well kept |
+| Open space, fair (50-75%) | 69 [79] | patchy cover, or compacted soil |
+| Newly graded areas, no vegetation | 86 [91] | bare ground under panels or in drive aisles |
+| Gravel roads | 85 [89] | access roads, gravel drip edges, gravel under panels |
+| Paved, roofs | 98 | inverter and transformer pads, substation slab, buildings |
+
+### 9c. Construction
+
+- **Permits.** Construction stormwater coverage under an NPDES permit is required at one acre of disturbance or more,
+  including smaller parts of a larger common plan (40 CFR 122.26(b)(14)(x), five acres and up, and (b)(15), one to
+  five); the construction and development guidelines require controls to minimize exposed soil, compaction and
+  sediment discharge and to preserve topsoil (40 CFR 450.21(a)). Maryland counts a solar site's whole work area as
+  disturbed even without grading (MDE TM #8, p. 1). Michigan's Part 91 and permit-by-rule are already in
+  `runoff.PARAMS["construction"]["permits"]`.
+- **Sediment.** No measured sediment yield from solar or wind construction was found. Modeling studies find solar
+  development raises erosion: 21-75% during construction and 25-76% in operation on a hilly site (Liu et al. 2023,
+  Water Resources Research 59:e2023WR035067), and cumulative sediment load up 12-30% at 15-30% solar conversion of a
+  small basin (Mier-Valderrama et al. 2024, International Soil and Water Conservation Research 12(2):432-445); both as
+  summarized in the Chesapeake Bay Program memo (2024), pp. 5-6; papers not read, UNVERIFIED. So the
+  packages' construction yields (`runoff.construction`, gross erosion 30-200 t/acre-yr × delivery 0.1-0.33, EPA MM8
+  and measured active sites) remain the basis, applied to the bare share of the disturbed area [A].
+- **Dust control water.** Klise et al. (2013) give 1.3-5.7 AF/MW in the peak construction year in the desert Southwest
+  (K1). No figure for humid climates was found; there dust control is intermittent and the desert figure is an upper
+  bound [A].
+- **Wind turbine foundations.** A typical foundation drawing in a 2017 state utility commission siting docket gives 505
+  cubic yards (386 m³) of concrete per turbine (read this session: it confirms the top of K5's range; K5's 10,000-18,000
+  gal of mix water is superseded below). A foundation for a modern onshore turbine typically takes about 1,000 m³ of
+  concrete and 200 tonnes of steel (Carneiro, Mathern and Olsson 2022, Nordic Concrete Research Symposium, p. 1,
+  citing a Swedish source). Spread
+  foundations designed for a 140 m tower at a seismic California site hold 1,015 m³ (tapered) and 1,334 m³ (circular)
+  of ready-mix concrete (Jones and Li 2024, Wind Energy e2947, Table 2). Mix water at 160-190 kg per m³ of concrete [A:
+  ordinary structural mixes; the mix tables were not read] gives **about 16,000-50,000 gal per turbine** for 386-1,000
+  m³, before curing, washout and road dust control [derived, A].
+
+### 9d. Recommended parameter ranges
+
+| Parameter | Low | Central | High | Basis |
+|---|---|---|---|---|
+| PV array area, tracking, acres/MWac | 4.5 | 5.5 | 9.0 | L4 at ILR 1.3 [A]; Ong's 9.0 as high |
+| PV array area, fixed tilt, acres/MWac | 3.0 | 3.6 | 5.8 | same |
+| PV fenced or total area, acres/MWac | array ÷ 0.85 | array ÷ 0.7 | 10 | L5's 69% example [A]; L1-L3, L6 |
+| Roads, inverter and transformer pads, substation, share of fenced area | 0.02 | 0.04 | 0.10 | [A]; Pennsylvania's worked example uses 10% (FAQ #12, p. 13) |
+| Effective impervious share of the array area, vegetated, rows parallel / diagonal / perpendicular to contours | 0.02 / 0.02 / 0.20 | 0.10 / 0.20 / 0.45 | 0.35 / 0.40 / 0.58 | MHFD Table 4 (HSG C, 2-hour storms) |
+| Effective impervious share of the array area, gravel under and between panels | 0.37 | 0.60 | 0.90 | MHFD Table 7 |
+| Pervious cover under and between panels, storm CN (soil group B) | 58 (meadow) | 69 (open space, fair, for compaction) | 86 (bare) | TR-55; one soil group up for compaction [A, after Virginia DEQ] |
+| Pervious cover, Simple Method Rv | turf, 0.20 on B | turf, one soil group up [A; Runoff Reduction memo Table 4, C value not read here] | — | `runoff.PARAMS["rv"]` |
+| Roads and pads, storm CN / Simple Method | gravel 85 | gravel 85, paved pads 98 | 98 | TR-55; Rv 0.95 as impervious [A: Maryland, North Carolina and Minnesota count gravel as impervious] |
+| PV construction, disturbed area | array area | fenced area | fenced area | MDE TM #8 |
+| PV construction, bare share of the disturbed area in the season | 0.3 | 0.6 | 1.0 (mass grading) | [A] |
+| PV construction, duration, years | 0.5 | 1 | 1.5 | [A] |
+| PV dust control water, one-time, AF/MW | 0 | 0.5 [A] | 5.7 | K1 (desert peak year as high) |
+| Wind total project area, ha/MW | 12 | 34.5 | 57 | L7 (mean ± 1 s.d. rounded; 80% of capacity within 10-50) |
+| Wind permanent direct area, ha/MW | 0.06 | 0.3 | 0.6 | L8; p. 11: 0.06 to 2.4 across projects, 80% below 0.4 |
+| Wind temporary construction area, ha/MW | 0.1 | 0.7 | 1.3 | L8 |
+| Wind permanent area, impervious share | 0.8 | 1.0 | 1.0 | gravel roads and pads counted impervious [A] |
+| Wind foundation concrete, m³ per turbine | 386 | 700 [A] | 1,334 | 9c |
+| Wind foundation mix water, gal per turbine | 16,000 | 30,000 [A] | 67,000 | 9c at 160-190 kg/m³ [A] |
+
+How these meet the code: for PV, `imp` = effective impervious share × array share of the fenced area + roads and pads
+share, `cover` = turf (or one soil group up when the code takes soil groups), `acres` = fenced area, `before` = the
+land as it is; for storms, `impervious` the same and `cn_pervious` from the table. For wind, `acres` = the permanent
+direct area at `imp` near 1 on land that otherwise stays as it was, so the change in runoff is that small area's.
+Construction sediment = `runoff.construction(disturbed acres × bare share)` for the season.
+
+**What could not be sourced:** measured runoff or sediment from operating or under-construction solar sites (none
+published, per the Chesapeake memo); the share of a PV site in roads and pads; per-MW land for wind projects built
+since 2009; dust control water outside the desert Southwest; concrete mix water per m³ from a read source; and
+Michigan solar stormwater guidance.
+
 ## Sources
 
 Primary documents read in this session:
@@ -326,6 +602,50 @@ Primary documents read in this session:
   open-data ERA5 listing: https://openmeteo.s3.amazonaws.com/?list-type=2&prefix=data/copernicus_era5/&delimiter=/
 - IEA (2026). Key Questions on Energy and AI, executive summary.
   https://www.iea.org/reports/key-questions-on-energy-and-ai/executive-summary
+- 40 CFR Part 423, Steam Electric Power Generating Point Source Category (§§ 423.10, 423.11, 423.15, 423.17), eCFR
+  current text as of Nov 1, 2026, via the eCFR versioner API.
+- U.S. EPA (2015). Technical Development Document for the Effluent Limitations Guidelines and Standards for the Steam
+  Electric Power Generating Point Source Category. EPA-821-R-15-007.
+  https://19january2021snapshot.epa.gov/sites/static/files/2015-10/documents/steam-electric-tdd_10-21-15.pdf
+- U.S. EIA (2025). Form EIA-860, 2024 data: Schedule 6 Part D cooling systems (`6_2_EnviroEquip_Y2024.xlsx`),
+  generators (`3_1_Generator_Y2024.xlsx`) and the form instructions; Form EIA-923, 2024 Schedule 8D cooling system
+  information and the 2024 cooling detail file. Used in aggregate only (§8b).
+- Environmental Integrity Project (2026). The Power Behind AI. July 1, 2026.
+  https://environmentalintegrity.org/wp-content/uploads/2026/06/EIP_Report_ThePowerBehindAI_7.1.26.pdf
+- Ong, S., Campbell, C., Denholm, P., Margolis, R., and Heath, G. (2013). Land-Use Requirements for Solar Power Plants
+  in the United States. NREL/TP-6A20-56290. https://www.osti.gov/servlets/purl/1086349
+- Bolinger, M., and Bolinger, G. (2022). Land Requirements for Utility-Scale PV: An Empirical Update on Power and Energy
+  Density. IEEE Journal of Photovoltaics 12(2). doi:10.1109/JPHOTOV.2021.3136805. Summary slides, Feb 1, 2022:
+  https://emp.lbl.gov/sites/default/files/emp-files/land_requirements_for_utility-scale_pv.pdf
+- Denholm, P., Hand, M., Jackson, M., and Ong, S. (2009). Land-Use Requirements of Modern Wind Power Plants in the
+  United States. NREL/TP-6A2-45834. https://tethys.pnnl.gov/sites/default/files/publications/Denholm_et_al_2009.pdf
+- Cook, L. M., and McCuen, R. H. (2013). Hydrologic Response of Solar Farms. J. Hydrologic Engineering 18(5):536-541.
+  doi:10.1061/(ASCE)HE.1943-5584.0000530.
+  https://www.energy.gov/sites/default/files/2024-08/CFE%20CookMcCuen2013Hydrologic-Response-of-Solar-Farms.pdf
+- Earles, A., Olson, C., and Howard, M. (2023). Determination of Solar Panel Field Runoff Coefficients. Memorandum to
+  the Mile High Flood District, Oct 13, 2023.
+  https://mhfd.specialdistrict.org/files/3ce3b64e3/TECHNICAL-MEMORANDUM-DETERMINATION-OF-SOLAR-PANEL-FIELD-RUNOFF-COEFFICIENTS-2023.pdf
+- Chesapeake Bay Program, Urban Stormwater Workgroup (2024). Evaluating Options for Relative Land Use Loading Rates
+  from Solar Development Sites. Memo, Oct 11, 2024, with annotated bibliography.
+  https://dev.chesapeakebay.net/files/documents/MEMO_Relative-Loading-Rates-from-Solar-Development_2024-10-15-135203_qbgk.pdf
+- Pennsylvania DEP (2026). Chapter 102 Permitting for Solar Panel Projects, Frequently Asked Questions, Version 1.3,
+  Feb 19, 2026. https://files.dep.state.pa.us/water/BPNPSM/StormwaterManagement/ConstructionStormwater/Solar_Panel_Farms_FAQ.pdf
+- Ohio EPA (2024). Post-Construction Stormwater Management for Solar Panel Fields. July 2024.
+  https://dam.assets.ohio.gov/image/upload/epa.ohio.gov/Portals/35/storm/Guidance%20on%20Post-Construction%20Storm%20Water%20Controls%20for%20Solar%20Panel%20Arrays.pdf
+- Maryland Department of the Environment (2018). Technical Memorandum #8, Solar Panels. Mar 30, 2018.
+  https://stg-mde.maryland.gov/programs/water/StormwaterManagementProgram/Documents/Technical%20Memorandum%20No.%208%20-%20Solar%20Panels.pdf
+- New York State DEC (2024). Letter to the New York State Energy Industries Association on solar development and the
+  construction stormwater general permit, Oct 23, 2024.
+  https://nyseia.org/_files/ugd/a89dc9_ef24fb0a76cb44d691a8e196636bf382.pdf
+- USDA NRCS (1986). Urban Hydrology for Small Watersheds, TR-55, 2nd ed., Tables 2-2a and 2-2c.
+- 40 CFR 122.26(b)(14)(x) and (b)(15), and 40 CFR 450.21, eCFR current text as of Nov 1, 2026.
+- Carneiro, E., Mathern, A., and Olsson, N. (2022). Potential improvements in the life-cycle performance of support
+  structures for onshore wind turbines: an interview study in Sweden. Proceedings of the XXIV Nordic Concrete Research
+  Symposium. https://research.chalmers.se/publication/532015/file/532015_Fulltext.pdf
+- Jones, K. E. S., and Li, M. (2024). Life Cycle Assessment of Additively Manufactured Foundations for Ultratall Wind
+  Turbine Towers. Wind Energy, e2947. doi:10.1002/we.2947
+- A typical wind turbine foundation drawing in a 2017 state utility commission siting docket (the docket appendix
+  listed under the secondary sources below, now read).
 
 Cited from abstracts, summaries or secondary sources (figures marked UNVERIFIED where used):
 
@@ -352,3 +672,16 @@ Cited from abstracts, summaries or secondary sources (figures marked UNVERIFIED 
   https://www.bloomenergy.com/wp-content/uploads/bloom-energy-server-datasheet-2025.pdf (from search results).
 - Wind foundation concrete volumes (320-505 cubic yards): search results for a South Dakota PUC docket appendix
   (https://puc.sd.gov/commission/dockets/electric/2017/el17-055/appendixa.pdf) and a developer's page; not read.
+- Moore, W. E., and Rittof, T. J. (2007). ZLD Today, Part 1: Matching Water Treatment Options to Power Plant
+  Requirements. Water Technology, March 1, 2007 (trade article, read through a summary).
+- Simple-cycle evaporation ponds in the arid West: one Nevada NPDES permit fact sheet, from search results; not read.
+- Mulla, D., Galzki, J., Hanson, A., and Simunek, J. (2024). Measuring and modeling soil moisture and runoff at solar
+  farms using a disconnected impervious surface approach. Vadose Zone Journal e20335 (through the Chesapeake memo and
+  the PA DEP FAQ).
+- Liu, H., et al. (2023). Effect of solar farms on soil erosion in hilly environments. Water Resources Research
+  59:e2023WR035067; Mier-Valderrama, L., et al. (2024). International Soil and Water Conservation Research
+  12(2):432-445; Daniels, L., et al. (2024), Virginia solar site white paper; Virginia DEQ GM 22-2012 (all through the
+  Chesapeake memo).
+- Utility-scale solar land use in the Western Interconnection, Communications Earth & Environment (2025),
+  doi:10.1038/s43247-025-02862-5, through pv magazine USA, Dec 15, 2025.
+- NCDEQ Stormwater Design Manual, E-6 Solar Farms, and MPCA Minnesota Stormwater Manual solar pages (search results).

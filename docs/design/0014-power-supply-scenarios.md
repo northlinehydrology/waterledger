@@ -313,10 +313,20 @@ become public API in the release that carries them, under the 3.x rules (0010, d
     a stream, zero liquid discharge), by plant size and technology, before the default is set. A permitted discharge to
     a different stream than the intake is neither `to_sewer` nor `to_source` as those roles read now; if it is common,
     that is a gap in the roles to settle for every type, not a gas plant special case.
+    **Research done (research note §8, Nov 10); the defaults below are proposals for Andrew, not decided.** The steam
+    electric guidelines (40 CFR 423) cover combined cycle only. Of 108 tower-cooled combined cycle plants in service
+    since 2005 (EIA-860, aggregate), 42 discharge to the same water body as the intake, 18 to a sewer, 14 to a different
+    water body and 11 nothing (ZLD, ponds, injection); 23 do not say. Proposed: combined cycle on towers or hybrid
+    drawing surface water returns `to_source`; on groundwater or a utility's water it follows the place's wastewater
+    rule (`to_sewer`), with a stream discharge and no discharge as settings (15, 10 and 10 of 35 such plants), ZLD more
+    likely in the arid West; dry combined cycle, simple-cycle turbines, engines and fuel cells send their small process
+    flows `to_sewer` [A]. The different-water case is 13% of new tower plants, mostly wells or utility water discharged
+    to a local stream, so it is common enough to be the roles gap for every type that this decision anticipated; how to
+    name and route it is open.
 11. **Construction water is a one-time total**, reported apart from annual water; upstream fuel water is not added.
     Agreed: construction is always separate.
 
-## Land, runoff and construction for renewables (from decision 2's note; research to do)
+## Land, runoff and construction for renewables (from decision 2's note; research in the research note §9)
 
 - **Solar.** An array changes how its site sheds water: panel drip lines concentrate rain, access roads, inverter and
   substation pads are impervious, grading compacts soil, and the ground cover under the panels changes. The site's
@@ -325,10 +335,22 @@ become public API in the release that carries them, under the 3.x rules (0010, d
   season: construction stormwater and sediment, and dust control water (the research note's one-time totals).
 - **Wind.** The smallest footprint per MWh: turbine pads, crane paths and access roads, and the collection system.
   Construction water is mostly foundation concrete. The runoff change is small and local to the roads and pads.
-- **To source next:** land area and disturbed area per MW for PV (fixed and tracking) and wind; runoff coefficients or
-  curve numbers for land under panels; construction stormwater sediment loads; wind foundation concrete per turbine.
-  Reported per project as land, a change in annual runoff and sediment, and one-time construction water, all apart from
-  annual operating water.
+- **Sourced (research note §9, Nov 10).** Reported per project as land, a change in annual runoff and sediment, and
+  one-time construction water, all apart from annual operating water. **Proposed defaults for Andrew, not decided**
+  (ranges and sources in §9d):
+  - PV array area 5.5 acres/MWac tracking and 3.6 fixed (LBNL's 2019 medians at an inverter loading ratio of 1.3 [A]);
+    fenced area the array ÷ 0.7 [A]; roads, pads and substation 4% of the fenced area [A].
+  - PV runoff: the array area at an effective impervious share of 0.10 with rows along the contours, 0.20 diagonal,
+    0.45 across them on vegetated ground, 0.60 on gravel (Mile High Flood District, 2023), plus roads and pads as
+    impervious; pervious cover CN 69 on soil group B (open space, fair, for compaction) or one soil group up for the
+    Simple Method [A]; all through `runoff.loads` and `runoff.storm_mg` as for any site.
+  - Wind: total area 34.5 ha/MW, permanent direct area 0.3 ha/MW counted impervious, temporary 0.7 ha/MW for
+    construction (NREL 2009); runoff change only on the permanent area.
+  - Construction: PV disturbs the fenced area (Maryland's rule) with 0.6 of it bare for a year [A], sediment by the
+    existing `runoff.construction` yields; dust control water 0.5 AF/MW [A] with the desert's 5.7 as the high end;
+    wind foundation concrete 700 m³ per turbine [A] (386-1,334 sourced), about 30,000 gal of mix water [A].
+  - Not sourced: measured runoff or sediment from solar sites, the road and pad share, wind land for projects since
+    2009, humid-climate dust water, and Michigan solar stormwater guidance.
 
 ## References
 
