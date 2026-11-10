@@ -187,8 +187,8 @@ numbers, so Andrew checks it locally before any deploy.
 4. The national provider reads layers; Michigan uses it. The old readers warn.
 5. The after record and the list of differences with causes, for Andrew.
 6. Northline: `state_data.py` writes Michigan; `mi_data.py` retired; `wq.js` fallback removed; parity checks.
-7. READMEs, CHANGELOG, methods log; a release (3.16.0) and a Michigan snapshot, each on Andrew's word. 0010 and battery
-   plants follow as 3.17.0.
+7. READMEs, CHANGELOG, methods log; a minor release and a Michigan snapshot, each on Andrew's word. The battery cell
+   plant model went first, as 3.16.0 (Andrew, Nov 10); 0010's contract and the battery facility follow this.
 
 ## Decisions to agree
 
@@ -202,4 +202,5 @@ numbers, so Andrew checks it locally before any deploy.
 4. **MPSC replaces HIFLD in Michigan** (measured: 1,540 of 1,540 against 1,062), and the base gains the EIA-861
    county screen in every state. EGLE's golf median replaces the survey.
 5. **Michigan's places and GEOIDs stay**; villages later.
-6. **Order:** this first as 3.16.0, then 0010 and battery plants as 3.17.0.
+6. **Order:** this first, then 0010 and the battery facility. Revised Nov 10: Andrew put the battery work ahead of the
+   Michigan work, so the battery model shipped first as 3.16.0 (model 1.12), and this note is the next minor release.

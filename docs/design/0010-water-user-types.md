@@ -1,7 +1,7 @@
 # 0010: Water user types: one contract for every large water user
 
-Status: **proposed, Nov 9, 2026. Decisions 1, 2, 3, 4, 7 and 8 agreed (Andrew, Nov 9); 6 revised after his question;
-5 explained further, for review. No code yet.** Battery cell plants (0009) wait on it, so they are
+Status: **proposed, Nov 9, 2026. Decisions 1, 2, 3, 4, 7 and 8 agreed (Andrew, Nov 9); 6 decided Nov 10 (one model
+version, with `MODELS`, built in 3.16.0); 5 explained further, for review. The contract itself is not built.** Battery cell plants (0009) wait on it, so they are
 the first type added under it rather than beside it. Michigan moves onto the base path first (0011), so this note
 has one path to refactor. Cathode materials plants move to 0012.
 
@@ -185,14 +185,14 @@ The number came early, but it is what users see, so the packages are held to it 
   center, as now.
 - **The contract becomes public API when it ships**, and is listed in the README beside `Place`, `Context`, `Site` and
   `Estimate`: the `Facility` contract and its hooks, the role names, the standard statistic names and the BMI role
-  names. A change to any of them after 3.17 waits for 4.0. This is the reason to settle it carefully now.
+  names. A change to any of them after the release that carries the contract waits for 4.0. This is the reason to settle it carefully now.
 - **Deprecation, not removal.** A name replaced in 3.x keeps working, raises a `DeprecationWarning` that names its
   replacement, and is listed under **Deprecated** in the CHANGELOG. It is removed only in 4.0.
 - **The README's "in beta, whatever the 3.x number suggests" line goes.** The Stability section says what is public,
   what may change in a minor release (internal modules and functions with a leading underscore), and the deprecation
   rule. Model results are versioned by `MODEL_VERSION`, not semver, as now.
-- **Numbers and API stay apart.** None of steps 1-5 changes a number; the identity test proves it. A type's own numbers
-  carry its own model version (decision 6).
+- **Numbers and API stay apart.** None of steps 1-5 changes a number; the identity test proves it. A change to any
+  type's numbers raises the one model version, and `MODELS` records the type (decision 6).
 
 ## Not in this note
 
@@ -233,25 +233,27 @@ The number came early, but it is what users see, so the packages are held to it 
    reads through the national provider with its own layers once 0011 is done (Andrew, Nov 9, asked to bring Michigan
    in line rather than carry it beside). The alternative, facilities reading snapshots themselves, would put each
    state's file layout into every type.
-6. **Models and stored results are managed separately** (revised after Andrew asked, Nov 9, whether pre-packaged
-   results should be handled apart from the models). Today `MODEL_VERSION` does two jobs: it names the numbers, and
-   it keys the snapshots so a package reads only data built on its own model. The second job exists only because data
-   centers have always had stored results; under this contract a type may have none.
-   - **Each type has its own model version** (`datacenter.MODEL_VERSION`, `battery.MODEL_VERSION = "1.0"`), raised
-     only when that type's numbers change, with its own golden test. `Estimate.model_version` reports the type's.
-     `waterledger_models.MODEL_VERSION` stays through 3.x as the data center's, so nothing that reads it breaks.
-   - **Snapshots are data releases on their own cadence** (0003): dated, never changed. A manifest records which types
-     it holds stored results for, and each one's model version.
-   - **One rule for stored results:** the package uses a snapshot's results for a type only when its version for that
-     type matches the package's. Otherwise it runs the model at the place where the type can, or says it is reading
-     another model's data, as it does today.
-   - So stored results are an accelerator, and our own use of the package, not a condition of using a type. Adding a
-     type never forces a rebuild, and a type gains stored results when they are worth precomputing (for battery
-     plants, Andrew's call, with the site decision).
-   - `latest.json`'s `by_model` stays keyed by the data center's version through 3.x, with a per-type map beside it.
-7. **Release. Agreed (Andrew, Nov 9).** Steps 1-5 change no numbers and add to the public API without breaking it, so they and battery plants
-   ship together as a minor release: 3.17.0, after 0011's 3.16.0 (0011, decision 6).
-8. **Stability. Agreed (Andrew, Nov 9).** The contract is public API from 3.17, under the 3.x promise (public API has
+6. **One model version, with a record of what each version changes. Decided (Andrew, Nov 10), replacing the Nov 9
+   revision.** The Nov 9 revision gave each type its own model version. Andrew set it aside on Nov 10: separate versions
+   would get awkward as types are added. Most changes to the numbers are to pieces no single type owns (the shared heat
+   rejection, the grid component, the weather correction, the places' water and power data), so they would raise
+   several versions at once, and the place data would need a version of its own. A coupled run would cite a set of
+   versions instead of one.
+   - **`waterledger_models.MODEL_VERSION` is the one version** for every type and is raised by a minor step when any
+     number changes.
+   - **`waterledger_models.MODELS`** records, from 1.12, the types each version changes and the model of the snapshots
+     it reads. A version that changes nothing the snapshots carry skips them and reads the last rebuilt ones
+     (`snapshot_model()`), so no state is rebuilt to the same numbers and no package prints the other-model note. Model
+     1.12 (battery cell plants) reads model 1.11's snapshots and cell runs.
+   - **Snapshots stay data releases on their own cadence** (0003), dated and never changed. `by_model` is keyed by the
+     snapshot model, and `Estimate.model_version` is the model of the data it read, as now, so a data center estimate
+     under model 1.12 names 1.11.
+   - **Stored results for a new type** come when they are worth precomputing (for battery plants, Andrew's call, with
+     the site decision). A version that adds them, or changes numbers a snapshot carries, rebuilds the snapshots.
+7. **Release. Agreed (Andrew, Nov 9); revised Nov 10.** Steps 1-5 change no numbers and add to the public API without
+   breaking it, so they ship as a minor release with the battery cell plant facility. The battery model itself went
+   first, in 3.16.0 (model 1.12), on Andrew's word of Nov 10 to put battery work ahead of the Michigan work.
+8. **Stability. Agreed (Andrew, Nov 9).** The contract is public API from the release that carries it, under the 3.x promise (public API has
    been committed since 1.x, and following it mostly serves the project); deprecations warn and wait for 4.0; the
    README's beta line is replaced by the policy above. Where following it would hold the project up, the maintainer
    can make an explicit exception, recorded in the CHANGELOG and the design note with the reason.

@@ -2,7 +2,8 @@
 
 Status: **decided Nov 9, 2026 (Andrew; answers and decisions at the end). The model is built on branch battery-plant-model
 (Nov 10: returns by destination, peak-hour power, chemistry, `BatteryCellBmi`, the check at every EA plant, the sensitivity
-analysis); not released. The facility in `waterledger` waits on 0010's contract. The chemistry revision below is for Andrew to agree.** Evidence: `docs/research/battery-plant-water.md`
+analysis), in 3.16.0 as model 1.12. The facility in `waterledger` waits on 0010's contract. The chemistry revision
+below is agreed (Andrew, Nov 10).** Evidence: `docs/research/battery-plant-water.md`
 (primary sources with page numbers). Cathode materials plants are a separate model with their own note (0012, to follow).
 
 ## What and why
@@ -223,7 +224,7 @@ says which parameters drive the result.
    The sensitivity analysis moves parameters from sampled to set. A set parameter keeps its source and stays in
    the methods.
 
-## Chemistry, revised (Nov 10, 2026; for Andrew to agree)
+## Chemistry, revised (Nov 10, 2026; agreed by Andrew the same day)
 
 The note first said chemistry would be recorded with no effect, because the EAs show no difference. But every EA plant
 with a figure makes nickel cells (NMC at BlueOval SK, NCA at StarPlus, NMC slurry at Ultium), so the EAs cannot show
