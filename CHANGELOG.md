@@ -2,6 +2,42 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.17.0 (Nov 10, 2026; model 1.13)
+
+waterledger-models and waterledger-data 3.17.0; waterledger is unchanged at 3.16.0.
+
+
+- **The shared Monte Carlo runner** ([design 0010](docs/design/0010-water-user-types.md), step 2a). `waterledger_models.runs.run_location(model,
+  times, temps, rhs, designs=None, grid=None, extra=None)` runs any water user type: it owns the draws loop, the standard loads (the run's, the
+  peak day's, full capacity), the daily statistics, water at the power plants, the result names and the p10 / p50 / p90 / central summary. A type
+  gives a small model (its designs, its draws, each draw's `runs.Hours`). `cooling.run_location` and `battery.plant.run_location` keep their
+  signatures and results and now run through it. `extra(design, p, hours)` is called with every draw's hours, so a caller can work out more from
+  each draw's hourly electricity; its results are summarized with the rest.
+  - **Numbers.** The runner works every power figure from the hourly MW, one formula for every type, so `power_mw_avg` and `power_mw_peak_1in10`
+    (and a cell plant's `power_mw_peak_day_1in10`) differ from the types' own loops in the last bit: at most 4.9e-16 relative. Every other value
+    is identical to the bit, held by records of both types' Monte Carlos from before the move (Andrew agreed the last bit).
+- **Power supply scenarios, model 1.13** ([design 0014](docs/design/0014-power-supply-scenarios.md); methods log, Nov 10). What
+  serves a water user's hourly electricity, and the water that takes; every plant hypothetical. Model 1.13 changes no data
+  center or place number and reads model 1.11's snapshots (`MODELS["1.13"]`).
+  - **`waterledger_models.gas`**, new gas plants as a water user type: `physics.hourly` (combined cycle on `towers`, `hybrid`,
+    `assist`, `dry` or `lake`; simple-cycle turbines with dry low-NOx or water injection and inlet cooling; engines; fuel
+    cells; units dispatched hour by hour with derate, heat rate, part load and outages; energy and water close every hour),
+    `plant.run_location` on the shared runner, `bmi.GasPlantBmi` (bmi-tester in CI). Wastewater by `discharge` (`sewer`,
+    `source`, `stream`, `none`) with `default_discharge` by technology, design and water supply.
+  - **`waterledger_models.supply`**: `pv` (the PVWatts chain in numpy, held to pvlib hour by hour in the tests), `wind` (the
+    IEA 3.4 MW reference turbine's curve from NREL's turbine-models), `scenario` (`Scenario`, `Gas`, `size`, `Supply`, the
+    runner's `extra`), `land` (solar and wind projects' land, runoff and construction water and sediment).
+  - **`runs`**: `extra.setup` once per place, the draw's index, and `runs.Supplied`, whose hourly water and grid-served MW get
+    the runner's own statistics and `grid.RunWater`.
+  - **`waterledger_data.era5`**: `fetch_supply` and `supply` for global and direct radiation and the 100 m wind, into a raw
+    cache of their own (`RAW_SUPPLY`), so `raw_path`'s temperature files are untouched.
+  - **The `to_stream` return role** for every type: a permitted discharge to surface water other than the source. Gas plants
+    and battery plants (`discharge="stream"`) report it; `returned = to_sewer + to_source + to_stream`. Battery results gain
+    the `to_stream` statistics, zero by default.
+  - `runoff.storm_mg` takes `cn_pervious` (default unchanged).
+  - pvlib is a test-only dependency (the dev group); no package depends on it.
+  - The place-based supply estimate (`est.supply`) comes with design 0010's facility contract.
+
 ## 3.16.0 (Nov 10, 2026; model 1.12)
 
 - **Indiana** is the sixth state published as a checked snapshot (data.waterledger.org/IN/2026-11-10, model 1.11;

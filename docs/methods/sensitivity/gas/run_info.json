@@ -1,0 +1,436 @@
+{
+ "model": "gas plants, design 0014",
+ "code_commit": "5fa3e00b0aa369e721a22bd1276bb4ec17195bb7",
+ "seed": 20261111,
+ "weather": "Open-Meteo archive, best match (ERA5, ERA5-Land and, from 2017, IFS HRES), hourly 2 m temperature and relative humidity (CC BY 4.0), 42.88 N 85.52 W (West Michigan), 2023-2024",
+ "hours": 17544,
+ "units": 2,
+ "unit_mw": 300.0,
+ "n_base": 2048,
+ "morris_trajectories": 100,
+ "model_runs": {
+  "cc_towers": 81524,
+  "cc_hybrid": 81524,
+  "cc_lake": 38564,
+  "ct_water": 32120
+ },
+ "parameters": {
+  "cc_towers": {
+   "heat_rate": [
+    6200.0,
+    6450.0
+   ],
+   "derate_wet": [
+    0.003,
+    0.005
+   ],
+   "derate_dry": [
+    0.006,
+    0.008
+   ],
+   "hr_slope": [
+    0.0005,
+    0.002
+   ],
+   "part_load_half": [
+    0.15,
+    0.25
+   ],
+   "cond_share": [
+    0.55,
+    0.65
+   ],
+   "aux_share": [
+    0.017,
+    0.025
+   ],
+   "availability": [
+    0.9,
+    0.97
+   ],
+   "demin_recovery": [
+    0.7,
+    0.8
+   ],
+   "inlet_eff": [
+    0.85,
+    0.95
+   ],
+   "inlet_on": [
+    15.0,
+    25.0
+   ],
+   "dry_aux_extra": [
+    0.005,
+    0.015
+   ],
+   "switch_on": [
+    20.0,
+    30.0
+   ],
+   "er_adj": [
+    -0.1,
+    0.05
+   ],
+   "range_f": [
+    7.2,
+    10.8
+   ],
+   "drift": [
+    5e-05,
+    0.0002
+   ],
+   "hybrid_full_offset": [
+    -1.5,
+    1.5
+   ],
+   "water_rise": [
+    5.0,
+    10.0
+   ],
+   "fan_eff": [
+    0.65,
+    0.9
+   ],
+   "tower_fan_pa": [
+    100.0,
+    400.0
+   ],
+   "lg": [
+    0.2,
+    4.0
+   ],
+   "tower_approach": [
+    2.8,
+    6.7
+   ],
+   "hx_approach": [
+    1.7,
+    2.8
+   ],
+   "pump_chw_kpa": [
+    114.9,
+    172.4
+   ],
+   "pump_tower_kpa": [
+    166.9,
+    250.4
+   ],
+   "pump_econ_kpa": [
+    114.9,
+    172.4
+   ],
+   "pump_eff": [
+    0.6,
+    0.8
+   ],
+   "carnot_water": [
+    0.62,
+    0.78
+   ],
+   "carnot_air": [
+    0.45,
+    0.55
+   ],
+   "dc_approach": [
+    5.0,
+    10.0
+   ],
+   "dc_fan_pa": [
+    100.0,
+    250.0
+   ],
+   "glycol_share": [
+    0.3,
+    0.4
+   ],
+   "assist_dt_air": [
+    9.0,
+    13.0
+   ],
+   "assist_eff": [
+    0.7,
+    0.8
+   ],
+   "assist_bleed": [
+    0.0,
+    0.5
+   ],
+   "coc": [
+    3.0,
+    6.0
+   ]
+  },
+  "cc_hybrid": {
+   "heat_rate": [
+    6200.0,
+    6450.0
+   ],
+   "derate_wet": [
+    0.003,
+    0.005
+   ],
+   "derate_dry": [
+    0.006,
+    0.008
+   ],
+   "hr_slope": [
+    0.0005,
+    0.002
+   ],
+   "part_load_half": [
+    0.15,
+    0.25
+   ],
+   "cond_share": [
+    0.55,
+    0.65
+   ],
+   "aux_share": [
+    0.017,
+    0.025
+   ],
+   "availability": [
+    0.9,
+    0.97
+   ],
+   "demin_recovery": [
+    0.7,
+    0.8
+   ],
+   "inlet_eff": [
+    0.85,
+    0.95
+   ],
+   "inlet_on": [
+    15.0,
+    25.0
+   ],
+   "dry_aux_extra": [
+    0.005,
+    0.015
+   ],
+   "switch_on": [
+    20.0,
+    30.0
+   ],
+   "er_adj": [
+    -0.1,
+    0.05
+   ],
+   "range_f": [
+    7.2,
+    10.8
+   ],
+   "drift": [
+    5e-05,
+    0.0002
+   ],
+   "hybrid_full_offset": [
+    -1.5,
+    1.5
+   ],
+   "water_rise": [
+    5.0,
+    10.0
+   ],
+   "fan_eff": [
+    0.65,
+    0.9
+   ],
+   "tower_fan_pa": [
+    100.0,
+    400.0
+   ],
+   "lg": [
+    0.2,
+    4.0
+   ],
+   "tower_approach": [
+    2.8,
+    6.7
+   ],
+   "hx_approach": [
+    1.7,
+    2.8
+   ],
+   "pump_chw_kpa": [
+    114.9,
+    172.4
+   ],
+   "pump_tower_kpa": [
+    166.9,
+    250.4
+   ],
+   "pump_econ_kpa": [
+    114.9,
+    172.4
+   ],
+   "pump_eff": [
+    0.6,
+    0.8
+   ],
+   "carnot_water": [
+    0.62,
+    0.78
+   ],
+   "carnot_air": [
+    0.45,
+    0.55
+   ],
+   "dc_approach": [
+    5.0,
+    10.0
+   ],
+   "dc_fan_pa": [
+    100.0,
+    250.0
+   ],
+   "glycol_share": [
+    0.3,
+    0.4
+   ],
+   "assist_dt_air": [
+    9.0,
+    13.0
+   ],
+   "assist_eff": [
+    0.7,
+    0.8
+   ],
+   "assist_bleed": [
+    0.0,
+    0.5
+   ],
+   "coc": [
+    3.0,
+    6.0
+   ]
+  },
+  "cc_lake": {
+   "heat_rate": [
+    6200.0,
+    6450.0
+   ],
+   "derate_wet": [
+    0.003,
+    0.005
+   ],
+   "derate_dry": [
+    0.006,
+    0.008
+   ],
+   "hr_slope": [
+    0.0005,
+    0.002
+   ],
+   "part_load_half": [
+    0.15,
+    0.25
+   ],
+   "cond_share": [
+    0.55,
+    0.65
+   ],
+   "aux_share": [
+    0.017,
+    0.025
+   ],
+   "availability": [
+    0.9,
+    0.97
+   ],
+   "demin_recovery": [
+    0.7,
+    0.8
+   ],
+   "inlet_eff": [
+    0.85,
+    0.95
+   ],
+   "inlet_on": [
+    15.0,
+    25.0
+   ],
+   "dry_aux_extra": [
+    0.005,
+    0.015
+   ],
+   "switch_on": [
+    20.0,
+    30.0
+   ],
+   "rise_c": [
+    6.0,
+    10.0
+   ],
+   "wind_mph": [
+    5.0,
+    15.0
+   ],
+   "evap_error": [
+    0.79,
+    1.21
+   ]
+  },
+  "ct_water": {
+   "heat_rate": [
+    9100.0,
+    10500.0
+   ],
+   "derate_wet": [
+    0.009,
+    0.01
+   ],
+   "derate_dry": [
+    0.009,
+    0.01
+   ],
+   "hr_slope": [
+    0.003,
+    0.004
+   ],
+   "part_load_half": [
+    0.15,
+    0.25
+   ],
+   "aux_share": [
+    0.005,
+    0.015
+   ],
+   "availability": [
+    0.9,
+    0.97
+   ],
+   "demin_recovery": [
+    0.7,
+    0.8
+   ],
+   "inlet_eff": [
+    0.85,
+    0.95
+   ],
+   "inlet_on": [
+    15.0,
+    25.0
+   ],
+   "dry_aux_extra": [
+    0.005,
+    0.015
+   ],
+   "switch_on": [
+    20.0,
+    30.0
+   ],
+   "nox_ratio": [
+    0.5,
+    1.0
+   ]
+  }
+ },
+ "runtime_s": 169.6,
+ "warnings": [
+  "ct_water/consumed_gal_per_mwh: sum of S1 = 1.048",
+  "ct_water/withdrawn_gal_per_mwh: sum of S1 = 1.042"
+ ]
+}

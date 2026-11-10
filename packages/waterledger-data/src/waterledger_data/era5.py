@@ -3,6 +3,8 @@
     cell(lat, lon)          the cell a place uses: its nearest, or the nearest at least half land when the nearest is mostly water
     fetch(cells)            each cell's hourly 2 m temperature and dew point, as fetched, into the raw cache (needs waterledger-data[era5])
     hourly(cell)            (times, temp_c, rh_pct) in local standard time, the form climate.isd_hourly and cooling.run_location use
+    fetch_supply(cells)     each cell's hourly radiation and 100 m wind, for supply scenarios (design 0014), into a raw cache of their own
+    supply(cell)            (times, utc, ghi, beam_horizontal, u100, v100) on the same local hours as hourly(cell)
 
 The source is Open-Meteo's open-data copy of Copernicus ERA5 on AWS (s3://openmeteo/data/copernicus_era5; anonymous, no key,
 CC-BY 4.0; values stored to 0.05 C), the copy the station check and the quantile-mapping prototype used. CDS's time-series
@@ -19,6 +21,9 @@ LAND = 0.5                              # decision 3 of 0004 (Nov 3, 2026): a ne
 FIRST, LAST = 1995, 2024
 OPEN_COPY = "openmeteo/data/copernicus_era5"
 VARIABLES = ("temperature_2m", "dew_point_2m")
+# For supply scenarios (design 0014): global and direct horizontal radiation, W/m2, means over the preceding hour, and the 100 m wind components,
+# m/s, instantaneous at the hour (Open-Meteo's Historical Weather API documentation), from the same open copy and cells.
+SUPPLY_VARIABLES = ("shortwave_radiation", "direct_radiation", "wind_u_component_100m", "wind_v_component_100m")
 START = np.datetime64(f"{FIRST}-01-01T00", "h")             # UTC; a day past the end, so local standard time reaches Dec 31 everywhere west of Greenwich
 END = np.datetime64(f"{LAST + 1}-01-02T00", "h")
 CHUNK_FROM = 2022                                           # the open copy: one file a year to 2021, then 504-hour chunks from 1970-01-01
@@ -28,6 +33,7 @@ CITATION = ("Hersbach, H., et al. (2023). ERA5 hourly data on single levels from
             "Climate Data Store. doi:10.24381/cds.adbb2d47")
 MAGNUS = 17.625, 243.04                                     # Alduchov and Eskridge (1996), as climate.isd_hourly uses
 RAW = os.path.join(CACHE, "era5", "raw")
+RAW_SUPPLY = os.path.join(CACHE, "era5", "raw_supply")     # apart from RAW, so raw_path's newest file there is always a temperature record
 
 
 @functools.lru_cache(maxsize=1)
@@ -99,9 +105,9 @@ def cell(lat, lon, land=LAND):
             "moved": moved, "nearest": near}
 
 
-def raw_path(cid):
-    """The cell's newest raw file, or None."""
-    d = os.path.join(RAW, cid)
+def raw_path(cid, root=None):
+    """The cell's newest raw file, or None (root: RAW, or RAW_SUPPLY for the supply variables)."""
+    d = os.path.join(root or RAW, cid)
     got = sorted(f for f in os.listdir(d) if f.endswith(".npz")) if os.path.isdir(d) else []
     return os.path.join(d, got[-1]) if got else None
 
@@ -132,22 +138,31 @@ def _read(fs, var, kind, key, cells):
 def fetch(cells, workers=16, today=None):
     """Fetch the cells not yet in the raw cache from the open copy, all of them per file read, and return {cell: raw path}. A cell
     already cached is not fetched again (a new fetch date only on purpose: delete the old file). Needs waterledger-data[era5]."""
+    return _fetch(cells, VARIABLES, None, workers, today)
+
+
+def fetch_supply(cells, workers=16, today=None):
+    """fetch for the supply variables (SUPPLY_VARIABLES), into RAW_SUPPLY: only the cells a supply scenario runs at (design 0014)."""
+    return _fetch(cells, SUPPLY_VARIABLES, RAW_SUPPLY, workers, today)
+
+
+def _fetch(cells, variables, root, workers, today):
     import fsspec
     from concurrent.futures import ThreadPoolExecutor
     cells = sorted(set(cells))
-    out = {c: raw_path(c) for c in cells}
+    out = {c: raw_path(c, root) for c in cells}
     todo = [c for c in cells if not out[c]]
     if not todo:
         return out
     fs = fsspec.filesystem("s3", anon=True)
-    jobs = [(v, kind, key, t0) for v in VARIABLES for kind, key, t0 in _files()]
+    jobs = [(v, kind, key, t0) for v in variables for kind, key, t0 in _files()]
     with ThreadPoolExecutor(workers) as pool:
         got = list(pool.map(lambda j: (j[0], j[3], _read(fs, j[0], j[1], j[2], todo)), jobs))
     today = today or datetime.date.today().isoformat()
     s, e = int(START.astype(np.int64)), int(END.astype(np.int64))
     for c in todo:
         series = {}
-        for var in VARIABLES:
+        for var in variables:
             x = np.full(e - s, np.nan, dtype=np.float32)
             for v, t0, vals in got:
                 if v == var:
@@ -155,14 +170,14 @@ def fetch(cells, workers=16, today=None):
                     if hi > lo:
                         x[lo - s:hi - s] = vals[c][lo - t0:hi - t0]
             series[var] = x
-        out[c] = write_raw(c, series, today, {"source": f"s3://{OPEN_COPY}", "variables": list(VARIABLES), "grid_index": [indexes(c)[0] + 360, indexes(c)[1] + 720],
-                                              "start_utc": str(START), "end_utc_exclusive": str(END)})
+        out[c] = write_raw(c, series, today, {"source": f"s3://{OPEN_COPY}", "variables": list(variables), "grid_index": [indexes(c)[0] + 360, indexes(c)[1] + 720],
+                                              "start_utc": str(START), "end_utc_exclusive": str(END)}, root)
     return out
 
 
-def write_raw(cid, series, date, request):
+def write_raw(cid, series, date, request, root=None):
     """Save a cell's series as fetched (float32, hourly from START in UTC) and its record: request, sha256, missing hours, attribution."""
-    d = os.path.join(RAW, cid)
+    d = os.path.join(root or RAW, cid)
     os.makedirs(d, exist_ok=True)
     path = os.path.join(d, f"{date}.npz")
     np.savez_compressed(path + ".part.npz", start_utc=str(START), **series)
@@ -206,3 +221,21 @@ def hourly(cid, first=FIRST, last=LAST, correct=None):
     if correct:
         t, td = correct(times, t, td)
     return times, list(t), list(rh_from(t, td))
+
+
+def supply(cid, first=FIRST, last=LAST):
+    """(times, utc, ghi, beam_horizontal, u100, v100) for the cell on local()'s hours: local standard time strings, the UTC hour each ends
+    (datetime64[h]), global and direct horizontal radiation (W/m2, the preceding hour's mean) and the 100 m wind components (m/s). Needs the
+    cell in RAW_SUPPLY (fetch_supply). Raises if any hour kept is missing."""
+    path = raw_path(cid, RAW_SUPPLY)
+    if not path:
+        raise FileNotFoundError(f"ERA5 cell {cid} has no supply variables in the raw cache; era5.fetch_supply([{cid!r}]) first")
+    z = np.load(path)
+    utc = np.datetime64(str(z["start_utc"]), "h") + np.arange(len(z[SUPPLY_VARIABLES[0]]))
+    lst = utc + np.timedelta64(round(indexes(cid)[1] / 4 / 15), "h")
+    days = lst.astype("datetime64[D]")
+    keep = (days >= np.datetime64(f"{first}-01-01")) & (days <= np.datetime64(f"{last}-12-31"))
+    vals = [z[v].astype(float)[keep] for v in SUPPLY_VARIABLES]
+    if any(np.isnan(v).any() for v in vals):
+        raise ValueError(f"ERA5 cell {cid}: supply hours missing in {first}-{last}")
+    return ([str(x)[:16] for x in lst[keep].astype("datetime64[m]")], utc[keep], *vals)

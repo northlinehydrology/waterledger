@@ -51,8 +51,10 @@ settled once, here.
    | constituents | `water_user_return_water_<name>__mass_flux` | optional, one per constituent |
 
    Two additions, both needed by battery plants and both general:
-   - **Return by destination.** `to_sewer` (wastewater: blowdown, process, sanitary) and `to_source` (water handed
-     back where it came from: once-through lake water). `returned = to_sewer + to_source`. Today a data center's lake
+   - **Return by destination.** `to_sewer` (wastewater: blowdown, process, sanitary), `to_source` (water handed
+     back where it came from: once-through lake water) and, from Nov 10 (Andrew, design 0014 decision 10), `to_stream`
+     (a permitted direct discharge to surface water other than the source, as 13% of new tower-cooled gas plants have).
+     `returned = to_sewer + to_source + to_stream`; `to_stream` is used only where a default or a setting chooses it. Today a data center's lake
      design is the only `to_source`, and it is handled by a special case (`lake_estimate`).
    - **Fuel.** `fuel_mw`, energy burned on site (a cell plant's ovens and boilers). Zero for data centers, apart from
      generators, which stay their own item.
@@ -261,10 +263,17 @@ The number came early, but it is what users see, so the packages are held to it 
 2. Grid water as a shared function on any hourly electricity; the data center run calls it. **Done Nov 10**
    (`grid.RunWater`; the battery run calls it too). With it, assist's pads moved to `heat_rejection`, and battery plants
    took both, with the full-capacity peak: the data center Monte Carlo matches its record to the bit.
-2a. The shared runner (`runs`), with the standard loads; data centers onto it with their kernel, numbers identical; battery
-   cell plants onto it. Andrew (Nov 10) first held 3.16.0 for it, then chose to ship battery plants in 3.16.0 with the
-   gaps closed through the shared pieces (step 2), and to build the runner with the power supply types in the next
-   release, since a supply scenario takes each run's hourly electricity, which the runner hands over.
+2a. The shared runner (`runs`), with the standard loads; data centers onto it with their kernel; battery cell plants onto it.
+   **Done Nov 10** (branch shared-runner, for the release after 3.16.0 with the power supply types). A type gives a small model:
+   its designs, its draws with the central run last, a per-location setup, and each draw's `runs.Hours` (water by role with its scale, at
+   the run's load and, where it differs, the peak day's and full capacity's; hourly MW at each; its own measures). The runner works the
+   rest the same for every type, and `extra(design, p, hours)` hands a caller each draw's hours (the supply scenarios' hook).
+   - **Numbers.** Against records of both types' Monte Carlos from before the move, every value is identical to the bit except the power
+     figures, which the runner works from the hourly MW with one formula for every type: data centers' `power_mw_avg` and
+     `power_mw_peak_1in10` within 4.1e-16 relative, cell plants' three within 4.9e-16. Keeping each type's own order of multiplication
+     would mean a scale per statistic in the contract; the last bit is not worth that (Andrew agreed, Nov 10).
+   - **Not moved:** data centers' lake-source cooling (`datacenter.lake`) keeps its own loop; it comes onto the runner with the facility
+     contract (step 3), where its `to_source` return is handled for every type.
 3. The registry and the `Facility` contract; `DataCenter` onto it (`results`, `bmi_config`, hooks); providers reduced to
    the place side.
 4. Downstream onto the hooks: `before_after`, runoff loads, `by_design`, `to_bmi_config`.

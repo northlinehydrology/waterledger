@@ -16,6 +16,7 @@ ASSIGNMENT = os.path.join(HERE, "..", "docs", "methods", "era5-check", "cell_ass
 @pytest.fixture
 def cache(tmp_path, monkeypatch):
     monkeypatch.setattr(era5, "RAW", str(tmp_path / "raw"))
+    monkeypatch.setattr(era5, "RAW_SUPPLY", str(tmp_path / "raw_supply"))
     monkeypatch.setattr(E, "RUNS", str(tmp_path / "runs"))
     monkeypatch.setattr(E, "ANCHORS", str(tmp_path / "anchors"))
     return tmp_path
@@ -80,6 +81,31 @@ def test_a_cell_with_a_missing_hour_is_an_error(cache):
     era5.write_raw("41.50_-82.00", {k: z[k] for k in era5.VARIABLES}, "2026-11-05", {"source": "test"})
     with pytest.raises(ValueError, match="missing"):
         era5.local("41.50_-82.00")
+
+
+def test_supply_variables_sit_beside_the_temperature_on_the_same_hours(cache):
+    """The supply variables (design 0014) have a raw cache of their own, so raw_path's newest temperature file is never a supply one; supply()
+    gives them on local()'s hours, with the UTC hour each ends."""
+    _synthetic("41.50_-82.00")
+    n = int((era5.END - era5.START).astype(int))
+    h = np.arange(n)
+    ghi = np.clip(800 * np.sin(2 * np.pi * (h - 11) / 24), 0, None).astype(np.float32)
+    era5.write_raw("41.50_-82.00", {"shortwave_radiation": ghi, "direct_radiation": 0.6 * ghi, "wind_u_component_100m": np.full(n, 3.0, np.float32),
+                                    "wind_v_component_100m": np.full(n, 4.0, np.float32)}, "2026-11-10", {"source": "test"}, era5.RAW_SUPPLY)
+    assert era5.raw_path("41.50_-82.00").endswith("2026-11-04.npz")
+    times, utc, g, beam, u, v = era5.supply("41.50_-82.00")
+    assert times == era5.local("41.50_-82.00")[0] and len(utc) == len(times)
+    assert str(utc[0]) == "1995-01-01T05" and g[0] == pytest.approx(ghi[5]) and np.hypot(u, v)[0] == pytest.approx(5.0)
+    with pytest.raises(FileNotFoundError, match="fetch_supply"):
+        era5.supply("43.00_-82.50")
+
+
+@pytest.mark.live
+def test_the_open_copy_carries_the_supply_variables():
+    """One cell's radiation and 100 m wind from the open copy: every hour there, the sun's hours lit, and the wind in a sensible range."""
+    era5.fetch_supply(["42.75_-85.50"])
+    times, utc, g, beam, u, v = era5.supply("42.75_-85.50")
+    assert len(times) == 262992 and 900 < g.max() < 1200 and (beam <= g + 1).all() and 4 < np.hypot(u, v).mean() < 10
 
 
 # --- R2 ---

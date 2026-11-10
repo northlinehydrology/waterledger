@@ -36,7 +36,7 @@ def test_energy_and_water_close(design, seed):
         assert np.allclose(h["electricity"] + h["fuel"] + h["outdoor_air"], h["heat"] + h["exhaust"] + h["fans"], rtol=1e-12, atol=1e-9)
         assert np.allclose(h["withdrawn"], h["consumed"] + h["returned"], rtol=1e-12, atol=1e-12)
         assert np.allclose(h["withdrawn"], h["evap"] + h["drift"] + h["blow"] + h["once_through"] + h["process_withdrawn"] + h["staff"], rtol=1e-12)
-        assert np.allclose(h["returned"], h["to_sewer"] + h["to_source"], rtol=1e-12, atol=1e-12)
+        assert np.allclose(h["returned"], h["to_sewer"] + h["to_source"] + h["to_stream"], rtol=1e-12, atol=1e-12)
         assert (h["returned"] >= 0).all() and (h["outdoor_air"] >= 0).all()
 
 
@@ -203,3 +203,18 @@ def test_lfp_scales_the_plant_energy():
         plant.draws(2, chemistry="sodium")
     with pytest.raises(ValueError):
         plant.draws(2, settings={"lfp_factor": 1.5})
+
+
+def test_a_plant_with_its_own_permit_discharges_to_a_stream():
+    """discharge="stream" (design 0014, decision 10): blowdown and the process returns go to a stream, staff water stays with the sewer, and
+    nothing else changes."""
+    p = bp.for_location(bp.central_parameters() | {"utilization": 1.0}, TDB, RH)
+    twb = hr.wet_bulb(TDB, RH)
+    sewer, stream = (bp.hourly(TDB, twb, RH, "towers", p, discharge=d) for d in ("sewer", "stream"))
+    staff = p["staff_per_gwh"] * p["staff_gpcd"] / 24.0 * (1 - p["staff_used"])
+    np.testing.assert_allclose(stream["to_sewer"], staff) and np.testing.assert_allclose(stream["to_stream"], sewer["to_sewer"] - staff)
+    for k in ("withdrawn", "consumed", "returned", "electricity"):
+        np.testing.assert_allclose(stream[k], sewer[k], rtol=1e-12)
+    assert not sewer["to_stream"].any()
+    with pytest.raises(ValueError):
+        bp.hourly(TDB, twb, RH, "towers", p, discharge="river")

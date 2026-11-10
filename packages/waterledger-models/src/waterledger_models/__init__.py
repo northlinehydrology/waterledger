@@ -6,6 +6,9 @@
     heat_rejection       cooling towers, hybrid and dry coolers, loops, chillers, pumps and fans, shared by every water user
     once_through         once-through cooling from a Great Lake: withdrawal, forced evaporation, GLERL temperatures, shared by every water user
     daily                daily totals and their statistics, shared by every water user
+    runs                 the Monte Carlo at one location, shared by every water user: draws, loads, daily statistics, grid water, names
+    gas                  new gas plants (combined cycle, turbines, engines, fuel cells): output, fuel and water hour by hour (design 0014)
+    supply               power supply scenarios: new PV and wind generation, their land and runoff, and what serves a user's load (0014)
     grid                 water at the power plants supplying any user's electricity, hourly, at grid level (design 0008)
     runoff              runoff, sediment, nutrients, salt and fuel from a developed site
     hydrology            screening hydrology: curve-number storm runoff, Theis drawdown, Glover stream depletion
@@ -16,16 +19,17 @@ MODEL_VERSION is Water Ledger's model version (the numbers); __version__ is the 
 They change independently. Every published estimate names the model version that produced it. One model version covers every
 water user type; MODELS says which types a version changes and whether the states' snapshots are rebuilt for it.
 """
-from waterledger_models import battery, datacenter, grid, hydrology, quantile_mapping, runoff, weather
+from waterledger_models import battery, datacenter, gas, grid, hydrology, quantile_mapping, runoff, runs, supply, weather
 
-__all__ = ["battery", "datacenter", "grid", "hydrology", "quantile_mapping", "runoff", "weather", "MODEL_VERSION", "MODELS", "snapshot_model"]
-MODEL_VERSION = "1.12"
+__all__ = ["battery", "datacenter", "gas", "grid", "hydrology", "quantile_mapping", "runoff", "runs", "supply", "weather", "MODEL_VERSION", "MODELS", "snapshot_model"]
+MODEL_VERSION = "1.13"
 
 # Each model version from 1.12 names the water user types whose numbers it changes and the model version of the snapshots it reads.
 # A version that changes nothing the snapshots carry (data centers, the places' water and power) skips them and reads the last
 # rebuilt ones, so no state is rebuilt to the same numbers. Every version before 1.12 changed the data center numbers and was rebuilt.
 MODELS = {
     "1.12": {"types": ("battery",), "snapshots": "1.11"},
+    "1.13": {"types": ("gas", "supply", "battery"), "snapshots": "1.11"},     # gas plants, supply scenarios; battery's stream return
 }
 
 
@@ -34,4 +38,4 @@ def snapshot_model(version=MODEL_VERSION):
     return MODELS.get(version, {}).get("snapshots", version)
 
 
-__version__ = "3.16.0"
+__version__ = "3.17.0"

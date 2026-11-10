@@ -10,6 +10,7 @@ Configuration (a YAML file, or the same keys as a dict passed to initialize):
     design: dry | assist | hybrid | towers | lake   (default towers)
     capacity_gwh: 10                            (cell capacity, GWh/yr; sets the plant's energy, its staff and so everything else)
     chemistry: nmc | lfp                        (default nmc, for NMC and NCA; lfp takes the central lfp_factor unless one is set)
+    discharge: sewer | stream                   (default sewer: where blowdown and process returns go)
     time_step: 3600                             (seconds; the model is hourly)
     end_time: 31536000                          (seconds; default one year)
     humidity: relative | specific               (default relative: which humidity inputs the component reads)
@@ -41,10 +42,12 @@ Variables (all on the one scalar grid point, float64):
                                                                                 water, boiler blowdown, the rest of staff water
     output  water_user_water__source_return_volume_flux                m3 s-1   to the source: the lake design's once-through water less its forced
                                                                                 evaporation; 0 for the other designs
+    output  water_user_water__stream_return_volume_flux                m3 s-1   with discharge: stream, blowdown and the process returns to a stream
+                                                                                under the plant's own permit (staff water stays with the sewer)
     output  water_user__electric_power                                 MW       the plant's electricity, the cooling plant's included
     output  water_user__fuel_power                                     MW       fuel burned on site: ovens, boilers, heaters
     output  atmosphere_bottom_air__wet_bulb_temperature                degC     wet-bulb temperature (Stull 2011)
-Withdrawal always equals consumption plus return, and return equals the sewer's plus the source's, every step. Water limits and dissolved mass,
+Withdrawal always equals consumption plus return, and return equals the sewer's, the source's and the stream's, every step. Water limits and dissolved mass,
 which the data center component takes (design 0006), are not here yet: they need the plant's limited physics, and come with it.
 """
 
@@ -69,13 +72,14 @@ OUTPUTS = {
     "water_user_water__return_volume_flux": "m3 s-1",
     "water_user_water__sewer_return_volume_flux": "m3 s-1",
     "water_user_water__source_return_volume_flux": "m3 s-1",
+    "water_user_water__stream_return_volume_flux": "m3 s-1",
     "water_user__electric_power": "MW",
     "water_user__fuel_power": "MW",
     "atmosphere_bottom_air__wet_bulb_temperature": "degC",
 }
 WATER = {"withdrawn": "water_user_water__withdrawal_volume_flux", "consumed": "water_user_water__consumption_volume_flux",
          "returned": "water_user_water__return_volume_flux", "to_sewer": "water_user_water__sewer_return_volume_flux",
-         "to_source": "water_user_water__source_return_volume_flux"}
+         "to_source": "water_user_water__source_return_volume_flux", "to_stream": "water_user_water__stream_return_volume_flux"}
 MPH_PER_MS = ot.MPH_PER_MS
 
 
@@ -104,6 +108,9 @@ class BatteryCellBmi(ScalarPointBmi):
             raise ValueError(f"humidity must be one of {HUMIDITY}")
         if self._humidity == "specific" and cfg.get("forcing"):
             raise ValueError("a forcing file carries relative humidity: use humidity: relative with it")
+        self._discharge = cfg.get("discharge", "sewer")
+        if self._discharge not in bp.DISCHARGES:
+            raise ValueError(f"discharge must be one of {bp.DISCHARGES}")
         chemistry = cfg.get("chemistry", "nmc")
         if chemistry not in bp.CHEMISTRIES:
             raise ValueError(f"chemistry must be one of {bp.CHEMISTRIES}")
@@ -152,7 +159,7 @@ class BatteryCellBmi(ScalarPointBmi):
         twb = hr.wet_bulb(tdb, rh)
         lake = self._design == "lake"
         p = {**self._params, "wind_mph": float(v["atmosphere_bottom_air_flow__speed"][0]) * MPH_PER_MS} if lake else self._params
-        h = bp.hourly(tdb, twb, rh, self._design, p, v["lake_water_surface__temperature"].copy() if lake else None)
+        h = bp.hourly(tdb, twb, rh, self._design, p, v["lake_water_surface__temperature"].copy() if lake else None, self._discharge)
         to_m3s = self._gwh / ot.GAL_M3 / 3600.0          # gallons in the hour per GWh/yr to m3 s-1 for the plant
         for key, name in WATER.items():
             v[name][0] = h[key][0] * to_m3s

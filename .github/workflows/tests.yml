@@ -29,3 +29,4 @@ jobs:
           uv run bmi-test waterledger_models.datacenter.bmi:CoolingWaterBmi --root-dir . --config-file cooling.yaml
           uv run bmi-test waterledger_models.datacenter.bmi:LakeCoolingBmi --root-dir . --config-file lake.yaml
           uv run bmi-test waterledger_models.battery.bmi:BatteryCellBmi --root-dir . --config-file battery.yaml
+          uv run bmi-test waterledger_models.gas.bmi:GasPlantBmi --root-dir . --config-file gas.yaml

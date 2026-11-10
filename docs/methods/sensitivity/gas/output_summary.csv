@@ -1,0 +1,17 @@
+case,output,units,mean,sd,p10,p50,p90,sum_S1,n_base
+cc_towers,consumed_gal_per_mwh,gal/MWh,154.432,12.1353,138.829,153.84,170.773,0.999053,2048
+cc_towers,withdrawn_gal_per_mwh,gal/MWh,197.687,20.1346,172.725,196.099,225.388,1.01817,2048
+cc_towers,heat_rate,Btu/kWh HHV,6342.92,72.9163,6242.32,6343.84,6443.78,0.958681,2048
+cc_towers,net_mw_avg,MW,594.2,0.839101,593.025,594.21,595.349,1.00162,2048
+cc_hybrid,consumed_gal_per_mwh,gal/MWh,6.04266,3.67624,1.69431,5.43334,11.4441,0.982369,2048
+cc_hybrid,withdrawn_gal_per_mwh,gal/MWh,7.75054,4.74656,2.14179,6.96035,14.7008,0.979091,2048
+cc_hybrid,heat_rate,Btu/kWh HHV,6342.66,72.9079,6242.06,6343.66,6443.54,0.958621,2048
+cc_hybrid,net_mw_avg,MW,590.687,0.828358,589.521,590.744,591.729,0.944989,2048
+cc_lake,consumed_gal_per_mwh,gal/MWh,88.9845,12.8355,72.6596,88.4435,106.568,0.971356,2048
+cc_lake,withdrawn_gal_per_mwh,gal/MWh,14945.2,2363.65,12117.9,14588.2,18323.1,0.967028,2048
+cc_lake,heat_rate,Btu/kWh HHV,6345.26,72.1822,6245.55,6347.07,6442.98,0.949502,2048
+cc_lake,net_mw_avg,MW,594.213,0.832568,593.037,594.235,595.373,1.01334,2048
+ct_water,consumed_gal_per_mwh,gal/MWh,39.3109,7.76753,28.8491,38.9776,49.8278,1.0483,2048
+ct_water,withdrawn_gal_per_mwh,gal/MWh,52.4639,10.5425,38.558,51.9704,66.5102,1.04211,2048
+ct_water,heat_rate,Btu/kWh HHV,9878.86,407.157,9318.97,9882.21,10441.8,0.99649,2048
+ct_water,net_mw_avg,MW,586.219,0.419426,585.636,586.219,586.801,1.02584,2048

@@ -32,7 +32,7 @@ import numpy as np
 
 from waterledger_models.datacenter import kernel
 from waterledger_models.daily import daily_stats, groups, summarize  # noqa: F401  (shared with every water user, design 0009)
-from waterledger_models.grid import RunWater
+from waterledger_models import runs
 from waterledger_models.datacenter.physics import sample_staff
 from waterledger_models.datacenter.physics import (ADIABATIC, DEFAULT_PLANT, DRAWS, DESIGNS as _DESIGNS, PLANTS, HFG, KWH_BTU, LB_GAL, OUTSIDE, POWER, RANGES, STAFF, TOPUP, _ramp,  # noqa: F401
                                                    central_parameters, evaporative_ratio, hourly_heat_power, hourly_rates, for_location, hourly_water_with_air, peak_utilization, sample_parameters, wet_bulb)
@@ -165,58 +165,45 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, mw=100.0, block=HOUR_BLOCK,
     peak day at the peak load, as the peak-day water and power. Hour by hour, plant water = facility MW x gal/MWh, so a year of it is the
     year's electricity times its generation-weighted factor.
     """
-    tdb = np.array(temps, dtype=float)
-    rh = np.array(rhs, dtype=float)
-    twb = wet_bulb(tdb, rh)
-    days = np.array([t[:10] for t in times])
-    uniq, day_index = np.unique(days, return_inverse=True)
-    years = np.array([d[:4] for d in uniq])
-    months = np.array([d[:7] for d in uniq])
-    hour_years = np.array([t[:4] for t in times])
-    year_ends = np.r_[np.flatnonzero(hour_years[1:] != hour_years[:-1]) + 1, len(hour_years)]
-    by = (groups(years), groups(months))
-    runs = sample(n, seed, plant)
-    weather = kernel.weather_terms(tdb, twb) if compiled else None
-    # water at the power plants, the function every water user's runs share (design 0008; design 0010's standard treatment); groups() gives each year its run of days
-    plant_water = RunWater(grid, day_index, len(uniq), [g.start for g in by[0]]) if grid else None
-    out = {}
-    for design in DESIGNS:
-        acc = {}
-        for p in runs + [central(plant)]:
-            p = for_location(p, tdb)
-            kw = mw * 1000 * p["utilization"]
-            # the peak day and the record day: the same weather at the peak load, average load over the load factor (model 1.7)
-            at_peak = {**p, "utilization": float(peak_utilization(p))}
-            kw_peak = mw * 1000 * at_peak["utilization"]
-            pue, w, c, r, cond, wp, cp, rp, condp, at_capacity, pue_peak = (kernel.hourly_run(tdb, twb, rh, weather, design, p, at_peak) if compiled else
-                                                                             _hourly_run(tdb, twb, rh, design, p, at_peak, block))
-            for name, arr in (("withdrawn", w), ("consumed", c), ("returned", r), ("condensate", cond)):
-                s = daily_stats(day_index, len(uniq), years, arr, kw, months if name in ("withdrawn", "consumed") else None, by)
-                for stat, v in s.items():
-                    acc.setdefault(f"{name}_{stat}", []).append(v)
-            for name, arr in (("withdrawn", wp), ("consumed", cp), ("returned", rp), ("condensate", condp)):
-                s = daily_stats(day_index, len(uniq), years, arr, kw_peak, by=by)
-                acc[f"{name}_peak_1in10"][-1], acc[f"{name}_record"][-1] = s["peak_1in10"], s["record"]
-            # the upper case: every computer at capacity all day
-            acc.setdefault("withdrawn_peak_full_capacity", []).append(daily_stats(day_index, len(uniq), years, at_capacity, mw * 1000.0, by=by)["peak_1in10"])
+    return runs.run_location(_CoolingRuns(n, seed, mw, block, plant, compiled), times, temps, rhs, grid=grid)
+
+
+class _CoolingRuns:
+    """The data center's part of the shared runner (waterledger_models.runs): its draws, and each draw's hours through the compiled kernel or
+    physics.py. Its loads: the run's utilization; the peak day at the peak load, average load over the load factor (model 1.7); every computer at
+    capacity for the full-capacity withdrawal and the highest hour."""
+    designs = DESIGNS
+
+    def __init__(self, n, seed, mw, block, plant, compiled):
+        self.n, self.seed, self.mw, self.block, self.plant, self.compiled = n, seed, mw, block, plant, compiled
+
+    def draws(self):
+        return sample(self.n, self.seed, self.plant) + [central(self.plant)]
+
+    def setup(self, times, tdb, twb, rh):
+        self.tdb, self.twb, self.rh = tdb, twb, rh
+        self.weather = kernel.weather_terms(tdb, twb) if self.compiled else None
+        hour_years = np.array([t[:4] for t in times])
+        self.year_ends = np.r_[np.flatnonzero(hour_years[1:] != hour_years[:-1]) + 1, len(hour_years)]
+
+    def run(self, design, p):
+        tdb, twb, rh, mw = self.tdb, self.twb, self.rh, self.mw
+        p = for_location(p, tdb)
+        kw = mw * 1000 * p["utilization"]
+        # the peak day and the record day: the same weather at the peak load, average load over the load factor (model 1.7)
+        at_peak = {**p, "utilization": float(peak_utilization(p))}
+        kw_peak = mw * 1000 * at_peak["utilization"]
+        pue, w, c, r, cond, wp, cp, rp, condp, at_capacity, pue_peak = (kernel.hourly_run(tdb, twb, rh, self.weather, design, p, at_peak) if self.compiled else
+                                                                         _hourly_run(tdb, twb, rh, design, p, at_peak, self.block))
+        extras = {
             # water use effectiveness: liters consumed per IT kWh (annual average), for comparison with LBNL/operators
-            acc.setdefault("wue_l_per_kwh", []).append(float(np.average(c)) * 3.78541)          # consumed basis
-            acc.setdefault("wue_makeup_l_per_kwh", []).append(float(np.average(w)) * 3.78541)   # LBNL/Lei basis (evaporation + drift + blowdown)
-            acc.setdefault("utilization", []).append(p["utilization"])
-            peak = float(np.quantile([part.max() for part in np.split(pue, year_ends[:-1])], 0.9))
-            acc.setdefault("pue_avg", []).append(float(pue.mean()))
-            acc.setdefault("power_mw_avg", []).append(float(pue.mean()) * mw * p["utilization"])
-            acc.setdefault("pue_peak_1in10", []).append(peak)
-            acc.setdefault("power_mw_peak_1in10", []).append(peak * mw)
-            day_mw = np.bincount(day_index, weights=pue_peak * kw_peak / 1000.0, minlength=len(uniq)) / np.bincount(day_index, minlength=len(uniq))
-            acc.setdefault("power_mw_peak_day_1in10", []).append(float(np.quantile([day_mw[g].max() for g in by[0]], 0.9)))
-            if plant_water:                                  # water at the power plants for this hourly electricity (design 0008)
-                for key, v in plant_water.stats(pue * (mw * p["utilization"]), pue_peak * kw_peak / 1000.0).items():
-                    acc.setdefault(key, []).append(v)
-        res = {}
-        for k, vals in acc.items():
-            v = np.array(vals[:-1])
-            res[k] = {"p10": float(np.quantile(v, 0.1)), "p50": float(np.quantile(v, 0.5)), "p90": float(np.quantile(v, 0.9)),
-                      "central": float(vals[-1])}
-        out[design] = res
-    return out
+            "wue_l_per_kwh": float(np.average(c)) * 3.78541,          # consumed basis
+            "wue_makeup_l_per_kwh": float(np.average(w)) * 3.78541,   # LBNL/Lei basis (evaporation + drift + blowdown)
+            "pue_avg": float(pue.mean()),
+            "pue_peak_1in10": float(np.quantile([part.max() for part in np.split(pue, self.year_ends[:-1])], 0.9)),   # the hottest hour
+        }
+        return runs.Hours(water={"withdrawn": (w, kw), "consumed": (c, kw), "returned": (r, kw), "condensate": (cond, kw)},
+                          peak={"withdrawn": (wp, kw_peak), "consumed": (cp, kw_peak), "returned": (rp, kw_peak), "condensate": (condp, kw_peak)},
+                          full=(at_capacity, mw * 1000.0),               # the upper case: every computer at capacity all day
+                          mw=pue * (mw * p["utilization"]), mw_peak=pue_peak * kw_peak / 1000.0, mw_full=pue * mw,
+                          utilization=p["utilization"], extras=extras)
