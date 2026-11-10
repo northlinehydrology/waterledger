@@ -254,3 +254,35 @@ case gives 1.01 MGD (`docs/research/battery-cell-parameters.md`, sec. 8). Nothin
 
 The lake design draws about 60 times what towers do and evaporates about two thirds as much. At this size it falls
 under 40 CFR 125.81; the number is shown true to the physics and the rule as a flagged note.
+
+## Check at every EA plant (Nov 10, 2026)
+
+Each plant at its own location (Open-Meteo hourly weather, 2015-2024) and size, towers, NMC, full output, 200 draws,
+p10-p90 (median) in MGD against its EA's projection. Reproduced by `examples/battery_cell_plants_ea_check.py`.
+Nothing was tuned to these.
+
+| Plant | GWh/yr | Withdrawn | Consumed | To sewer |
+|---|---|---|---|---|
+| BlueOval SK, Stanton, TN | 45 | 0.89-1.56 (1.20); EA 1.2 | 0.65-1.13 (0.87); EA 0.87 | 0.22-0.44 (0.30); EA 0.33 |
+| BlueOval SK, Glendale, KY | 82 | 1.59-2.73 (2.11); EA 2.4 | 1.14-1.99 (1.54); EA 1.74 | 0.39-0.78 (0.54); EA 0.66 |
+| Ultium, Spring Hill, TN | 50 [A] | 0.98-1.70 (1.31); EA 1.4 | | |
+| Ultium, Spring Hill, peak day | 50 [A] | 1.23-2.22 (1.66); EA 1.85 | | |
+| StarPlus, Kokomo, IN, maximum against the peak day | 67 | 1.65-3.00 (2.23); EA 2.59 | | |
+| KORE Power, Buckeye, AZ | 12 | 0.25-0.43 (0.33); EA 0.45 | | |
+| Ultium, Delta Twp (Lansing), MI | 43.75 | 0.80-1.38 (1.06); EA 1.5-1.7 | 0.58-1.01 (0.78); EA 0.94-1.14 | 0.20-0.40 (0.27); EA 0.56 |
+
+- **Four of the six fall inside the model's range** (Stanton, Glendale, Spring Hill, Kokomo), and Stanton's three
+  figures sit on its medians. Buckeye is just above the range, Lansing well above it.
+- **Lansing is the outlier, not the rule.** Its EA projects the most water per GWh/yr of any plant (34,300-38,900 gpd
+  against Stanton's 26,700 and Glendale's 29,300). With its own 3 cycles it reaches the EA at p90 (above). So the
+  "consumption about 20% low" read from Lansing alone was about Lansing's projection, not a bias in the model: at
+  Stanton and Glendale the consumed share matches. The evaporative ratio below 1 stays a stated departure.
+- **Spring Hill's size is not in its EA.** At GM's 50 GWh/yr (unverified) the median is 6% below the EA; at 35 GWh/yr
+  it would be 35% below. Its peak-to-average ratio, 1.32, against the model's 1.27-1.37 across these plants, is the
+  one check of the peak day.
+- **Buckeye was to be the dry check, and it isn't one.** "Closed-loop chiller water" describes the chilled loop, not
+  how the heat leaves: the dry design gives 0.05 MGD, a tenth of the 0.45 projected, while towers come just short of it at p90 (0.43). The
+  figure is an allocation for an unstated phase in the desert, so it neither confirms towers nor tests dry. There is
+  no public check of the dry design.
+- **Kokomo's** 2.59 MGD is a maximum, and its EA's own two numbers disagree (3,300 gpm is 4.75 MGD). Against the
+  model's 1-in-10-year peak day it falls inside the range.
