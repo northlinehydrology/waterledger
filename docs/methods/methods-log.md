@@ -2372,5 +2372,11 @@ Virginia territory the layer may lack, is not checked. The cell runs take the sa
 carry PJM grid water from its next snapshot; until then those places' estimates have no grid water, and `est.supply` works for them now.
 Pennsylvania and Minnesota have a territory over every place.
 
+**WAPA's grid region.** The territory layer gives the Western Area Power Administration one control area wherever it draws it, the
+Desert Southwest's (WALC), so Minnesota's 392 places that list WAPA among their utilities showed an Arizona grid region, and its
+snapshot of 2026-11-11 lists WALC among the state's grid regions. No place's estimate took it, since each place's own utility comes
+first (379 MISO, 13 SPP). In Minnesota, Iowa, the Dakotas and Nebraska WAPA's upper Great Plains region has been in the Southwest Power
+Pool since 2015, so WAPA is SWPP there (`energy.WAPA_BY_STATE`); Minnesota's next snapshot carries it.
+
 Model 1.14 changes gas plants and supply scenarios only; no data center or place number changes, so it reads model 1.11's snapshots
 (`MODELS["1.14"]`), except St. James township, whose grid water now shows from Michigan's existing cells.

@@ -21,6 +21,8 @@ Package changes (code). Changes to the numbers are listed by model version on th
 - **Places no utility territory covers** take the nearest served place's utilities within 50 km [A]: `Energy.nearest_place`,
   `nearest_place_km` and `nearest_utilities`, used for the place's grid region by the estimate, `est.supply` and the cell runs
   (`national.era5.cell_bas`). Seven places had none (six in Virginia, Michigan's St. James township).
+- **WAPA's grid region by state** (`waterledger_data.energy.WAPA_BY_STATE`): the territory layer labels the Western Area Power
+  Administration WALC wherever it draws it; in Minnesota, Iowa, the Dakotas and Nebraska it is SWPP. No estimate used it.
 
 ## 3.17.0 (Nov 10, 2026; model 1.13)
 
