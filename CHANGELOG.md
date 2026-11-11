@@ -2,6 +2,15 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## Unreleased
+
+- **Power supply scenarios at a place** ([design 0014](docs/design/0014-power-supply-scenarios.md), step 6): `site.estimate(supply={name:
+  Scenario})` adds `est.supply`, a `SupplyScenarioEstimate` per scenario at the site's size: shares of the year's MWh, annual matching,
+  unserved hours and MWh, surplus, local water (the gas plant's and panel washing), the gas plant's water by role, the residual's
+  `GridWater` at the place's balancing authority, PV and wind capacity factors, and the renewables' land, runoff and construction. It runs
+  at the place's ERA5 cell with the snapshots' station correction (`waterledger.supply`), for data centers; other types follow with design
+  0010's facility contract. No number changes; model 1.13.
+
 ## 3.17.0 (Nov 10, 2026; model 1.13)
 
 waterledger-models and waterledger-data 3.17.0; waterledger is unchanged at 3.16.0.

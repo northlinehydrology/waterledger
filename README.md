@@ -68,6 +68,12 @@ est.before_after                 # what changes at the place, today and after, a
 est.site_loads                   # sediment, phosphorus and nitrogen in runoff from the finished site alone, typical wet ponds and no controls; construction and cooling water phosphorus beside them
 est.levels                       # the levels a reader sees on waterledger.org, by card; waterledger.levels has the bands and levels.compare the verdict against a reported figure
 est.not_covered                  # what isn't covered yet for this state, in words
+
+from waterledger_models.supply.scenario import Scenario, Gas   # power supply scenarios (design 0014): every plant hypothetical
+est = site.estimate(supply={"own_gas": Scenario(residual="none", gas=Gas("cc", "towers", unit_mw=150)),
+                            "pv_wind": Scenario(pv_share=0.6, wind_share=0.6)})     # runs at the place's ERA5 cell, about 30 seconds
+est.supply["own_gas"].local_consumed     # water the campus's own gas plant evaporates, MGD, on the campus's source or system
+est.supply["pv_wind"].share_grid         # the share of the year's MWh the grid still serves, hour by hour; also unserved_hours_annual, land
 est.household_wells              # the aquifer most household wells draw from, how deep, the water level, where a state has well records
 site.by_design().best            # the cooling design that evaporates least in total, campus and power plants; also .designs and the closed loop figures
 est.equivalents.homes            # the water as homes at the state's own water for a home (.home_gpd: USGS 2015 over ACS 2015 households); also .golf_courses, .evaporated_share, .electricity_homes, .share_of_home_customers
@@ -121,7 +127,8 @@ Carlo runner, and changes no data center or place number, so it reads model 1.11
 - **Scenarios** (`supply.scenario`): resources and a residual rule (the grid by default, or islanded), dispatched hour by
   hour; plants sized once (gas N+1 at the design dry-bulb, renewables by share of annual MWh); surplus exported without water
   credit; unserved hours reported. The grid-only scenario is today's grid water to the bit.
-- The place-based estimate (`est.supply`) comes with design 0010's facility contract; waterledger.org is unchanged.
+- At a place, `site.estimate(supply=...)` gives `est.supply` for data centers (waterledger 3.17.0); other types follow with design
+  0010's facility contract. waterledger.org is unchanged.
 
 **Model 1.12** adds battery cell plants ([design 0009](docs/design/0009-battery-cell-plants.md)) and changes no data
 center or place number, so it skips the snapshots and reads model 1.11's (`waterledger_models.MODELS`):

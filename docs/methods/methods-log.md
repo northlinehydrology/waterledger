@@ -2290,3 +2290,12 @@ factors, illustrative). Grid only: 1.74 MGD consumed at the grid's plants. Islan
 towers: 1.02 MGD consumed locally, seven times the campus's own cooling, with 14 unserved hours a year from outages; on engines
 with radiators, none. PV sized for the year (1,029 MW) serves 41% of the hours' load, the grid 59%; with wind (618 and 495 MW),
 71%. Construction for that PV build: 8,085 fenced acres and about 168 MG of dust control water.
+
+## Nov 10, 2026: power supply scenarios at a place (est.supply)
+
+Design 0014's step 6, for data centers. `site.estimate(supply=...)` runs the campus's Monte Carlo at the place's ERA5 cell, with the same
+station correction the snapshots' cell runs use, the scenarios as the shared runner's extra, the residual's grid water at the place's
+balancing authority fit on the cell's own hours, and renewables' land and runoff at the place's rain. Nothing is stored (decision 9). No
+method or number changes: it is the model 1.13 scenarios, run at a place. Check: at Gaines Charter Township, 300 MW hybrid, 100 draws, the
+grid-only scenario's grid water is 1.727 MGD consumed against the estimate's stored 1.729 (400 draws), so the place run and the cell runs
+agree within sampling.
