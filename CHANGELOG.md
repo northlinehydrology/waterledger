@@ -25,6 +25,9 @@ All three packages 3.18.0. Pennsylvania and Minnesota join the published states.
   (`national.era5.cell_bas`). Seven places had none (six in Virginia, Michigan's St. James township).
 - **WAPA's grid region by state** (`waterledger_data.energy.WAPA_BY_STATE`): the territory layer labels the Western Area Power
   Administration WALC wherever it draws it; in Minnesota, Iowa, the Dakotas and Nebraska it is SWPP. No estimate used it.
+- **Sewer plants from ECHO where the survey is thin** (`waterledger_data.wastewater.echo_only`): ECHO's sewer plant permits that no CWNS
+  record covers join the survey's, with ECHO's design flow. Pennsylvania's 2022 survey lists 195 facilities; it now has 869 plants. Every
+  state gains some from its next snapshot.
 
 ## 3.17.0 (Nov 10, 2026; model 1.13)
 

@@ -2378,5 +2378,16 @@ snapshot of 2026-11-11 lists WALC among the state's grid regions. No place's est
 first (379 MISO, 13 SPP). In Minnesota, Iowa, the Dakotas and Nebraska WAPA's upper Great Plains region has been in the Southwest Power
 Pool since 2015, so WAPA is SWPP there (`energy.WAPA_BY_STATE`); Minnesota's next snapshot carries it.
 
+**Sewer plants where the survey is thin.** Pennsylvania's hand check found Erie's own plant (68.6 MGD design) and Harrisburg's (37.7 MGD)
+missing, so Erie's nearest plant was 25 km away. EPA's 2022 Clean Watersheds Needs Survey lists 195 Pennsylvania wastewater facilities
+(173 with a design flow and a location), against 995 sewer plant permits in ECHO, so Pennsylvania's survey is far from complete. ECHO's
+plants that no survey record covers now join the survey's (`wastewater.echo_only`), with ECHO's design flow and last year's average flow
+(kept only within 0.1-1.3 of design, as for survey plants): an active permit with a location and a design flow above zero, not a
+project, stormwater or animal permit, and not within 1.5 miles of a survey plant of about its size (a design flow within a factor of
+two), which would be the same plant under a state permit number. The size test keeps Harrisburg's plant, 1.5 km from Lower Allen
+Township's 6 MGD plant across the river. Pennsylvania goes from 173 plants to 869. The rule holds for every state, so each gains the
+plants its survey left out from its next snapshot: Minnesota 558 to 654, Indiana 510 to 543, Wisconsin 601 to 620. Pairs of plants under 0.5 km apart were read in Pennsylvania, Ohio and Texas: different plants on one site or at a
+town's coordinates, not twins.
+
 Model 1.14 changes gas plants and supply scenarios only; no data center or place number changes, so it reads model 1.11's snapshots
 (`MODELS["1.14"]`), except St. James township, whose grid water now shows from Michigan's existing cells.
