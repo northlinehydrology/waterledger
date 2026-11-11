@@ -14,7 +14,7 @@ MWh, and a gas plant's units, N + k at the place's 0.4% design dry-bulb for the 
 
 Results, every name prefixed supply_<scenario>_ (0014, "What each scenario reports"): the gas plant's water roles with the runner's daily
 statistics (gas_withdrawn_avg, ..._peak_1in10, ...); the residual's grid_<BA>_<kind>_avg and _peak_1in10; and per draw share_pv, share_wind,
-share_gas, share_grid, annual_matching, unserved_mwh_annual, unserved_hours_annual, unserved_mw_max, surplus_mwh_annual, pv_mwh_annual,
+share_gas, share_grid, annual_matching, unserved_mwh_annual, unserved_hours_annual, unserved_mw_max, unserved_run_max_hours, surplus_mwh_annual, pv_mwh_annual,
 wind_mwh_annual, pv_cf, wind_cf, gas_fuel_mw_avg, gas_capacity_factor, gas_withdrawn_gal_per_mwh, gas_consumed_gal_per_mwh, pv_washing_mgd,
 and local_withdrawn_avg and local_consumed_avg (MGD: the gas plant and the panel washing, the water on the campus's own source or system,
 decision 8). Construction water is a one-time total by size, reported apart (decision 11), and comes with renewables' land and runoff.
@@ -105,6 +105,13 @@ def size(model, times, temps, rhs, scenarios, design, supply_weather, lat, lon):
     return out
 
 
+def longest_run(flags):
+    """The longest run of consecutive True hours, as a float (0 with none)."""
+    f = np.r_[False, np.asarray(flags, bool), False]
+    edges = np.flatnonzero(f[1:] != f[:-1])
+    return float((edges[1::2] - edges[::2]).max()) if len(edges) else 0.0
+
+
 class Supply:
     """The runner's extra for supply scenarios. scenarios: {name: Scenario} with sizes fixed (size()); supply_weather: (utc, ghi,
     beam_horizontal, u100, v100) on the runner's hours (waterledger_data.era5.supply); lat, lon: the place's; n and seed: the supply's own draws,
@@ -178,6 +185,7 @@ class Supply:
                  "annual_matching": frac(d["gen_pv"] + d["gen_wind"]),
                  "unserved_mwh_annual": float(d["unserved"].sum()) / self.years,
                  "unserved_hours_annual": float((d["unserved"] > 1e-9).sum()) / self.years, "unserved_mw_max": float(d["unserved"].max()),
+                 "unserved_run_max_hours": longest_run(d["unserved"] > 1e-9),
                  "surplus_mwh_annual": float(d["surplus"].sum()) / self.years,
                  "pv_mwh_annual": float(d["gen_pv"].sum()) / self.years, "wind_mwh_annual": float(d["gen_wind"].sum()) / self.years,
                  "pv_cf": float(np.mean(pv_prof)) if sc.pv_mw else 0.0, "wind_cf": float(wind_prof.mean()) if sc.wind_mw else 0.0,

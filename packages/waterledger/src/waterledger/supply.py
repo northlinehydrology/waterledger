@@ -76,7 +76,7 @@ def estimate_supply(est, scenarios, n=DRAWS, seed=7, storm_years=None):
             residual=sc.residual, pv_mw=sc.pv_mw, wind_mw=sc.wind_mw, gas=dict(vars(sc.gas)) if sc.gas else None,
             share_pv=R("share_pv"), share_wind=R("share_wind"), share_gas=R("share_gas"), share_grid=R("share_grid"),
             annual_matching=R("annual_matching"), unserved_hours_annual=R("unserved_hours_annual"), unserved_mwh_annual=R("unserved_mwh_annual"),
-            surplus_mwh_annual=R("surplus_mwh_annual"), pv_cf=R("pv_cf") if sc.pv_mw else None, wind_cf=R("wind_cf") if sc.wind_mw else None,
+            unserved_run_max_hours=R("unserved_run_max_hours"), surplus_mwh_annual=R("surplus_mwh_annual"), pv_cf=R("pv_cf") if sc.pv_mw else None, wind_cf=R("wind_cf") if sc.wind_mw else None,
             local_withdrawn=R("local_withdrawn_avg"), local_consumed=R("local_consumed_avg"),
             gas_withdrawn=flow("withdrawn"), gas_consumed=flow("consumed"),
             gas_returned={k: R(f"gas_{k}_avg") for k in ("to_sewer", "to_source", "to_stream")} if sc.gas else None,

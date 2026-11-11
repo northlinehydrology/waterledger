@@ -189,6 +189,7 @@ class SupplyScenarioEstimate(BaseModel):
     annual_matching: Range
     unserved_hours_annual: Range
     unserved_mwh_annual: Range
+    unserved_run_max_hours: Range | None = None     # the longest run of hours short in the weather years; None before 3.18.0
     surplus_mwh_annual: Range
     pv_cf: Range | None = None
     wind_cf: Range | None = None
