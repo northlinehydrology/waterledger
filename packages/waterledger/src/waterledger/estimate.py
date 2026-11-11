@@ -172,6 +172,36 @@ def grid_water(g, ba):
     return GridWater(balancing_authority=ba, **{f"{k}{'_peak_day' if t == 'peak_day' else ''}": R(g[k][t]) for k in g for t in ("avg", "peak_day")})
 
 
+class SupplyScenarioEstimate(BaseModel):
+    """One power supply scenario at the site (design 0014): what served the campus's hourly electricity, and the water that took. Shares are of
+    the year's MWh, hour by hour; annual_matching is the renewables' MWh over the load's. Local water (the gas plant's and the panels' washing)
+    is on the campus's own source or system, MGD on an average day; grid_water is the residual's, at the place's balancing authority. Every plant
+    is hypothetical. Land, runoff and construction water are by size, once, apart from annual water (supply.land)."""
+    model_config = ConfigDict(frozen=True)
+    residual: str
+    pv_mw: float | None = None
+    wind_mw: float | None = None
+    gas: dict[str, Any] | None = None
+    share_pv: Range
+    share_wind: Range
+    share_gas: Range
+    share_grid: Range
+    annual_matching: Range
+    unserved_hours_annual: Range
+    unserved_mwh_annual: Range
+    surplus_mwh_annual: Range
+    pv_cf: Range | None = None
+    wind_cf: Range | None = None
+    local_withdrawn: Range
+    local_consumed: Range
+    gas_withdrawn: dict[str, Range] | None = None     # {"avg", "peak_day"}, MGD
+    gas_consumed: dict[str, Range] | None = None
+    gas_returned: dict[str, Range | None] | None = None   # average day by destination: to_sewer, to_source, to_stream
+    grid_water: GridWater | None = None
+    land: dict[str, Any] = {}
+    weather: dict[str, Any] = {}
+
+
 class DesignTotal(BaseModel):
     """One cooling design at a site: water evaporated at the campus and at power plants, MGD, and its electricity, MW."""
     model_config = ConfigDict(frozen=True)
@@ -228,5 +258,6 @@ class Estimate(BaseModel):
     power_plants: dict[str, PlantWater] = {}    # every power option for the state; site.power says which one the site uses
     grid_water: GridWater | None = None         # the place's balancing authority, hour by hour (model 1.11); None for lake-source cooling and older data
     weather: str = "region"     # "region": the stored results for the place's weather region or division; "local": the model run at the place (Open-Meteo best match)
+    supply: dict[str, SupplyScenarioEstimate] = {}   # power supply scenarios at the place (design 0014), when asked for: site.estimate(supply=...)
     model_version: str
     data_date: str

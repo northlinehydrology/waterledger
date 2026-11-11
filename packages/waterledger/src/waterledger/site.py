@@ -53,11 +53,15 @@ class Site(BaseModel):
     impervious: float = Field(0.5, ge=0, le=1, description="share of the developed land under roofs and paving")
     power: str | None = Field(None, description="what supplies the electricity, one of the state's options in est.power_plants; None: the state's own mix")
 
-    def estimate(self, weather="region") -> Estimate:
+    def estimate(self, weather="region", supply=None, supply_draws=400, storm_years=None) -> Estimate:
         """Water taken, evaporated or lost, and returned, as the state's provider computes it (same numbers as waterledger.org). weather="local" runs the
         model at the place instead of using its region's stored results: Open-Meteo's best match (ERA5, ERA5-Land and, from 2017, IFS HRES), the grid point nearest the place, an 8 MB download once and about 30 seconds
         each run. It is not measured on-site weather. Outside Michigan the stored results use NOAA stations, so
-        "local" also changes the kind of weather data, and the brief reports stations giving hybrid and assist estimates 4-50% higher. Not for lake-source cooling."""
+        "local" also changes the kind of weather data, and the brief reports stations giving hybrid and assist estimates 4-50% higher. Not for lake-source cooling.
+
+        supply: {name: waterledger_models.supply.scenario.Scenario}, power supply scenarios at the place (design 0014), in est.supply: run at the
+        place's ERA5 cell with `supply_draws` draws, a few seconds to a minute (the cell's radiation and wind are fetched once, about 30 seconds).
+        storm_years: a design storm (NOAA Atlas 14 return period, years) for PV's runoff before and after."""
         if weather not in ("region", "local"):
             raise ValueError(f"weather must be 'region' or 'local', not {weather!r}")
         est = states.provider(self.place.state).estimate(self)
@@ -69,7 +73,11 @@ class Site(BaseModel):
             raise ValueError(f"power must be one of {sorted(ref['power_options'])}, not {power!r}")
         est = est.model_copy(update={"site": est.site.model_copy(update={"power": power}), "comparisons": comparisons.comparisons(est, ref), "equivalents": comparisons.equivalents(est, ref), "before_after": comparisons.site_before_after(est, ref), "site_loads": comparisons.site_runoff_loads(est, ref), "household_wells": comparisons.wells_summary(self.place.context().supply.household_wells),
                                       "power_plants": _PowerPlants(comparisons.plant_waters(est.electricity, ref["power_options"])) if est.electricity else {}, "not_covered": ref.get("not_covered", {})})
-        return est.model_copy(update={"levels": levels.site_levels(est, ref)})
+        est = est.model_copy(update={"levels": levels.site_levels(est, ref)})
+        if supply:
+            from waterledger.supply import estimate_supply
+            est = est.model_copy(update={"supply": estimate_supply(est, supply, n=supply_draws, storm_years=storm_years)})
+        return est
 
     def by_design(self, designs=("dry", "hybrid", "towers")):
         """The same campus with each cooling design, on this site's power option: water evaporated at the campus and at power plants, electricity, and which evaporates least."""
