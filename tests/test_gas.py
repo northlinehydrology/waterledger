@@ -101,9 +101,22 @@ def test_inlet_cooling_trades_water_for_output():
 def test_unserved_and_outages():
     """Demand above the units available is unserved, never filled; with outages, units up each hour follow the availability."""
     up = gp.outages(4, 0.9, 100000, seed=3)
-    assert up.max() <= 4 and up.mean() == pytest.approx(3.6, abs=0.02)
+    assert up.max() <= 4 and up.mean() == pytest.approx(3.6, abs=0.05)
     h = gp.hourly(1000.0, T, TWB, RH, "engine", "dry", _p("engine", "dry"), 4, 200.0, available=up[:len(T)])
     assert (h["unserved"] >= 200.0 - 1e-9).all() and (h["unserved"] > 400.0).any()
+
+
+def test_outages_last_days_and_keep_the_availability():
+    """Outages run OUTAGE_HOURS on average and units are up `availability` of the hours; one unit's runs, read off its series."""
+    import numpy as np
+    one = gp.outages(1, 0.93, 2_000_000, seed=5)
+    assert one.mean() == pytest.approx(0.93, abs=0.01)
+    edges = np.flatnonzero(np.diff(np.r_[1.0, one, 1.0]))          # starts and ends of the runs out
+    lengths = edges[1::2] - edges[::2]
+    assert lengths.mean() == pytest.approx(gp.OUTAGE_HOURS, rel=0.1)
+    hourly = gp.outages(1, 0.93, 200_000, seed=5, mean_outage_hours=1.0)
+    assert hourly.mean() == pytest.approx(0.93, abs=0.01)
+    assert gp.outages(3, 1.0, 10, seed=1).tolist() == [3.0] * 10 and gp.outages(3, 0.0, 10, seed=1).sum() == 0.0
 
 
 def test_the_monte_carlo_on_the_shared_runner():

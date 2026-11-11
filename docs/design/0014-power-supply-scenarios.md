@@ -1,7 +1,8 @@
 # 0014: Power supply scenarios: what serves a user's hourly electricity, and the water it takes
 
 Status: **decided Nov 10, 2026 (Andrew; all eleven decisions agreed, with his notes on 2, 5, 9 and 10 below). Steps 1-5 built Nov 10 on branch
-shared-runner (model 1.13; methods log, Nov 10); step 6's `GasPlant` facility and `est.supply` wait on design 0010's facility contract.** Evidence: `docs/research/power-supply-water.md`.
+shared-runner (model 1.13; methods log, Nov 10); `est.supply` built for data centers Nov 10 (waterledger.supply); the `GasPlant` facility and other types'
+`est.supply` wait on design 0010's facility contract.** Evidence: `docs/research/power-supply-water.md`.
 Builds on 0008 (power at the grid), 0010 (water user types and the standard treatment) and the shared Monte Carlo runner
 (`waterledger_models.runs`, branch `shared-runner`, not merged). 0012 (cathode plants) and 0013 (the site standard) are
 reserved, so this is 0014.

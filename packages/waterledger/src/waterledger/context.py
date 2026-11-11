@@ -146,6 +146,9 @@ class PowerPlantWater(BaseModel):
 class Energy(_Category):
     """The power behind a facility."""
     utilities: list[Utility] = []
+    nearest_place: str | None = None                    # no utility territory covers the place: the nearest place one covers, edge to edge,
+    nearest_place_km: float | None = None               # within 50 km [A] (national tier), and its utilities, which stand in for the
+    nearest_utilities: list[Utility] = []               # place's grid region
     power_plant_water: PowerPlantWater | None = None    # the state's own figure; utilities carry their grid region's 2022 value
 
 

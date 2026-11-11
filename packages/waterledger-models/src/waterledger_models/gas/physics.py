@@ -7,7 +7,7 @@ does. Every plant is hypothetical: a technology, a number of identical units, a 
   inlet air: the dry-bulb, or with inlet evaporative cooling above its switch-on temperature, cooled toward the wet-bulb by the media's effectiveness
   unit capacity = ISO net rating x (1 - derate x max(0, T - T_ref)), at the inlet temperature (combustion turbine and combined cycle) or the
       dry-bulb (engines); a combined cycle's derate is its wet-cooled one in the hours its condenser is wet and its dry-cooled one otherwise
-  units available: every unit, or with outages each hour's draw of units up at the sampled availability
+  units available: every unit, or with outages each unit's up and out runs (outages(): outages average OUTAGE_HOURS) at the sampled availability
   served = min(demand, available capacity); unserved = the rest, reported, never filled
   units online = enough to carry the hour, each at the same share of its capacity
   heat rate = ISO heat rate x (1 + slope x max(0, T - T_ref)) x (1 + part-load penalty x (1 - load) / 0.5), the penalty given at half load
@@ -217,8 +217,33 @@ def hourly(demand_mw, tdb, twb, rh, technology, design, p, units, unit_mw, inlet
     }
 
 
-def outages(units, availability, n_hours, seed):
-    """Units up each hour: each unit is up in an hour with probability `availability`, drawn independently [A: forced outages run for days, not
-    hours, so this understates runs of unserved hours while giving the right share of them]."""
+OUTAGE_HOURS = 48.0     # a forced outage's mean length, hours [A: set, not sampled; large units are typically back in a day to a few days]
+
+
+def outages(units, availability, n_hours, seed, mean_outage_hours=OUTAGE_HOURS):
+    """Units up each hour. Each unit alternates between up and out, with geometric run lengths: outages average `mean_outage_hours`, and
+    the time up is set so the unit is up `availability` of the hours on average (a two-state Markov chain, the standard model of a unit's
+    forced outages). Each unit starts up with probability `availability`. Units are independent. mean_outage_hours=1 makes every outage
+    an hour long, close to the independent hourly draws of releases before 3.18.0."""
     rng = np.random.default_rng(seed)
-    return rng.binomial(int(units), float(availability), size=int(n_hours)).astype(float)
+    n, a = int(n_hours), float(availability)
+    if a >= 1.0:
+        return np.full(n, float(units))
+    if a <= 0.0:
+        return np.zeros(n)
+    down_mean = max(float(mean_outage_hours), 1.0)
+    up_mean = down_mean * a / (1.0 - a)
+    total = np.zeros(n)
+    for _ in range(int(units)):
+        up = rng.random() < a
+        seg = int(2 * n / (up_mean + down_mean)) + 16
+        while True:
+            ups = rng.geometric(1.0 / max(up_mean, 1.0), seg)
+            downs = rng.geometric(1.0 / down_mean, seg)
+            lengths = np.column_stack([ups, downs] if up else [downs, ups]).ravel()
+            if lengths.sum() >= n:
+                break
+            seg *= 2
+        states = np.tile([1.0, 0.0] if up else [0.0, 1.0], seg)
+        total += np.repeat(states, lengths)[:n]
+    return total

@@ -55,6 +55,19 @@ def estimate(site):
 PJM = {"City of Dowagiac", "City of Niles", "City of South Haven", "City of Sturgis", "Indiana Michigan Power Company", "Midwest Energy Cooperative", "Village of Paw Paw"}
 
 
+def nearest_served(r):
+    """(place, km) of the nearest Michigan place an MPSC territory covers, center to center, for one none covers (Beaver Island's St. James
+    township), within the national tier's UTILITY_KM; None otherwise."""
+    import math
+    from waterledger.national.provider import UTILITY_KM
+    P = sc.data("power")
+    lon, lat = sc.lonlat(r)
+    k = math.cos(math.radians(lat))
+    km = lambda q: math.hypot((sc.lonlat(q)[0] - lon) * k, sc.lonlat(q)[1] - lat) * 111.2
+    best = min(((km(q), q["g"], q) for q in sc.data("places")["places"] if P["places"].get(q["g"])), default=None)
+    return (best[2], round(best[0], 1)) if best and best[0] <= UTILITY_KM else None
+
+
 def balancing_authority(name):
     return "PJM" if name in PJM else "MISO"
 
@@ -121,10 +134,14 @@ def context(place):
     from waterledger.national.provider import _ppw
     from waterledger_data.energy import grid_water
     GW = grid_water()
+    utility = lambda i, sh: cx.Utility(name=U[i]["n"], type=U[i]["type"], share_of_place=sh, customers=U[i].get("cust"), avg_mw=U[i].get("avg_mw"),
+                                       summer_peak_mw=U[i].get("summer_mw"), balancing_authority=balancing_authority(U[i]["n"]),
+                                       power_plant_water_l_per_kwh=GW[balancing_authority(U[i]["n"])]["consumed_excl_hydro"])
+    near = None if P["places"].get(r["g"]) else nearest_served(r)
     energy = cx.Energy(provider="MI", sources=["mpsc_territory", "eia861", "eia923_2024", "macknick2012", "siddik2024"], power_plant_water=_ppw("MI"),
-                       utilities=[cx.Utility(name=U[i]["n"], type=U[i]["type"], share_of_place=sh, customers=U[i].get("cust"),
-                                             avg_mw=U[i].get("avg_mw"), summer_peak_mw=U[i].get("summer_mw"), balancing_authority=balancing_authority(U[i]["n"]),
-                                             power_plant_water_l_per_kwh=GW[balancing_authority(U[i]["n"])]["consumed_excl_hydro"]) for i, sh in P["places"].get(r["g"], [])])
+                       utilities=[utility(i, sh) for i, sh in P["places"].get(r["g"], [])],
+                       nearest_place=near[0]["n"] if near else None, nearest_place_km=near[1] if near else None,
+                       nearest_utilities=[utility(i, sh) for i, sh in P["places"][near[0]["g"]]] if near else [])
     jur = cx.Jurisdiction(provider="MI", not_covered=["rules"], sources=["census_tiger"], name=place.name, kind=place.kind, county=place.county, state="MI")
     return cx.Context(place=place, jurisdiction=jur, supply=supply, wastewater=cx.Wastewater(provider="MI", sources=["echo", "cwns2022"], plants=plants),
                       receiving=receiving, climate=climate, energy=energy)

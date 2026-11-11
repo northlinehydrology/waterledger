@@ -24,7 +24,8 @@ sewer plants, weather and design storms.
 - **CSDMS Basic Model Interface (BMI 2.0) components**, so coupling frameworks such as NOAA's NextGen can drive the
   models step by step.
 - **Public data for any U.S. place**, fetched once and cached: Census, EPA, USGS, NOAA and EIA, with each place's
-  downstream path traced across state lines. Michigan, Ohio, Virginia, Texas, Wisconsin and Indiana are published as checked snapshots.
+  downstream path traced across state lines. Michigan, Ohio, Virginia, Texas, Wisconsin, Indiana, Minnesota and
+  Pennsylvania are published as checked snapshots.
 - **Reproducible**: tests reproduce the published Water Ledger estimates exactly, and the data sources are checked nightly.
 
 [waterledger.org](https://waterledger.org) is powered by these packages.
@@ -68,6 +69,12 @@ est.before_after                 # what changes at the place, today and after, a
 est.site_loads                   # sediment, phosphorus and nitrogen in runoff from the finished site alone, typical wet ponds and no controls; construction and cooling water phosphorus beside them
 est.levels                       # the levels a reader sees on waterledger.org, by card; waterledger.levels has the bands and levels.compare the verdict against a reported figure
 est.not_covered                  # what isn't covered yet for this state, in words
+
+from waterledger_models.supply.scenario import Scenario, Gas   # power supply scenarios (design 0014): every plant hypothetical
+est = site.estimate(supply={"own_gas": Scenario(residual="none", gas=Gas("cc", "towers", unit_mw=150)),
+                            "pv_wind": Scenario(pv_share=0.6, wind_share=0.6)})     # runs at the place's ERA5 cell, about 30 seconds
+est.supply["own_gas"].local_consumed     # water the campus's own gas plant evaporates, MGD, on the campus's source or system
+est.supply["pv_wind"].share_grid         # the share of the year's MWh the grid still serves, hour by hour; also unserved_hours_annual, land
 est.household_wells              # the aquifer most household wells draw from, how deep, the water level, where a state has well records
 site.by_design().best            # the cooling design that evaporates least in total, campus and power plants; also .designs and the closed loop figures
 est.equivalents.homes            # the water as homes at the state's own water for a home (.home_gpd: USGS 2015 over ACS 2015 households); also .golf_courses, .evaporated_share, .electricity_homes, .share_of_home_customers
@@ -97,6 +104,8 @@ They are validated, round-trip through JSON, and are described in
 | Texas | 1,481 cities, towns and counties | ERA5, each place's own cell (616 cells) | [waterledger.org/methods/tx](https://waterledger.org/methods/tx/), [brief](docs/methods/tx.pdf) |
 | Wisconsin | 1,922 cities, villages, towns and counties | ERA5, each place's own cell (283 cells) | [waterledger.org/methods/wi](https://waterledger.org/methods/wi/), [brief](docs/methods/wi.pdf) |
 | Indiana | 1,661 cities, towns, townships and counties | ERA5, each place's own cell (183 cells) | [waterledger.org/methods/in](https://waterledger.org/methods/in/), [brief](docs/methods/in.pdf) |
+| Minnesota | 2,719 cities, townships and counties | ERA5, each place's own cell (401 cells) | [waterledger.org/methods/mn](https://waterledger.org/methods/mn/), [brief](docs/methods/mn.pdf) |
+| Pennsylvania | 2,622 cities, boroughs, towns, townships and counties | ERA5, each place's own cell (230 cells) | [waterledger.org/methods/pa](https://waterledger.org/methods/pa/), [brief](docs/methods/pa.pdf) |
 
 **Model 1.13** adds power supply scenarios ([design 0014](docs/design/0014-power-supply-scenarios.md)) and the shared Monte
 Carlo runner, and changes no data center or place number, so it reads model 1.11's snapshots too:
@@ -116,12 +125,15 @@ Carlo runner, and changes no data center or place number, so it reads model 1.11
     ([docs/methods/power_supply](docs/methods/power_supply/)); a year of weather lands inside the published ranges by design.
 - **New solar and wind** (`waterledger_models.supply`): PV by the PVWatts chain, within 0.04% of the AC rating of pvlib's in
   every hour of a test year; wind through the IEA 3.4 MW reference turbine's curve; both from ERA5 radiation and 100 m wind
-  at the user's own cell (`waterledger_data.era5.fetch_supply`). At West Michigan, tracking PV runs at 22% and wind at 28%.
+  at the user's own cell (`waterledger_data.era5.fetch_supply`). PV is scaled to what EIA's 2024 tracking fleet delivered (944
+  plants, 24.1% against the chain's 28.5% on ERA5; model 1.14), so West Michigan's tracking PV runs near 19% and wind at 28%
+  (wind not yet checked against its fleet).
   Land, runoff and one-time construction water and sediment by project size (`supply.land`).
 - **Scenarios** (`supply.scenario`): resources and a residual rule (the grid by default, or islanded), dispatched hour by
   hour; plants sized once (gas N+1 at the design dry-bulb, renewables by share of annual MWh); surplus exported without water
-  credit; unserved hours reported. The grid-only scenario is today's grid water to the bit.
-- The place-based estimate (`est.supply`) comes with design 0010's facility contract; waterledger.org is unchanged.
+  credit; unserved hours reported, with the longest run (gas outages last 48 hours on average [A], model 1.14). The grid-only scenario is today's grid water to the bit.
+- At a place, `site.estimate(supply=...)` gives `est.supply` for data centers (waterledger 3.18.0); other types follow with design
+  0010's facility contract. waterledger.org is unchanged.
 
 **Model 1.12** adds battery cell plants ([design 0009](docs/design/0009-battery-cell-plants.md)) and changes no data
 center or place number, so it skips the snapshots and reads model 1.11's (`waterledger_models.MODELS`):
@@ -290,12 +302,13 @@ components and the command line) waits for 4.0 and does not ship in a 3.x minor 
 Three version numbers, each with one meaning:
 
 - **Package versions** (semver) change with the code: a major version for breaking changes.
-- **`waterledger_models.MODEL_VERSION`** (now 1.13) changes when the numbers change; the golden test fails until that is
+- **`waterledger_models.MODEL_VERSION`** (now 1.14) changes when the numbers change; the golden test fails until that is
   done deliberately. Every published estimate names the model version that produced it. One version covers every water
   user type. `waterledger_models.MODELS` records, from 1.12, which types a version changes and the model of the snapshots it
   reads: a version that leaves the snapshots' numbers alone (data centers, the places' water and power) skips them and reads
   the last rebuilt ones. Model 1.12 adds battery cell plants and reads model 1.11's snapshots and cell runs, so a data center
-  estimate still names model 1.11. Model 1.13 adds gas plants and supply scenarios the same way.
+  estimate still names model 1.11. Model 1.13 adds gas plants and supply scenarios the same way, and model 1.14 changes them
+  (outages that last days, PV against the 2024 fleet).
 - **The snapshot format version** (now 3, in each snapshot's manifest) changes when the structure of a state's data
   files does. Format 3 (from model 1.8) carries cooling by ERA5 cell (`cells/`). The package still reads format 2, which the
   published model 1.7 snapshots are.

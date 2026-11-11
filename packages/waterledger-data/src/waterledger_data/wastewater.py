@@ -128,6 +128,34 @@ def plants(state):
                     "major": bool(e and e["CWPMajorMinorStatusFlag"] == "M"), "cso": bool(e and e["CWPCsoFlag"] == "Y"),
                     "receiving": (e or {}).get("CWPStateWaterBodyName"), "huc12": (e or {}).get("RadWBDHuc12"),
                     "lagoon": bool(re.search(r"LAGOON|WWSL|STABILIZATION", name))})
+    return out + echo_only(echo, out)
+
+
+def echo_only(echo, plants):
+    """ECHO's sewer plants that no survey record covers, for states whose survey is thin (Pennsylvania's 2022 CWNS lists 195 wastewater
+    facilities, ECHO 995 sewer plant permits): an active permit with a location and a design flow, not within NEAR_MILES of a survey
+    plant of about its size (within a factor of two: the same plant under a state permit number; Harrisburg's 37.7 MGD plant is 1.5 km
+    from Lower Allen's 6 MGD one), and not a project or a stormwater or animal permit. ECHO's design flow stands in
+    for the survey's."""
+    used = {p["id"] for p in plants}
+    out = []
+    for sid, e in sorted(echo.items()):
+        name = (e.get("CWPName") or "").upper()
+        try:
+            lat, lon, design = float(e["FacLat"]), float(e["FacLong"]), float(e.get("CWPTotalDesignFlowNmbr") or 0)
+        except (TypeError, ValueError, KeyError):
+            continue
+        if sid in used or design <= 0 or is_project(name) or NOT_SEWER.search(name) or STORMWATER_PERMIT.match(sid):
+            continue
+        if any(distance_km(lat, lon, p["lat"], p["lon"]) <= NEAR_MILES * 1.609 and 0.5 <= design / (p["design_mgd"] or design) <= 2.0
+               for p in plants + out):
+            continue
+        f_echo = float(e["PastCalYrAverageFlow"]) if e.get("PastCalYrAverageFlow") else None
+        if f_echo and not 0.1 <= f_echo / design <= 1.3:
+            f_echo = None
+        out.append({"id": sid, "name": name, "city": e.get("CWPCity"), "lat": lat, "lon": lon, "design_mgd": design, "flow_mgd": f_echo,
+                    "major": e.get("CWPMajorMinorStatusFlag") == "M", "cso": e.get("CWPCsoFlag") == "Y", "receiving": e.get("CWPStateWaterBodyName"),
+                    "huc12": e.get("RadWBDHuc12"), "lagoon": bool(re.search(r"LAGOON|WWSL|STABILIZATION", name))})
     return out
 
 

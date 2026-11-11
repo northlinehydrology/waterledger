@@ -2290,3 +2290,104 @@ factors, illustrative). Grid only: 1.74 MGD consumed at the grid's plants. Islan
 towers: 1.02 MGD consumed locally, seven times the campus's own cooling, with 14 unserved hours a year from outages; on engines
 with radiators, none. PV sized for the year (1,029 MW) serves 41% of the hours' load, the grid 59%; with wind (618 and 495 MW),
 71%. Construction for that PV build: 8,085 fenced acres and about 168 MG of dust control water.
+
+## Nov 10, 2026: power supply scenarios at a place (est.supply)
+
+Design 0014's step 6, for data centers. `site.estimate(supply=...)` runs the campus's Monte Carlo at the place's ERA5 cell, with the same
+station correction the snapshots' cell runs use, the scenarios as the shared runner's extra, the residual's grid water at the place's
+balancing authority fit on the cell's own hours, and renewables' land and runoff at the place's rain. Nothing is stored (decision 9). No
+method or number changes: it is the model 1.13 scenarios, run at a place. Check: at Gaines Charter Township, 300 MW hybrid, 100 draws, the
+grid-only scenario's grid water is 1.727 MGD consumed against the estimate's stored 1.729 (400 draws), so the place run and the cell runs
+agree within sampling.
+
+## Nov 11, 2026: PV against the 2024 fleet, outages that last days, and places no utility territory covers (model 1.14)
+
+Three findings from an overnight check of `est.supply` at 60 places, ten in each published state (300 MW hybrid, 100 draws, four
+scenarios), each fixed in every state.
+
+**PV against EIA's reported fleet (design 0014, check 5).** The PV chain on ERA5's 2024 weather against what tracking PV plants reported
+generating in 2024. Script `docs/methods/power_supply/pv_check.py`; results in `pv_check.csv` and `pv_check_monthly.csv`. Aggregates only:
+a state is shown with five plants or more, and no plant is named or written out. A plant is in when every PV generator it has is operating,
+single-axis tracking and nothing else, online before January 2024, none retired, at least 5 MW AC (LBNL's utility-scale floor), with 2024
+PV net generation above zero in EIA-923 (Page 1). That is 944 plants and 56,172 MW AC in 17 states; all but two report their own DC/AC
+ratio in EIA-860 (capacity-weighted mean 1.30). The model ran at RANGES' midpoints with the resource factor at 1.0 and each plant's own
+DC/AC ratio, on its ERA5 cell's 2024 hours; nothing was tuned.
+
+| State | Plants | MW AC | Observed | Modeled | Ratio |
+|---|---|---|---|---|---|
+| MI | 23 | 846 | 21.7% | 24.2% | 0.90 |
+| IN | 25 | 1,031 | 21.3% | 23.6% | 0.90 |
+| IL | 9 | 901 | 22.7% | 24.8% | 0.92 |
+| OH | 12 | 1,624 | 18.6% | 24.3% | 0.76 |
+| WI | 27 | 1,548 | 18.1% | 23.8% | 0.76 |
+| MN | 26 | 270 | 20.6% | 24.9% | 0.83 |
+| NY | 52 | 323 | 17.1% | 22.8% | 0.75 |
+| PA | 9 | 495 | 14.7% | 22.1% | 0.67 |
+| VA | 76 | 3,424 | 20.1% | 23.9% | 0.84 |
+| NC | 126 | 2,672 | 20.9% | 25.6% | 0.82 |
+| GA | 34 | 3,050 | 24.1% | 26.4% | 0.91 |
+| FL | 68 | 4,392 | 22.1% | 25.3% | 0.87 |
+| TX | 88 | 12,993 | 23.2% | 28.4% | 0.82 |
+| CO | 30 | 1,867 | 26.3% | 29.9% | 0.88 |
+| AZ | 52 | 3,072 | 26.6% | 32.4% | 0.82 |
+| NV | 32 | 2,771 | 29.6% | 31.7% | 0.94 |
+| CA | 255 | 14,894 | 27.2% | 32.0% | 0.85 |
+| All | 944 | 56,172 | 24.1% | 28.5% | 0.85 |
+
+The model is about 15% high, and it is not a few plants: plant ratios have quartiles of 0.76, 0.84 and 0.92, and dropping the 40 outside
+0.5-1.2 [A: the bounds] leaves the fleet at 0.85. Pennsylvania's nine plants are the exception, one of them taking the state from 0.80 to
+0.67. EIA-923's net generation is what plants delivered, so the ratio carries curtailment, outages beyond the 3% in PVWatts' 14.08% losses,
+snow (0% in PVWatts' defaults; Dobos 2014, Table 3), age (the fleet's capacity-weighted online year is 2020) and plants capped below
+nameplate, as well as ERA5's radiation bias; bifacial gain, which the model leaves out, works the other way. The months show which: in
+the Great Lakes states the ratio falls to 0.59 in January and rises to 0.83-0.90 in summer (snow, perhaps ERA5's winter cloud); in Texas
+and the Southwest it dips to 0.70-0.77 in March and April, when solar runs ahead of load (curtailment); in the Southeast (VA, NC, GA, FL)
+it is flat at 0.83-0.89 all year. Even there the model is 11-17% high, which this check cannot split between ERA5 and losses beyond
+PVWatts' defaults; ground radiation at the cells (SURFRAD, NSRDB) would. The ratio rises only weakly with the modeled capacity factor
+across states (Pearson r 0.41), and the lowest states hold their capacity in a few large plants, so one factor serves every state.
+
+**Decision.** `pv.RANGES["resource"]` goes from (0.95, 1.05) [A] to (0.76, 0.92): 0.84 is the capacity-weighted factor that matches over all
+plants, and the range spans the states with ten or more plants (Ohio and Wisconsin 0.76, Nevada 0.93, Georgia 0.91; New York 0.75). The
+key keeps its name, since 3.17.0 published it, but it now stands for delivered output over modeled, not radiation alone. A behind-the-meter
+scenario partly double counts curtailment, since its dispatch already sends surplus out with no credit; the Southeast's flat 0.85 sits near
+the center, so the effect is small. At Michigan's overnight places, tracking PV's p50 of 22-23% comes to about 19-20%, near the 2024 Great
+Lakes fleet's 19.5% and a little under LBNL's MISO and PJM values near 21% (research note sec. 5). 2024 is one year. Wind's resource factor
+is not yet checked against its fleet.
+
+**Gas plant outages last days.** Outages were a fresh draw each hour, so every outage lasted an hour. A unit now alternates up and out with
+geometric run lengths (a two-state Markov chain, the standard model of forced outages): outages average 48 hours [A: set, not sampled;
+large units are typically back in a day to a few days], and the time up is set so the unit keeps the sampled availability. The share of
+hours lost is unchanged, so unserved hours a year are about the same (Waynesboro, Virginia, 300 MW hybrid on four 150 MW combined cycle
+units, islanded: 13.5 at the median, 2.5-90 p10-p90), and they now come in runs: `unserved_run_max_hours`, new, has a median of 58 hours
+(28-103). The same median unserved hours at most of the 60 places is not a fault: the outage draws do not depend on the place, the same
+draws are used at every place so places compare, and only heat moves the result (Texas, 13.6-15.9).
+
+**Places no utility territory covers.** Seven of 9,245 places had no utility, so no grid water: Virginia's Waynesboro city, Norton city,
+Appalachia, Big Stone Gap, Coeburn and Wise towns and Tangier town, and Michigan's St. James township (Beaver Island). The national
+territory layer leaves them out. Such a place now takes the utilities of the nearest place a territory covers, edge to edge, within 50 km
+[A] (`Energy.nearest_place`, `nearest_place_km`, `nearest_utilities`), as a place with no water system takes the nearest one: Waynesboro
+takes Dominion (PJM) from Augusta County, Tangier the A&N Electric Cooperative (PJM) from Accomack County, the five southwest Virginia
+towns Appalachian Power (PJM) from Wise County, and St. James township Great Lakes Energy (MISO) from Peaine township, the rest of the
+island, by Michigan's own rule. Whether the southwest Virginia towns are served by Old Dominion Power (Kentucky Utilities, LGEE), whose
+Virginia territory the layer may lack, is not checked. The cell runs take the same rule (`cell_bas`), so Virginia's five affected cells
+carry PJM grid water from its next snapshot; until then those places' estimates have no grid water, and `est.supply` works for them now.
+Pennsylvania and Minnesota have a territory over every place.
+
+**WAPA's grid region.** The territory layer gives the Western Area Power Administration one control area wherever it draws it, the
+Desert Southwest's (WALC), so Minnesota's 392 places that list WAPA among their utilities showed an Arizona grid region, and its
+snapshot of 2026-11-11 lists WALC among the state's grid regions. No place's estimate took it, since each place's own utility comes
+first (379 MISO, 13 SPP). In Minnesota, Iowa, the Dakotas and Nebraska WAPA's upper Great Plains region has been in the Southwest Power
+Pool since 2015, so WAPA is SWPP there (`energy.WAPA_BY_STATE`); Minnesota's next snapshot carries it.
+
+**Sewer plants where the survey is thin.** Pennsylvania's hand check found Erie's own plant (68.6 MGD design) and Harrisburg's (37.7 MGD)
+missing, so Erie's nearest plant was 25 km away. EPA's 2022 Clean Watersheds Needs Survey lists 195 Pennsylvania wastewater facilities
+(173 with a design flow and a location), against 995 sewer plant permits in ECHO, so Pennsylvania's survey is far from complete. ECHO's
+plants that no survey record covers now join the survey's (`wastewater.echo_only`), with ECHO's design flow and last year's average flow
+(kept only within 0.1-1.3 of design, as for survey plants): an active permit with a location and a design flow above zero, not a
+project, stormwater or animal permit, and not within 1.5 miles of a survey plant of about its size (a design flow within a factor of
+two), which would be the same plant under a state permit number. The size test keeps Harrisburg's plant, 1.5 km from Lower Allen
+Township's 6 MGD plant across the river. Pennsylvania goes from 173 plants to 869. The rule holds for every state, so each gains the
+plants its survey left out from its next snapshot: Minnesota 558 to 654, Indiana 510 to 543, Wisconsin 601 to 620. Pairs of plants under 0.5 km apart were read in Pennsylvania, Ohio and Texas: different plants on one site or at a
+town's coordinates, not twins.
+
+Model 1.14 changes gas plants and supply scenarios only; no data center or place number changes, so it reads model 1.11's snapshots
+(`MODELS["1.14"]`), except St. James township, whose grid water now shows from Michigan's existing cells.

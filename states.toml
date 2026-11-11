@@ -46,3 +46,18 @@ example = "Lebanon city, IN"
 attains = "21IND"
 agency = "Indiana IDEM"
 places = "cities and towns"
+
+[PA]
+name = "Pennsylvania"
+example = "Pittsburgh city, PA"
+attains = "21PA"
+agency = "Pennsylvania DEP"
+places = "cities, boroughs and towns"
+weather_check = "Pennsylvania failed two of the ERA5 check's criteria. At the shore, corrected cells run 0.85 C off in the design dry-bulb (the limit is 0.5 C), set by New York and New Jersey coastal stations within 100 km of Pennsylvania places; the correction still halves the error (1.35 C uncorrected). Erie's cells are not corrected: its airport is the one station near them and no other shore station is within 100 km, and ERA5 runs 2.25 C cool in the design dry-bulb there, so hybrid and assist estimates around Erie run low. For places, hybrid average days differ from the stations' by a median 10.9% (the limit is 8%) but without a bias (mean 4.1%); the ridge-and-valley terrain is finer than ERA5's grid, so valley airports run up to 17% low and Johnstown 22% high. Peak days and cooling towers pass (docs/methods/era5-checks/pa.md)."
+
+[MN]
+name = "Minnesota"
+example = "Farmington city, MN"
+attains = "MNPCA"
+agency = "Minnesota PCA"
+places = "cities"

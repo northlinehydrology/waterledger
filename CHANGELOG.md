@@ -2,6 +2,33 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.18.0 (Nov 11, 2026; model 1.14)
+
+All three packages 3.18.0. Pennsylvania and Minnesota join the published states.
+
+- **Power supply scenarios at a place** ([design 0014](docs/design/0014-power-supply-scenarios.md), step 6): `site.estimate(supply={name:
+  Scenario})` adds `est.supply`, a `SupplyScenarioEstimate` per scenario at the site's size: shares of the year's MWh, annual matching,
+  unserved hours and MWh, surplus, local water (the gas plant's and panel washing), the gas plant's water by role, the residual's
+  `GridWater` at the place's balancing authority, PV and wind capacity factors, and the renewables' land, runoff and construction. It runs
+  at the place's ERA5 cell with the snapshots' station correction (`waterledger.supply`), for data centers; other types follow with design
+  0010's facility contract.
+- **Model 1.14** (methods log, Nov 11): gas plants and supply scenarios only; no data center or place number changes, and it reads model
+  1.11's snapshots (`MODELS["1.14"]`).
+  - **PV against the 2024 fleet** (design 0014, check 5; `docs/methods/power_supply/pv_check.py`): over 944 tracking plants EIA reports 24.1%
+    and the chain on ERA5 gives 28.5%, so `pv.RANGES["resource"]` is (0.76, 0.92), was (0.95, 1.05). It stands for delivered output over
+    modeled: ERA5's bias with snow, curtailment, outages and age.
+  - **Gas plant outages last days**: `gas.physics.outages` runs each unit up and out with geometric run lengths averaging `OUTAGE_HOURS`
+    (48 [A]) at the sampled availability, not a fresh draw each hour; `mean_outage_hours` overrides it. `est.supply` adds
+    `unserved_run_max_hours`, the longest run of hours short.
+- **Places no utility territory covers** take the nearest served place's utilities within 50 km [A]: `Energy.nearest_place`,
+  `nearest_place_km` and `nearest_utilities`, used for the place's grid region by the estimate, `est.supply` and the cell runs
+  (`national.era5.cell_bas`). Seven places had none (six in Virginia, Michigan's St. James township).
+- **WAPA's grid region by state** (`waterledger_data.energy.WAPA_BY_STATE`): the territory layer labels the Western Area Power
+  Administration WALC wherever it draws it; in Minnesota, Iowa, the Dakotas and Nebraska it is SWPP. No estimate used it.
+- **Sewer plants from ECHO where the survey is thin** (`waterledger_data.wastewater.echo_only`): ECHO's sewer plant permits that no CWNS
+  record covers join the survey's, with ECHO's design flow. Pennsylvania's 2022 survey lists 195 facilities; it now has 869 plants. Every
+  state gains some from its next snapshot.
+
 ## 3.17.0 (Nov 10, 2026; model 1.13)
 
 waterledger-models and waterledger-data 3.17.0; waterledger is unchanged at 3.16.0.

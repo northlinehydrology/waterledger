@@ -6,7 +6,7 @@ import numpy as np
 
 def test_import_as_wl():
     import waterledger as wl
-    assert wl.models.MODEL_VERSION == "1.13"
+    assert wl.models.MODEL_VERSION == "1.14"
     assert wl.models.datacenter.cooling.run_location
     assert wl.data.places.__name__ == "waterledger_data.places"
 
