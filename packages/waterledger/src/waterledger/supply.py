@@ -49,7 +49,8 @@ def estimate_supply(est, scenarios, n=DRAWS, seed=7, storm_years=None):
     if f.cooling == "lake":
         raise ValueError("Lake-source cooling does not depend on air weather; supply scenarios at a place need it")
     cid, times, t, rh, wx, note = place_weather(site.place)
-    ba = est.grid_water.balancing_authority if est.grid_water else None
+    from waterledger.national.provider import place_ba
+    ba = est.grid_water.balancing_authority if est.grid_water else place_ba(site.place.context())    # a cell run before 3.18.0 may lack it
     grid = E.grid_factors(cid, times, t, [ba]) if ba else {}
     model = lambda: cooling._CoolingRuns(n, seed, f.it_mw, cooling.HOUR_BLOCK, f.plant, True)
     lat, lon = site.place.lat, site.place.lon

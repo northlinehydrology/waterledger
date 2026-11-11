@@ -1,10 +1,13 @@
 """The national provider: answers for any state from federal data (design 0002), through the state's data (design 0003):
 its hosted snapshot, or a local build as the fallback (waterledger.national.data)."""
 
+import functools
+
 from waterledger.national.data import state_data
 
 SEWER_KM = 10           # with no water system mapped, a large plant this close is assumed reachable (as waterledger.scenario)
 PLANTS_KM, PLANTS_MAX = 40, 10
+UTILITY_KM = 50         # with no utility territory over a place, the nearest place that has one within this distance stands in [A]
 
 
 def _places(state):
@@ -124,14 +127,46 @@ def _energy(state, place):
     pl = sd.places()
     row = pl[pl.geoid == place.geoid]
     own = {"base": row.base.iloc[0], "km2": float(row.to_crs(en.ALBERS).geometry.area.iloc[0]) / 1e6} if len(row) and "base" in row else None
-    for u in en.ranked(sd.utilities_for(place.geoid), L, own):
+    def utility(u):
         e = L.get(u["eia_id"]) or {}
         w = W.get(u["balancing_authority"]) or {}
-        out.append(cx.Utility(name=u["name"].title(), type=(u["type"] or "").title(), share_of_place=u["share"], customers=e.get("customers"),
-                              avg_mw=e["mwh"] / 8760 if e.get("mwh") else None, summer_peak_mw=e.get("summer_mw"),
-                              balancing_authority=u["balancing_authority"], power_plant_water_l_per_kwh=w.get("consumed_excl_hydro")))
+        return cx.Utility(name=u["name"].title(), type=(u["type"] or "").title(), share_of_place=u["share"], customers=e.get("customers"),
+                          avg_mw=e["mwh"] / 8760 if e.get("mwh") else None, summer_peak_mw=e.get("summer_mw"),
+                          balancing_authority=u["balancing_authority"], power_plant_water_l_per_kwh=w.get("consumed_excl_hydro"))
+    out = [utility(u) for u in en.ranked(sd.utilities_for(place.geoid), L, own)]
+    near, near_km, near_out = None, None, []
+    if not out:
+        near, near_km = nearest_served(state, place.geoid)
+        if near:
+            near_out = [utility(u) for u in en.ranked(sd.utilities_for(near), L, None)]
+            near = pl.set_index("geoid").name.get(near, near)
     return cx.Energy(provider="national", sources=["hifld_territories", "eia861", "siddik2024", "eia923_2024", "macknick2012"], utilities=out,
-                     power_plant_water=_ppw(state))
+                     nearest_place=near, nearest_place_km=near_km, nearest_utilities=near_out, power_plant_water=_ppw(state))
+
+
+@functools.lru_cache(maxsize=16)
+def _served(state):
+    """The state's places that a utility territory covers, as one frame in an equal-area projection."""
+    from waterledger_data import energy as en
+    sd = state_data(state)
+    pl = sd.places()
+    return pl[[bool(sd.utilities_for(g)) for g in pl.geoid]][["geoid", "geometry"]].to_crs(en.ALBERS)
+
+
+def nearest_served(state, geoid):
+    """(geoid, km) of the nearest place a utility territory covers, edge to edge, for a place none covers, within UTILITY_KM; (None, None)
+    otherwise. The national territory layer leaves a few places out (Virginia's independent cities and some of its towns, islands)."""
+    from waterledger_data import energy as en
+    pl = state_data(state).places()
+    row = pl[pl.geoid == geoid]
+    if not len(row):
+        return None, None
+    served = _served(state)
+    if not len(served):
+        return None, None
+    d = served.distance(row.to_crs(en.ALBERS).geometry.iloc[0]) / 1000.0
+    i = d.idxmin()
+    return (str(served.geoid[i]), round(float(d[i]), 1)) if d[i] <= UTILITY_KM else (None, None)
 
 
 def _ppw(state):
@@ -166,7 +201,7 @@ def reference(state, place):
     options = power.options(state, sd.grid_water())
     G, res = wateruse.golf(state), sd.residential() or {}
     from waterledger.comparisons import default_power
-    return {"power_options": options, "power": default_power(options, "state_mix" if "state_mix" in options else next(iter(options)), place.context().energy.utilities),
+    return {"power_options": options, "power": default_power(options, "state_mix" if "state_mix" in options else next(iter(options)), (lambda e: e.utilities or e.nearest_utilities)(place.context().energy)),
             "golf_gpd": G.get("by_region", {}).get(_division(state, place)[0], G["gpd"]), "golf_basis": G["basis"], "golf_note": G["note"],
             "home_gpd": home_gpd(state), "home_kwh_month": res.get("kwh_month"), "home_customers": res.get("customers"), "state_avg_mw": sd.state_avg_mw(),
             "rain_median_in": rq.rain_median(sd.rain()), "salt_events": sd.salt_events().get(_division(state, place)[0]), "withdrawals": WITHDRAWALS, "state_rules": False, "not_covered": NOT_COVERED}
@@ -245,6 +280,9 @@ def estimate(state, site):
 
 
 def place_ba(ctx):
-    """The place's balancing authority: its first utility's (the place's own first, then by area; energy.ranked), or None."""
+    """The place's balancing authority: its first utility's (the place's own first, then by area; energy.ranked), else the nearest served
+    place's where no territory covers it (nearest_served), or None."""
     energy = getattr(ctx, "energy", None)
-    return next((u.balancing_authority for u in energy.utilities if u.balancing_authority), None) if energy else None
+    if not energy:
+        return None
+    return next((u.balancing_authority for u in (energy.utilities or energy.nearest_utilities) if u.balancing_authority), None)

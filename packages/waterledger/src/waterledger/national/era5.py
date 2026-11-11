@@ -79,7 +79,8 @@ def cell_bas(state, cells, date=None):
     """{cell: sorted balancing authorities} serving the cell's places (design 0008): every utility's EIA-930 code on the place in the state's
     snapshot (energy.json's by_place), so the estimate finds whichever utility comes first. A new state, with no snapshot yet, takes them
     from its local build through the same call the snapshot makes. Michigan's are MISO and PJM, by its own rule
-    (states.mi.provider.balancing_authority), so its cells take both. A cell with none takes none, and its estimate has no hourly grid water."""
+    (states.mi.provider.balancing_authority), so its cells take both. A place no territory covers takes the nearest served place's (provider.nearest_served). A cell with none takes none, and its
+    estimate has no hourly grid water."""
     state = state.upper()
     if state == "MI":
         return {c: ["MISO", "PJM"] for c in cells}
@@ -91,7 +92,16 @@ def cell_bas(state, cells, date=None):
         from waterledger.national.data import LiveData
         _say(f"{state}: no snapshot energy data ({type(e).__name__}); using the utilities of its local build")
         by_place = energy.utilities_by_place(state, LiveData(state).places())
-    return {c: sorted({u["balancing_authority"] for p in v["places"] for u in by_place.get(p["geoid"], []) if u.get("balancing_authority")})
+    def utilities(geoid):
+        if by_place.get(geoid):
+            return by_place[geoid]
+        try:                                                # no territory covers the place: the nearest served place's, as the estimate takes them
+            from waterledger.national.provider import nearest_served
+            near, _ = nearest_served(state, geoid)
+        except Exception:                                   # noqa: BLE001  no places to search (a new state before its build)
+            near = None
+        return by_place.get(near, []) if near else []
+    return {c: sorted({u["balancing_authority"] for p in v["places"] for u in utilities(p["geoid"]) if u.get("balancing_authority")})
             for c, v in cells.items()}
 
 
