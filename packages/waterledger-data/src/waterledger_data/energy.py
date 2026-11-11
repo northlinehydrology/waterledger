@@ -180,6 +180,21 @@ def in_order(utilities):
     return sorted(utilities, key=lambda u: (-(u.get("share") or 0), u.get("eia_id") is None, u.get("eia_id") or 0, u.get("name") or ""))
 
 
+# The territory layer gives the Western Area Power Administration one control area wherever it draws it (WALC, the Desert
+# Southwest's). In the upper Great Plains its region joined the Southwest Power Pool's integrated system in 2015, so there it is SWPP.
+WAPA_BY_STATE = {"MN": "SWPP", "IA": "SWPP", "ND": "SWPP", "SD": "SWPP", "NE": "SWPP"}
+
+
+def _wapa(state, out):
+    ba = WAPA_BY_STATE.get(state.upper())
+    if ba:
+        for us in out.values():
+            for u in us:
+                if (u.get("name") or "").upper().startswith("WAPA"):
+                    u["balancing_authority"] = ba
+    return out
+
+
 def utilities_by_place(state, places):
     """For each place, the utilities whose territory covers part of it, the largest share first:
     {geoid: [{eia_id, name, type, balancing_authority, share}]}; shares of at least 1% (territories overlap where utilities share
@@ -193,7 +208,7 @@ def utilities_by_place(state, places):
             rto = utility_rtos()
             for u in missing:
                 u["balancing_authority"] = rto.get(u["eia_id"])
-        return {g: in_order(us) for g, us in out.items()}
+        return {g: in_order(us) for g, us in _wapa(state, out).items()}
     t = territories(state, tuple(places.total_bounds)).to_crs(ALBERS)
     t["geometry"] = shapely.make_valid(t.geometry.values)
     pl = places[["geoid", "geometry"]].to_crs(ALBERS)
@@ -207,7 +222,7 @@ def utilities_by_place(state, places):
         ba = r.balancing_authority if isinstance(r.balancing_authority, str) else None      # pandas turns None into NaN
         out.setdefault(r.geoid, []).append({"eia_id": None if r.eia_id != r.eia_id else int(r.eia_id), "name": r.name, "type": r.type,
                                             "balancing_authority": ba, "share": round(float(r.share), 3)})
-    out = {g: in_order(us) for g, us in out.items()}
+    out = {g: in_order(us) for g, us in _wapa(state, out).items()}
     os.makedirs(RAW, exist_ok=True)
     json.dump(out, open(path, "w"))
     return out
