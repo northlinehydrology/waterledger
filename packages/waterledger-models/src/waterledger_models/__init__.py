@@ -39,4 +39,4 @@ def snapshot_model(version=MODEL_VERSION):
     return MODELS.get(version, {}).get("snapshots", version)
 
 
-__version__ = "3.17.0"
+__version__ = "3.18.0"

@@ -2,7 +2,9 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## Unreleased
+## 3.18.0 (Nov 11, 2026; model 1.14)
+
+All three packages 3.18.0. Pennsylvania and Minnesota join the published states.
 
 - **Power supply scenarios at a place** ([design 0014](docs/design/0014-power-supply-scenarios.md), step 6): `site.estimate(supply={name:
   Scenario})` adds `est.supply`, a `SupplyScenarioEstimate` per scenario at the site's size: shares of the year's MWh, annual matching,
