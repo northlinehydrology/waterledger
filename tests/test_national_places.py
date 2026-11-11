@@ -1,4 +1,4 @@
-"""The national tier's places (Census) for the test states: Ohio, Virginia, Texas, Wisconsin and Indiana (nightly; pytest -m live)."""
+"""The national tier's places (Census) for the test states: Ohio, Virginia, Texas, Wisconsin, Indiana, Pennsylvania and Minnesota (nightly; pytest -m live)."""
 import pytest
 
 import waterledger as wl
@@ -18,6 +18,11 @@ pytestmark = pytest.mark.live
     ("Mount Pleasant village, WI", "5554875", "Mount Pleasant", "village", "Racine"),
     ("Lebanon city, IN", "1842624", "Lebanon", "city", "Boone"),
     ("Indianapolis city (balance), IN", "1836003", "Indianapolis", "city", "Marion"),   # a consolidated city's balance (FUNCSTAT F)
+    ("Pittsburgh city, PA", "4261000", "Pittsburgh", "city", "Allegheny"),
+    ("Archbald borough, PA", "4202832", "Archbald", "borough", "Lackawanna"),
+    ("Hazle township, PA", "4207933376", "Hazle Township", "township", "Luzerne"),
+    ("Minneapolis city, MN", "2743000", "Minneapolis", "city", "Hennepin"),
+    ("Farmington city, MN", "2720618", "Farmington", "city", "Dakota"),
 ])
 def test_finds(query, geoid, name, kind, county):
     if geoid is None:                     # Ashburn is a census-designated place, not a government: look up Loudoun County
@@ -44,6 +49,8 @@ def test_counts_and_independent_cities_once():
     ("OH", 41.0947, -80.7608, "Austintown Township"),  # outside any village: the township governs
     ("WI", 43.0747, -89.3841, "Madison"),              # the Wisconsin Capitol
     ("IN", 39.7684, -86.1581, "Indianapolis"),         # downtown Indianapolis: the consolidated city's balance
+    ("PA", 40.4406, -79.9959, "Pittsburgh"),           # downtown Pittsburgh
+    ("MN", 44.9778, -93.2650, "Minneapolis"),          # downtown Minneapolis
 ])
 def test_place_at_a_point(state, lat, lon, name):
     p = wl.place(lat=lat, lon=lon)
