@@ -9,7 +9,18 @@ Package changes (code). Changes to the numbers are listed by model version on th
   unserved hours and MWh, surplus, local water (the gas plant's and panel washing), the gas plant's water by role, the residual's
   `GridWater` at the place's balancing authority, PV and wind capacity factors, and the renewables' land, runoff and construction. It runs
   at the place's ERA5 cell with the snapshots' station correction (`waterledger.supply`), for data centers; other types follow with design
-  0010's facility contract. No number changes; model 1.13.
+  0010's facility contract.
+- **Model 1.14** (methods log, Nov 11): gas plants and supply scenarios only; no data center or place number changes, and it reads model
+  1.11's snapshots (`MODELS["1.14"]`).
+  - **PV against the 2024 fleet** (design 0014, check 5; `docs/methods/power_supply/pv_check.py`): over 944 tracking plants EIA reports 24.1%
+    and the chain on ERA5 gives 28.5%, so `pv.RANGES["resource"]` is (0.76, 0.92), was (0.95, 1.05). It stands for delivered output over
+    modeled: ERA5's bias with snow, curtailment, outages and age.
+  - **Gas plant outages last days**: `gas.physics.outages` runs each unit up and out with geometric run lengths averaging `OUTAGE_HOURS`
+    (48 [A]) at the sampled availability, not a fresh draw each hour; `mean_outage_hours` overrides it. `est.supply` adds
+    `unserved_run_max_hours`, the longest run of hours short.
+- **Places no utility territory covers** take the nearest served place's utilities within 50 km [A]: `Energy.nearest_place`,
+  `nearest_place_km` and `nearest_utilities`, used for the place's grid region by the estimate, `est.supply` and the cell runs
+  (`national.era5.cell_bas`). Seven places had none (six in Virginia, Michigan's St. James township).
 
 ## 3.17.0 (Nov 10, 2026; model 1.13)
 

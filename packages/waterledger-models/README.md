@@ -51,6 +51,6 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
 - `weather`: hourly weather from the Open-Meteo archive, its best match (ERA5, ERA5-Land and, from 2017, IFS HRES); humidity
   conversions (Bolton 1980) and a record's design dry-bulb.
 
-`MODEL_VERSION` is Water Ledger's model version (1.13), which changes when the numbers do; the package version (semver)
+`MODEL_VERSION` is Water Ledger's model version (1.14), which changes when the numbers do; the package version (semver)
 changes with the code. They are independent. One model version covers every water user type; `MODELS` says which types a
 version changes and which model's snapshots it reads (`snapshot_model()`): model 1.12 adds battery cell plants and reads 1.11's.

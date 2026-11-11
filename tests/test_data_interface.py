@@ -31,7 +31,7 @@ def test_a_model_version_that_skips_the_snapshots_reads_the_last_rebuilt_ones(ca
     import waterledger_models as wm
     from waterledger.national import era5
     from waterledger.national.data import snapshot_for_model
-    assert wm.MODEL_VERSION == "1.13" and wm.snapshot_model() == "1.11" == era5.RUN_MODEL and wm.snapshot_model("1.11") == "1.11"
+    assert wm.MODEL_VERSION == "1.14" and wm.snapshot_model() == "1.11" == era5.RUN_MODEL and wm.snapshot_model("1.11") == "1.11"
     assert wm.snapshot_model("1.12") == "1.11"
     assert snapshot_for_model({"state": "OH", "latest": "a", "by_model": {"1.11": "b", "1.12": "c"}}) == "b" and capsys.readouterr().err == ""
     monkeypatch.setitem(wm.MODELS, "9.1", {"types": ("datacenter",), "snapshots": "9.1"})
