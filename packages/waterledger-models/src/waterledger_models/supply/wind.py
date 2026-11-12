@@ -8,10 +8,13 @@ curve, less plant losses:
                    its power curve as NREL's turbine-models library gives it (github.com/NREL/turbine-models, commit e9e4ccc,
                    data/Onshore/IEA_Reference_3.4MW_130.csv, BSD-3-Clause): 0 under 3 m/s and above the 25 m/s cut-out, linear between points
   losses           wakes, availability and electrical losses, 10-20% [A] (design 0014)
-  resource         a factor on the speed until ERA5 is checked against output at the cells (0014, check 5) [A]
+  resource         a factor on the speed: delivered over modeled at EIA's 2024 fleet (design 0014, check 5;
+                   docs/methods/power_supply/wind_check.py)
 
-ERA5 is known to run low on hub-height wind over land and to miss the evening ramp by the hour (Davidson and Millstein 2022; Staffell and
-Pfenninger 2016), so the resource factor is sampled, not fixed at 1, until that check is run.
+Checked against EIA's 2024 fleet (1,069 onshore plants, 144.7 GW, 34.1%), the chain at its cells matches at a speed factor of 0.99 overall at
+110 m, 0.91-1.05 across the interior states with ten or more plants. It runs far low where the cell is calm on average: under LOW_WIND_MS at
+100 m (passes and ridgetops in California, the Northwest, the Northeast and West Virginia), the fleet delivers 1.5 times the model or more,
+since a 0.25-degree cell smooths the terrain that makes those sites windy. No factor fixes that, so such a place is flagged, not scaled.
 """
 import numpy as np
 
@@ -29,8 +32,10 @@ CUT_OUT = 25.0
 RANGES = {
     "alpha": (0.10, 0.20),       # shear exponent, 100 m to hub [A]
     "losses": (0.10, 0.20),      # wakes, availability, electrical [A]
-    "resource": (0.95, 1.10),    # a factor on ERA5's speed until checked against output [A]
+    "resource": (0.93, 1.05),    # delivered over modeled at EIA's 2024 fleet: 0.99 overall; Texas, Oklahoma and Wyoming 0.93 (spring
+                                 # curtailment), Illinois and the newest interior plants 1.05 (0014, check 5)
 }
+LOW_WIND_MS = 5.5                # a cell's mean 100 m speed below which the chain runs far low against the fleet (check 5): a flag, not a factor
 
 
 def power_curve(speed):
@@ -44,3 +49,9 @@ def hourly(u100, v100, p):
     """Output per MW of nameplate each hour (0-1) from ERA5's 100 m wind components, m/s. p: RANGES' parameters (scalars or (n, 1) arrays)."""
     speed = np.hypot(np.asarray(u100, float), np.asarray(v100, float)) * p["resource"] * (HUB_M / 100.0) ** p["alpha"]
     return power_curve(speed) * (1.0 - p["losses"])
+
+
+def low_wind(u100, v100):
+    """(mean 100 m speed, m/s, True where it is under LOW_WIND_MS) for a cell's hours."""
+    m = float(np.mean(np.hypot(np.asarray(u100, float), np.asarray(v100, float))))
+    return m, m < LOW_WIND_MS
