@@ -2,6 +2,17 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.20.0 (Nov 12, 2026; model 1.15)
+
+All three packages 3.20.0. Georgia and Illinois join the published states (snapshots dated 2026-11-12, model 1.11's numbers;
+`docs/methods/era5-checks/`, the two-page briefs and known-place tests). No estimate changes.
+
+- **Caches named for what made them**: Census places files by the query that fetched them (`census._features`), and the water
+  system, watershed and utility joins by their place list (`census.places_key`, a hash of the sorted GEOIDs), so a file cached before a
+  query or a state's place list changed is not read for the new one. A Census places file cached before 3.16.0 had no consolidated city
+  balances, and joins built from it lacked those places. Older cache files are ignored, and each state's joins are worked out again on its
+  next build.
+
 ## 3.19.0 (Nov 11, 2026; model 1.15)
 
 All three packages 3.19.0.
