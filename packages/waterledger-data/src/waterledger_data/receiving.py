@@ -159,7 +159,8 @@ def past_the_line(H, starts, hops=25, trace=None):
 
 def watersheds_by_place(state, places):
     """For each place, the HUC12s it covers (largest share first) and its HUC8: {geoid: {"h12": [{code, name, share}], "h8": {code, name}}}."""
-    path = os.path.join(RAW, f"{state}_by_place.json")
+    from waterledger_data.census import places_key
+    path = os.path.join(RAW, f"{state}_{places_key(places)}_by_place.json")      # keyed by the places, so a changed place list is worked out afresh
     if os.path.exists(path):
         return json.load(open(path))
     import shapely

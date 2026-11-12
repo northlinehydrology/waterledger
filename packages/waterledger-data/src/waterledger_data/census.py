@@ -16,6 +16,7 @@ Each comes with its Census GEOID (7 digits for places, 10 for subdivisions, 5 fo
 name, e.g. "city", "charter township", "County"), internal point, county, and a generalized boundary. Responses are
 cached under <cache>/census/.
 """
+import hashlib
 import json, os
 
 import geopandas as gpd
@@ -31,18 +32,27 @@ LAYERS = {"place": f"{TIGER}/Places_CouSub_ConCity_SubMCD/MapServer/4/query",
 SIMPLIFY_DEG = 0.0003           # about 30 m: enough for joins with water systems and watersheds
 
 
+def places_key(places):
+    """A short key for a set of places (their GEOIDs), for caches worked out place by place: a cache written for another set (Census
+    places before 3.16.0 had no consolidated city balances) is not read for this one."""
+    return hashlib.sha256(",".join(sorted(str(g) for g in places.geoid)).encode()).hexdigest()[:10]
+
+
 def _features(kind, state_fips):
-    """Every active feature of one layer in a state, with geometry in WGS84, paged and cached."""
-    path = os.path.join(RAW, f"{state_fips}_{kind}.json")
-    if os.path.exists(path):
-        return json.load(open(path))
+    """Every active feature of one layer in a state, with geometry in WGS84, paged and cached. The cache file is named for the query
+    as well as the state and layer, so a query that changes (3.16.0 added consolidated cities' balances) fetches afresh instead of
+    reading a file the old query wrote."""
     where = f"STATE='{state_fips}'" + {"county": "", "cousub": " AND FUNCSTAT='A'",
                                        "place": " AND (FUNCSTAT='A' OR (FUNCSTAT='F' AND NAME LIKE '%(balance)'))"}[kind]
+    params = {"where": where, "outFields": "GEOID,NAME,BASENAME,LSADC,FUNCSTAT,INTPTLAT,INTPTLON", "returnGeometry": "true", "outSR": 4326,
+              "maxAllowableOffset": SIMPLIFY_DEG, "geometryPrecision": 5, "orderByFields": "GEOID", "f": "json"}
+    key = hashlib.sha256(json.dumps([LAYERS[kind], params], sort_keys=True).encode()).hexdigest()[:10]
+    path = os.path.join(RAW, f"{state_fips}_{kind}_{key}.json")
+    if os.path.exists(path):
+        return json.load(open(path))
     out, offset = [], 0
     while True:
-        d = _get(LAYERS[kind], {"where": where, "outFields": "GEOID,NAME,BASENAME,LSADC,FUNCSTAT,INTPTLAT,INTPTLON",
-                                "returnGeometry": "true", "outSR": 4326, "maxAllowableOffset": SIMPLIFY_DEG, "geometryPrecision": 5,
-                                "resultOffset": offset, "resultRecordCount": 500, "orderByFields": "GEOID", "f": "json"}, post=True)
+        d = _get(LAYERS[kind], {**params, "resultOffset": offset, "resultRecordCount": 500}, post=True)
         feats = d.get("features", [])
         out += [{"a": f["attributes"], "rings": f["geometry"]["rings"]} for f in feats if f.get("geometry")]
         if len(feats) < 500 and not d.get("exceededTransferLimit"):
