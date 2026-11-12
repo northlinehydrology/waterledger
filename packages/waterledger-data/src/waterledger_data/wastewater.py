@@ -87,6 +87,15 @@ def _echo_near(state, places):
     return got
 
 
+# ECHO's facility types a town's sewer can't be: state facilities (STF, mostly prisons), federal (FDF) and school districts (SDT), which serve
+# their own site. Corporations (COR) and privately owned facilities (POF) stay: Pennsylvania lists municipal authorities (York, McKeesport)
+# as corporations, and private utilities (Pennsylvania American Water) serve whole towns. Names catch an institution whose type is missing
+# or wrong (Fort McCoy's plant is listed MWD).
+OWN_SITE_TYPES = {"STF", "FDF", "SDT"}
+INSTITUTION = re.compile(r"CORRECTIONAL|PRISON|PENITENTIARY|\bARMY\b|NAVAL|AIR FORCE|\bAFB\b|MILITARY|NATIONAL GUARD|STATE PARK|STATE HOSPITAL")
+# (not COLLEGE, CAMP or UNIVERSITY: State College, Camp Hill and University Park are towns)
+
+
 def plants(state):
     """A state's wastewater plants: [{id (NPDES), name, city, lat, lon, design_mgd, flow_mgd, major, cso, receiving, huc12, lagoon}]."""
     fac = {r["CWNS_ID"]: r for r in _cwns("FACILITIES") if r["STATE_CODE"] == state and r["INFRASTRUCTURE_TYPE"] == "Wastewater"}
@@ -103,7 +112,7 @@ def plants(state):
     unlisted = {pm for cid in fac if cid in flow and cid in loc and cid not in state_permit for pm in permits[cid] if pm not in reports}
     reports.update({r["SourceID"]: r for r in (_echo_by_permit(state, unlisted) if unlisted else [])})
     echo = {k: r for k, r in reports.items() if r.get("CWPPermitStatusDesc") != "Terminated"}
-    usable = [c for c in fac if c in flow and c in loc and not is_project(fac[c]["FACILITY_NAME"])]
+    usable = [c for c in fac if c in flow and c in loc and not is_project(fac[c]["FACILITY_NAME"]) and not INSTITUTION.search(fac[c]["FACILITY_NAME"].upper())]
     found = {c: next((echo[pm] for pm in permits[c] if pm in echo), None) for c in usable}
     doubtful = [c for c in usable if found[c] is None and c not in state_permit and permits[c]]            # every permit terminated or gone from ECHO
     near = _echo_near(state, {c: (float(loc[c]["LATITUDE"]), float(loc[c]["LONGITUDE"])) for c in doubtful}) if doubtful else {}
@@ -131,9 +140,18 @@ def plants(state):
     return out + echo_only(echo, out)
 
 
+def public_sewer(e):
+    """An ECHO sewer plant record (ECHO's POTW component) that a town's sewer can be: not of an own-site facility type, coded as sewerage
+    (SIC 4952) where it has a code, so not a drinking water plant (4941), and not an institution's own plant by name. ECHO's POTW flag
+    isn't used: Pennsylvania's municipal authorities (York, McKeesport, Beaver Falls) are flagged NON-POTW."""
+    sic = e.get("CWPSICDescs") or ""
+    return (e.get("CWPFacilityTypeCode") not in OWN_SITE_TYPES and (not sic or "4952" in sic)
+            and not INSTITUTION.search((e.get("CWPName") or "").upper()))
+
+
 def echo_only(echo, plants):
     """ECHO's sewer plants that no survey record covers, for states whose survey is thin (Pennsylvania's 2022 CWNS lists 195 wastewater
-    facilities, ECHO 995 sewer plant permits): an active permit with a location and a design flow, not within NEAR_MILES of a survey
+    facilities, ECHO 995 sewer plant permits): a public sewer plant (public_sewer) with an active permit, a location and a design flow, not within NEAR_MILES of a survey
     plant of about its size (within a factor of two: the same plant under a state permit number; Harrisburg's 37.7 MGD plant is 1.5 km
     from Lower Allen's 6 MGD one), and not a project or a stormwater or animal permit. ECHO's design flow stands in
     for the survey's."""
@@ -145,7 +163,7 @@ def echo_only(echo, plants):
             lat, lon, design = float(e["FacLat"]), float(e["FacLong"]), float(e.get("CWPTotalDesignFlowNmbr") or 0)
         except (TypeError, ValueError, KeyError):
             continue
-        if sid in used or design <= 0 or is_project(name) or NOT_SEWER.search(name) or STORMWATER_PERMIT.match(sid):
+        if sid in used or design <= 0 or is_project(name) or NOT_SEWER.search(name) or STORMWATER_PERMIT.match(sid) or not public_sewer(e):
             continue
         if any(distance_km(lat, lon, p["lat"], p["lon"]) <= NEAR_MILES * 1.609 and 0.5 <= design / (p["design_mgd"] or design) <= 2.0
                for p in plants + out):
