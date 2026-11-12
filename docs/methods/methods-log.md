@@ -2407,6 +2407,50 @@ District's. Plant counts against the published snapshots: Ohio 839 to 861, Texas
 Virginia 238 to 309; Pennsylvania's published 869 becomes 861, and three of its places (Columbia, Mountville, West Hempfield) lose a
 drinking water plant as their nearest.
 
+## Nov 12, 2026: which sewer plant a place reaches
+
+**Why.** A Water Review draft for Cascade Township (Kent County, Michigan) sent the township's wastewater to the Lowell plant: the
+nearest of 0.5 MGD or more (12.9 km), already averaging its design flow, so evaporative designs went to their own discharge. Cascade is
+on Grand Rapids' water (EPA's service areas put the Grand Rapids system on 59% of the township), so the Grand Rapids plant (18.3 km, 61.1 MGD
+design) is the likelier one (to confirm with the township). Reading Michigan's other places found a second fault: a place's own plant is a plant in its mailing
+city within 10 km (Oct 31), and when a city has more than one, the nearest won, so Grand Rapids took Sand Lake's lagoons (0.05 MGD; the
+village mails from Grand Rapids), Lansing took Delta Township's plant, and Marquette a PFAS treatment unit.
+
+**The rule [A], in every state** (`wastewater.rank`):
+
+1. The place's own plants (unchanged: its name in the survey's city, within 10 km). Of these, a plant whose name starts with the
+   place's name comes first ("St. Clair STP", "City of Alto WWTP"; never one named for a county, "Defiance Co Belden's Subdivision
+   WWTP"); of two named for it, a township's plant for a township and the other for a city (Saginaw Township and Saginaw); otherwise
+   nearest first, as before.
+2. New: the plant named for the town whose water system serves half the place or more (EPA service areas, `share_of_place`), if it is
+   0.5 MGD or more and within 40 km. Named means the town's name followed by a plant word (WWTP, STP, Metro, Main, Twp, City...), so
+   the Clinton River plant is not Clinton Township's and the Huron Valley plant not Huron Township's. The town is read from the system's
+   name ("BAY CITY, CITY OF" is Bay City; "CITY OF BETHLEHEM" is Bethlehem).
+3. Every other plant of 0.5 MGD or more within 40 km, nearest first, as before.
+
+Water and sewer service often come from the same city but not always, so step 2 is an assumption, used only where a single system
+serves most of the place. Bangor Township (Bay County) is on Bay City's water over 38% of it, under the threshold, and keeps its nearest,
+the West Bay County Regional plant.
+
+**Measured** against the published snapshots and Michigan's site data (`docs/methods/sewer-plant-check/`): 144 of 19,090 places change their first plant (Michigan 7 of
+1,541, Ohio 24, Virginia 4, Texas 44, Wisconsin 8, Indiana 3, Pennsylvania 24, Minnesota 5, Georgia 12, Illinois 13). Every change was
+read. Most replace a subdivision, mobile home park, school, resort, Hutterite colony, prison or drinking water plant that shares the
+town's mailing city with the town's own plant: Akron (90 MGD, was a 4 MGD county plant), Dayton, Springfield and Mansfield, Ohio;
+Lancaster and Reading, Pennsylvania; Pflugerville and Conroe, Texas; West Chicago, Illinois (was a drive-in theater's plant). By the
+water system: Cascade (Grand Rapids), Exeter Township (Monroe Metro), Manheim Township (Lancaster), Fountain Hill (Bethlehem),
+Mundelein, Illinois (its own plant, which the survey lists under another mailing city). The rest choose between two of a town's own plants (East Peoria, Woodstock,
+Illinois). In Michigan, Cascade's hybrid and tower designs now go to the Grand Rapids sewer, not their own discharge, and Exeter's
+towers to Monroe Metro's.
+
+Tried and dropped: the largest of a place's own plants first. It fixed Pittsburgh (ALCOSAN, 250 MGD, over McCandless Township's 0.4 MGD
+plant, which mails from Pittsburgh) but took Rock Island's 1.5 MGD plant over its 8 MGD main plant by name, and the plant serving a site
+depends on where it is, not on size. Demoting any township-named plant for a borough or city, not only among plants named for the place,
+sent Perkasie, Pennsylvania to a 0.06 MGD farm plant.
+
+**Known limits.** Pittsburgh still gets McCandless Township's plant; ALCOSAN's name doesn't carry the city's. Harbor Springs, Michigan
+now gets its own plant by its water system, but the survey puts it 39.9 km away (a location to check). Which plant serves a site is
+for the utility to confirm; the review and the page say so.
+
 ## Nov 11, 2026: wind against the 2024 fleet (design 0014, check 5; model 1.15)
 
 The wind half of check 5, as PV's was done the same day. Script `docs/methods/power_supply/wind_check.py`, results in `wind_check.csv` and

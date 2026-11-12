@@ -2,6 +2,22 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.21.0 (Nov 12, 2026; model 1.15)
+
+waterledger and waterledger-data 3.21.0; waterledger-models stays 3.20.0. No model numbers change; the sewer plant a place's
+estimates use changes for 144 places (`docs/methods/sewer-plant-check/`).
+
+- **Which sewer plant a place reaches** (`waterledger_data.wastewater.rank`, `named_for`, `system_town`, `main_system`; `nearest` and
+  `waters.nearest_plants` take `township` and the place's water system, and `scenario._plants_near` uses the same order). Of a place's own
+  plants (its name in the mailing city, within 10 km), the one named for the place comes first: Grand Rapids' own plant, not Sand Lake's
+  lagoons, which mail from Grand Rapids; Lansing's, not Delta Township's. Of two named for it, a township's plant for a township. Then, new,
+  the plant named for the town whose water system serves half the place or more (EPA service areas): Cascade Township, on Grand Rapids'
+  water, reaches the Grand Rapids plant before Lowell's, which is nearer and full. Then the rest, nearest first, as before. 144 of 19,090
+  places in the ten states change their first plant (Michigan 7). `SewerPlant.system` marks a plant chosen by its water system.
+  `docs/methods/methods-log.md`, Nov 12.
+- **Plant names** (`waters.plant_name`): WTW, WTP, WPCF, WPCP, WRF, WRP, WSA, SA (a sewer authority), CS, PFAS and the other plant
+  abbreviations stay in capitals: "Cadillac Twp WTW", was "Cadillac Twp Wtw".
+
 ## 3.20.0 (Nov 12, 2026; model 1.15)
 
 All three packages 3.20.0. Georgia and Illinois join the published states (snapshots dated 2026-11-12, model 1.11's numbers;

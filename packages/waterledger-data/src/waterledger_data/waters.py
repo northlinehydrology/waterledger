@@ -222,8 +222,10 @@ def cwns_design_flows():
 
 
 def plant_name(n):
-    """'YCUA REGIONAL WWTP' -> 'YCUA Regional WWTP' (as on Water Ledger)."""
-    up = {"WWTP", "WRRF", "WWTF", "WTF", "WWSL", "STP", "RTB", "RTF", "CSO", "GLWA", "YCUA", "SCI"}
+    """'YCUA REGIONAL WWTP' -> 'YCUA Regional WWTP', 'CADILLAC TWP WTW' -> 'Cadillac Twp WTW' (as on Water Ledger). Abbreviations stay in capitals: those for a plant
+    (WWTP, STP, WTW, WPCF...) and for an authority (YCUA, GLWA; SA, a sewer authority)."""
+    up = {"WWTP", "WRRF", "WWTF", "WTF", "WWSL", "STP", "RTB", "RTF", "CSO", "GLWA", "YCUA", "SCI",
+          "WTW", "WTP", "WWTL", "WWTS", "WWS", "WWP", "WPCF", "WPCP", "WRF", "WRP", "WSA", "SA", "CS", "PFAS"}
     word = lambda w: w if w in up else ("County" if w == "CO" else w.capitalize())
     return re.sub(r"[A-Za-z]+", lambda m: word(m.group(0).upper()), str(n).lower())
 
@@ -261,9 +263,10 @@ def place_stem(name):
     return re.sub(r"\s+(charter township|township|city)$", "", str(name).strip(), flags=re.I).lower()
 
 
-def nearest_plants(lat, lon, k=3, km=40, stem=None):
-    """Sewer plants for a place, as on Water Ledger: the place's own first (any size; wastewater.is_own), then the nearest plants of 0.5 MGD design or more within km."""
-    from waterledger_data.wastewater import is_own
+def nearest_plants(lat, lon, k=3, km=40, stem=None, township=False, systems=None):
+    """Sewer plants for a place, as on Water Ledger (wastewater.rank): the place's own first (any size; wastewater.is_own), then the plant named for the water system
+    serving most of it (`systems`: the place's [{name, share}]), then the nearest plants of 0.5 MGD design or more within km."""
+    from waterledger_data.wastewater import is_own, main_system, rank
     import math
     rows = []
     for p in potws():
@@ -272,7 +275,7 @@ def nearest_plants(lat, lon, k=3, km=40, stem=None):
         own = is_own(bool(stem) and p["city"].lower() == stem, d)
         if (own and d <= km) or (d <= km and p["design_mgd"] >= 0.5):
             rows.append({**p, "km": round(d, 1), "own": own})
-    return sorted(rows, key=lambda r: (not r["own"], r["km"]))[:k]
+    return rank(rows, stem, township, main_system(systems))[:k]
 
 
 @functools.lru_cache(None)

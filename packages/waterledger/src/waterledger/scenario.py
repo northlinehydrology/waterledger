@@ -238,10 +238,11 @@ def septic_rule(gpd):
 
 
 def _plants_near(p, km=40):
-    """Sewer plants for a place by the rule every state has (wastewater.nearest): the place's own first, then any of 0.5 MGD or more, nearest first, by true distance. The site's data gives places and plants in
-    map coordinates, to about 200 m. WQ.plants on the page has to work out the same distance."""
+    """Sewer plants for a place by the rule every state has (wastewater.nearest and rank): the place's own first, then the plant named for the water system serving most
+    of it, then any of 0.5 MGD or more, nearest first, by true distance. The site's data gives places and plants in map coordinates, to about 200 m. WQ.plants on the page
+    has to work out the same distance and order."""
     from waterledger_data import waters as wi
-    from waterledger_data.wastewater import distance_km, is_own
+    from waterledger_data.wastewater import distance_km, is_own, main_system, rank
     st = wi.place_stem(p["n"])
     lon, lat = lonlat(p)
     rows = []
@@ -249,7 +250,8 @@ def _plants_near(p, km=40):
         q_lon, q_lat = lonlat(q)
         d = distance_km(lat, lon, q_lat, q_lon)
         rows.append({**q, "km": d, "own": is_own(q["city"] == st, d)})
-    return sorted([q for q in rows if q["km"] <= km and (q["own"] or (q["design"] or 0) >= 0.5)], key=lambda q: (not q["own"], q["km"]))
+    rows = [q for q in rows if q["km"] <= km and (q["own"] or (q["design"] or 0) >= 0.5)]
+    return rank(rows, st, "township" in p["n"].lower(), main_system(p.get("w")))
 
 
 def near_system(p):
