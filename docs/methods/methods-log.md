@@ -2432,7 +2432,7 @@ Water and sewer service often come from the same city but not always, so step 2 
 serves most of the place. Bangor Township (Bay County) is on Bay City's water over 38% of it, under the threshold, and keeps its nearest,
 the West Bay County Regional plant.
 
-**Measured** against the published snapshots and Michigan's site data: 144 of 19,090 places change their first plant (Michigan 7 of
+**Measured** against the published snapshots and Michigan's site data (`docs/methods/sewer-plant-check/`): 144 of 19,090 places change their first plant (Michigan 7 of
 1,541, Ohio 24, Virginia 4, Texas 44, Wisconsin 8, Indiana 3, Pennsylvania 24, Minnesota 5, Georgia 12, Illinois 13). Every change was
 read. Most replace a subdivision, mobile home park, school, resort, Hutterite colony, prison or drinking water plant that shares the
 town's mailing city with the town's own plant: Akron (90 MGD, was a 4 MGD county plant), Dayton, Springfield and Mansfield, Ohio;
