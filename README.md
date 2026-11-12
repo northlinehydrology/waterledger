@@ -24,8 +24,8 @@ sewer plants, weather and design storms.
 - **CSDMS Basic Model Interface (BMI 2.0) components**, so coupling frameworks such as NOAA's NextGen can drive the
   models step by step.
 - **Public data for any U.S. place**, fetched once and cached: Census, EPA, USGS, NOAA and EIA, with each place's
-  downstream path traced across state lines. Michigan, Ohio, Virginia, Texas, Wisconsin, Indiana, Minnesota and
-  Pennsylvania are published as checked snapshots.
+  downstream path traced across state lines. Michigan, Ohio, Virginia, Texas, Wisconsin, Indiana, Minnesota,
+  Pennsylvania, Georgia and Illinois are published as checked snapshots.
 - **Reproducible**: tests reproduce the published Water Ledger estimates exactly, and the data sources are checked nightly.
 
 [waterledger.org](https://waterledger.org) is powered by these packages.
@@ -106,6 +106,8 @@ They are validated, round-trip through JSON, and are described in
 | Indiana | 1,661 cities, towns, townships and counties | ERA5, each place's own cell (183 cells) | [waterledger.org/methods/in](https://waterledger.org/methods/in/), [brief](docs/methods/in.pdf) |
 | Minnesota | 2,719 cities, townships and counties | ERA5, each place's own cell (401 cells) | [waterledger.org/methods/mn](https://waterledger.org/methods/mn/), [brief](docs/methods/mn.pdf) |
 | Pennsylvania | 2,622 cities, boroughs, towns, townships and counties | ERA5, each place's own cell (230 cells) | [waterledger.org/methods/pa](https://waterledger.org/methods/pa/), [brief](docs/methods/pa.pdf) |
+| Georgia | 697 cities, towns, consolidated governments and counties | ERA5, each place's own cell (222 cells) | [waterledger.org/methods/ga](https://waterledger.org/methods/ga/), [brief](docs/methods/ga.pdf) |
+| Illinois | 2,807 cities, villages, towns, townships and counties | ERA5, each place's own cell (276 cells) | [waterledger.org/methods/il](https://waterledger.org/methods/il/), [brief](docs/methods/il.pdf) |
 
 **Model 1.13** adds power supply scenarios ([design 0014](docs/design/0014-power-supply-scenarios.md)) and the shared Monte
 Carlo runner, and changes no data center or place number, so it reads model 1.11's snapshots too:

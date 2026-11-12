@@ -199,7 +199,8 @@ def utilities_by_place(state, places):
     """For each place, the utilities whose territory covers part of it, the largest share first:
     {geoid: [{eia_id, name, type, balancing_authority, share}]}; shares of at least 1% (territories overlap where utilities share
     ground, so shares can add to more than 1)."""
-    path = os.path.join(RAW, f"{state}_by_place.json")
+    from waterledger_data.census import places_key
+    path = os.path.join(RAW, f"{state}_{places_key(places)}_by_place.json")      # keyed by the places, so a changed place list is worked out afresh
     if os.path.exists(path):
         out = json.load(open(path))
         missing = [u for us in out.values() for u in us if not u["balancing_authority"]]

@@ -42,7 +42,8 @@ def water_systems(state):
 def systems_by_place(state, places):
     """For each place (a GeoDataFrame from census.places), the water systems that cover part of it, the largest share first:
     {geoid: [{pwsid, name, population, connections, share}]}, share being the part of the place's area the system covers."""
-    path = os.path.join(RAW, f"{state}_by_place.json")
+    from waterledger_data.census import places_key
+    path = os.path.join(RAW, f"{state}_{places_key(places)}_by_place.json")      # keyed by the places, so a changed place list is worked out afresh
     if os.path.exists(path):
         return json.load(open(path))
     sy = water_systems(state).to_crs(ALBERS)
