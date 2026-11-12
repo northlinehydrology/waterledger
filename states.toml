@@ -61,3 +61,17 @@ example = "Farmington city, MN"
 attains = "MNPCA"
 agency = "Minnesota PCA"
 places = "cities"
+
+[GA]
+name = "Georgia"
+example = "Fayetteville city, GA"
+attains = "21GAEPD"
+agency = "Georgia EPD"
+places = "cities and towns"
+
+[IL]
+name = "Illinois"
+example = "Aurora city, IL"
+attains = "IL_EPA"
+agency = "Illinois EPA"
+places = "cities, villages and towns"
