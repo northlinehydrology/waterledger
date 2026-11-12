@@ -78,8 +78,8 @@ def context(state, place):
                        nearest_system=sys_(near) if near else None, nearest_system_km=near_km,
                        county_use_mgd=use.mgd if use else {}, county_water_use=use, county_water_use_usgs=usgs)
     plants = [cx.SewerPlant(npdes=q["id"], name=q["name"], design_mgd=q["design_mgd"], flow_mgd=q["flow_mgd"], km=q["km"],
-                            own=q["own"], receiving_water=q["receiving"] or None, combined_sewer=q["cso"], lagoon=q["lagoon"])
-              for q in ww.nearest(sd.plants(), place.lat, place.lon, base, km=PLANTS_KM)[:PLANTS_MAX]]
+                            own=q["own"], system=q["system"], receiving_water=q["receiving"] or None, combined_sewer=q["cso"], lagoon=q["lagoon"])
+              for q in ww.nearest(sd.plants(), place.lat, place.lon, base, km=PLANTS_KM, township="township" in place.name.lower(), system=ww.main_system(mine))[:PLANTS_MAX]]
     sheds = sd.sheds_for(place.geoid)
     shore = sd.great_lake(place.geoid)
     path = sd.downstream(sheds["h12"][0]["code"]) if sheds["h12"] else []

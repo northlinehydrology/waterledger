@@ -261,9 +261,10 @@ def place_stem(name):
     return re.sub(r"\s+(charter township|township|city)$", "", str(name).strip(), flags=re.I).lower()
 
 
-def nearest_plants(lat, lon, k=3, km=40, stem=None):
-    """Sewer plants for a place, as on Water Ledger: the place's own first (any size; wastewater.is_own), then the nearest plants of 0.5 MGD design or more within km."""
-    from waterledger_data.wastewater import is_own
+def nearest_plants(lat, lon, k=3, km=40, stem=None, township=False, systems=None):
+    """Sewer plants for a place, as on Water Ledger (wastewater.rank): the place's own first (any size; wastewater.is_own), then the plant named for the water system
+    serving most of it (`systems`: the place's [{name, share}]), then the nearest plants of 0.5 MGD design or more within km."""
+    from waterledger_data.wastewater import is_own, main_system, rank
     import math
     rows = []
     for p in potws():

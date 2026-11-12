@@ -196,13 +196,71 @@ def is_own(same_name, km):
     return bool(same_name) and km <= OWN_KM
 
 
-def nearest(plants_, lat, lon, city=None, km=40, min_design=0.5):
-    """Plants within `km` of a point: the place's own first (is_own), then any other plant of at least `min_design` MGD design flow, nearest first. The survey's city is
-    a mailing city, so a name match is not perfect (Austin's South Austin Regional plant is listed in Del Valle). Distances are great-circle km."""
+# A plant named for a town or a water system: the town's name, then a word for a plant or for one of the town's plants (Grand Rapids WWTP, Monroe Metro WWTP,
+# Saginaw Twp STP, Rock Island Main STP). A longer place name doesn't count: the Clinton River WRRF is not Clinton Township's, nor the Huron Valley plant Huron Township's.
+PLANT_WORD = re.compile(r"(charter )?(twp|township|city|village|boro|borough|town|metro|metropolitan|regional|area|main|central|north|south|east|west|ne|nw|se|sw|"
+                        r"eastside|westside|wwtp|stp|wwtf|wrrf|wrf|wrp|wrc|wpcp|wpcf|wtw|wwsl|potw|wastewater|sewage|sewer|sanitary|treatment|lagoons?|plant)\b")
+# The water system that serves most of a place [A]: on half of it or more (EPA's service areas; share_of_place)
+MAIN_SYSTEM_SHARE = 0.5
+
+
+def _words(s):
+    return " ".join(re.sub(r"[.,]", " ", str(s or "").lower()).split())
+
+
+def named_for(name, town, plant_word=True):
+    """Whether a plant's name starts with the town's name ('ST. CLAIR STP' and 'CITY OF ALTO WWTP' are named for St. Clair and Alto), followed by a plant word
+    (PLANT_WORD) unless `plant_word` is False. A place's own plants (already in its mailing city and close) need only the name: 'Jeffersonville Downtown WWTP'. Never a
+    county's: 'DEFIANCE CO BELDEN'S SUBDIVISION WWTP' is not Defiance city's."""
+    n, t = re.sub(r"^(city|town|village|borough) of ", "", _words(name)), _words(town)
+    rest = n[len(t) + 1:]
+    return (bool(t) and n.startswith(t + " ") and not re.match(r"(co|cnty|county)\b", rest)
+            and (not plant_word or bool(PLANT_WORD.match(rest))))
+
+
+def system_town(name):
+    """The town a water system is named for: 'BAY CITY, CITY OF' -> 'bay city', 'CITY OF BETHLEHEM' -> 'bethlehem', 'ADA TOWNSHIP' -> 'ada'."""
+    n = _words(name)
+    n = re.sub(r"\s+(city|village|township|charter township|twp|borough|boro|town) of$", "", n)
+    n = re.sub(r"^(city|village|charter township|township|borough|town) of\s+", "", n)
+    return re.sub(r"\s+(charter township|township|twp|village|borough|boro)$", "", n)      # not "city" or "town": Bay City, Boyne City, Charlestown
+
+
+def main_system(systems):
+    """Of a place's water systems ({name, share}), the one on MAIN_SYSTEM_SHARE or more of it, or None."""
+    big = [w for w in systems or [] if (w.get("share") or 0) >= MAIN_SYSTEM_SHARE]
+    return max(big, key=lambda w: w["share"])["name"] if big else None
+
+
+def rank(rows, city=None, township=False, system=None):
+    """Sewer plants in the order a place's sewer most likely reaches them [A], in every state. Each row has name (or n), km and own (is_own); a row gets
+    "system" when it is named for the place's main water system. First the place's own plants, the one named for the place before one that only shares its mailing city
+    (Sand Lake's lagoons mail from Grand Rapids; Delta Township's plant from Lansing), and of two named for it, a township's plant before a city's of the same name
+    (Saginaw Township's before Saginaw's); then the plant of the
+    town whose water system serves most of the place (Cascade Township is on Grand Rapids' water, and the Grand Rapids plant comes before Lowell's, which is nearer):
+    water and sewer service often come from the same city, though not always; then the rest, nearest first."""
+    twp = re.compile(r"\bTWP\b|TOWNSHIP", re.I)
+    town = system_town(system) if system else None
+    for q in rows:
+        q["system"] = bool(town) and not q["own"] and named_for(q.get("name") or q.get("n"), town)
+
+    def key(q):
+        n = q.get("name") or q.get("n")
+        if q["own"]:
+            named = named_for(n, city, plant_word=False)
+            return (0, not named, named and bool(twp.search(n)) != bool(township), q["km"])
+        return (1 if q["system"] else 2, q["km"])
+    return sorted(rows, key=key)
+
+
+def nearest(plants_, lat, lon, city=None, km=40, min_design=0.5, township=False, system=None):
+    """Plants within `km` of a point, in the order of rank: the place's own (is_own), then the plant named for its main water system (`system`, a name), then any other
+    plant of at least `min_design` MGD design flow, nearest first. The survey's city is a mailing city, so a name match is not perfect (Austin's South Austin Regional plant
+    is listed in Del Valle). Distances are great-circle km."""
     rows = []
     for q in plants_:
         d = distance_km(lat, lon, q["lat"], q["lon"])
         own = is_own(bool(city) and (q["city"] or "").lower() == city.lower(), d)
         if d <= km and (own or (q["design_mgd"] or 0) >= min_design):
             rows.append({**q, "km": d, "own": own})
-    return sorted(rows, key=lambda q: (not q["own"], q["km"]))
+    return rank(rows, city, township, system)
