@@ -2,7 +2,10 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## Unreleased
+## 3.21.0 (Nov 12, 2026; model 1.15)
+
+waterledger and waterledger-data 3.21.0; waterledger-models stays 3.20.0. No model numbers change; the sewer plant a place's
+estimates use changes for 144 places (`docs/methods/sewer-plant-check/`).
 
 - **Which sewer plant a place reaches** (`waterledger_data.wastewater.rank`, `named_for`, `system_town`, `main_system`; `nearest` and
   `waters.nearest_plants` take `township` and the place's water system, and `scenario._plants_near` uses the same order). Of a place's own

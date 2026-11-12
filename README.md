@@ -84,7 +84,7 @@ est.model_dump_json()            # the whole estimate as JSON
 
 ctx = place.context()            # the public water facts around the place, by category
 ctx.supply.systems               # public water systems
-ctx.wastewater.plants            # sewer plants, nearest first
+ctx.wastewater.plants            # sewer plants: the place's own (the one named for it first), then its main water system's town's, then nearest first
 ctx.receiving.downstream         # the path the water takes, with impaired waters and cleanup plans; a reach's .assessed says whether the state assessed it
 ctx.climate.design_storms_in     # NOAA Atlas 14 design storms
 ctx.climate.cell                 # the ERA5 cell the cooling weather comes from; .cell_land, .cell_moved, .weather_corrected
