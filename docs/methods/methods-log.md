@@ -2406,3 +2406,36 @@ Minnesota or Michigan), all institutions' own plants. ARMY alone is not a mark: 
 District's. Plant counts against the published snapshots: Ohio 839 to 861, Texas 1,456 to 1,779, Wisconsin 601 to 616, Indiana 510 to 522,
 Virginia 238 to 309; Pennsylvania's published 869 becomes 861, and three of its places (Columbia, Mountville, West Hempfield) lose a
 drinking water plant as their nearest.
+
+## Nov 11, 2026: wind against the 2024 fleet (design 0014, check 5; model 1.15)
+
+The wind half of check 5, as PV's was done the same day. Script `docs/methods/power_supply/wind_check.py`, results in `wind_check.csv` and
+`wind_check_monthly.csv`; aggregates only, a state shown with five plants or more, no plant named. Plants: every generator onshore wind,
+operating, online before 2024, none retired, at least 5 MW, 2024 net generation above zero in EIA-923; 1,069 plants, 144.7 GW, all with a
+hub height in EIA-860 (mean 83.5 m). They delivered 34.1% in 2024. The chain ran at RANGES' midpoints with the speed factor at 1.0 on each
+plant's ERA5 cell, 2024 hours, at the reference turbine's 110 m hub (what a new project in `est.supply` uses) and, separately, at each
+plant's own hub. Nothing was tuned.
+
+**Result.** Over all plants the speed factor that brings the model to the fleet is 0.99 at 110 m (1.03 at each plant's own hub). By
+region at 110 m: Great Lakes 0.99, Central Plains 0.97, Texas 0.93, the West 1.11, the Northeast and South 1.11. Across states the ratio
+falls as the cell's mean 100 m speed rises (Pearson r -0.81), and there are two regimes:
+- Calm cells, under 5.5 m/s mean at 100 m (249 plants: California, Washington, Oregon, Idaho and the ridges of the Northeast and West
+  Virginia): the fleet delivers 1.54 times the model at 110 m, and California's median plant 2.4 times. These are passes and ridgetops a
+  0.25-degree cell smooths into lowland wind; no single factor fits them.
+- The interior (Great Lakes, Central Plains, Texas; 737 plants, 78% of the MW): 0.96 at 110 m, 1.00 at the plants' own hubs, with a weak
+  pattern by state (r -0.47). Over flat ground there is no sign in aggregate that ERA5 runs low.
+
+The months, read from monthly respondents only (EIA-923 imputes annual respondents' months), suggest what the interior ratio mixes, read
+here and not checked against curtailment or weather records: Texas drops to 0.89 of the model in April (spring curtailment), the Central
+Plains to 0.93 in January (icing, cold stops), and the West rises in July and August (gap winds the cells miss). Turbine age is the
+largest of the rest: interior plants online before 2010 deliver 0.78 of the chain at their own hub, those online 2019-2023 1.05; EIA-860
+has no rotor diameter, so turbine models can't be separated from their age. The check keeps plants whose ratio falls outside 0.5-1.5 [A]
+and reports the trimmed figures beside them.
+
+**Decision (Andrew, Nov 11).** `wind.RANGES["resource"]` goes from (0.95, 1.10) [A] to (0.93, 1.05): 0.99 is the fleet's matching factor at
+110 m; the range spans the windy, curtailed fleets (Texas, Oklahoma, Wyoming 0.93) to Illinois and the interior's newest plants (1.05), the
+closest to a new project. Michigan matches at 0.99 (30.3% observed, 32.4% modeled). A place whose cell averages under 5.5 m/s at 100 m
+(`wind.LOW_WIND_MS`) is flagged, not scaled: its supply scenarios with wind carry a note (`SupplyScenarioEstimate.notes`) that the wind
+figures are likely low there, and the cell's mean speed is in `weather`. Pennsylvania's and Virginia's ridges are where this comes up in
+the published states. As with PV, the factor is delivered output over modeled, not wind speed alone. 2024 is one year. Model 1.15 changes
+supply scenarios only and reads model 1.11's snapshots (`MODELS["1.15"]`).
