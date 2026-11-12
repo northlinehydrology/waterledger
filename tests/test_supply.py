@@ -85,3 +85,13 @@ def test_wind_follows_the_reference_curve():
     speeds = np.random.default_rng(2).weibull(2.0, 100000) * 8.0      # a Weibull k = 2 site at about 7.1 m/s mean at 100 m
     cf = wind.hourly(speeds, np.zeros_like(speeds), {"alpha": 0.14, "losses": 0.15, "resource": 1.0}).mean()
     assert 0.25 < cf < 0.45                                            # U.S. fleet 34% in 2024 (EIA EPM Table 6.07.B)
+
+
+def test_a_calm_cell_is_flagged_not_scaled():
+    """Check 5: under LOW_WIND_MS at 100 m the chain runs far low against the fleet, so the place is flagged; the factor stays the same."""
+    import numpy as np
+    from waterledger_models.supply import wind as W
+    calm = W.low_wind(np.full(100, 3.0), np.full(100, 4.0))          # 5.0 m/s
+    windy = W.low_wind(np.full(100, 6.0), np.full(100, 0.0))
+    assert calm == (5.0, True) and windy == (6.0, False)
+    assert W.RANGES["resource"] == (0.93, 1.05)

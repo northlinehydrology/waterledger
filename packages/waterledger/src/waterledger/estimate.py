@@ -201,6 +201,7 @@ class SupplyScenarioEstimate(BaseModel):
     grid_water: GridWater | None = None
     land: dict[str, Any] = {}
     weather: dict[str, Any] = {}
+    notes: list[str] = []                           # what a reader must know to use the numbers (3.19.0: a calm cell's wind, check 5)
 
 
 class DesignTotal(BaseModel):

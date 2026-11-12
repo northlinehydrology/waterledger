@@ -10,7 +10,7 @@ Submodules load on first use, so `import waterledger_data` stays light.
 """
 import importlib
 
-__version__ = "3.18.0"
+__version__ = "3.19.0"
 _SUB = ("climate", "config", "places", "power", "waters", "wateruse")
 
 

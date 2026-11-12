@@ -2,6 +2,19 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.19.0 (Nov 11, 2026; model 1.15)
+
+All three packages 3.19.0.
+
+- **Wind against the 2024 fleet, model 1.15** (design 0014, check 5; `docs/methods/power_supply/wind_check.py`): 1,069 onshore plants
+  delivered 34.1% and the chain matches at a speed factor of 0.99, so `wind.RANGES["resource"]` is (0.93, 1.05), was (0.95, 1.10). A cell
+  averaging under `wind.LOW_WIND_MS` (5.5 m/s at 100 m), where ridge and pass plants run far above the chain, is flagged: `est.supply`'s
+  wind scenarios there carry a note in the new `SupplyScenarioEstimate.notes`, and `weather` gives the cell's mean speed.
+- **Sewer plants a town's sewer can be** (`waterledger_data.wastewater.public_sewer`, `INSTITUTION`): ECHO's added plants leave out
+  state, federal and school district facilities and anything not coded sewerage (drinking water plants), and both sources leave out
+  plants named as prisons, U.S. Army posts, naval and Air Force bases, the National Guard, state parks and state hospitals. ECHO's POTW
+  flag isn't used: Pennsylvania's municipal authorities are flagged NON-POTW. Pennsylvania 869 to 861 plants.
+
 ## 3.18.0 (Nov 11, 2026; model 1.14)
 
 All three packages 3.18.0. Pennsylvania and Minnesota join the published states.

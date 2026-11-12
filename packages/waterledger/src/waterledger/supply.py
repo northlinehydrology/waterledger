@@ -20,6 +20,11 @@ def _r(res, key):
     return Range(p10=v["p10"], p50=v["p50"], p90=v["p90"]) if v else None
 
 
+LOW_WIND_NOTE = ("This place's ERA5 cell averages {ms:.1f} m/s at 100 m, under {low} m/s. Checked against EIA's 2024 fleet, wind plants on cells "
+                 "this calm delivered 1.5 times the model or more: they sit on ridges and passes the 0.25-degree cell smooths out. The wind "
+                 "figures here are likely low by an unknown amount; a site's own wind measurements would settle it.")
+
+
 def place_weather(place):
     """(cell id, times, temp_c, rh_pct, supply weather, correction note) at the place's ERA5 cell: the snapshots' cell and correction."""
     from waterledger.national import era5 as E
@@ -59,6 +64,8 @@ def estimate_supply(est, scenarios, n=DRAWS, seed=7, storm_years=None):
     ctx = site.place.context()
     rain = ctx.climate.rain_in if ctx.climate else None
     storm = ctx.climate.design_storms_in.get(str(storm_years)) if (storm_years and ctx.climate) else None
+    from waterledger_models.supply import wind as W
+    wind_ms, calm = W.low_wind(wx[3], wx[4])
     out = {}
     for name, sc in sized.items():
         pre = f"supply_{name}_"
@@ -80,7 +87,8 @@ def estimate_supply(est, scenarios, n=DRAWS, seed=7, storm_years=None):
             local_withdrawn=R("local_withdrawn_avg"), local_consumed=R("local_consumed_avg"),
             gas_withdrawn=flow("withdrawn"), gas_consumed=flow("consumed"),
             gas_returned={k: R(f"gas_{k}_avg") for k in ("to_sewer", "to_source", "to_stream")} if sc.gas else None,
-            grid_water=g, land=_plain(foot), weather={"cell": cid, "correction": bool(note.get("applied")), "draws": n})
+            grid_water=g, land=_plain(foot), weather={"cell": cid, "correction": bool(note.get("applied")), "draws": n, "wind_100m_mean_ms": round(wind_ms, 2)},
+            notes=[LOW_WIND_NOTE.format(ms=wind_ms, low=W.LOW_WIND_MS)] if (sc.wind_mw and calm) else [])
     return out
 
 
