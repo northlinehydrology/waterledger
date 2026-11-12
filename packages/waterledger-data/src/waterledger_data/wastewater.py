@@ -92,8 +92,10 @@ def _echo_near(state, places):
 # as corporations, and private utilities (Pennsylvania American Water) serve whole towns. Names catch an institution whose type is missing
 # or wrong (Fort McCoy's plant is listed MWD).
 OWN_SITE_TYPES = {"STF", "FDF", "SDT"}
-INSTITUTION = re.compile(r"CORRECTIONAL|PRISON|PENITENTIARY|\bARMY\b|NAVAL|AIR FORCE|\bAFB\b|MILITARY|NATIONAL GUARD|STATE PARK|STATE HOSPITAL")
-# (not COLLEGE, CAMP or UNIVERSITY: State College, Camp Hill and University Park are towns)
+INSTITUTION = re.compile(r"CORRECTIONAL|PRISON|PENITENTIARY|\bU\.? ?S\.? ARMY\b|ARMY HEADQUARTERS|NAVAL|AIR FORCE|\bAFB\b|MILITARY|NATIONAL GUARD|"
+                         r"STATE PARK|STATE HOSPITAL")
+# (not ARMY alone: Norfolk's Army Base plant is the Hampton Roads Sanitation District's; not COLLEGE, CAMP or UNIVERSITY: State College,
+# Camp Hill and University Park are towns)
 
 
 def plants(state):
