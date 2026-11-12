@@ -222,8 +222,10 @@ def cwns_design_flows():
 
 
 def plant_name(n):
-    """'YCUA REGIONAL WWTP' -> 'YCUA Regional WWTP' (as on Water Ledger)."""
-    up = {"WWTP", "WRRF", "WWTF", "WTF", "WWSL", "STP", "RTB", "RTF", "CSO", "GLWA", "YCUA", "SCI"}
+    """'YCUA REGIONAL WWTP' -> 'YCUA Regional WWTP', 'CADILLAC TWP WTW' -> 'Cadillac Twp WTW' (as on Water Ledger). Abbreviations stay in capitals: those for a plant
+    (WWTP, STP, WTW, WPCF...) and for an authority (YCUA, GLWA; SA, a sewer authority)."""
+    up = {"WWTP", "WRRF", "WWTF", "WTF", "WWSL", "STP", "RTB", "RTF", "CSO", "GLWA", "YCUA", "SCI",
+          "WTW", "WTP", "WWTL", "WWTS", "WWS", "WWP", "WPCF", "WPCP", "WRF", "WRP", "WSA", "SA", "CS", "PFAS"}
     word = lambda w: w if w in up else ("County" if w == "CO" else w.capitalize())
     return re.sub(r"[A-Za-z]+", lambda m: word(m.group(0).upper()), str(n).lower())
 
@@ -273,7 +275,7 @@ def nearest_plants(lat, lon, k=3, km=40, stem=None, township=False, systems=None
         own = is_own(bool(stem) and p["city"].lower() == stem, d)
         if (own and d <= km) or (d <= km and p["design_mgd"] >= 0.5):
             rows.append({**p, "km": round(d, 1), "own": own})
-    return sorted(rows, key=lambda r: (not r["own"], r["km"]))[:k]
+    return rank(rows, stem, township, main_system(systems))[:k]
 
 
 @functools.lru_cache(None)

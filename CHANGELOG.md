@@ -12,6 +12,8 @@ Package changes (code). Changes to the numbers are listed by model version on th
   water, reaches the Grand Rapids plant before Lowell's, which is nearer and full. Then the rest, nearest first, as before. 144 of 19,090
   places in the ten states change their first plant (Michigan 7). `SewerPlant.system` marks a plant chosen by its water system.
   `docs/methods/methods-log.md`, Nov 12.
+- **Plant names** (`waters.plant_name`): WTW, WTP, WPCF, WPCP, WRF, WRP, WSA, SA (a sewer authority), CS, PFAS and the other plant
+  abbreviations stay in capitals: "Cadillac Twp WTW", was "Cadillac Twp Wtw".
 
 ## 3.20.0 (Nov 12, 2026; model 1.15)
 
