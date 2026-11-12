@@ -2,6 +2,13 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## Unreleased
+
+- **Sewer plants a town's sewer can be** (`waterledger_data.wastewater.public_sewer`, `INSTITUTION`): ECHO's added plants leave out
+  state, federal and school district facilities and anything not coded sewerage (drinking water plants), and both sources leave out
+  plants named as prisons, U.S. Army posts, naval and Air Force bases, the National Guard, state parks and state hospitals. ECHO's POTW
+  flag isn't used: Pennsylvania's municipal authorities are flagged NON-POTW. Pennsylvania 869 to 861 plants.
+
 ## 3.18.0 (Nov 11, 2026; model 1.14)
 
 All three packages 3.18.0. Pennsylvania and Minnesota join the published states.

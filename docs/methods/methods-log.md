@@ -2391,3 +2391,18 @@ town's coordinates, not twins.
 
 Model 1.14 changes gas plants and supply scenarios only; no data center or place number changes, so it reads model 1.11's snapshots
 (`MODELS["1.14"]`), except St. James township, whose grid water now shows from Michigan's existing cells.
+
+## Nov 11, 2026 (evening): sewer plants a town's sewer can be
+
+Rebuilding the other states' snapshots with 3.18.0's ECHO fill-in showed it let in plants no town connects to: Chillicothe, Ohio's
+nearest plant became the Chillicothe Correctional Institution's, and Wisconsin and Indiana places took Fort McCoy's and the Crane naval
+base's. ECHO types each permit: state facilities (STF, mostly prisons), federal (FDF) and school districts (SDT) serve their own site and
+are now left out, as is any permit not coded sewerage (SIC 4952) where it has a code, which drops drinking water plants such as
+Bethlehem's. Corporations (COR) and privately owned facilities (POF) stay: Pennsylvania lists its municipal authorities (York, McKeesport,
+Beaver Falls) as non-POTW corporations, and private utilities serve whole towns, so ECHO's POTW flag is not used. Plants named as prisons,
+U.S. Army posts, naval or Air Force bases, the National Guard, state parks or state hospitals are left out of both sources, the survey's
+too; the names caught were read in every state (29 in Ohio, 17 Texas, 16 Virginia, 15 Indiana, 5 Wisconsin, 1 Pennsylvania, none in
+Minnesota or Michigan), all institutions' own plants. ARMY alone is not a mark: Norfolk's Army Base plant is the Hampton Roads Sanitation
+District's. Plant counts against the published snapshots: Ohio 839 to 861, Texas 1,456 to 1,779, Wisconsin 601 to 616, Indiana 510 to 522,
+Virginia 238 to 309; Pennsylvania's published 869 becomes 861, and three of its places (Columbia, Mountville, West Hempfield) lose a
+drinking water plant as their nearest.
