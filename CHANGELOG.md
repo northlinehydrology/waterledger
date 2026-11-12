@@ -2,7 +2,9 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## Unreleased
+## 3.19.0 (Nov 11, 2026; model 1.15)
+
+All three packages 3.19.0.
 
 - **Wind against the 2024 fleet, model 1.15** (design 0014, check 5; `docs/methods/power_supply/wind_check.py`): 1,069 onshore plants
   delivered 34.1% and the chain matches at a speed factor of 0.99, so `wind.RANGES["resource"]` is (0.93, 1.05), was (0.95, 1.10). A cell
