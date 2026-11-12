@@ -1,4 +1,4 @@
-"""The national tier's places (Census) for the test states: Ohio, Virginia, Texas, Wisconsin, Indiana, Pennsylvania and Minnesota (nightly; pytest -m live)."""
+"""The national tier's places (Census) for the test states: Ohio, Virginia, Texas, Wisconsin, Indiana, Pennsylvania, Minnesota, Georgia and Illinois (nightly; pytest -m live)."""
 import pytest
 
 import waterledger as wl
@@ -23,6 +23,11 @@ pytestmark = pytest.mark.live
     ("Hazle township, PA", "4207933376", "Hazle Township", "township", "Luzerne"),
     ("Minneapolis city, MN", "2743000", "Minneapolis", "city", "Hennepin"),
     ("Farmington city, MN", "2720618", "Farmington", "city", "Dakota"),
+    ("Fayetteville city, GA", "1328968", "Fayetteville", "city", "Fayette"),
+    ("Atlanta city, GA", "1304000", "Atlanta", "city", "Fulton"),
+    ("Aurora city, IL", "1703012", "Aurora", "city", "Kane"),
+    ("Chicago city, IL", "1714000", "Chicago", "city", "Cook"),
+    ("Elk Grove Village village, IL", "1723256", "Elk Grove Village", "village", "Cook"),
 ])
 def test_finds(query, geoid, name, kind, county):
     if geoid is None:                     # Ashburn is a census-designated place, not a government: look up Loudoun County
@@ -51,6 +56,8 @@ def test_counts_and_independent_cities_once():
     ("IN", 39.7684, -86.1581, "Indianapolis"),         # downtown Indianapolis: the consolidated city's balance
     ("PA", 40.4406, -79.9959, "Pittsburgh"),           # downtown Pittsburgh
     ("MN", 44.9778, -93.2650, "Minneapolis"),          # downtown Minneapolis
+    ("GA", 33.7490, -84.3880, "Atlanta"),              # downtown Atlanta
+    ("IL", 41.8781, -87.6298, "Chicago"),              # the Loop
 ])
 def test_place_at_a_point(state, lat, lon, name):
     p = wl.place(lat=lat, lon=lon)
