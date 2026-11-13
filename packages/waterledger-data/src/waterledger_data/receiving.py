@@ -157,10 +157,20 @@ def past_the_line(H, starts, hops=25, trace=None):
     return out
 
 
+SLIVER = 0.01        # a watershed counts for a place when it covers at least this share of the place...
+MOSTLY_INSIDE = 0.5  # ...or when at least this share of the watershed lies inside the place, so a county far larger than its HUC12s keeps them
+
+
+def keeps(share_of_place, share_of_huc):
+    """Whether a place-watershed overlap counts: not a sliver of the place, or a watershed mostly inside it. Without the second
+    test, Arizona's Apache, Navajo and Yavapai counties (21,000 to 29,000 km2) kept no HUC12 at all, since each is under 1% of them."""
+    return (share_of_place >= SLIVER) | (share_of_huc >= MOSTLY_INSIDE)
+
+
 def watersheds_by_place(state, places):
     """For each place, the HUC12s it covers (largest share first) and its HUC8: {geoid: {"h12": [{code, name, share}], "h8": {code, name}}}."""
     from waterledger_data.census import places_key
-    path = os.path.join(RAW, f"{state}_{places_key(places)}_by_place.json")      # keyed by the places, so a changed place list is worked out afresh
+    path = os.path.join(RAW, f"{state}_{places_key(places)}_by_place_r2.json")   # keyed by the places, so a changed place list is worked out afresh; r2: the keeps() rule
     if os.path.exists(path):
         return json.load(open(path))
     import shapely
@@ -174,7 +184,8 @@ def watersheds_by_place(state, places):
         gp = pl.set_index("geoid").geometry
         inter = shapely.intersection(gp.loc[pairs.geoid].values, hu.geometry.values[pairs.index_right.values])
         pairs["share"] = shapely.area(inter) / shapely.area(gp.loc[pairs.geoid].values)
-        for r in pairs[pairs.share >= 0.01].sort_values("share", ascending=False).itertuples():
+        pairs["of_huc"] = shapely.area(inter) / shapely.area(hu.geometry.values[pairs.index_right.values])
+        for r in pairs[keeps(pairs.share, pairs.of_huc)].sort_values("share", ascending=False).itertuples():
             e = out.setdefault(r.geoid, {"h12": [], "h8": None})
             if level == 12:
                 e["h12"].append({"code": r.huc, "name": r.name, "share": round(float(r.share), 3)})
