@@ -2,6 +2,23 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## Unreleased
+
+No model numbers change: every estimate in the ten states matches 3.21.0's to the bit (`tests/test_contract_identity.py`).
+
+- **The facility contract** (`waterledger.facilities`, design 0010): `Facility` with `DESIGNS`, `EVAPORATIVE`, `size`, `results`,
+  `bmi_config`, `with_design` and the hooks `backup_generator_mw` and `cooling_blowdown`; types registered by `kind` (`register`,
+  `REGISTRY`). `Site.facility` takes any registered type; a dict without `kind` is still a data center. `waterledger.facility` keeps its
+  names. Comparisons, before and after, runoff loads, `by_design` and `to_bmi_config` read only the roles and hooks.
+- **Battery cell plants at a place**: `wl.BatteryCellPlant(capacity_gwh, design="towers", chemistry="nmc", utilization="full",
+  settings={})`, run at the place every time (`docs/methods/methods-log.md`, Nov 12).
+- **Added fields**: `WaterUse.to_source`, `Electricity.fuel_mw`, `Estimate.extras`; `Electricity.pue` and `peak_pue` may be None (always
+  set for a data center). `Site.to_bmi_config(parameters=)`. `comparisons.before_after(gen_mw=)` and `runoff.generators`.
+- **Shared rules**: `national.provider.default_source` and `default_wastewater`, taken out of the national estimate unchanged;
+  `national.era5.grid_factors_at` for a run at a point.
+- **Battery results** gain `blowdown_avg` for towers and hybrid (the towers' blowdown, MGD); no other value changes.
+- **README**: the Stability section states the public API and the deprecation rule in place of the beta line (design 0010, decision 8).
+
 ## 3.21.0 (Nov 12, 2026; model 1.15)
 
 waterledger and waterledger-data 3.21.0; waterledger-models stays 3.20.0. No model numbers change; the sewer plant a place's
