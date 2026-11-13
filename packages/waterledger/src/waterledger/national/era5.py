@@ -111,9 +111,20 @@ def grid_factors(cid, times, temps, bas):
     same UTC hours, then applied to all the run's hours, so the 30 weather years meet the grid's mix by month, hour and temperature. The run's
     times are local standard time at the cell's longitude (era5.local); the table's hours are UTC. A BA with no EIA-930 file or plant
     water table, or under a year of hours in common, is left out. A month-hour-bin the fit left empty takes the BA's mean for that kind."""
+    return grid_factors_offset(times, temps, bas, round(era5.indexes(cid)[1] / 4 / 15))
+
+
+def grid_factors_at(lon, times, temps, bas):
+    """grid_factors for a run at a point rather than a cell, its times in local standard time at `lon` by the rule hourly_weather uses (round(lon / 15)
+    hours from UTC): a facility run at its place (design 0010)."""
+    return grid_factors_offset(times, temps, bas, round(lon / 15))
+
+
+def grid_factors_offset(times, temps, bas, offset_h):
+    """grid_factors with the run's times `offset_h` hours from UTC."""
     from waterledger_data import grid930
     from waterledger_models import grid as G
-    utc = np.array(times, dtype="datetime64[m]").astype("datetime64[h]") - np.timedelta64(round(era5.indexes(cid)[1] / 4 / 15), "h")
+    utc = np.array(times, dtype="datetime64[m]").astype("datetime64[h]") - np.timedelta64(offset_h, "h")
     t = np.asarray(temps, dtype=float)
     month, hod, _ = G.calendar(utc)
     out = {}

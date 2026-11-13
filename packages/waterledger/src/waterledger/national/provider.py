@@ -239,6 +239,28 @@ def _climate(state, place):
                       **extra)
 
 
+def default_source(ctx, evaporative):
+    """Where a large water user's water most likely comes from [A], in every state (the page's WQ.srcFor, on a place's Context): a system EPA maps
+    in the place; with none mapped, a sizable system within SEWER_KM for a design that isn't evaporative (it extends its pipes), new wells for an
+    evaporative one, which avoid a utility's peak-day limits; nothing within reach, new wells. `evaporative`: the design is in the type's EVAPORATIVE."""
+    mapped = serves([{"share": w.share_of_place} for w in ctx.supply.systems])
+    reach = ctx.supply.nearest_system_km is not None and ctx.supply.nearest_system_km <= SEWER_KM
+    return "muni" if mapped or (reach and not evaporative) else "wells"
+
+
+def default_wastewater(ctx, evaporative, sewer_mgd, far=None):
+    """Where its wastewater most likely goes [A], in every state (the page's WQ.destFor, on a place's Context): the sewer when a public water system is
+    mapped in the place or the first sewer plant is within SEWER_KM, and for an evaporative design only if `sewer_mgd()` (the middle estimate to the
+    sewer, called only when needed) fits in the plant's spare design flow. Otherwise `far`: by default an evaporative design's own discharge to
+    a river or lake and a septic system for the rest."""
+    mapped = serves([{"share": w.share_of_place} for w in ctx.supply.systems])
+    q = ctx.wastewater.plants[0] if ctx.wastewater.plants else None
+    reach = q is not None and (mapped or q.km <= SEWER_KM)
+    room = (q.design_mgd - q.flow_mgd) if q and q.design_mgd and q.flow_mgd else None
+    why = "far" if not reach else "full" if evaporative and room is not None and sewer_mgd() > room else ""
+    return (far or ("water" if evaporative else "septic")) if why else "sewer"
+
+
 def estimate(state, site):
     """Water use for a site anywhere: the cooling model at the place's ERA5 cell (format 3) or climate division station (format 2), plus staff water, or lake-source cooling on a Great Lake within about 5 km, with the
     page's rules for the water source and wastewater (waterledger.scenario), on national data."""
@@ -253,23 +275,16 @@ def estimate(state, site):
     ctx = place.context()
     lake = ctx.receiving.great_lake
     src = site.source
-    mapped = serves([{"share": w.share_of_place} for w in ctx.supply.systems])
     sc.check_lake(place.name, lake, f.cooling, src)
     if f.cooling == "lake" and lake not in D["lake_source"]:
         raise ValueError(f"{state}'s data has no lake-source results for {lake} (a snapshot from before 3.9.0)")
     flows = lambda dest: sc.lake_estimate(D, lake, d, f.it_mw, dest) if f.cooling == "lake" else sc.cooling_estimate(D, d, f.cooling, f.it_mw, dest)
+    evap = f.cooling in f.EVAPORATIVE
     if src is None:
-        reach = ctx.supply.nearest_system_km is not None and ctx.supply.nearest_system_km <= SEWER_KM
-        src = "muni" if mapped or (reach and f.cooling not in ("towers", "hybrid")) else "wells"
+        src = default_source(ctx, evap)
     dest = site.wastewater
     if dest is None:
-        sew = flows("sewer")["sewer"]["mid"]
-        q = ctx.wastewater.plants[0] if ctx.wastewater.plants else None
-        reach = q is not None and (mapped or q.km <= SEWER_KM)
-        room = (q.design_mgd - q.flow_mgd) if q and q.design_mgd and q.flow_mgd else None
-        evap = f.cooling in ("towers", "hybrid")
-        why = "far" if not reach else "full" if evap and room is not None and sew > room else ""
-        dest = ("water" if evap else "septic") if why else "sewer"
+        dest = default_wastewater(ctx, evap, lambda: flows("sewer")["sewer"]["mid"])
     water = water_use(flows(dest))
     acres, before = sc.land_default(place.incorporated)
     resolved = site.model_copy(update={"source": src, "wastewater": dest, "acres": site.acres or acres, "land_before": site.land_before or before})

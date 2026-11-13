@@ -70,6 +70,12 @@ est.site_loads                   # sediment, phosphorus and nitrogen in runoff f
 est.levels                       # the levels a reader sees on waterledger.org, by card; waterledger.levels has the bands and levels.compare the verdict against a reported figure
 est.not_covered                  # what isn't covered yet for this state, in words
 
+cells = wl.Site(place=place, facility=wl.BatteryCellPlant(capacity_gwh=40, design="towers")).estimate()   # a battery cell plant, GWh/yr of cells
+cells.water.withdrawn.avg        # the same roles, comparisons, before and after and levels as a data center (design 0010)
+cells.electricity.fuel_mw        # energy burned on site (ovens and boilers); pue is None, a data center's own measure
+cells.extras["withdrawn_l_per_kwh"]      # a type's own measures: site_kwh_per_kwh, withdrawn_l_per_kwh, consumed_l_per_kwh, blowdown_avg
+# A cell plant has no stored results: it is run at the place each time (Open-Meteo's best match, about 20 seconds a design after the download)
+
 from waterledger_models.supply.scenario import Scenario, Gas   # power supply scenarios (design 0014): every plant hypothetical
 est = site.estimate(supply={"own_gas": Scenario(residual="none", gas=Gas("cc", "towers", unit_mw=150)),
                             "pv_wind": Scenario(pv_share=0.6, wind_share=0.6)})     # runs at the place's ERA5 cell, about 30 seconds
@@ -292,12 +298,23 @@ for a well's response at every step of a run.
 More in [examples/](examples/): a BMI coupling loop, eight Michigan locations in parallel, a STAC catalog of results, and the
 battery cell plant model at every U.S. plant with projected water.
 
+### Facility types
+
+`Site.facility` takes any registered facility type (`waterledger.facilities`, [design 0010](docs/design/0010-water-user-types.md)):
+`DataCenter` (`it_mw`, `cooling`, `plant`) and `BatteryCellPlant` (`capacity_gwh`, `design`, `chemistry`, `utilization`, `settings`).
+A dict without `kind` is read as a data center. Each type declares its `DESIGNS`, which are `EVAPORATIVE` (the default source and
+wastewater rules), its `size`, how its estimate is obtained (`results`), its BMI component (`bmi_config`) and two hooks,
+`backup_generator_mw` and `cooling_blowdown`, each `None` where a type has none. Everything after `results` (comparisons,
+equivalents, before and after, runoff loads, levels, power plant water) reads only the water and electricity roles and these hooks.
+A new type is a subclass registered with `@register`; the shared conformance tests (`tests/test_facility_contract.py`) then run on it.
+
 ## Stability
 
-The packages are in beta, whatever the 3.x number suggests. Within 3.x the API can still change in a minor release, and every such
-change is listed under **Breaking** in [CHANGELOG.md](CHANGELOG.md). The numbers are versioned separately, by `MODEL_VERSION`
-(below). From 3.10 on, a breaking change to the public API (`wl.place`, `Place`, `Context`, `Site`, `Estimate`, the BMI
-components and the command line) waits for 4.0 and does not ship in a 3.x minor release.
+The public API is `wl.place`, `Place`, `Context`, `Site`, `Estimate`, the facility contract (`Facility`, its hooks and the registered
+types), the water user role names and standard statistic names, the BMI components and their role names, and the command line. Within
+3.x it only grows: a breaking change to it waits for 4.0. A name replaced in 3.x keeps working, raises a `DeprecationWarning` naming its
+replacement, is listed under **Deprecated** in [CHANGELOG.md](CHANGELOG.md), and is removed only in 4.0. Internal modules and names
+with a leading underscore may change in a minor release. The numbers are versioned separately, by `MODEL_VERSION` (below).
 
 ## Model version
 

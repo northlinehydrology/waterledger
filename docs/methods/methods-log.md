@@ -2483,3 +2483,34 @@ closest to a new project. Michigan matches at 0.99 (30.3% observed, 32.4% modele
 figures are likely low there, and the cell's mean speed is in `weather`. Pennsylvania's and Virginia's ridges are where this comes up in
 the published states. As with PV, the factor is delivered output over modeled, not wind speed alone. 2024 is one year. Model 1.15 changes
 supply scenarios only and reads model 1.11's snapshots (`MODELS["1.15"]`).
+
+## Nov 12, 2026: battery cell plants at a place (design 0010, the facility contract)
+
+`wl.Site(place, facility=wl.BatteryCellPlant(capacity_gwh=..., design=...)).estimate()` gives a cell plant the estimate a data center
+gets: the water roles, electricity, power plant and grid water, comparisons, before and after, runoff loads and levels. No number in
+any existing estimate changes; the record of 3.21.0's estimates in all ten states (`tests/data/estimates_before_contract.json`) is held
+to the bit. Andrew chose (Nov 12) to build this before 0011, Michigan's move onto the base path, which leaves the providers as they are
+for now. The method decisions:
+
+- **Run at the place, every time.** A cell plant has no stored results, so its model (design 0009, model 1.12 onward) runs at the place's
+  point on Open-Meteo's best match, 1995-2024, 400 draws, as a data center's `weather="local"` does. Stored results by ERA5 cell, as data
+  centers have, wait for the site decision (0010, decision 6).
+- **Grid water** comes from the place's balancing authority, its EIA-930 hours fit to the place's own temperatures in the same UTC hours,
+  as each data center cell is fit (`national.era5.grid_factors_at`).
+- **Default design: towers [A].** Most plants in DOE's environmental assessments use wet cooling towers (`docs/research/battery-plant-water.md`).
+- **Source and wastewater** follow the rules every type shares, fed by the design (`national.provider.default_source`,
+  `default_wastewater`; towers and hybrid are evaporative). Where no sewer is in reach, a cell plant's process and boiler wastewater goes
+  to its own treatment and discharge, never a septic system, and septic or reuse given by hand are refused [A]: the model has no basis for
+  either. With `wastewater="water"` the volume is the same as to the sewer; only where it goes changes.
+- **The books close** on the middle estimate: consumed is withdrawn less returned, its range widened only if that falls outside the
+  model's own, as for data centers.
+- **Blowdown phosphorus** in runoff loads uses the towers' own blowdown (`blowdown_avg`, new in the battery results, about 65% of what
+  goes to the sewer at Gaines on towers), not the whole return, which also carries process and staff water. A data center's return on
+  towers is nearly all blowdown, so it keeps using the return.
+- **Backup generators:** none until a source sizes them for a cell plant [A], so before and after has no fuel row.
+- **PUE** is a data center's own measure: `Electricity.pue` is None for a cell plant, which reports `fuel_mw` (ovens and boilers) and its
+  own measures in `Estimate.extras`.
+
+At Gaines Charter Township, a 40 GWh/yr NMC plant on towers: about 0.96 MGD withdrawn (33 L per kWh of cells; the EA plants' central
+figure is about 41), 0.71 MGD consumed, 84 MW of electricity and 68 MW of fuel on an average day, and about 0.63 MGD consumed at MISO's
+power plants. Not yet: power supply scenarios at the place for a cell plant, cathode materials plants (0012), and the site (0013).
