@@ -3,12 +3,14 @@ accepts any registered type (AnyFacility). A facility given without `kind` is re
 
     base            the contract: Facility, register, REGISTRY
     data_center     DataCenter
+    battery_cell    BatteryCellPlant (design 0009)
 """
 from typing import Annotated, Union
 
 from pydantic import Discriminator, Tag
 
 from waterledger.facilities.base import REGISTRY, Facility, register
+from waterledger.facilities.battery_cell import BatteryCellPlant
 from waterledger.facilities.data_center import COOLING, DataCenter
 
 
@@ -23,4 +25,4 @@ def any_facility():
 
 AnyFacility = any_facility()
 
-__all__ = ["REGISTRY", "Facility", "register", "DataCenter", "COOLING", "AnyFacility", "any_facility"]
+__all__ = ["REGISTRY", "Facility", "register", "DataCenter", "BatteryCellPlant", "COOLING", "AnyFacility", "any_facility"]
