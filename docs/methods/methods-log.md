@@ -2514,3 +2514,60 @@ for now. The method decisions:
 At Gaines Charter Township, a 40 GWh/yr NMC plant on towers: about 0.96 MGD withdrawn (33 L per kWh of cells; the EA plants' central
 figure is about 41), 0.71 MGD consumed, 84 MW of electricity and 68 MW of fuel on an average day, and about 0.63 MGD consumed at MISO's
 power plants. Not yet: power supply scenarios at the place for a cell plant, cathode materials plants (0012), and the site (0013).
+
+## Nov 12, 2026: which HUC12s a place covers (next release)
+
+`waterledger_data.receiving.watersheds_by_place` lists the HUC12s each place covers, largest share first. It used to drop any
+overlap under 1% of the place, to leave out slivers where boundaries merely touch. In Arizona that left Apache (about 29,000 km2),
+Navajo and Yavapai counties with no HUC12 at all, since an 80 km2 HUC12 wholly inside Apache County is 0.3% of it, and the AZ
+snapshot failed its watershed coverage (0.972 against 0.99). An overlap now also counts when at least half of the HUC12 lies inside
+the place (`receiving.keeps`; `tests/test_watershed_keeps.py`). Every published snapshot already had full coverage. Their very large
+counties will list more HUC12s at their next build. No estimate changes: the list is context, and its first HUC12 starts the
+downstream path. The by-place cache takes a new name, so each state works it out afresh.
+
+## Nov 13, 2026: New York's ERA5 check, accepted with a note
+
+`waterledger era5 check NY` (model 1.11; 68 stations, 40 on land cells, 27 on corrected shore cells;
+[era5-checks/ny.md](era5-checks/ny.md)) failed four criteria. As for every state, each station and any within 5 km are left out of
+the correction of the cell they are tested on, so the check measures a place with no station nearby. About half of New York's
+places have none within 40 km of their cell (30% within 25 km, 75% within 60 km).
+
+- W5, shore: corrected shore cells run 0.81 C off in the design dry-bulb against a limit of 0.50 (1.00 C uncorrected). The
+  largest differences are on Lake Ontario, where the stations left for the correction are across the lake in Ontario: Watertown
+  -2.83 C, Niagara Falls -2.27 C, Trenton (Ont.) -3.08 C, Point Petre +2.29 C.
+- P2 to P4, places: for 12 places within 8 km of a station, the cooling model on the cell's weather against the model on the
+  station's own hours (400 draws, seed 7, per 100 MW). The hybrid average day differs by a median 13.3% (limit 8%) with a mean of
+  -9.1% (limit 6%); the hybrid peak day by a median 7.6% (limit 6%). Cooling towers, which follow the wet bulb, differ by a median
+  0.5%.
+- Why the hybrid average day: hybrid cooling uses water only above a dry-bulb switch point, so its average day is small (0.04 to
+  0.08 MGD per 100 MW in New York, against about 0.66 for towers) and moves with a few hot hours. Upstate cells run 0.5 to 2 C cool
+  in the design dry-bulb where the station is left out, so North Syracuse (-31%), Niagara (-33%), Gates (-28%) and Big Flats (-22%)
+  run low; Rye Brook runs 22% high. The largest difference, Niagara, is about 0.025 MGD per 100 MW.
+- On the site, a place near a station has it in its correction (Colonie's cell is 99% Albany's airport, Big Flats's 92% Elmira's),
+  so the check describes the places away from stations.
+
+Andrew accepted it on Nov 13, 2026 ("we can go with it with a methods note"). The note is `weather_check` in states.toml and on
+New York's methods page. The station correction for land cells decided on Nov 6 is the method change that would address it.
+
+## Nov 13, 2026: Arizona's ERA5 check, accepted with a note
+
+`waterledger era5 check AZ` (model 1.11; 17 stations, all on land cells, including Needles, Blythe and Imperial in California,
+Cedar City in Utah and Gallup in New Mexico; [era5-checks/az.md](era5-checks/az.md)) failed four criteria, each narrowly. As for
+every state, each station and any within 5 km are left out of the correction of the cell they are tested on. Ten of the 17 cells
+were corrected toward another station; seven have no other land station within 100 km and are left as ERA5 gives them. 44% of
+Arizona's places are within 40 km of one of the 17 stations (31% within 25 km, 61% within 60 km).
+
+- W2 to W4, land cells: the design dry-bulb is off by a median 0.82 C (limit 0.75) and runs cool on average, 0.57 C (limit 0.50);
+  the 0.4% wet bulb is off by a median 0.41 C (limit 0.40). The largest differences are at stations with no neighbor: Safford
+  -3.15 C, Grand Canyon +3.20 C, Cedar City -2.30 C, Needles -2.48 C.
+- P2, places: for 12 places within 9 km of a station, the cooling model on the cell's weather against the model on the station's
+  own hours (400 draws, seed 7, per 100 MW). The hybrid average day differs by a median 11.6% (limit 8%) with a mean of +4.4%
+  (limit 6%, passes). The peak day (5.7%) and towers (1.5%) pass.
+- Why: Arizona's elevation changes faster than ERA5's 0.25-degree grid. Desert places in a cell with cooler ground away from the
+  station run low (Tucson -17%, Safford -17%, Somerton -11%); high-country places in a cell with lower, warmer ground run high
+  (Prescott +35%, Tusayan +40%, Winslow +13%). Arizona's hybrid average day is 0.09 to 0.23 MGD per 100 MW (towers about 0.7), so
+  the largest differences are about 0.03 MGD per 100 MW.
+
+Andrew accepted it on Nov 13, 2026 ("Except weather with a methods note", agreeing to the check with a note). The note is
+`weather_check` in states.toml and on Arizona's methods page. The station correction for land cells decided on Nov 6 is the method
+change that would address it; elevation is the part a station correction alone may not fix.

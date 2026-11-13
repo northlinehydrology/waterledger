@@ -2,6 +2,18 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.23.0 (Nov 13, 2026; model 1.15)
+
+waterledger and waterledger-data 3.23.0; waterledger-models stays 3.22.0. No model numbers change.
+
+- **New York and Arizona** in `states.toml`, published as checked snapshots (2026-11-12, model 1.11), with known places in the
+  national place tests, their ERA5 checks (`docs/methods/era5-checks/ny.md`, `az.md`), the `weather_check` notes Andrew accepted,
+  and two-page briefs (`docs/methods/ny.pdf`, `az.pdf`).
+- **Which HUC12s a place covers** (`waterledger_data.receiving.keeps`): an overlap also counts when at least half of the HUC12 lies
+  inside the place, so very large counties (Apache, Navajo and Yavapai in Arizona) are no longer left with none. The by-place cache
+  takes a new name (`_by_place_r2.json`). Estimates do not change; very large places list more HUC12s at their next build
+  (`docs/methods/methods-log.md`, Nov 12).
+
 ## 3.22.0 (Nov 13, 2026; model 1.15)
 
 waterledger and waterledger-models 3.22.0; waterledger-data stays 3.21.0.
