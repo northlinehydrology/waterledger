@@ -2517,3 +2517,26 @@ places have none within 40 km of their cell (30% within 25 km, 75% within 60 km)
 
 Andrew accepted it on Nov 13, 2026 ("we can go with it with a methods note"). The note is `weather_check` in states.toml and on
 New York's methods page. The station correction for land cells decided on Nov 6 is the method change that would address it.
+
+## Nov 13, 2026: Arizona's ERA5 check, accepted with a note
+
+`waterledger era5 check AZ` (model 1.11; 17 stations, all on land cells, including Needles, Blythe and Imperial in California,
+Cedar City in Utah and Gallup in New Mexico; [era5-checks/az.md](era5-checks/az.md)) failed four criteria, each narrowly. As for
+every state, each station and any within 5 km are left out of the correction of the cell they are tested on. Ten of the 17 cells
+were corrected toward another station; seven have no other land station within 100 km and are left as ERA5 gives them. 44% of
+Arizona's places are within 40 km of one of the 17 stations (31% within 25 km, 61% within 60 km).
+
+- W2 to W4, land cells: the design dry-bulb is off by a median 0.82 C (limit 0.75) and runs cool on average, 0.57 C (limit 0.50);
+  the 0.4% wet bulb is off by a median 0.41 C (limit 0.40). The largest differences are at stations with no neighbor: Safford
+  -3.15 C, Grand Canyon +3.20 C, Cedar City -2.30 C, Needles -2.48 C.
+- P2, places: for 12 places within 9 km of a station, the cooling model on the cell's weather against the model on the station's
+  own hours (400 draws, seed 7, per 100 MW). The hybrid average day differs by a median 11.6% (limit 8%) with a mean of +4.4%
+  (limit 6%, passes). The peak day (5.7%) and towers (1.5%) pass.
+- Why: Arizona's elevation changes faster than ERA5's 0.25-degree grid. Desert places in a cell with cooler ground away from the
+  station run low (Tucson -17%, Safford -17%, Somerton -11%); high-country places in a cell with lower, warmer ground run high
+  (Prescott +35%, Tusayan +40%, Winslow +13%). Arizona's hybrid average day is 0.09 to 0.23 MGD per 100 MW (towers about 0.7), so
+  the largest differences are about 0.03 MGD per 100 MW.
+
+Andrew accepted it on Nov 13, 2026 ("Except weather with a methods note", agreeing to the check with a note). The note is
+`weather_check` in states.toml and on Arizona's methods page. The station correction for land cells decided on Nov 6 is the method
+change that would address it; elevation is the part a station correction alone may not fix.
