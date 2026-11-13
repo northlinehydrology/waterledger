@@ -6,8 +6,8 @@ authors:
   - family-names: Sommerlot
     given-names: Andrew
     affiliation: Northline Hydrology
-version: 3.21.0
-date-released: 2026-11-12
+version: 3.22.0
+date-released: 2026-11-13
 license: BSD-3-Clause
 repository-code: "https://github.com/northlinehydrology/waterledger"
 url: "https://waterledger.org"

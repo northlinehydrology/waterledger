@@ -245,9 +245,11 @@ def sewer_shares(water, plant):
     return out
 
 
-def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, imp, mw, power_mw=None, county_public=None, plant=None, lake=False, reuse=False, salt_events=None, state=None):
+def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, imp, mw, power_mw=None, county_public=None, plant=None, lake=False, reuse=False, salt_events=None, state=None,
+                 gen_mw=None):
     """What changes at a place with the campus, as numbers; a display words them. Water, MGD: `w_avg` and `w_peak` taken, `used` evaporated, `sewer` to the sewer, each a
-    Range. Runoff from runoff.loads. Sediment, phosphorus and nitrogen are in site_loads, not here: they cover runoff from the finished site alone, not the whole change. Rows for water and wastewater follow the source and destination."""
+    Range. Runoff from runoff.loads. Sediment, phosphorus and nitrogen are in site_loads, not here: they cover runoff from the finished site alone, not the whole change. Rows for water and wastewater follow the source and destination.
+    Backup generators: `mw` of IT capacity at runoff.fuel's ratio, or `gen_mw` of generators given directly (a facility's backup_generator_mw); with neither, no fuel row."""
     Row, rows = BeforeAfterRow, []
     today = county_public if src == "muni" else None
     rows.append(Row(key="water", today=today, after=w_avg.p50, after_low=w_avg.p10, after_high=w_avg.p90, percent=percent_of(w_avg.p50, today) if today else None, unit="MGD"))
@@ -257,11 +259,12 @@ def before_after(src, dest, w_avg, w_peak, used, sewer, acres, rain_in, before, 
             rows.append(Row(key="sewer", today=plant.flow_mgd, after=sewer.p50, after_low=sewer.p10, after_high=sewer.p90, percent=percent_of(sewer.p50, plant.flow_mgd) if plant.flow_mgd else None, unit="MGD"))
         elif dest in ("water", "septic") and not (lake and dest == "water"):
             rows.append(Row(key="wastewater", after=sewer.p50, after_low=sewer.p10, after_high=sewer.p90, unit="MGD"))
-    L, S, F = rq.loads(acres, rain_in, before, imp, state=state), rq.salt(acres, imp, salt_events) if salt_events else None, rq.fuel(mw)
+    L, S, F = rq.loads(acres, rain_in, before, imp, state=state), rq.salt(acres, imp, salt_events) if salt_events else None, rq.fuel(mw) if mw else rq.generators(gen_mw) if gen_mw else None
     rows.append(Row(key="runoff", today=L["runoff_gal"]["now"][1], after=L["runoff_gal"]["after"][1], unit="gallons a year"))
     if S and S["salt_t"][1] > 0:      # no events known, or no salt season: no row
         rows.append(Row(key="salt", after=S["salt_t"][1], after_low=S["salt_t"][0], after_high=S["salt_t"][2], unit="tons a winter"))
-    rows.append(Row(key="fuel", after=F["gal"][1], after_low=F["gal"][0], after_high=F["gal"][2], unit="gallons"))
+    if F:
+        rows.append(Row(key="fuel", after=F["gal"][1], after_low=F["gal"][0], after_high=F["gal"][2], unit="gallons"))
     if power_mw:
         rows.append(Row(key="power", after=power_mw.p50, after_low=power_mw.p10, after_high=power_mw.p90, unit="MW"))
     return rows
@@ -299,17 +302,17 @@ def site_before_after(est, ref):
     plants = ctx.wastewater.plants
     rain = (ctx.climate.rain_in if ctx.climate else None) or ref.get("rain_median_in")
     return before_after(s.source, s.wastewater, w.withdrawn.avg, w.withdrawn.peak_day, w.consumed.avg, w.to_sewer, s.acres or acres, rain, s.land_before or land, s.impervious,
-                        s.facility.it_mw, est.electricity.avg_mw if est.electricity else None, county_public_mgd(ctx.supply.county_use_mgd), plants[0] if plants else None, w.lake_source, w.reuse, ref.get("salt_events"), s.place.state)
+                        None, est.electricity.avg_mw if est.electricity else None, county_public_mgd(ctx.supply.county_use_mgd), plants[0] if plants else None, w.lake_source, w.reuse, ref.get("salt_events"), s.place.state, gen_mw=s.facility.backup_generator_mw())
 
 
 def site_runoff_loads(est, ref):
-    """site_loads for an estimate. Cooling wastewater only for towers, where blowdown is nearly all of what goes back; not on a septic system, which can't take it."""
+    """site_loads for an estimate. Cooling wastewater from the facility's cooling_blowdown (towers); not on a septic system, which can't take it."""
     from waterledger.scenario import land_default
     s, w = est.site, est.water
     ctx, (acres, land) = s.place.context(), land_default(s.place.incorporated)
     rain = (ctx.climate.rain_in if ctx.climate else None) or ref.get("rain_median_in")
-    towers = s.facility.cooling == "towers" and not w.lake_source and not w.reuse and s.wastewater != "septic"
-    return site_loads(s.acres or acres, rain, s.land_before or land, s.impervious, s.place.state, w.returned.avg.p50 if towers else None)
+    blow = None if w.lake_source or w.reuse or s.wastewater == "septic" else s.facility.cooling_blowdown(est)
+    return site_loads(s.acres or acres, rain, s.land_before or land, s.impervious, s.place.state, blow)
 
 
 def comparisons(est, ref=None):

@@ -4,9 +4,10 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from waterledger import comparisons, levels, scenario, states
-from waterledger.estimate import Estimate, electricity, water_use
-from waterledger.facility import DataCenter
+from waterledger import comparisons, levels, states
+from waterledger.estimate import Estimate
+from waterledger.facilities import AnyFacility
+from waterledger.facilities.data_center import local_weather  # noqa: F401  its old home
 from waterledger.place import Place
 
 
@@ -28,24 +29,11 @@ class _PowerPlants(dict):
         return super().get(POWER_ALIASES.get(key, key), default)
 
 
-def local_weather(est):
-    """The estimate with its water and electricity from the model run at the place's own point on Open-Meteo's best match, the way a state's builder runs a region."""
-    from waterledger_data.climate import hourly_weather
-    from waterledger_models.datacenter import cooling
-    p, f = est.site.place, est.site.facility
-    if f.cooling == "lake":
-        raise ValueError("Lake-source cooling does not depend on air weather; weather='local' does not apply")
-    t, T, RH = hourly_weather(p.lat, p.lon, "1995-01-01", "2024-12-31", f"place_{p.geoid}")
-    D = {"regions": {"local": {"per_100mw": cooling.run_location(t, T, RH, mw=100.0, plant=f.plant)}}, "staff": {"runs": cooling.staff_runs()}}
-    return est.model_copy(update={"water": water_use(scenario.cooling_estimate(D, "local", f.cooling, f.it_mw, est.site.wastewater)),
-                                  "electricity": electricity(scenario.electricity(D, "local", f.cooling, f.it_mw)), "weather": "local"})
-
-
 class Site(BaseModel):
     """A proposed facility at a place. Estimate it with site.estimate()."""
     model_config = ConfigDict(extra="forbid", frozen=True)
     place: Place
-    facility: DataCenter
+    facility: AnyFacility
     source: Literal["muni", "wells", "lake"] | None = Field(None, description="public water system, new wells, or lake surface water")
     wastewater: Literal["sewer", "septic", "water", "reuse"] | None = Field(None, description="public sewer, septic, its own discharge, or reuse on site")
     acres: float | None = Field(None, gt=0, description="land developed, acres")
@@ -64,9 +52,7 @@ class Site(BaseModel):
         storm_years: a design storm (NOAA Atlas 14 return period, years) for PV's runoff before and after."""
         if weather not in ("region", "local"):
             raise ValueError(f"weather must be 'region' or 'local', not {weather!r}")
-        est = states.provider(self.place.state).estimate(self)
-        if weather == "local":
-            est = local_weather(est)
+        est = self.facility.results(self, weather)
         ref = states.provider(self.place.state).reference(self.place)
         power = POWER_ALIASES.get(self.power, self.power) or ref["power"]
         if power not in ref["power_options"]:
@@ -80,36 +66,29 @@ class Site(BaseModel):
         return est
 
     def by_design(self, designs=("dry", "hybrid", "towers")):
-        """The same campus with each cooling design, on this site's power option: water evaporated at the campus and at power plants, electricity, and which evaporates least."""
+        """The same facility with each design, on this site's power option: water evaporated at the site and at power plants, electricity, and which evaporates least."""
         ref = states.provider(self.place.state).reference(self.place)
         power = POWER_ALIASES.get(self.power, self.power) or ref["power"]
         results = {}
         for k in designs:
-            e = self.model_copy(update={"facility": self.facility.model_copy(update={"cooling": k})}).estimate()
+            e = self.model_copy(update={"facility": self.facility.with_design(k)}).estimate()
             results[k] = (e.water, e.electricity)
         return comparisons.compare_designs(results, ref["power_options"], power, ref["power"])
 
-    def to_bmi_config(self, path=None, forcing=None, end_time=None, design_db=None):
+    def to_bmi_config(self, path=None, forcing=None, end_time=None, design_db=None, parameters=None):
         """The BMI component that runs this site step by step, and its configuration: (entry point, config dict). With `path`,
         the config is also written there as YAML. `forcing` is an optional weather file (Open-Meteo JSON for the hourly
         cooling component, a daily lake-temperature CSV for the lake-source one); without it, inputs come through set_value, and a hybrid
         needs `design_db`, the location's 0.4% design dry-bulb in C, which a forcing file otherwise supplies
-        (waterledger_models.weather.design_dry_bulb computes it from the place's hourly record).
+        (waterledger_models.weather.design_dry_bulb computes it from the place's hourly record). `parameters` adds to the component's parameters:
+        a battery cell plant without a forcing file needs its design enthalpy, {"design_h": ...} (waterledger_models.battery.physics.for_location).
 
             entry, cfg = site.to_bmi_config("site.yaml")
             m = CoolingWaterBmi(); m.initialize(cfg)      # or m.initialize("site.yaml")
         """
-        f = self.facility
-        if f.cooling == "lake":
-            entry = "waterledger_models.datacenter.bmi:LakeCoolingBmi"
-            cfg = {"it_capacity_mw": f.it_mw, "end_time": end_time or 365 * 86400}
-        else:
-            entry = "waterledger_models.datacenter.bmi:CoolingWaterBmi"
-            cfg = {"design": f.cooling, "plant": f.plant, "it_capacity_mw": f.it_mw, "time_step": 3600, "end_time": end_time or 365 * 86400}
-        if forcing:
-            cfg["forcing"] = str(forcing)
-        if design_db is not None and f.cooling != "lake":
-            cfg["parameters"] = {"design_db": float(design_db)}
+        entry, cfg = self.facility.bmi_config(forcing=forcing, end_time=end_time, design_db=design_db)
+        if parameters:
+            cfg["parameters"] = {**cfg.get("parameters", {}), **{k: float(v) for k, v in parameters.items()}}
         if path:
             import yaml
             with open(path, "w") as fh:

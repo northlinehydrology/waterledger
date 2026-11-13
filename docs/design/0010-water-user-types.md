@@ -1,9 +1,16 @@
 # 0010: Water user types: one contract for every large water user
 
 Status: **proposed, Nov 9, 2026. Decisions 1, 2, 3, 4, 7 and 8 agreed (Andrew, Nov 9); 6 decided Nov 10 (one model
-version, with `MODELS`, built in 3.16.0); 5 explained further, for review. The contract itself is not built.** Battery cell plants (0009) wait on it, so they are
-the first type added under it rather than beside it. Michigan moves onto the base path first (0011), so this note
-has one path to refactor. Cathode materials plants move to 0012.
+version, with `MODELS`, built in 3.16.0); 5 explained further, for review. Steps 1 and 3-6 built Nov 12 on branch `battery-facility`, ahead of
+0011, with decision 5's provider split left for 0011 (below).** Battery cell plants (0009) are the first type added under the contract rather
+than beside it. Cathode materials plants move to 0012.
+
+**Nov 12, 2026: the battery facility before 0011.** 0011 (Michigan on the base path) has no code yet and is a large refactor. Andrew chose
+(Nov 12, on the question whether to build the battery facility now and leave the provider split for 0011): "Battery now". So the contract is
+built with the providers as they are: `DataCenter.results` asks the place's provider, as `Site.estimate` did, and a cell plant computes at
+the place with the place-side rules every state shares (`national.provider.default_source` and `default_wastewater`, taken out of the
+national estimate unchanged). Decision 5's split, providers to the place side only, comes with 0011, when Michigan reads through the
+national provider; nothing downstream changes then.
 
 ## Why
 
@@ -220,6 +227,16 @@ towers and lake, runs at the place. Extras: site energy per kWh of cells, and wa
 Grid water comes through the shared function, from the plant's own hourly electricity. Backup generators: none until a
 source sizes them [A]. Blowdown phosphorus: the plant's tower blowdown.
 
+**As built (Nov 12).** Run at the place every time (about 20 seconds a design after the weather download), with `weather` either way:
+the estimate says `local`. Designs dry, assist, hybrid, towers (the default: wet towers at most plants in DOE's EAs [A]) and lake (GLERL's
+temperatures for the place's lake, and lake surface water as the source, as for data centers). Grid water from the place's balancing
+authority, fit as a data center cell's is (`national.era5.grid_factors_at`). Wastewater goes to the sewer or, with `wastewater="water"`,
+to its own discharge, the same volume; where the defaults find no sewer in reach it goes to its own discharge, never a septic system,
+and septic or reuse given by hand are refused [A]. Consumed on the middle estimate is withdrawn less returned, so the books close, as for
+data centers. Extras: `site_kwh_per_kwh`, `withdrawn_l_per_kwh`, `consumed_l_per_kwh` and `blowdown_avg`, the towers' own blowdown, new in
+the model's results (no number changes), which `cooling_blowdown` gives runoff loads instead of the whole return. Not yet: supply
+scenarios at the place (`supply.py` still runs data centers only), stored results, the site.
+
 **The check that the contract works:** battery plants go in without touching `Site`, the comparisons, the levels or the
 providers, apart from registering the type. If anything downstream needs an edit, the contract is wrong there, and it
 is fixed in the contract, for every type.
@@ -275,10 +292,14 @@ The number came early, but it is what users see, so the packages are held to it 
    - **Not moved:** data centers' lake-source cooling (`datacenter.lake`) keeps its own loop; it comes onto the runner with the facility
      contract (step 3), where its `to_source` return is handled for every type.
 3. The registry and the `Facility` contract; `DataCenter` onto it (`results`, `bmi_config`, hooks); providers reduced to
-   the place side.
-4. Downstream onto the hooks: `before_after`, runoff loads, `by_design`, `to_bmi_config`.
-5. The conformance test, over every registered type.
-6. Battery cell plants: the facility and its tests. The model's pieces are done ahead of steps 1-5 (Andrew, Nov 10:
+   the place side. **Built Nov 12** (`waterledger.facilities`), the providers' reduction left for 0011 (above). The record of step 1 is
+   `tests/data/estimates_before_contract.json` (ten states, two places each, every design, wastewater choice and cooling plant, by_design,
+   to_bmi_config and the model run at the place), written from 3.21.0 by `tests/contract_reference.py`; `tests/test_contract_identity.py`
+   holds every recorded value to the bit.
+4. Downstream onto the hooks: `before_after`, runoff loads, `by_design`, `to_bmi_config`. **Built Nov 12.** `before_after` takes
+   `gen_mw` (`runoff.generators`); with no generators known, no fuel row.
+5. The conformance test, over every registered type. **Built Nov 12** (`tests/test_facility_contract.py`).
+6. Battery cell plants: the facility and its tests. **Built Nov 12** (`waterledger.facilities.battery_cell`; below). The model's pieces are done ahead of steps 1-5 (Andrew, Nov 10:
    battery work before the Michigan work): sewer and source returns, peak-hour power, chemistry, `BatteryCellBmi`, the
    check at every EA plant and the sensitivity analysis (0009).
 7. READMEs, docs, CHANGELOG, the methods log; then a release on Andrew's word.

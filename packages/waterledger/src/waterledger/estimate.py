@@ -38,6 +38,7 @@ class WaterUse(BaseModel):
     to_sewer: Range                      # to the wastewater destination; with a septic system, without the condensate, which is assumed to go to a site drain or stormwater [A]
     lake_source: bool = False
     reuse: bool = False
+    to_source: Range | None = None       # handed back where it came from (once-through lake water), on an average day; also in returned. None for designs that hand nothing back (design 0010)
     withdrawn_peak_full_capacity: Range | None = None   # the upper case: the peak day with every computer at capacity all day; peak_day is at average utilization
     condensate: Flow | None = None       # also in returned and to_sewer; none for lake-source's lake water or data from before model 1.5
     withdrawn_max_month: Range | None = None    # the highest month's average day: the period of Part 327's 30-day test. Lake-source: constant, as the withdrawal
@@ -67,13 +68,16 @@ def electricity(e):
 class Electricity(BaseModel):
     """A site's electricity, from the hourly heat balance at its weather (model 1.4). avg_mw: computers at their average utilization, plus cooling
     and losses. peak_mw: the 1-in-10-year hottest hour with every computer at capacity. pue and peak_pue: facility power over IT power.
-    peak_day_mw: the 1-in-10-year peak day's average power at the peak day's load (model 1.9; None for lake-source cooling and older data)."""
+    peak_day_mw: the 1-in-10-year peak day's average power at the peak day's load (model 1.9; None for lake-source cooling and older data).
+    pue and peak_pue are a data center's own measure: always set for a data center, None for other types (design 0010, decision 4). fuel_mw:
+    energy burned on site on an average day (a cell plant's ovens and boilers), None where a type burns none."""
     model_config = ConfigDict(frozen=True)
     avg_mw: Range
     peak_mw: Range
-    pue: Range
-    peak_pue: Range
+    pue: Range | None = None
+    peak_pue: Range | None = None
     peak_day_mw: Range | None = None
+    fuel_mw: Range | None = None
 
 
 class Percent(BaseModel):
@@ -261,5 +265,6 @@ class Estimate(BaseModel):
     grid_water: GridWater | None = None         # the place's balancing authority, hour by hour (model 1.11); None for lake-source cooling and older data
     weather: str = "region"     # "region": the stored results for the place's weather region or division; "local": the model run at the place (Open-Meteo best match)
     supply: dict[str, SupplyScenarioEstimate] = {}   # power supply scenarios at the place (design 0014), when asked for: site.estimate(supply=...)
+    extras: dict[str, Range] = {}   # the type's own measures (design 0010, decision 4): a cell plant's site_kwh_per_kwh, withdrawn_l_per_kwh, consumed_l_per_kwh, blowdown_avg
     model_version: str
     data_date: str
