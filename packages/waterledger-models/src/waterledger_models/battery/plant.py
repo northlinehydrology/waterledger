@@ -51,7 +51,7 @@ def run_location(times, temps, rhs, n=DRAWS, seed=7, gwh=1.0, utilization="full"
     to_source (MGD), as avg, peak_1in10, record, annual_mg and, for withdrawn and consumed, max_month, max_90day and worst_year_mg; power_mw_avg,
     power_mw_peak_1in10 (the 1-in-10-year highest hour, at full output) and power_mw_peak_day_1in10 (electricity, MW); fuel_mw_avg;
     site_kwh_per_kwh (electricity and fuel per kWh of cells made, the cooling plant included); withdrawn_l_per_kwh and consumed_l_per_kwh (per kWh
-    of cells made); utilization. As for data centers (design 0010's standard treatment): withdrawn_peak_full_capacity, the 1-in-10-year peak day at
+    of cells made); utilization; blowdown_avg (towers and hybrid: the cooling towers' blowdown, MGD on an average day, part of to_sewer or to_stream). As for data centers (design 0010's standard treatment): withdrawn_peak_full_capacity, the 1-in-10-year peak day at
     full output, and power_mw_peak_1in10 at full output, so with utilization="sampled" each run is also worked at full output; at full output they
     are the run's own.
 
@@ -93,7 +93,8 @@ class _CellPlantRuns:
                           extras={"fuel_mw_avg": float(h["fuel"].mean()) * gwh / 1000.0,
                                   "site_kwh_per_kwh": float((h["electricity"] + h["fuel"]).mean()) / made,
                                   "withdrawn_l_per_kwh": float(h["withdrawn"].mean()) * bp.L_GAL / made,
-                                  "consumed_l_per_kwh": float(h["consumed"].mean()) * bp.L_GAL / made})
+                                  "consumed_l_per_kwh": float(h["consumed"].mean()) * bp.L_GAL / made,
+                                  **({"blowdown_avg": float(h["blow"].mean()) * 24 * gwh / 1e6} if design in ("towers", "hybrid") else {})})
 
 
 def lake_hours(times, water_temps):
