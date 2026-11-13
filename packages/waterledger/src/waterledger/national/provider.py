@@ -279,7 +279,7 @@ def estimate(state, site):
     if f.cooling == "lake" and lake not in D["lake_source"]:
         raise ValueError(f"{state}'s data has no lake-source results for {lake} (a snapshot from before 3.9.0)")
     flows = lambda dest: sc.lake_estimate(D, lake, d, f.it_mw, dest) if f.cooling == "lake" else sc.cooling_estimate(D, d, f.cooling, f.it_mw, dest)
-    evap = f.cooling in ("towers", "hybrid")
+    evap = f.cooling in f.EVAPORATIVE
     if src is None:
         src = default_source(ctx, evap)
     dest = site.wastewater

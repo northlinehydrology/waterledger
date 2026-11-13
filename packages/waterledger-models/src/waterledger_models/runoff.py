@@ -262,9 +262,13 @@ def salt(acres, imp, events):
 
 
 def fuel(it_mw):
-    """Backup generators and diesel stored on site."""
+    """Backup generators and diesel stored on site, for a data center of `it_mw` MW of IT capacity."""
+    return generators(it_mw * PARAMS["fuel"]["gen_mw_per_it_mw"])
+
+
+def generators(gen_mw):
+    """Backup generators of `gen_mw` MW and the diesel stored on site for them."""
     F = PARAMS["fuel"]
-    gen_mw = it_mw * F["gen_mw_per_it_mw"]
     return {"gen_mw": gen_mw, "units": round(gen_mw / F["unit_mw"]), "gal": [gen_mw * F["gal_per_mwh"] * h for h in F["hours"]]}
 
 

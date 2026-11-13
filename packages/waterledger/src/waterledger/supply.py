@@ -50,7 +50,7 @@ def estimate_supply(est, scenarios, n=DRAWS, seed=7, storm_years=None):
     from waterledger_models.supply import land, scenario as S
     site, f = est.site, est.site.facility
     if f.kind != "data_center":
-        raise NotImplementedError("supply scenarios at a place run for data centers until design 0010's facility contract")
+        raise NotImplementedError("supply scenarios at a place run for data centers so far; other facility types are still to come")
     if f.cooling == "lake":
         raise ValueError("Lake-source cooling does not depend on air weather; supply scenarios at a place need it")
     cid, times, t, rh, wx, note = place_weather(site.place)
