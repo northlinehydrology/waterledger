@@ -2,7 +2,9 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## Unreleased
+## 3.22.0 (Nov 13, 2026; model 1.15)
+
+waterledger and waterledger-models 3.22.0; waterledger-data stays 3.21.0.
 
 No model numbers change: every estimate in the ten states matches 3.21.0's to the bit (`tests/test_contract_identity.py`).
 
