@@ -83,6 +83,7 @@ attains = "21NYDECA"
 agency = "New York DEC"
 places = "cities and villages"
 subdivisions = "towns"
+weather_check = "New York failed four of the ERA5 check's criteria. The check corrects each place's cell without its own station, as for a place with no station nearby; about half of New York's places have none within 40 km. Inland, the design dry-bulb is close (0.54 C median against 0.75), but the hybrid average day differs from the stations' by a median 13.3% (the limit is 8%) and leans low (9.1% on average, limit 6%): upstate cells run cool, so at Syracuse, Niagara, Rochester and Elmira hybrid and closed loop with assist average days run 22 to 33% low, a few hundredths of a million gallons per day per 100 MW. The hybrid peak day differs by a median 7.6% (limit 6%). Corrected shore cells (Lake Ontario, the St. Lawrence, Long Island and New York Harbor) run 0.81 C off in the design dry-bulb (limit 0.5 C); the correction still improves on ERA5 alone (1.00 C). Cooling towers, which follow the wet bulb, are within 1% (docs/methods/era5-checks/ny.md)."
 
 [AZ]
 name = "Arizona"
