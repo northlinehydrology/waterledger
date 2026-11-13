@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from waterledger import comparisons, levels, scenario, states
+from waterledger import comparisons, levels, states
 from waterledger.estimate import Estimate
 from waterledger.facilities import AnyFacility
 from waterledger.facilities.data_center import local_weather  # noqa: F401  its old home
