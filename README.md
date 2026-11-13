@@ -25,7 +25,7 @@ sewer plants, weather and design storms.
   models step by step.
 - **Public data for any U.S. place**, fetched once and cached: Census, EPA, USGS, NOAA and EIA, with each place's
   downstream path traced across state lines. Michigan, Ohio, Virginia, Texas, Wisconsin, Indiana, Minnesota,
-  Pennsylvania, Georgia and Illinois are published as checked snapshots.
+  Pennsylvania, Georgia, Illinois, New York and Arizona are published as checked snapshots.
 - **Reproducible**: tests reproduce the published Water Ledger estimates exactly, and the data sources are checked nightly.
 
 [waterledger.org](https://waterledger.org) is powered by these packages.
@@ -114,6 +114,8 @@ They are validated, round-trip through JSON, and are described in
 | Pennsylvania | 2,622 cities, boroughs, towns, townships and counties | ERA5, each place's own cell (230 cells) | [waterledger.org/methods/pa](https://waterledger.org/methods/pa/), [brief](docs/methods/pa.pdf) |
 | Georgia | 697 cities, towns, consolidated governments and counties | ERA5, each place's own cell (222 cells) | [waterledger.org/methods/ga](https://waterledger.org/methods/ga/), [brief](docs/methods/ga.pdf) |
 | Illinois | 2,807 cities, villages, towns, townships and counties | ERA5, each place's own cell (276 cells) | [waterledger.org/methods/il](https://waterledger.org/methods/il/), [brief](docs/methods/il.pdf) |
+| New York | 1,584 cities and villages, towns and counties | ERA5, each place's own cell (250 cells) | [waterledger.org/methods/ny](https://waterledger.org/methods/ny/), [brief](docs/methods/ny.pdf) |
+| Arizona | 107 cities, towns and counties | ERA5, each place's own cell (83 cells) | [waterledger.org/methods/az](https://waterledger.org/methods/az/), [brief](docs/methods/az.pdf) |
 
 **Model 1.13** adds power supply scenarios ([design 0014](docs/design/0014-power-supply-scenarios.md)) and the shared Monte
 Carlo runner, and changes no data center or place number, so it reads model 1.11's snapshots too:
