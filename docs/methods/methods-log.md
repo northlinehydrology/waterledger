@@ -2483,3 +2483,37 @@ closest to a new project. Michigan matches at 0.99 (30.3% observed, 32.4% modele
 figures are likely low there, and the cell's mean speed is in `weather`. Pennsylvania's and Virginia's ridges are where this comes up in
 the published states. As with PV, the factor is delivered output over modeled, not wind speed alone. 2024 is one year. Model 1.15 changes
 supply scenarios only and reads model 1.11's snapshots (`MODELS["1.15"]`).
+
+## Nov 12, 2026: which HUC12s a place covers (next release)
+
+`waterledger_data.receiving.watersheds_by_place` lists the HUC12s each place covers, largest share first. It used to drop any
+overlap under 1% of the place, to leave out slivers where boundaries merely touch. In Arizona that left Apache (about 29,000 km2),
+Navajo and Yavapai counties with no HUC12 at all, since an 80 km2 HUC12 wholly inside Apache County is 0.3% of it, and the AZ
+snapshot failed its watershed coverage (0.972 against 0.99). An overlap now also counts when at least half of the HUC12 lies inside
+the place (`receiving.keeps`; `tests/test_watershed_keeps.py`). Every published snapshot already had full coverage. Their very large
+counties will list more HUC12s at their next build. No estimate changes: the list is context, and its first HUC12 starts the
+downstream path. The by-place cache takes a new name, so each state works it out afresh.
+
+## Nov 13, 2026: New York's ERA5 check, accepted with a note
+
+`waterledger era5 check NY` (model 1.11; 68 stations, 40 on land cells, 27 on corrected shore cells;
+[era5-checks/ny.md](era5-checks/ny.md)) failed four criteria. As for every state, each station and any within 5 km are left out of
+the correction of the cell they are tested on, so the check measures a place with no station nearby. About half of New York's
+places have none within 40 km of their cell (30% within 25 km, 75% within 60 km).
+
+- W5, shore: corrected shore cells run 0.81 C off in the design dry-bulb against a limit of 0.50 (1.00 C uncorrected). The
+  largest differences are on Lake Ontario, where the stations left for the correction are across the lake in Ontario: Watertown
+  -2.83 C, Niagara Falls -2.27 C, Trenton (Ont.) -3.08 C, Point Petre +2.29 C.
+- P2 to P4, places: for 12 places within 8 km of a station, the cooling model on the cell's weather against the model on the
+  station's own hours (400 draws, seed 7, per 100 MW). The hybrid average day differs by a median 13.3% (limit 8%) with a mean of
+  -9.1% (limit 6%); the hybrid peak day by a median 7.6% (limit 6%). Cooling towers, which follow the wet bulb, differ by a median
+  0.5%.
+- Why the hybrid average day: hybrid cooling uses water only above a dry-bulb switch point, so its average day is small (0.04 to
+  0.08 MGD per 100 MW in New York, against about 0.66 for towers) and moves with a few hot hours. Upstate cells run 0.5 to 2 C cool
+  in the design dry-bulb where the station is left out, so North Syracuse (-31%), Niagara (-33%), Gates (-28%) and Big Flats (-22%)
+  run low; Rye Brook runs 22% high. The largest difference, Niagara, is about 0.025 MGD per 100 MW.
+- On the site, a place near a station has it in its correction (Colonie's cell is 99% Albany's airport, Big Flats's 92% Elmira's),
+  so the check describes the places away from stations.
+
+Andrew accepted it on Nov 13, 2026 ("we can go with it with a methods note"). The note is `weather_check` in states.toml and on
+New York's methods page. The station correction for land cells decided on Nov 6 is the method change that would address it.
