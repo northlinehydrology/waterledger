@@ -1,4 +1,4 @@
-"""The national tier's places (Census) for the test states: Ohio, Virginia, Texas, Wisconsin, Indiana, Pennsylvania, Minnesota, Georgia and Illinois (nightly; pytest -m live)."""
+"""The national tier's places (Census) for the test states: Ohio, Virginia, Texas, Wisconsin, Indiana, Pennsylvania, Minnesota, Georgia, Illinois and Arizona (nightly; pytest -m live)."""
 import pytest
 
 import waterledger as wl
@@ -28,6 +28,9 @@ pytestmark = pytest.mark.live
     ("Aurora city, IL", "1703012", "Aurora", "city", "Kane"),
     ("Chicago city, IL", "1714000", "Chicago", "city", "Cook"),
     ("Elk Grove Village village, IL", "1723256", "Elk Grove Village", "village", "Cook"),
+    ("Mesa city, AZ", "0446000", "Mesa", "city", "Maricopa"),
+    ("Marana town, AZ", "0444270", "Marana", "town", "Pima"),
+    ("Apache County, AZ", "04001", "Apache County", "county", "Apache"),
 ])
 def test_finds(query, geoid, name, kind, county):
     if geoid is None:                     # Ashburn is a census-designated place, not a government: look up Loudoun County
@@ -58,6 +61,7 @@ def test_counts_and_independent_cities_once():
     ("MN", 44.9778, -93.2650, "Minneapolis"),          # downtown Minneapolis
     ("GA", 33.7490, -84.3880, "Atlanta"),              # downtown Atlanta
     ("IL", 41.8781, -87.6298, "Chicago"),              # the Loop
+    ("AZ", 33.4484, -112.0740, "Phoenix"),             # downtown Phoenix
 ])
 def test_place_at_a_point(state, lat, lon, name):
     p = wl.place(lat=lat, lon=lon)
