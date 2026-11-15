@@ -22,7 +22,7 @@ water user type; MODELS says which types a version changes and whether the state
 from waterledger_models import battery, datacenter, gas, grid, hydrology, quantile_mapping, runoff, runs, supply, weather
 
 __all__ = ["battery", "datacenter", "gas", "grid", "hydrology", "quantile_mapping", "runoff", "runs", "supply", "weather", "MODEL_VERSION", "MODELS", "snapshot_model"]
-MODEL_VERSION = "1.15"
+MODEL_VERSION = "1.16"
 
 # Each model version from 1.12 names the water user types whose numbers it changes and the model version of the snapshots it reads.
 # A version that changes nothing the snapshots carry (data centers, the places' water and power) skips them and reads the last
@@ -32,6 +32,7 @@ MODELS = {
     "1.13": {"types": ("gas", "supply", "battery"), "snapshots": "1.11"},     # gas plants, supply scenarios; battery's stream return
     "1.14": {"types": ("gas", "supply"), "snapshots": "1.11"},                # outages that last days; PV against the 2024 fleet
     "1.15": {"types": ("supply",), "snapshots": "1.11"},                      # wind against the 2024 fleet
+    "1.16": {"types": ("datacenter", "battery", "supply"), "snapshots": "1.16"},   # air-cooled chillers respond to the air (design 0015); snapshots rebuilt
 }
 
 
