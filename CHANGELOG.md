@@ -2,6 +2,15 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## Unreleased (model 1.16)
+
+waterledger-models: model 1.16. Data center, battery cell plant and supply numbers change; every state's snapshot is rebuilt.
+
+- **Air-cooled chillers respond to the air** (design 0015; `docs/methods/methods-log.md`, Nov 15): `heat_rejection.chiller_cop`
+  with a fixed-loss term, `AIR_CHILLER_LOSS` (0.0767), fitted to ASHRAE 90.1's air-cooled screw chiller curve (PNNL-26917,
+  Table 80). `carnot_air` becomes 0.571-0.761, keeping the rating band. New sampled parameter `air_cop_cap`, 5-7.6, in place of
+  the fixed cap of 5; `CHILLER_COP_CAP` keeps only the water-cooled cap. Water-cooled chillers are unchanged.
+
 ## 3.23.0 (Nov 13, 2026; model 1.15)
 
 waterledger and waterledger-data 3.23.0; waterledger-models stays 3.22.0. No model numbers change.
