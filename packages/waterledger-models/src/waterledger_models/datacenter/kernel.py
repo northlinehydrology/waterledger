@@ -16,6 +16,7 @@ import math
 import numpy as np
 from numba import njit
 
+from waterledger_models import heat_rejection as hr
 from waterledger_models.datacenter import physics as ph
 
 DESIGN_CODE = {"dry": 0, "assist": 1, "hybrid": 2, "towers": 3}
@@ -30,6 +31,7 @@ F = {k: i for i, k in enumerate(FIELDS)}
 RHO_AIR, RHO_WATER, CP_AIR, CP_WATER, LATENT_KJ = ph.RHO_AIR, ph.RHO_WATER, ph.CP_AIR, ph.CP_WATER, ph.LATENT_KJ
 KWH_BTU, HFG, LB_GAL, KG_GAL, DEHUMIDIFY_WATER = ph.KWH_BTU, ph.HFG, ph.LB_GAL, ph.KG_GAL, ph.DEHUMIDIFY_WATER
 COP_WATER, COP_AIR = ph.CHILLER_COP_CAP["water"], ph.CHILLER_COP_CAP["air"]
+AIR_LOSS = hr.AIR_CHILLER_LOSS
 
 
 def load_values(p, design):
@@ -98,7 +100,7 @@ def _loop_terms(supply, t, wb, hsat_wb, coil_air, wet, v):
     free = _clip(((ret - outside) - 0.0) / ((ret - supply) - 0.0), 0.0, 1.0)
     evaporator = supply - 2.0
     water_cooled = min(v[18] * (evaporator + 273.15) / max(wb + v[14] + v[17] / 1.8 + 2.0 - evaporator, 1.0), COP_WATER)
-    air_cooled = min(v[19] * (evaporator + 273.15) / max(coil_air + 12.0 - evaporator, 1.0), COP_AIR)
+    air_cooled = min(1.0 / (AIR_LOSS + max(coil_air + 12.0 - evaporator, 1.0) / (v[19] * (evaporator + 273.15))), COP_AIR)
     hot_water = max(wb + v[14] + v[17] / 1.8, ret - v[15])
     rise = max(ret - v[15] - v[16] - coil_air, v[31])
     return free, water_cooled, air_cooled, _hsat(hot_water) - hsat_wb, rise

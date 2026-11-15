@@ -62,9 +62,12 @@ EQUIPMENT = {
     "pump_eff": (0.60, 0.80),
     # Chillers as a fraction of Carnot COP. Water-cooled: 0.70 from code minimums for large plant (0.560 kW/ton gives 0.72, 0.585 gives 0.69; WAC
     # 51-11C-403323, a stated replica of ASHRAE 90.1 Table 6.8.1-3; its part-load adjustment gives 0.67-0.73), +/-11% (Lei and Masanet's COP error).
-    # Air-cooled: 0.45 from EER 10.1, 0.55 [A]. Both are fitted together with the temperature offsets below (2 K, 2 K, 12 K) [A].
+    # Both are fitted together with the temperature offsets below (2 K, 2 K, 12 K) [A].
+    # Air-cooled (model 1.16): the Carnot term's fraction in 1/COP = AIR_CHILLER_LOSS + lift / (carnot_air x T_evap), with the loss fitted to
+    # ASHRAE 90.1's reference curve (AIR_CHILLER_LOSS). 0.571 gives COP 2.96 (EER 10.1, 90.1's Path A full-load minimum) at the rating point
+    # (6.7 C leaving water, 35 C air); 0.761 gives 3.61 there, the top of the range through model 1.15 (0.45-0.55 of Carnot then) [A].
     "carnot_water": (0.62, 0.78),
-    "carnot_air": (0.45, 0.55),
+    "carnot_air": (0.571, 0.761),
     # Dry coolers. No standard or peer-reviewed design values exist, since selection data are proprietary, so these are assumptions tested in the
     # sensitivity analysis [A]: approach, a catalogue point of 10 K (ThermoKey) to the 5 K makers quote for larger coils; air-side pressure and
     # efficiency by analogy with Lei and Masanet's tower fans. The air rise is assist_dt_air's selection-sheet range.
@@ -95,6 +98,13 @@ HYBRID_MIN_RAMP = 1.0      # K [A]: where a location's design dry-bulb is at or 
 # 1042.14 and 1026.49), linear in temperature and share.
 GLYCOL = {0.30: (3.870, 1025.2), 0.40: (3.701, 1036.9)}
 CHILLER_COP_CAP = {"water": 8.0, "air": 5.0}          # FEMP's 5-8 for water-cooled; air-cooled part-load code minimums reach about 4.1-4.7 [A]
+# An air-cooled chiller's fixed losses, as a share of its load (model 1.16, design 0015): 1/COP = AIR_CHILLER_LOSS + lift / (carnot_air x T_evap), with
+# lift = air at the coil + 12 - T_evap and T_evap = supply - 2 (K). Fitted by least squares on relative error to ASHRAE 90.1's default EIR-FT curve for
+# air-cooled screw chillers (COMNET 2017, as given in PNNL-26917, the 90.1-2016 Performance Rating Method Reference Manual, Table 80) over its
+# range (leaving water 4.4-12.2 C) and the hours chillers run (air 15-46 C): 0.0767, RMS error 4.6%, largest 14%. Through model 1.15 the
+# loss was zero and the COP was capped at 5, which the warm loops reach at every temperature a Great Lakes summer has, so an air-cooled chiller
+# drew the same power at 25 C as at 33 C. The fit is extrapolated in leaving water above 12.2 C by the lift, and the cap stays [A].
+AIR_CHILLER_LOSS = 0.0767
 CP_AIR, CP_WATER, RHO_AIR, RHO_WATER = 1.01, 4.1868, 1.15, 1000.0     # kJ/kg/K, kg/m3; 4.1868 kJ/kg/K is the 1 BTU/lb/F the water terms use
 
 
@@ -237,6 +247,12 @@ def tower_water(btu, tdb, wet, p):
     return evap, drift, blow
 
 
+def chiller_cop(condenser, evaporator, eta, loss, cap):
+    """A chiller's COP from its condensing and evaporating temperatures, C: 1/COP = loss + lift / (eta x T_evap), the lift at least 1 K, capped at cap.
+    With no loss it is a fixed fraction of Carnot (water-cooled chillers); air-cooled chillers carry AIR_CHILLER_LOSS (design 0015)."""
+    return np.minimum(1.0 / (loss + np.maximum(condenser - evaporator, 1.0) / (eta * (evaporator + 273.15))), cap)
+
+
 def loop(load, supply, tdb, twb, coil_air, wet, design, p):
     """One facility water loop carrying `load` at `supply` C, in kW per kW of the water user's own load (IT for a data center, plant energy for a
     battery cell plant): chiller power, pump power (both end up as heat to reject) and heat rejection fan power (whose heat goes straight to the exhaust air).
@@ -247,9 +263,8 @@ def loop(load, supply, tdb, twb, coil_air, wet, design, p):
     free = _ramp(ret - outside, 0.0, ret - supply)                # Lei and Masanet: the economizer's share falls from 1 to 0 as outside approaches the return
     chilled = load * (1 - free)
     evaporator = supply - 2.0
-    cop = lambda condenser, eta, cap: np.minimum(eta * (evaporator + 273.15) / np.maximum(condenser - evaporator, 1.0), cap)
-    water_cooled = cop(twb + p["tower_approach"] + p["range_f"] / 1.8 + 2.0, p["carnot_water"], CHILLER_COP_CAP["water"])
-    air_cooled = cop(coil_air + 12.0, p["carnot_air"], CHILLER_COP_CAP["air"])     # its rated COP includes its condenser fans
+    water_cooled = chiller_cop(twb + p["tower_approach"] + p["range_f"] / 1.8 + 2.0, evaporator, p["carnot_water"], 0.0, CHILLER_COP_CAP["water"])
+    air_cooled = chiller_cop(coil_air + 12.0, evaporator, p["carnot_air"], AIR_CHILLER_LOSS, CHILLER_COP_CAP["air"])  # its rated COP includes its condenser fans
     # the chiller rejects through the same split as the rest of the heat: to evaporating water in the wet share, to air in the rest
     chiller = chilled * (wet / water_cooled + (1 - wet) / air_cooled)
     econ_pump = _pump_kw(load * free / (CP_WATER * p["water_rise"]), p["pump_econ_kpa"], p["pump_eff"])
@@ -293,7 +308,7 @@ def lake_loop(load, supply, water_t, p):
     free = _ramp(ret - (water_t + p["hx_approach"]), 0.0, ret - supply)
     chilled = load * (1 - free)
     evaporator = supply - 2.0
-    cop = np.minimum(p["carnot_water"] * (evaporator + 273.15) / np.maximum(water_t + p["rise_c"] + 2.0 - evaporator, 1.0), CHILLER_COP_CAP["water"])
+    cop = chiller_cop(water_t + p["rise_c"] + 2.0, evaporator, p["carnot_water"], 0.0, CHILLER_COP_CAP["water"])
     chiller = chilled / cop
     pumps = (_pump_kw(load * free / (CP_WATER * p["water_rise"]), p["pump_econ_kpa"], p["pump_eff"])
              + _pump_kw(chilled / (CP_WATER * p["water_rise"]), p["pump_chw_kpa"], p["pump_eff"]))
