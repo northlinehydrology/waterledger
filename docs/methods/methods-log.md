@@ -2670,3 +2670,15 @@ Examiner, Sep 2025), both with domestic water in the average; model 1.15 gave 8.
 around the 85-86 °F that Microsoft and Meta state and what AWS's and Microsoft's stated time on water implies at their sites. Below it,
 chillers do the work. Before, the model went wet at 70 °F on most plants, three to twenty times the hours operators report. Average water
 for pads and hybrids falls five- to tenfold, the peak day about half, and electricity rises slightly.
+
+## Nov 15, 2026: the starting design is pads on hot days
+
+**Decision** (Andrew). Where a proposal publishes no cooling design, and for a place with no proposal, the calculator starts from
+assist (dry coolers with pads on hot days), no longer dry. Most tracked proposals that state a design say closed loop, and closed loop
+describes the building's inside loop, not how heat leaves it: campuses that claim it have dry coolers, pads on the hottest days or towers
+(Northline's cooling review, Nov 15). A claim of closed loop that names no dry equipment and doesn't say it uses no water for cooling
+loads assist on the trackers too; one that does loads dry. With the switch setting of design 0016, assist's average water is small and
+its peak day is where the difference shows. `scenario()` starts the same way.
+
+**Short form** (methods pages): Where the cooling design isn't published, the calculator starts from dry coolers with pads on the
+hottest days, since most proposals say closed loop and closed loop doesn't rule out water in the hottest weather.

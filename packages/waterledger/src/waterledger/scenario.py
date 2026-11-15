@@ -10,7 +10,7 @@ from waterledger_data.config import CACHE, SITE
 
 DATA = os.path.join(SITE, "mi", "data")
 PUBLISHED = "https://waterledger.org/mi/data/{name}.json"     # the same files, as published
-DESIGNS = {"dry": "Dry coolers or air-cooled chillers (no evaporation)", "hybrid": "Hybrid (evaporative in warm weather)", "towers": "Cooling towers (evaporative all year)", "lake": "Lake-source (once-through)"}
+DESIGNS = {"dry": "Dry coolers or air-cooled chillers (no evaporation)", "assist": "Dry with evaporative pads on hot days", "hybrid": "Hybrid (evaporative in warm weather)", "towers": "Cooling towers (evaporative all year)", "lake": "Lake-source (once-through)"}
 SOURCE_LABEL = {"muni": "a public water system", "wells": "new wells in the aquifer", "lake": "lake surface water"}
 DEST_LABEL = {"sewer": "the public sewer", "septic": "a septic system on site", "water": "a river or lake (its own discharge)", "reuse": "treatment and reuse on site"}
 SYS_POP = 3300    # [A] a "sizable" public water system serves more than this many people (EPA's medium size and up; as waterledger_data.supply)
@@ -303,9 +303,11 @@ def land_default(incorporated):
     return (50, "built") if incorporated else (200, "farm")
 
 
-def scenario(gid, mw=None, cool="dry", src=None, dest=None, acres=None, before=None, imp=0.5, power="state_mix", h12=0, name=None, plant=DEFAULT_PLANT):
+def scenario(gid, mw=None, cool="assist", src=None, dest=None, acres=None, before=None, imp=0.5, power="state_mix", h12=0, name=None, plant=DEFAULT_PLANT):
     p = place(gid)
     # the page's starting settings for a place [A]: cities a smaller campus on a smaller, built-up site; townships 300 MW on farmland
+    # and pads on hot days (assist) where no design is published (Andrew, Nov 15, 2026; dry until then): most proposals say closed loop, which
+    # doesn't rule out water in the hottest weather
     city = p["k"] == "city"
     mw = mw or (100 if city else 300)
     src = src or src_for(p, cool)["src"]   # the page's starting water source for the place and cooling design

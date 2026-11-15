@@ -18,6 +18,8 @@ waterledger-models: model 1.16. Data center, battery cell plant and supply numbe
 - **Design labels** name how heat leaves the building (`datacenter.cooling.LABELS`, `scenario.DESIGNS`): dry is "Dry coolers or
   air-cooled chillers (no evaporation)", no longer "Closed loop"; new `cooling.CLOSED_LOOP` says every design has a closed loop
   inside. Codes are unchanged.
+- **`scenario()` starts from assist** (pads on hot days), not dry, where no cooling is given, as waterledger.org now does: most
+  proposals say closed loop, which doesn't rule out water in the hottest weather. Pass `cool="dry"` for the old start.
 
 ## 3.23.0 (Nov 13, 2026; model 1.15)
 
