@@ -69,7 +69,7 @@ POWER = {
     "crah_pa": (300.0, 700.0), "fan_eff": EQUIPMENT["fan_eff"],
     "tower_fan_pa": EQUIPMENT["tower_fan_pa"], "lg": EQUIPMENT["lg"], "tower_approach": EQUIPMENT["tower_approach"], "hx_approach": EQUIPMENT["hx_approach"],
     "pump_chw_kpa": EQUIPMENT["pump_chw_kpa"], "pump_tower_kpa": EQUIPMENT["pump_tower_kpa"], "pump_econ_kpa": EQUIPMENT["pump_econ_kpa"], "pump_eff": EQUIPMENT["pump_eff"],
-    "carnot_water": EQUIPMENT["carnot_water"], "carnot_air": EQUIPMENT["carnot_air"],
+    "carnot_water": EQUIPMENT["carnot_water"], "carnot_air": EQUIPMENT["carnot_air"], "air_cop_cap": EQUIPMENT["air_cop_cap"],
     "dc_approach": EQUIPMENT["dc_approach"], "dc_fan_pa": EQUIPMENT["dc_fan_pa"],
     "glycol_share": EQUIPMENT["glycol_share"],
     # Liquid-cooled computers: the rest of their heat goes by air: 12.9% (HPE GB200 NVL72), 20% (Schneider WP210), 25-39% (ASME InterPACK2022, not read
@@ -160,7 +160,8 @@ SOURCES = {
     "hx_approach": f"{_LM}; the dry coolers' glycol exchanger by analogy (model 1.9) [A]",
     "pump_tower_kpa": f"{_LM}; the dry coolers' glycol loop by analogy (model 1.9) [A]",
     "carnot_water": "WAC 51-11C-403323 (replica of ASHRAE 90.1 Table 6.8.1-3); +/-11% from Lei and Masanet; fitted with the temperature offsets [A]",
-    "carnot_air": "EER 10.1; 0.55 [A]; fitted with the temperature offsets [A]",
+    "carnot_air": "With AIR_CHILLER_LOSS fitted to ASHRAE 90.1's air-cooled screw EIR-FT curve (PNNL-26917, Table 80): COP 2.96 at the rating point, EER 10.1 (90.1 Path A); 3.61 [A]",
+    "air_cop_cap": "ASHRAE 90.1's EIR-FT curve, fitted over its whole range (7.6); 5 [A], the value through model 1.15; makers' part-load figures above it (Mitsubishi MECH-iC, Daikin Pathfinder)",
     "dc_approach": "ThermoKey catalogue point (10 K); makers' quotes for larger coils (5 K) [A]",
     "dc_fan_pa": "By analogy with Lei and Masanet's tower fans [A]",
     "glycol_share": "Burst to freeze protection [A]; freezing points, heat capacity and density from Dow's DOWFROST Technical Data Sheet, Form No. 180-01314-1019",
@@ -450,7 +451,7 @@ def blowdown_temperature(twb, design, p):
 LINKED = {
     # a well-built plant: efficient power equipment, low pressure drops, tight approaches and good chillers together
     "plant": {"ups": 1, "dist_loss": -1, "fan_eff": 1, "pump_eff": 1, "crah_pa": -1, "tower_fan_pa": -1, "dc_fan_pa": -1, "pump_chw_kpa": -1, "pump_tower_kpa": -1,
-              "pump_econ_kpa": -1, "coil_eff": 1, "tower_approach": -1, "hx_approach": -1, "dc_approach": -1, "carnot_water": 1, "carnot_air": 1},
+              "pump_econ_kpa": -1, "coil_eff": 1, "tower_approach": -1, "hx_approach": -1, "dc_approach": -1, "carnot_water": 1, "carnot_air": 1, "air_cop_cap": 1},
     # one temperature design: warm supply air goes with wide temperature rises across the coil, the loop and, through the plate exchanger, the tower
     "loop": {"supply_air": 1, "air_rise": 1, "water_rise": 1, "range_f": 1, "chilled_water": 1},
     # AI campuses: higher utilization and steadier load (EPRI's hyperscale pair against its co-location pair), more liquid cooling, warmer liquid loops

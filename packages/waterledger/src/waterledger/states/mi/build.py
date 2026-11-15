@@ -50,6 +50,9 @@ SOURCES = {
     "lbnl2024": ("Shehabi, A., et al. (2024). 2024 United States Data Center Energy Usage Report. Lawrence Berkeley National Laboratory, LBNL-2001637.", "https://doi.org/10.71468/P1WC7Q"),
     "lei2022": ("Lei, N., & Masanet, E. (2022). Climate- and technology-specific PUE and WUE estimations for U.S. data centers using a hybrid statistical and thermodynamics-based approach. Resources, Conservation and Recycling 182: 106323.", "https://doi.org/10.1016/j.resconrec.2022.106323"),
     "wa_energy_code": ("Washington State Energy Code, WAC 51-11C-403323 and C403.3.2.4, stated replica of ASHRAE 90.1 Table 6.8.1-3: minimum chiller efficiency and its part-load adjustment.", "https://lawfilesext.leg.wa.gov/Law/WACArchive/2024/pdf/WAC%20%2051%20-%2011C%20CHAPTER/WAC%20%2051%20-%2011C-403323.pdf"),
+    "pnnl_prm2016": ("Rosenberg, M., et al. (2017). ANSI/ASHRAE/IES Standard 90.1-2016 Performance Rating Method Reference Manual. PNNL-26917, Pacific Northwest National Laboratory: Table 80, default EIR-FT coefficients for air-cooled chillers (from COMNET 2017).", "https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-26917.pdf"),
+    "mitsubishi_mechic": ("Mitsubishi Electric. MECH-iC air-cooled magnetic bearing chillers: COP 3.88-3.95 at 18.9/27.8 C water and 42 C air (AHRI 550/590 certified capacity); 500 RT part load 0.559 kW/ton at 75% and 30 C, 0.407 at 50% and 20 C (illustrative).", "https://mitsubishicritical.com/data-center-cooling-solutions/chillers/"),
+    "daikin_pathfinder": ("Daikin Applied. Pathfinder air-cooled screw chiller, catalogue 640: IPLV over 22 EER.", "https://tahoeweb.daikinapplied.com/api/general/DownloadDocumentByName/media/Pathfinder - CAT 640.pdf"),
     "ashrae_tc99_2021": ("ASHRAE TC 9.9 (2021). Emergence and Expansion of Liquid Cooling in Mainstream Data Centers (white paper): W classes are ceilings from 2 C up to the class number (p. 8); recommended air up to 27 C (p. 15), 18-22 C for the H1 high-density class (p. 14).", "https://www.ashrae.org/File%20Library/Technical%20Resources/Bookstore/Emergence-and-Expansion-of-Liquid-Cooling-in-Mainstream-Data-Centers_WP.pdf"),
     "ashrae_904g": ("ASHRAE (2024). Addendum g to Standard 90.4-2022 (Jan 31, 2024): mechanical load component basis of an 11 K air rise to 29 C return air.", "https://www.ashrae.org/file%20library/technical%20resources/standards%20and%20guidelines/standards%20addenda/90_4_2022_g_20240131.pdf"),
     "ashrae_904_5a": ("Amistadi, H. (2020). Data center with CRAH and air chiller in climate zone 5A, ASHRAE 90.4 supplemental file: 18-19 C supply air, 44/56 F chilled water.", "https://www.ashrae.org/file%20library/technical%20resources/bookstore/supplemental%20files/data-center-with-crah-and-air-chiller-in-5a.pdf"),
@@ -175,7 +178,7 @@ SOURCES = {
     "wleb_dap": ("MDARD, EGLE and DNR. Michigan's Domestic Action Plan for the Western Lake Erie Basin (2025 update): a 40% cut in phosphorus loads from 2008 levels.", "https://www.michigan.gov/mdard/environment/conservation/wleb"),
 }
 
-SHORT = {"ashrae_tc99_2021": "ASHRAE TC 9.9 2021", "ashrae_904g": "ASHRAE 90.4 Add. g", "ashrae_904_5a": "ASHRAE 90.4 example 5A", "ocp2024_30c": "OCP 2024",
+SHORT = {"pnnl_prm2016": "PNNL-26917 (ASHRAE 90.1)", "mitsubishi_mechic": "Mitsubishi MECH-iC", "daikin_pathfinder": "Daikin Pathfinder", "ashrae_tc99_2021": "ASHRAE TC 9.9 2021", "ashrae_904g": "ASHRAE 90.4 Add. g", "ashrae_904_5a": "ASHRAE 90.4 example 5A", "ocp2024_30c": "OCP 2024",
          "uptime373": "Uptime 2025", "uptime_dlc2024": "Uptime 2024 survey", "schneider_rd109": "Schneider RD109", "nvidia_rubin2026": "NVIDIA 2026", "dow_dowfrost": "Dow DOWFROST",
          "lbnl2024": "LBNL 2024", "lei2021": "Lei & Masanet 2021", "wa_energy_code": "WAC 51-11C (ASHRAE 90.1)", "ashrae_tc99": "ASHRAE TC 9.9", "hpe_nvl72": "HPE NVL72", "schneider_wp210": "Schneider WP210", "lbnl2025": "LBNL 2025", "epri2026": "EPRI 2026", "iea2025": "IEA 2025", "google2025": "Google 2025",
          "eia923_2024": "EIA-923 2024", "eia_sep2024": "EIA state profiles 2024", "epa_onsite2002": "EPA 2002", "mi_septic": "Michigan septic criteria", "gilroy2022": "Gilroy 2022",
@@ -199,7 +202,7 @@ PARAM_SOURCES = {
     "supply_air": ["schneider_rd109", "ocp2024_30c", "ashrae_tc99_2021", "ashrae_904g", "ashrae_904_5a"], "air_rise": ["lei2021", "ashrae_904g"],
     "chilled_water": ["ashrae_904_5a"], "glycol_share": ["dow_dowfrost"],
     **{k: ["lei2021"] for k in ("ups", "dist_loss", "light", "coil_eff", "water_rise", "crah_pa", "fan_eff", "tower_fan_pa", "lg", "tower_approach", "hx_approach", "pump_chw_kpa", "pump_tower_kpa", "pump_econ_kpa", "pump_eff")},
-    "carnot_water": ["wa_energy_code", "lei2021"], "carnot_air": ["wa_energy_code"], "dc_approach": ["thermokey_sheet"], "dc_fan_pa": ["lei2021"],
+    "carnot_water": ["wa_energy_code", "lei2021"], "carnot_air": ["wa_energy_code", "pnnl_prm2016"], "air_cop_cap": ["pnnl_prm2016", "mitsubishi_mechic", "daikin_pathfinder"], "dc_approach": ["thermokey_sheet"], "dc_fan_pa": ["lei2021"],
     "liquid_water": ["schneider_rd109", "nvidia_rubin2026", "ocp2024_30c"], "liquid_air_share": ["hpe_nvl72", "schneider_wp210"],
     "liquid_share": ["uptime_dlc2024", "schneider_rd109"],
     "staff_core": ["jlarc2024", "gilroy2022"], "staff_per_mw": ["meta_richland", "meta_elpaso", "oracle_saline2026", "gilroy2022"],

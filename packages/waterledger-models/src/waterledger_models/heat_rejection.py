@@ -68,6 +68,12 @@ EQUIPMENT = {
     # (6.7 C leaving water, 35 C air); 0.761 gives 3.61 there, the top of the range through model 1.15 (0.45-0.55 of Carnot then) [A].
     "carnot_water": (0.62, 0.78),
     "carnot_air": (0.571, 0.761),
+    # The air-cooled chiller's highest COP (model 1.16, design 0015), which it reaches at small lifts: warm loop water and mild air. Through model 1.15 a
+    # fixed 5 [A]. No published value sets it, and a full-load curve does not reach it. ASHRAE 90.1's reference curve flattens toward 7.6 at the bottom of
+    # its range (the loss fitted over its whole range, 4.4-46 C air, is 0.132), for minimum-efficiency machines on 4.4-12.2 C water. Makers' part-load
+    # figures run higher: Mitsubishi's MECH-iC 500 ton, on about 19 C water, 0.559 kW/ton at 75% load and 30 C air (COP 6.3) and 0.407 at 50% and 20 C
+    # (COP 8.6), given as illustrative; Daikin's Pathfinder, an IPLV over 22 EER (COP 6.4) on 6.7 C water. 5-7.6 [A] (Andrew, Nov 15, 2026).
+    "air_cop_cap": (5.0, 7.6),
     # Dry coolers. No standard or peer-reviewed design values exist, since selection data are proprietary, so these are assumptions tested in the
     # sensitivity analysis [A]: approach, a catalogue point of 10 K (ThermoKey) to the 5 K makers quote for larger coils; air-side pressure and
     # efficiency by analogy with Lei and Masanet's tower fans. The air rise is assist_dt_air's selection-sheet range.
@@ -97,13 +103,13 @@ HYBRID_MIN_RAMP = 1.0      # K [A]: where a location's design dry-bulb is at or 
 # Technical Data Sheet, Form No. 180-01314-1019; 30%: 3.821 and 3.903 at -10 and 40 C, 1033.71 and 1019.56; 40%: 3.668 and 3.768 at 10 and 40 C,
 # 1042.14 and 1026.49), linear in temperature and share.
 GLYCOL = {0.30: (3.870, 1025.2), 0.40: (3.701, 1036.9)}
-CHILLER_COP_CAP = {"water": 8.0, "air": 5.0}          # FEMP's 5-8 for water-cooled; air-cooled part-load code minimums reach about 4.1-4.7 [A]
+CHILLER_COP_CAP = {"water": 8.0}          # FEMP's 5-8 for water-cooled [A]; the air-cooled cap is sampled (EQUIPMENT["air_cop_cap"], model 1.16)
 # An air-cooled chiller's fixed losses, as a share of its load (model 1.16, design 0015): 1/COP = AIR_CHILLER_LOSS + lift / (carnot_air x T_evap), with
 # lift = air at the coil + 12 - T_evap and T_evap = supply - 2 (K). Fitted by least squares on relative error to ASHRAE 90.1's default EIR-FT curve for
 # air-cooled screw chillers (COMNET 2017, as given in PNNL-26917, the 90.1-2016 Performance Rating Method Reference Manual, Table 80) over its
 # range (leaving water 4.4-12.2 C) and the hours chillers run (air 15-46 C): 0.0767, RMS error 4.6%, largest 14%. Through model 1.15 the
 # loss was zero and the COP was capped at 5, which the warm loops reach at every temperature a Great Lakes summer has, so an air-cooled chiller
-# drew the same power at 25 C as at 33 C. The fit is extrapolated in leaving water above 12.2 C by the lift, and the cap stays [A].
+# drew the same power at 25 C as at 33 C. The fit is extrapolated in leaving water above 12.2 C by the lift [A], up to the cap (air_cop_cap).
 AIR_CHILLER_LOSS = 0.0767
 CP_AIR, CP_WATER, RHO_AIR, RHO_WATER = 1.01, 4.1868, 1.15, 1000.0     # kJ/kg/K, kg/m3; 4.1868 kJ/kg/K is the 1 BTU/lb/F the water terms use
 
@@ -264,7 +270,7 @@ def loop(load, supply, tdb, twb, coil_air, wet, design, p):
     chilled = load * (1 - free)
     evaporator = supply - 2.0
     water_cooled = chiller_cop(twb + p["tower_approach"] + p["range_f"] / 1.8 + 2.0, evaporator, p["carnot_water"], 0.0, CHILLER_COP_CAP["water"])
-    air_cooled = chiller_cop(coil_air + 12.0, evaporator, p["carnot_air"], AIR_CHILLER_LOSS, CHILLER_COP_CAP["air"])  # its rated COP includes its condenser fans
+    air_cooled = chiller_cop(coil_air + 12.0, evaporator, p["carnot_air"], AIR_CHILLER_LOSS, p["air_cop_cap"])  # its rated COP includes its condenser fans
     # the chiller rejects through the same split as the rest of the heat: to evaporating water in the wet share, to air in the rest
     chiller = chilled * (wet / water_cooled + (1 - wet) / air_cooled)
     econ_pump = _pump_kw(load * free / (CP_WATER * p["water_rise"]), p["pump_econ_kpa"], p["pump_eff"])
