@@ -2571,3 +2571,59 @@ Arizona's places are within 40 km of one of the 17 stations (31% within 25 km, 6
 Andrew accepted it on Nov 13, 2026 ("Except weather with a methods note", agreeing to the check with a note). The note is
 `weather_check` in states.toml and on Arizona's methods page. The station correction for land cells decided on Nov 6 is the method
 change that would address it; elevation is the part a station correction alone may not fix.
+
+## Nov 15, 2026: air-cooled chillers that respond to the air (design 0015; model 1.16)
+
+**What was wrong.** Through model 1.15 an air-cooled chiller's COP was carnot_air (0.45-0.55) x T_evap / (T_coil + 12 - T_evap),
+capped at 5 [A]. On the shared and warm loops the chilled water is warm, so the lift is small and the Carnot term runs well above 5:
+the cap held at every air temperature a Great Lakes summer has. A dry plant drew the same chiller power at 25 C as at 33 C, and pads,
+which cool the air ahead of the coil, bought back nothing. Found in the Clam River study's closed-loop set (Nov 15): dry and pads
+both 85.9 MW on the 1-in-10-year peak day, and unchanged at the low end of carnot_air. On the stored West Michigan weather (shared
+loop, 100 MW, 40 draws) the two differed by 0.1 MW on the peak day and not at all in the hottest hour.
+
+**Evidence.** ASHRAE 90.1's default performance curves for air-cooled chillers (COMNET 2017, as given in Rosenberg et al. 2017,
+PNNL-26917, the Standard 90.1-2016 Performance Rating Method Reference Manual, Table 80: EIR-FT, a biquadratic in chilled water
+supply and outdoor dry-bulb, F, valid 40-54 F water and 40-115 F air) give COP falling 2.0-2.7% per K of air at the rating point
+(scroll 2.7, screw 2.5, reciprocating 2.0; 1.8-2.1% at 25 C). The Carnot term gives 2.4% there, so the form was sound and the cap was
+what removed the response. Within their range the curves flatten in cool air: at 15 C and 6.7 C water, EIR is 0.66 of rated, COP 1.5
+times rated. EnergyPlus's Chillers.idf has no air-cooled chillers (all 162 are water-cooled), so it was not used.
+
+**Method.** 1/COP = loss + lift / (carnot_air x T_evap), lift = T_coil + 12 - T_evap, T_evap = supply - 2, then capped. Fitted by least
+squares on relative error to the screw curve over its water range (4.4-12.2 C) and the air in which chillers run (15-46 C), normalized
+to the rating point (6.7 C water, 35 C air) at COP 2.96, EER 10.1, 90.1's Path A full-load minimum: loss 0.0767, carnot 0.571, RMS
+error 4.6%, largest 14% (scroll: 0.068, 0.550, 5.3%, 18%; reciprocating: 0.089, 0.605, 2.1%, 7.5%). Screw is used because large
+air-cooled plants are screw or centrifugal and the manual gives no air-cooled centrifugal curve. carnot_air becomes 0.571-0.761,
+which keeps the rating band of model 1.15 (COP 2.96-3.61 at the rating point). The form is extrapolated above 12.2 C water through the
+lift, which is the physical part; the biquadratics are not used directly, since they are not valid on warm water [A].
+
+**The cap.** Sampled 5-7.6 (`air_cop_cap`, with the well-built-plant group), Andrew's choice on Nov 15 after a search of makers' data
+found no single value:
+- fitted over the curve's whole range (air 4.4-46 C) the loss is 0.132 and carnot 0.761, a ceiling of 7.6 (screw; scroll 7.2,
+  reciprocating 9.1), for minimum-efficiency machines on cold water;
+- Mitsubishi Electric's MECH-iC page: COP 3.95 and 3.88 at full load, 42 C air, 18.9/27.8 C water (capacity AHRI 550/590 certified);
+  for the 500 ton model, 0.559 kW/ton at 75% load and 30 C air (COP 6.3), 0.407 at 50% and 20 C (COP 8.6), 0.426 at 25% and 12.8 C
+  (COP 8.3), NPLV 0.46, stated as illustrative and with no water temperature given for the part-load points;
+- Daikin Applied's Pathfinder (catalogue 640): IPLV over 22 EER (COP 6.4), on 6.7 C water;
+- Trane's TCA sheet (TCA-SLB001-EN, May 2026): 60-85 F leaving water, -20 to 130 F air, no efficiency;
+- 5, the value through model 1.15 [A].
+The makers' figures above 7.6 are part-load values, which the model has no term for.
+
+**Check.** Mitsubishi's full-load point (42 C air, 18.9 C water): the new form gives 3.33-4.08 over carnot_air's range, against 3.88-3.95
+published. Model 1.15 gave 3.5-4.3 there, below its cap, so the hot end barely moves.
+
+**Effect** (stored West Michigan weather 2023-2024, 100 MW of IT, 40 draws, medians, 1.15 to 1.16). Shared loop: dry peak day 94.75 to
+93.66 MW, hottest hour 133.4 to 134.4, annual PUE 1.192 to 1.186; pads 94.65 to 92.74, 133.4 to 131.7, 1.189 to 1.179; hybrid 93.64 to
+92.25, 132.2 to 129.4. What pads buy back over dry: 0.1 to 0.9 MW on the peak day, 0 to 2.7 MW in the hottest hour. Warm loop: dry 88.22
+to 87.35 on the peak day, 127.8 to 125.3 in the hottest hour. Chilled-water plant: its cold water keeps the chillers below 5 on hot
+days, so dry rises 99.85 to 101.18 on the peak day and 144.4 to 145.6 in the hottest hour. Towers are unchanged. Pad and hybrid water
+fall 1-3% on average (less chiller power, less heat to reject). Battery cell plants share the equipment, so their dry and assist numbers
+move too.
+
+**Not changed.** Water-cooled chillers keep no loss and the cap of 8. The same fit to 90.1's water-cooled curves (Table 81, 60-85 F
+condenser water) gives a Carnot fraction above 1 with this model's offsets: the curves are flatter than a Carnot fraction, about
+1.3-1.5% per K. That needs its own form and is open. The 12 K condenser offset stays an assumption [A].
+
+**Short form** (methods pages): Air-cooled chillers now lose efficiency as the air warms, following ASHRAE 90.1's reference curve,
+up to a highest COP of 5-7.6. Before, they ran at a COP of 5 whenever the loop water was warm, whatever the weather, so a dry plant's
+hot hours cost no more than its mild ones and adiabatic pads saved no electricity. Pads now save about 1 MW per 100 MW on the peak
+day and up to about 3 MW in the hottest hour; a dry plant's annual PUE falls slightly.
