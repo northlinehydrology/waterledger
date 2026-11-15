@@ -10,7 +10,7 @@ from waterledger_data.config import CACHE, SITE
 
 DATA = os.path.join(SITE, "mi", "data")
 PUBLISHED = "https://waterledger.org/mi/data/{name}.json"     # the same files, as published
-DESIGNS = {"dry": "Closed loop (designed to use no water for cooling)", "hybrid": "Hybrid", "towers": "Cooling towers", "lake": "Lake-source (once-through)"}
+DESIGNS = {"dry": "Dry coolers or air-cooled chillers (no evaporation)", "hybrid": "Hybrid (evaporative in warm weather)", "towers": "Cooling towers (evaporative all year)", "lake": "Lake-source (once-through)"}
 SOURCE_LABEL = {"muni": "a public water system", "wells": "new wells in the aquifer", "lake": "lake surface water"}
 DEST_LABEL = {"sewer": "the public sewer", "septic": "a septic system on site", "water": "a river or lake (its own discharge)", "reuse": "treatment and reuse on site"}
 SYS_POP = 3300    # [A] a "sizable" public water system serves more than this many people (EPA's medium size and up; as waterledger_data.supply)

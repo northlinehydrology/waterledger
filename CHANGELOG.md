@@ -15,6 +15,9 @@ waterledger-models: model 1.16. Data center, battery cell plant and supply numbe
   plus `switch_margin` (`heat_rejection.switch_point`); through model 1.15 the loop's limit alone, which sat at 21.1 C on the shared
   and chilled plants. Pads' and hybrids' average water falls five- to tenfold, their peak day about half. The derivation is
   `docs/methods/switch-setting/`.
+- **Design labels** name how heat leaves the building (`datacenter.cooling.LABELS`, `scenario.DESIGNS`): dry is "Dry coolers or
+  air-cooled chillers (no evaporation)", no longer "Closed loop"; new `cooling.CLOSED_LOOP` says every design has a closed loop
+  inside. Codes are unchanged.
 
 ## 3.23.0 (Nov 13, 2026; model 1.15)
 

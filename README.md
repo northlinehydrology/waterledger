@@ -8,7 +8,7 @@ Open Python tools for estimating the water and electricity that large new users 
 centers and battery cell plants, and for assembling the public U.S. water data around any place: water systems, watersheds, impaired waters,
 sewer plants, weather and design storms.
 
-- **Weather-driven cooling water model** for cooling towers, hybrid, closed loop, and dry coolers with adiabatic pre-cooling,
+- **Weather-driven cooling water model** for cooling towers, hybrid, dry coolers or air-cooled chillers, and dry coolers with evaporative pads on hot days,
   hour by hour over decades of weather, with Monte Carlo uncertainty over published parameter ranges; plus lake-source
   (once-through) cooling and staff water.
 - **Battery cell plant model**: the plant's heat, electricity, fuel and water hour by hour per GWh/yr of cells, on the same

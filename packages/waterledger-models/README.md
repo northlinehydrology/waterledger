@@ -13,8 +13,8 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
   facility loop, the default; a separate warm liquid loop; conventional chilled water; design 0007).
 - `datacenter.kernel`: the Monte Carlo's hourly heat balance and water compiled with Numba, one pass per hour; it
   agrees with `physics` to the last bit or two and is tested against it for every design and plant.
-- `datacenter.cooling`: the per-run Monte Carlo over decades of hourly weather for towers, hybrid, and closed loop with
-  or without evaporative assist, for one plant (`run_location`) or each (`run_plants`); staff water at the campus's size.
+- `datacenter.cooling`: the per-run Monte Carlo over decades of hourly weather for towers, hybrid, and dry coolers or
+  air-cooled chillers with or without evaporative pads (each with a closed loop inside the building), for one plant (`run_location`) or each (`run_plants`); staff water at the campus's size.
 - `battery`: battery cell plants (design 0009): `physics`, the plant's heat, electricity, fuel and water hour by hour per
   GWh/yr of cells for NMC or LFP cells, with returns to the sewer, the source or (with a permit of its own) a stream; `plant.run_location`, the Monte Carlo at
   one location, with the data centers' designs, full-capacity peak and water at the power plants; `bmi.BatteryCellBmi` (`[bmi]`).
