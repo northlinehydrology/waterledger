@@ -10,6 +10,11 @@ waterledger-models: model 1.16. Data center, battery cell plant and supply numbe
   with a fixed-loss term, `AIR_CHILLER_LOSS` (0.0767), fitted to ASHRAE 90.1's air-cooled screw chiller curve (PNNL-26917,
   Table 80). `carnot_air` becomes 0.571-0.761, keeping the rating band. New sampled parameter `air_cop_cap`, 5-7.6, in place of
   the fixed cap of 5; `CHILLER_COP_CAP` keeps only the water-cooled cap. Water-cooled chillers are unchanged.
+- **The operator's switch setting** (design 0016): new sampled operating parameter `switch_setting`, 26.5-32.0 C, for data
+  centers and battery plants (`heat_rejection.OPERATING`). Assist and hybrid go wet at the later of the setting and the loop's limit
+  plus `switch_margin` (`heat_rejection.switch_point`); through model 1.15 the loop's limit alone, which sat at 21.1 C on the shared
+  and chilled plants. Pads' and hybrids' average water falls five- to tenfold, their peak day about half. The derivation is
+  `docs/methods/switch-setting/`.
 
 ## 3.23.0 (Nov 13, 2026; model 1.15)
 

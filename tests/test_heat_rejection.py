@@ -60,9 +60,11 @@ def test_tower_water_closes():
 
 
 def test_hybrid_switches_on_its_own_setting():
-    p = {**{k: (a + b) / 2 for k, (a, b) in hr.EQUIPMENT.items()}, "switch_margin": 0.0, "design_db": 31.0}
+    p = {**{k: (a + b) / 2 for k, (a, b) in hr.EQUIPMENT.items()}, "switch_margin": 0.0, "switch_setting": 20.0, "design_db": 31.0}
     assert hr.switch_point(p, 24.0) == pytest.approx(24.0 + p["switch_margin"])
     assert hr.switch_point(p, 10.0) == hr.SWITCH_SETTINGS[0]               # within the settings controllers allow
+    assert hr.switch_point({**p, "switch_setting": 29.4}, 24.0) == 29.4     # the operator's setting, later than the loop's limit (model 1.16)
+    assert hr.switch_point({**p, "switch_setting": 29.4}, 33.0) == 33.0     # a warm loop's dry coil holds to its limit: no water before it
     assert hr.switch_point({**p, "switch_on": 26.0}, 20.0) == 26.0
     t = np.array([10.0, 26.0, 40.0])
     s = hr.wet_share(t, "hybrid", p, switch=25.0)

@@ -48,9 +48,18 @@ RANGES = {
     # TV tour of its Sterling, Virginia site, not Port Washington, with no capacity given.
     "fill_gal_per_mw": (2000.0, 12000.0),
     # When a dry cooler goes wet is an operator's setting (heat_rejection.OPERATING), not a property of the equipment (EVAPCO 2019, p. 2: a selection and
-    # control output; US 12,426,214 B1: a controller threshold with a range of embodiments). It is tied to the loop (model 1.7): the setting sits at the dry-bulb where the dry coil can no longer hold loop
+    # control output; US 12,426,214 B1: a controller threshold with a range of embodiments). It is tied to the loop (model 1.7): no water below the dry-bulb where the dry coil can no longer hold loop
     # supply, each user model's loop limit (switch_point), give or take this margin in K for operators who go wet early or trim with chillers a while longer [A]. Same for assist and hybrid.
+    # From model 1.16 the operator's setting (switch_setting, below) comes first wherever it is later than this.
     "switch_margin": (-2.0, 2.0),
+    # The operator's setting (model 1.16, design 0016; through model 1.15 the switch was the loop's limit alone, which on the shared and chilled plants sat at
+    # SWITCH_SETTINGS' 21.1 C floor). Below it the plant trades electricity for water, running chillers; above it, the water. Operators who state one use
+    # 85 F (29.4 C; Microsoft's direct-air fleet and Wisconsin) and about 86 F (30 C; Meta El Paso, from its utility). The range is the setting each operator's
+    # stated share of the year on water implies, from ERA5 hourly dry-bulb at the site, 2015-2024 (Northline cooling checks, Nov 15, 2026): Microsoft
+    # Virginia (10% of the year) 26.5 C to AWS New Carlisle (about 7 days a year) 32.0 C; AWS Sidney (3%) 28.2, Falls Township (6%) 28.0, Microsoft Georgia
+    # (55 days) 30.5; Wisconsin's (under 5%) and Phoenix's (up to 40%) are bounds at 25.2 and 27.4. The stated settings sit at its middle. These are fleets of
+    # outside air with pads; dry coolers with pads and hybrids are taken to be run the same way [A].
+    "switch_setting": (26.5, 32.0),
     # Dry coolers with adiabatic pre-cooling (model 1.3): the pads' effectiveness is shared equipment (heat_rejection.EQUIPMENT, from model 1.12).
     "assist_eff": EQUIPMENT["assist_eff"],
     "hybrid_full_offset": EQUIPMENT["hybrid_full_offset"],
@@ -147,6 +156,7 @@ SOURCES = {
     "drift": "EPA WaterSense at Work 2012, section 6.3, p. 6-9; EPA AP-42 13.4, Table 13.4-1",
     "fill_gal_per_mw": "Crusoe 2026; chilled-water loops of 3-10 gal per ton; top 12,000 [A]",
     "switch_margin": "Operator's setting around the loop's limit [A]: US 12,426,214 B1 (a controller threshold, 70-95 F in its embodiments); EVAPCO 2019, p. 2",
+    "switch_setting": "Microsoft (85 F, 2026) and Meta El Paso (about 86 F, El Paso Water, 2025) stated; the range is the setting implied by operators' stated shares of the year on water (Microsoft, AWS) at ERA5 hourly dry-bulb, 2015-2024 [A]",
     "assist_eff": "EVAPCO 2019 (presented at CTI, Feb 2019), p. 2; ASHRAE 2016, ch. 41",
     "hybrid_full_offset": "Around the location's own 0.4% design dry-bulb [A], no published value",
     "topup": "NIH 2023 Technical Bulletin (under 5% a year); 1% floor [A]",
@@ -209,8 +219,8 @@ def loop_limit(p):
 
 
 def switch_point(p):
-    """Dry-bulb at which assist or hybrid goes wet, C: the operator's setting. Set "switch_on" to fix it, for example as a scenario; otherwise the loop's limit plus the
-    run's margin, within SWITCH_SETTINGS (heat_rejection.switch_point)."""
+    """Dry-bulb at which assist or hybrid goes wet, C. Set "switch_on" to fix it, for example as a scenario; otherwise the later of the operator's setting and the
+    loop's limit plus the run's margin, within SWITCH_SETTINGS (heat_rejection.switch_point)."""
     return hr.switch_point(p, loop_limit(p))
 
 

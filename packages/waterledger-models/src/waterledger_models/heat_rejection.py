@@ -30,8 +30,11 @@ GAL_M3 = 264.172       # gallons per cubic meter
 # Operating settings: chosen by whoever runs the plant, not fixed by the equipment, so each water user model sets their ranges from its own evidence
 # (datacenter/physics.py, battery/physics.py) and a plant's own documents can fix them for a scenario. The physics here reads them as it reads the equipment's.
 #   coc            cycles of concentration: how far the tower water concentrates before it is bled off. Source water and treatment set the real limit.
-#   switch_margin  K from the user's loop limit to the dry-bulb where a hybrid (or a data center's assist) goes wet (switch_point).
-OPERATING = ("coc", "switch_margin")
+#   switch_setting the operator's dry-bulb setting above which a hybrid (or a data center's assist) uses water, where chillers could carry the load instead
+#                  (model 1.16, design 0016): water is traded for electricity only above it (switch_point).
+#   switch_margin  K from the user's loop limit to the dry-bulb where its dry coil alone can no longer hold the loop (switch_point): where the limit is above
+#                  the setting, as in a warm liquid loop, water waits for it.
+OPERATING = ("coc", "switch_setting", "switch_margin")
 
 # (low, high) ranges of the equipment parameters, sampled in each water user's Monte Carlo. Each user model draws them with its own.
 EQUIPMENT = {
@@ -88,7 +91,7 @@ EQUIPMENT = {
     "assist_dt_air": (9.0, 13.0),
     # Dry coolers with adiabatic pre-cooling, "assist" (model 1.3; shared from model 1.12). Pad saturation effectiveness: EVAPCO (presented at CTI,
     # Feb 2019, p. 2) measured 72-78% at 400-700 fpm across 10 pads, a maker's own test; ASHRAE (2016, ch. 41) gives 70 to over 95% for rigid media.
-    # Microsoft's 85 F is for its direct-air evaporative design, a different system, and is not used here.
+    # Microsoft's 85 F is a switch setting for its direct-air evaporative design, not an effectiveness; it informs the data center's switch_setting (model 1.16).
     "assist_eff": (0.70, 0.80),
     # The pads' bleed as a share of their evaporation: none for once-through pads (Guentner; Spinazzola 2021), up to 0.5 for recirculating pads
     # (SCE ET13SCE1020, 2015, p. 29: 10-50%; ASHRAE 2016 ch. 41 allows 5-100%).
@@ -192,9 +195,11 @@ def latin_hypercube(ranges, n, seed, linked=None):
 
 
 def switch_point(p, limit):
-    """Dry-bulb at which a hybrid (or a data center's assist) goes wet, C: the operator's setting. Set "switch_on" to fix it, for example as a scenario; otherwise
-    the plant's own loop limit (the dry-bulb where a dry coil can no longer hold the loop's supply) plus the run's margin, within SWITCH_SETTINGS."""
-    return p["switch_on"] if "switch_on" in p else np.clip(limit + p["switch_margin"], *SWITCH_SETTINGS)
+    """Dry-bulb at which a hybrid (or a data center's assist) goes wet, C. Set "switch_on" to fix it, for example as a scenario; otherwise the later of the
+    operator's setting (below it, chillers carry what the dry coil can't) and the plant's own loop limit (the dry-bulb where a dry coil can no longer hold the
+    loop's supply) plus the run's margin (below it, the dry coil holds the loop and nothing needs water), within SWITCH_SETTINGS (model 1.16, design 0016;
+    through model 1.15 the loop limit alone)."""
+    return p["switch_on"] if "switch_on" in p else np.clip(np.maximum(p["switch_setting"], limit + p["switch_margin"]), *SWITCH_SETTINGS)
 
 
 def hybrid_full(p, switch):

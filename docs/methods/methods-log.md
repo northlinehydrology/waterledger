@@ -2626,4 +2626,47 @@ condenser water) gives a Carnot fraction above 1 with this model's offsets: the 
 **Short form** (methods pages): Air-cooled chillers now lose efficiency as the air warms, following ASHRAE 90.1's reference curve,
 up to a highest COP of 5-7.6. Before, they ran at a COP of 5 whenever the loop water was warm, whatever the weather, so a dry plant's
 hot hours cost no more than its mild ones and adiabatic pads saved no electricity. Pads now save about 1 MW per 100 MW on the peak
-day and up to about 3 MW in the hottest hour; a dry plant's annual PUE falls slightly.
+day and up to about 3 MW in the hottest hour; a dry plant's annual PUE falls slightly. (With the switch setting of the same
+release, below, pads run fewer hours and save about 0.25 MW over the peak day; the hottest hour is unchanged.)
+
+## Nov 15, 2026: the operator's switch setting (design 0016; model 1.16)
+
+**What was wrong.** Assist and hybrid go wet at a switch point. Through model 1.15 it was the loop's limit (the dry-bulb where a dry
+coil can no longer hold the loop's supply) plus -2 to 2 K, within 21.1-35.1 C (70-95 F, US 12,426,214 B1). On the shared and chilled
+plants the limit is about 13 C and below 0 C, so every draw sat at 21.1 C. Northline's checks against operators' stated time on water
+(Nov 15) found the model's hours on water 3 to 20 times theirs: Wisconsin 16% of hours against under 5%, Sidney 22% against 3%,
+Virginia 28% against about 10%.
+
+**Evidence.** Stated settings: Microsoft's direct-air fleet and its Wisconsin campus, water above 85 F (29.4 C) (Microsoft, Jun 24,
+2026; Microsoft Wisconsin materials); Meta El Paso, no cooling water below about 86 F (30 C) (El Paso Water's chief executive, El Paso
+Matters, Oct 24, 2025). Stated time on water: Microsoft, Northern Virginia about 10% of the year and Phoenix up to 40% (Jun 24, 2026),
+Wisconsin under 5%, metro Atlanta the hottest ~55 days (Microsoft local, about Jan 2026); AWS, Sidney about 3% of the year (city FAQ),
+Falls Township outside air about 94% of the year (LevittownNow, Jul 28, 2026), New Carlisle about 7 days a year (TheStatehouseFile,
+AWS statement). These are fleets of outside air with pads; no operator states a setting for dry coolers with pads or for hybrid
+fluid coolers.
+
+**Method.** The setting each statement implies: the dry-bulb exceeded for the stated share of the year's hours, or for a number of
+days the daily maximum exceeded on that many days, from Open-Meteo's archive (ERA5-based) hourly 2 m temperature at the site's point,
+2015-2024 (`docs/methods/switch-setting/implied_switch.py`, `implied.md`): Virginia 26.5 C, Falls Township 28.0, Sidney 28.2, Atlanta
+30.5, New Carlisle 32.0; Phoenix at least 27.4 and Wisconsin at least 25.2 (upper bounds on the share). `switch_setting` is sampled
+26.5-32.0 C, uniform, the lowest and highest point figures; the stated 29.4 and 30 C sit at its middle (29.25). The switch is the later
+of the setting and the loop's limit plus the margin, still within 21.1-35.1 C: below the limit the dry coil holds the loop, between the
+limit and the setting chillers carry the rest, above both the plant uses water. Assist and hybrid are taken to be run as the operators'
+outside-air fleets are [A]. The battery plant takes the same range [A] (no battery plant states one); the gas plant's `switch_on`
+(20-30 C), a condenser setting with no chillers behind it, is unchanged. Reading a share of the year as a share of hours, and ERA5's
+grid cell for the site's own air, are part of the spread [A].
+
+**Effect** (stored West Michigan weather 2023-2024, 100 MW of IT, 40 draws, medians, with design 0015 in both). Shared loop: pads average
+0.070 to 0.0066 MGD, 1-in-10 peak day 0.57 to 0.23, peak-day power 92.74 to 93.41 MW; hybrid 0.059 to 0.0085, 0.58 to 0.33, 92.25 to
+93.26. Warm loop: pads 0.053 to 0.0060, 0.45 to 0.21; hybrid 0.039 to 0.0080, 0.42 to 0.31. Chilled-water plant: pads 0.077 to 0.0072,
+0.62 to 0.25; hybrid 0.062 to 0.0090, 0.62 to 0.36. Annual PUE rises about 0.004-0.006. What pads buy back over dry on the peak day
+falls from 0.9 to about 0.25 MW (shared); in the hottest hour it stays about 2.7 MW. Dry and towers are unchanged.
+
+**Check.** Pads' peak day over average day is now about 35 (shared loop), against about 31 (Mount Pleasant: about 468,000 gpd on the
+hottest days against about 15,000 average, WPR from Wisconsin DNR, May 2026) and 30 (Racine Water Utility records, phase 1, Wisconsin
+Examiner, Sep 2025), both with domestic water in the average; model 1.15 gave 8.
+
+**Short form** (methods pages): Pads and hybrids now use water only above the operator's switch setting, sampled 26.5-32 °C (80-90 °F),
+around the 85-86 °F that Microsoft and Meta state and what AWS's and Microsoft's stated time on water implies at their sites. Below it,
+chillers do the work. Before, the model went wet at 70 °F on most plants, three to twenty times the hours operators report. Average water
+for pads and hybrids falls five- to tenfold, the peak day about half, and electricity rises slightly.

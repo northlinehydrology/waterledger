@@ -108,6 +108,8 @@ RANGES = {
     "coc": (3.0, 6.0),
     # The hybrid's switch margin, as for data centers: a controller setting (US 12,426,214 B1) [A].
     "switch_margin": (-2.0, 2.0),
+    # The operator's setting above which the hybrid uses water rather than chillers, as for data centers (model 1.16, design 0016): no battery plant states one [A].
+    "switch_setting": (26.5, 32.0),
     # Output over nameplate for a running plant: Korean makers' company-wide utilization, 44-88% in 2022-2025 (Korea Times, Aug 15, 2025); ramp-ups
     # and pauses (Ultium, 2026). Full output, 1.0, is the headline, as every EA states its figure (design 0009, decision 2).
     "utilization": (0.4, 1.0),
@@ -133,6 +135,7 @@ SOURCES = {
     "staff_used": "Shaffer and Runkle 2007, Table 9 [A]",
     "coc": "As for data centers (Lei and Masanet; Han et al. 2026; DOE FEMP BMP #10); checked against DOE/EA-2189-S1, p. 19 (derived) and GA EPD App. 28655, p. 4 [A]",
     "switch_margin": "US 12,426,214 B1 (controller setting), as for data centers [A]",
+    "switch_setting": "As for data centers: operators' stated settings and shares of the year on water (Microsoft, Meta, AWS); none stated for a battery plant [A]",
     "utilization": "Korea Times, Aug 15, 2025 (company reports); Ultium pauses, 2026",
 }
 # LFP cells' energy per kWh over NMC's, sampled only for an LFP plant (plant.draws): Degen et al. 2023, Fig. 3 and source data (1.67 at the same
@@ -168,7 +171,8 @@ def central_parameters():
 
 
 def switch_point(p):
-    """Dry-bulb at which a hybrid goes wet, C: where its dry coil can no longer hold the process loop's supply, plus the run's margin [A]."""
+    """Dry-bulb at which a hybrid goes wet, C: the later of the operator's setting and where its dry coil can no longer hold the process loop's supply, plus the
+    run's margin [A] (heat_rejection.switch_point)."""
     return hr.switch_point(p, p["process_supply"] - p["dc_approach"] - p["hx_approach"])
 
 
