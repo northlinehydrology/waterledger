@@ -35,7 +35,7 @@ def _close(got, want, path=""):
 
 
 def test_battery_plants_match_their_record():
-    want = json.load(open(os.path.join(HERE, "data", "battery_before_runner.json")))
+    want = json.load(open(os.path.join(HERE, "data", "battery_before_runner.json"), encoding="utf-8"))
     _close(json.loads(json.dumps(battery_reference.results())), want)
 
 

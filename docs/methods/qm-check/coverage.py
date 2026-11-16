@@ -14,11 +14,11 @@ SETS = [("isd", ("isd",)), ("+ linked", ("isd", "isd-linked")), ("+ eccc", ("isd
 if __name__ == "__main__":
     out = sys.argv[1]
     A.setup(out)
-    st = [s for s in json.load(open(os.path.join(out, "stations.json"))) if s.get("qualifies")]
+    st = [s for s in json.load(open(os.path.join(out, "stations.json"), encoding="utf-8")) if s.get("qualifies")]
     for s in st:
         s["cell"], _, _, s["cell_land"] = A.cell_of(s["lat"], s["lon"])
     cells = defaultdict(lambda: {"places": 0, "by_state": defaultdict(int)})
-    for r in csv.DictReader(open(os.path.join(HERE, "..", "era5-check", "cell_assignment.csv"))):
+    for r in csv.DictReader(open(os.path.join(HERE, "..", "era5-check", "cell_assignment.csv"), encoding="utf-8")):
         c = cells[r["cell"]]
         c["places"] += 1
         c["by_state"][r["state"]] += 1
@@ -40,5 +40,5 @@ if __name__ == "__main__":
                         by_state[stt] += c
             row[rule] = {"cells": n, "places": places, "places_by_state": dict(by_state)}
         res["sets"].append(row)
-    json.dump(res, open(os.path.join(HERE, "coverage.json"), "w"), indent=1)
+    json.dump(res, open(os.path.join(HERE, "coverage.json"), "w", encoding="utf-8"), indent=1)
     print(json.dumps(res))

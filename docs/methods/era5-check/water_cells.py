@@ -10,7 +10,7 @@ from waterledger_data.config import CACHE
 C = CACHE + "/snapshots"
 out = {}
 for st in ("MI", "OH", "VA", "TX"):
-    x = json.load(open(f"{C}/{st}/2026-11-02.2/places.json"))["places"]
+    x = json.load(open(f"{C}/{st}/2026-11-02.2/places.json", encoding="utf-8"))["places"]
     rows = list(x.values()) if isinstance(x, dict) else x
     wet, cells, wetcells, lowland = [], set(), set(), 0
     for r in rows:

@@ -3,7 +3,7 @@ import json, os
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-d = json.load(open(os.path.join(HERE, "cv_weather.json")))
+d = json.load(open(os.path.join(HERE, "cv_weather.json"), encoding="utf-8"))
 R = d["rows"]
 K = [("ddb", "Design dry-bulb (C)"), ("wb", "0.4% wet bulb (C)"), ("summer_pm", "Summer afternoon T (C)"), ("td", "Mean dew point (C)")]
 

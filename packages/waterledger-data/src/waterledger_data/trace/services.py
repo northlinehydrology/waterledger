@@ -43,7 +43,7 @@ class Client:
     def get(self, url, params):
         path = self._cache_path(url, params)
         if path and os.path.exists(path):
-            with open(path) as f:
+            with open(path, encoding="utf-8") as f:
                 return json.load(f)
         for attempt in range(self.retries):
             try:
@@ -59,7 +59,7 @@ class Client:
                 time.sleep(2 * (attempt + 1))
         if path:
             os.makedirs(self.cache_dir, exist_ok=True)
-            with open(path, "w") as f:
+            with open(path, "w", encoding="utf-8") as f:
                 json.dump(data, f)
         return data
 

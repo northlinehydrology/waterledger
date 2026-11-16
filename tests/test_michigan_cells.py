@@ -15,7 +15,7 @@ pytestmark = pytest.mark.skipif(not os.path.exists(RUN), reason="Michigan part 1
 @pytest.fixture
 def site(tmp_path, monkeypatch):
     """A site data folder: estimates with a region's results and staff draws, and one cell file, as `waterledger build mi` writes them."""
-    run = json.load(open(RUN))
+    run = json.load(open(RUN, encoding="utf-8"))
     d = tmp_path / "data"
     (d / "cells").mkdir(parents=True)
     old = {k: {"p10": v["p10"] * 2, "p50": v["p50"] * 2, "p90": v["p90"] * 2, "central": v["central"] * 2} for k, v in run["per_100mw"]["hybrid"].items()}

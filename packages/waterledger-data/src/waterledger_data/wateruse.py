@@ -249,8 +249,8 @@ def ohio_raw(refresh=False):
                "surface": _odnr_query(2, where, "RegistrationNumber,Year,Total"),
                "ground": _odnr_query(3, where, "RegistrationNumber,Year,Total")}
         os.makedirs(RAW, exist_ok=True)
-        json.dump(raw, open(path, "w"))
-    return json.load(open(path))
+        json.dump(raw, open(path, "w", encoding="utf-8"))
+    return json.load(open(path, encoding="utf-8"))
 
 
 def ohio_years(raw=None):
@@ -538,8 +538,8 @@ def va_table21(year=2024, refresh=False):
         t = {"year": yr, "url": VA_REPORTS[year], "pdf_sha256": sha, "retrieved": datetime.date.today().isoformat(),
              "columns": ["locality", "ground_mgd", "surface_mgd", "total_mgd"], "rows": rows, "total_row": total}
         os.makedirs(RAW, exist_ok=True)
-        json.dump(t, open(path, "w"))
-    return json.load(open(path))
+        json.dump(t, open(path, "w", encoding="utf-8"))
+    return json.load(open(path, encoding="utf-8"))
 
 
 def _va_locality(name, fips):

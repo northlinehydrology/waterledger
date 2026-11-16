@@ -53,7 +53,7 @@ def test_paged_downloads_go_past_a_service_limit_smaller_than_the_page(monkeypat
 def test_every_paged_download_honors_the_cut_off_flag():
     root = os.path.dirname(waterledger_data.__file__)
     for path in glob.glob(os.path.join(root, "**", "*.py"), recursive=True):
-        text = open(path).read()
+        text = open(path, encoding="utf-8").read()
         if "resultOffset" in text:
             assert text.count("exceededTransferLimit") >= text.count("resultOffset"), path
 

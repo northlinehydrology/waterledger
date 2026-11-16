@@ -56,7 +56,7 @@ def test_an_estimate_reports_the_model_of_the_data_it_read():
     snap = data.SnapshotData.__new__(data.SnapshotData)
     snap.manifest = {"model_version": "1.5"}
     assert snap.model_version() == "1.5"
-    source = open(data.__file__.replace("data.py", "provider.py")).read()
+    source = open(data.__file__.replace("data.py", "provider.py"), encoding="utf-8").read()
     assert "model_version=sd.model_version()" in source
 
 

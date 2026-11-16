@@ -124,7 +124,7 @@ def read_config(config):
         import yaml
     except ImportError as e:
         raise ImportError(f"reading {config} needs pyyaml: pip install 'waterledger-models[bmi]', or pass the settings as a dict") from e
-    with open(config) as f:
+    with open(config, encoding="utf-8") as f:
         return yaml.safe_load(f) or {}
 
 
@@ -480,7 +480,7 @@ class LakeCoolingBmi(ScalarPointBmi):
         self._time = 0.0
         self._forcing = None
         if cfg.get("forcing"):
-            with open(cfg["forcing"]) as f:
+            with open(cfg["forcing"], encoding="utf-8") as f:
                 self._forcing = np.array([float(line) for line in f if line.strip()])
             self._end = float(cfg.get("end_time", len(self._forcing) * self._dt))
         else:

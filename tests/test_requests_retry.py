@@ -51,7 +51,7 @@ def test_a_download_waits_out_a_service_that_is_down_and_is_kept_whole(monkeypat
     path = str(tmp_path / "a" / "b.json")
     calls = service(monkeypatch, fetching, [http(503), http(429), urllib.error.URLError("reset")])
     assert fetching.save("https://x", path) == path and len(calls) == 4
-    assert json.load(open(path)) == {"ok": 1} and not (tmp_path / "a" / "b.json.part").exists()
+    assert json.load(open(path, encoding="utf-8")) == {"ok": 1} and not (tmp_path / "a" / "b.json.part").exists()
     assert fetching.save("https://x", path) == path and len(calls) == 4      # already there: not asked again
 
 
@@ -76,7 +76,7 @@ def test_an_error_page_with_a_200_is_not_kept(monkeypatch, tmp_path):
     monkeypatch.setattr(fetching.time, "sleep", lambda s: None)
     path = tmp_path / "b.json"
     fetching.save("https://x", str(path))
-    assert json.load(open(path)) == {"ok": 1} and not bodies
+    assert json.load(open(path, encoding="utf-8")) == {"ok": 1} and not bodies
     text = tmp_path / "pfds.txt"
     bodies[:] = [b"Error: no data", b"quantiles = [[1]]"]
     fetching.save("https://x", str(text), check=lambda d: b"quantiles" in d)

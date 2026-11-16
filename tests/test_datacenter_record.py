@@ -14,7 +14,7 @@ HERE = os.path.dirname(__file__)
 
 
 def test_the_data_center_monte_carlo_matches_its_record():
-    want = json.load(open(os.path.join(HERE, "data", "datacenter_before_runner.json")))
+    want = json.load(open(os.path.join(HERE, "data", "datacenter_before_runner.json"), encoding="utf-8"))
     got = json.loads(json.dumps(runner_reference.results()))
 
     def walk(a, b, path):

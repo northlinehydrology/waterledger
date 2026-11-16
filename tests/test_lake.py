@@ -6,7 +6,7 @@ import pytest
 
 from waterledger_models.datacenter import lake
 
-REF = json.load(open(os.path.join(os.path.dirname(__file__), "data", "water_ledger_lakes.json")))
+REF = json.load(open(os.path.join(os.path.dirname(__file__), "data", "water_ledger_lakes.json"), encoding="utf-8"))
 
 
 @pytest.mark.parametrize("name", sorted(REF))

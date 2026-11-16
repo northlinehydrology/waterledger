@@ -77,7 +77,7 @@ def main():
     rec = pd.read_csv(os.path.join(H, 'recon_ba_2022_2024.csv'), index_col=0)
     pl = pd.read_excel(os.path.join(D, 'dl/eia860/x/2___Plant_Y2024.xlsx'), header=1)
     ba860 = pl.set_index('Plant Code')['Balancing Authority Code']
-    fac = pd.DataFrame(json.load(open(os.path.join(D, 'dl/api/facility_gen_2024.json'))))
+    fac = pd.DataFrame(json.load(open(os.path.join(D, 'dl/api/facility_gen_2024.json'), encoding='utf-8')))
     fac['generation'] = pd.to_numeric(fac.generation, errors='coerce')
     fac['plantCode'] = fac.plantCode.astype(int)
     fg = fac.groupby('plantCode').generation.sum()

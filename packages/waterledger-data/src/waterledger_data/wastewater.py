@@ -17,7 +17,7 @@ CWNS_RAW = os.path.join(CACHE, "waters")          # the national CWNS tables, sh
 def _cwns(table):
     path = os.path.join(CWNS_RAW, f"cwns2022_{table}.csv")
     save(f"{CWNS}/{table}.csv", path)
-    return csv.DictReader(open(path))
+    return csv.DictReader(open(path, encoding="utf-8"))
 
 
 def _echo(state):
@@ -25,8 +25,8 @@ def _echo(state):
     if not os.path.exists(path):
         rows = echo_rows(state, _get)
         os.makedirs(RAW, exist_ok=True)
-        json.dump(rows, open(path, "w"))
-    return json.load(open(path))
+        json.dump(rows, open(path, "w", encoding="utf-8"))
+    return json.load(open(path, encoding="utf-8"))
 
 
 def _echo_by_permit(state, permits):
@@ -39,8 +39,8 @@ def _echo_by_permit(state, permits):
             if int(q.get("QueryRows") or 0):
                 rows += _get(f"{ECHO}.get_qid", {"output": "JSON", "qid": q["QueryID"], "pageno": 1, "responseset": 1000, "qcolumns": ECHO_COLS})["Results"].get("Facilities", [])
         os.makedirs(RAW, exist_ok=True)
-        json.dump(rows, open(path, "w"))
-    return json.load(open(path))
+        json.dump(rows, open(path, "w", encoding="utf-8"))
+    return json.load(open(path, encoding="utf-8"))
 
 
 # Words that mark a sewer plant's permit in ECHO, and permits at the same spot that aren't one
@@ -76,14 +76,14 @@ def live_permit_at(rows, name, city):
 def _echo_near(state, places):
     """ECHO's permits within about NEAR_MILES of each {key: (lat, lon)}. Cached for the state, key by key, so a stopped build resumes."""
     path = os.path.join(RAW, f"{state}_echo_near.json")
-    got = json.load(open(path)) if os.path.exists(path) else {}
+    got = json.load(open(path, encoding="utf-8")) if os.path.exists(path) else {}
     for k, (lat, lon) in places.items():
         if k in got:
             continue
         q = _get(f"{ECHO}.get_facilities", {"output": "JSON", "p_c1lat": lat + NEAR_MILES / 69, "p_c1lon": lon - NEAR_MILES / 53, "p_c2lat": lat - NEAR_MILES / 69, "p_c2lon": lon + NEAR_MILES / 53, "responseset": 1000})["Results"]
         got[k] = _get(f"{ECHO}.get_qid", {"output": "JSON", "qid": q["QueryID"], "pageno": 1, "responseset": 1000, "qcolumns": ECHO_COLS})["Results"].get("Facilities", []) if int(q.get("QueryRows") or 0) else []
         os.makedirs(RAW, exist_ok=True)
-        json.dump(got, open(path, "w"))
+        json.dump(got, open(path, "w", encoding="utf-8"))
     return got
 
 

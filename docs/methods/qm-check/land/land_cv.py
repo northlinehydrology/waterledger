@@ -76,7 +76,7 @@ def run_state(st, out):
             res[name] = {k: got[k] - truth[k] for k in got} | {"corrected": d is not None}
         rows.append({k: s.get(k) for k in ("id", "name", "state", "source", "lat", "lon", "elev_m", "cell", "cell_land", "shore_land")}
                     | {"cell_elev_m": cell["elev_m"], "ways": res})
-    json.dump(rows, open(os.path.join(out, f"{st}.json"), "w"), indent=1, default=float)
+    json.dump(rows, open(os.path.join(out, f"{st}.json"), "w", encoding="utf-8"), indent=1, default=float)
     return rows
 
 

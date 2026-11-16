@@ -45,7 +45,7 @@ def main():
                                                              'import_share', 'main_ba', 'ba_', 'siddik_', 'consumed_', 'withdrawn_', 'import_data'))]]
     # main BA by in-state generation
     pl = pd.read_excel(os.path.join(D, 'dl/eia860/x/2___Plant_Y2024.xlsx'), header=1)
-    fac = pd.DataFrame(json.load(open(os.path.join(D, 'dl/api/facility_gen_2024.json'))))
+    fac = pd.DataFrame(json.load(open(os.path.join(D, 'dl/api/facility_gen_2024.json'), encoding='utf-8')))
     fac['generation'] = pd.to_numeric(fac.generation, errors='coerce'); fac['plantCode'] = fac.plantCode.astype(int)
     g = fac.groupby(['plantCode', 'state']).generation.sum().reset_index()
     g['ba'] = g.plantCode.map(pl.set_index('Plant Code')['Balancing Authority Code'])

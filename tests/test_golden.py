@@ -19,6 +19,6 @@ def close(a, b, path=""):
 
 
 def test_cooling_matches_golden():
-    want = json.load(open(os.path.join(HERE, "data", "golden_cooling.json")))
+    want = json.load(open(os.path.join(HERE, "data", "golden_cooling.json"), encoding="utf-8"))
     got = json.loads(json.dumps(golden.results()))
     close(got, want)

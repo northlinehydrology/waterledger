@@ -123,7 +123,7 @@ def build(state, out=None, n=DRAWS, run_checks=True):
     report["seconds"] = round(time.time() - t_all, 1)
     if out:
         os.makedirs(out, exist_ok=True)
-        json.dump(report, open(os.path.join(out, f"{state}_build.json"), "w"), indent=1)
+        json.dump(report, open(os.path.join(out, f"{state}_build.json"), "w", encoding="utf-8"), indent=1)
     return report
 
 
@@ -144,10 +144,10 @@ def check_snapshot(state, root):
     data.state_data.cache_clear()
     sd = data.state_data(state)
     sc._cache.clear()
-    sc._cache.update({n[len("michigan/"):-len(".json")]: json.load(open(os.path.join(sd.folder, n))) for n in sd.manifest["files"] if n.startswith("michigan/")})
+    sc._cache.update({n[len("michigan/"):-len(".json")]: json.load(open(os.path.join(sd.folder, n), encoding="utf-8")) for n in sd.manifest["files"] if n.startswith("michigan/")})
     result = checks(state, sd)
     from waterledger.national.snapshot import _write
-    m = json.load(open(os.path.join(folder, "manifest.json")))
+    m = json.load(open(os.path.join(folder, "manifest.json"), encoding="utf-8"))
     m["checks"] = result
     _write(os.path.join(folder, "manifest.json"), m)
     print(f"{state} snapshot {date} checks: {result}")
