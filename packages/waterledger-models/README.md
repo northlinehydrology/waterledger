@@ -26,7 +26,7 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
   sizing; `land`, solar and wind projects' land, runoff and construction water.
 - `heat_rejection`: cooling towers, hybrid and dry coolers, assist's adiabatic pads, the loops' chillers, pumps and fans, their equipment ranges,
   psychrometrics and Latin hypercube sampling, shared by every water user; each user keeps its own operating settings
-  (`OPERATING`: cycles of concentration, the hybrid's switch margin).
+  (`OPERATING`: cycles of concentration, the operator's switch setting and the switch margin above the loop's limit).
 - `once_through`: once-through cooling from a Great Lake, shared by every water user: withdrawal from the heat and the rise,
   forced evaporation (Diehl et al. 2013), the lake's ranges and NOAA GLERL temperatures.
 - `runs`: the Monte Carlo at one location for any water user type (design 0010): the draws, the standard loads, daily statistics,
@@ -51,6 +51,6 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
 - `weather`: hourly weather from the Open-Meteo archive, its best match (ERA5, ERA5-Land and, from 2017, IFS HRES); humidity
   conversions (Bolton 1980) and a record's design dry-bulb.
 
-`MODEL_VERSION` is Water Ledger's model version (1.15), which changes when the numbers do; the package version (semver)
+`MODEL_VERSION` is Water Ledger's model version (1.16), which changes when the numbers do; the package version (semver)
 changes with the code. They are independent. One model version covers every water user type; `MODELS` says which types a
 version changes and which model's snapshots it reads (`snapshot_model()`): model 1.12 adds battery cell plants and reads 1.11's.

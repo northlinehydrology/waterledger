@@ -225,7 +225,7 @@ class DesignTotal(BaseModel):
 
 class DesignComparison(BaseModel):
     """The same campus with each cooling design, on one power option. `best` evaporates least in total. `thirstiest_power` is the option other than wind and solar and the state's
-    starting mix that uses the most water. The closed_loop figures compare closed loop with cooling towers; None unless both designs are among them."""
+    starting mix that uses the most water. The closed_loop figures compare a dry plant (no evaporation) with cooling towers; None unless both designs are among them."""
     model_config = ConfigDict(frozen=True)
     power: str
     designs: dict[str, DesignTotal]

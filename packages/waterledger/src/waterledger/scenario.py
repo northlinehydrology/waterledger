@@ -275,7 +275,7 @@ def near_system(p):
 
 def src_for(p, cool):
     """Where a campus's water most likely comes from [A], as on the page (WQ.srcFor). A system EPA maps in the place. With none
-    mapped: closed loop from a sizable system within SEWER_KM (it extends its pipes); towers and hybrid from new wells, which avoid a
+    mapped: dry or pads from a sizable system within SEWER_KM (it extends its pipes); towers and hybrid from new wells, which avoid a
     utility's peak-day limits; nothing within reach, new wells."""
     if p["w"]:
         return {"src": "muni", "near": None, "reach": False}
@@ -287,7 +287,7 @@ def src_for(p, cool):
 def dest_for(p, cool, sew_mgd):
     """Where a campus's wastewater most likely goes [A], as on the page (WQ.destFor). The sewer when EPA maps a public water system in the place (its plant within 40 km),
     or a plant is within SEWER_KM;
-    evaporative blowdown only if it fits in the plant's spare design flow. Otherwise closed loop's mostly sanitary flow goes to a
+    evaporative blowdown only if it fits in the plant's spare design flow. Otherwise a dry or pads campus's mostly sanitary flow goes to a
     septic system on site, and blowdown to the campus's own treatment plant and a stream. The plant is in the page's form (n, design, flow, km)."""
     pls = _plants_near(p)
     q = pls[0] if pls else None
