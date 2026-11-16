@@ -1,6 +1,6 @@
 # 0019: Fuel cells as data centers use them (solid oxide on natural gas)
 
-Status: **proposed Nov 16, 2026, for Andrew; nothing built.** Branch `supply-on-aorc`, beside 0018 (solar and wind on a
+Status: **proposed Nov 16, 2026; decisions 1, 3, 4 and 5 agreed by Andrew the same day (below), 2 open; nothing built.** Branch `supply-on-aorc`, beside 0018 (solar and wind on a
 study's forcing). Andrew (Nov 16, relayed by the Clam River session): "we should add fuel cells to the power types work
 with solar and wind." It does not depend on 0018: a fuel cell barely answers to the weather.
 
@@ -24,6 +24,9 @@ is too wide and centred too high for a solid oxide plant, and the water is left 
 | Stack replacement | "approximately every five years" | a 2023 state air filing for a 24.3 MW data center installation (the manufacturer's records, as filed) | vendor, filed |
 | Measured heat rate | 2024 EIA-923 over EIA-860's gas fuel cell plants (prime mover FC, NG), in aggregate: 98 plants not CHP and over 50% capacity factor, 264 MW, fleet 7,496 Btu/kWh; median plant 7,109, middle half 6,937-7,295; the 84 plants of 1-5 MW 7,290 | computed for this note | independent, aggregate |
 | By age | fleet 7,782 (online by 2015, 19 plants), 7,274 (2016-2020, 64), 7,430 (2021-2023, 14) | the same | aggregate |
+| By age, the same plants over three years | 73 plants of 1-5 MW, not CHP, over 50% capacity factor in each of 2022, 2023 and 2024; fleet 7,279 / 7,318 / 7,247. By the year they came online, fleet heat rate 2022/2023/2024: 2021, 6,685 / 6,633 / 7,010 (6 plants, 1-3 years old); 2020, 6,822 / 7,188 / 6,947 (7); 2019, 7,157 / 7,122 / 7,050 (14); 2018, 7,393 / 7,294 / 7,296 (13); 2016-2017, 7,442 / 7,268 / 7,359 (21). A plant's own change 2022 to 2024: median -0.9%, p10-p90 -7.6% to +5.6%; 70 of the 73 heat rates are distinct | EIA-923 2022-2024, EIA-860 2024, computed for this note | independent, aggregate |
+| Power modules | stacks combined into 50 kW power modules; a server is power modules, a fuel processor and an AC module | Bloom Energy, Form S-1 (2018) | vendor, filed |
+| Availability | "native redundancy"; 99.9% to 99.999% claimed, "up to" Tier IV as primary power | Bloom data center pages | vendor; no independent figure found |
 | Water, normal operation | "None during normal operation" | datasheet | vendor |
 | Water, start-up and restarts | a Water Distribution Module "to supply water to the [power modules] during start-up" (brochure 2024); about 780 gal a year per 10 MW for restarts after service (Bloom blog, 2026); 0.69 gal/MWh (the same 2023 state filing) | Bloom | vendor; the two differ about 75-fold |
 | Part load | "load fluctuation has minimal impact on the efficiency"; 40% to 100% load almost at once ("Be Flexible", Feb 2024) | Bloom | vendor; no independent figure found |
@@ -34,10 +37,12 @@ Readings:
 
 - **The measured fleet sits at the top of the datasheet's range.** EIA's median plant (7,109) is at the datasheet's
   end-of-life figure (7,127); the fleet's average over stack ages is about 7,300-7,500. A stack aging linearly from 5,811
-  to 7,127 over five years would average about 6,470. Either the fleet runs nearer end of life than linear aging gives,
-  or reported fuel is not metered apart from the vendor's own numbers (the middle half of plants is unusually tight). EIA
-  names no manufacturer, so "1-5 MW, not CHP" stands in for solid oxide [A]; the larger plants include molten carbonate
-  units, which run at about 7,800.
+  to 7,127 over five years would average about 6,470. EIA names no manufacturer, so "1-5 MW, not CHP" stands in for
+  solid oxide [A]; the larger plants include molten carbonate units, which run at about 7,800.
+- **Aging shows in the field, but not as the datasheet's curve.** Plants one to three years old run about 6,650-7,000,
+  plants six to eight years old about 7,250-7,400; none is near the new-stack 5,811. Within a plant, heat rates move both
+  ways from year to year, as modules are swapped. The cohorts are also product generations, so age and model are mixed.
+  The heat rates are the plants' own (70 of 73 distinct), not one vendor default.
 - **Air filings are not an independent check on fuel.** The one read here gives the datasheet's own figures: its heat input
   is the end-of-life heat rate and its CO2 range is the datasheet's range times the fuel's carbon. A permit is sized to
   the worst case, not measured. The independent figure is EIA-923.
@@ -56,25 +61,28 @@ named (decision 4).
 
 ## Proposed model
 
-A new technology, **`sofc`**, design `dry`, beside the existing ones. `fuel_cell` keeps its CHP Catalog range and its
-numbers, for any fuel cell; `sofc` is the data center case. Everything else in `gas.physics` applies as it is: no
+**`fuel_cell` becomes the solid oxide plant on gas** (decision 1), design `dry`; the CHP Catalog's mixed range goes. Everything else in `gas.physics` applies as it is: no
 condenser, its heat in the exhaust ("other"), and the energy balance fuel = net + auxiliary + other closing every hour.
 
 | Parameter | `sofc` | Set from |
 |---|---|---|
-| Heat rate, HHV | 6,500-7,500 Btu/kWh, sampled | from the datasheet's life average under linear aging (about 6,470) to EIA's 2024 fleet (7,290-7,496); the datasheet's new-stack 5,811 is outside it [A] |
-| Aging | none hour by hour; the heat rate range is a life average [A] | a run is decades of weather for a plant of one age; stacks are replaced about every five years |
+| Heat rate, HHV | 6,600-7,500 Btu/kWh, sampled | EIA's plants by age, 2022-2024: about 6,650 at one to three years to 7,400 at six to eight; each draw is a plant at some point in its life [A]. The datasheet's new-stack 5,811 is outside it |
+| Aging | in the draws, not hour by hour (decision 2) | a run's decades of weather are samples of the climate, not a plant's years |
 | Derate, heat-rate slope | 0 | datasheet: -20 to 45 C, no derate given [A] |
 | Part-load penalty at half load | 0-0.05, as `fuel_cell` | vendor claim of little change; no independent figure [A] |
 | Auxiliary share | 0.01-0.03, as `fuel_cell` | the datasheet's output is already net AC [A] |
 | Availability | 0.90-0.97, shared | [A], as every technology |
-| Process water | 0.01-0.69 gal/MWh, sampled, withdrawn and consumed (to the reformer and the exhaust) | Bloom's two figures (restarts, about 780 gal/yr per 10 MW; the state filing's 0.69) [A: consumed, none returned] |
-| Unit | a block of servers, default 10 MW [A], for outages and N + k | 325 kW servers; a 300 MW plant would be about 920, and N + 1 on that many is no reserve |
+| Process water | 0.01-0.69 gal/MWh, sampled, withdrawn and consumed | Bloom's two figures (restarts, about 780 gal/yr per 10 MW; the state filing's 0.69). Consumed, not drained: start-up water is raised to steam for the reformer until the anode's own product water takes over, and leaves reacted or as vapor in the exhaust; the water is deionized in exchange tanks swapped at service (the state filing), so there is no reject on site |
+| Unit | the 325 kW Energy Server | the product's unit (datasheet); outages drawn per server (about 0.5 s a draw for 1,000 servers over 24 years) |
+| Outage length | 24 hours mean [A] | modules are swapped with the server running (S-1; the state filing); shorter than a turbine's 48 [A] |
 
 - **Water balance:** the new process water joins the existing terms; withdrawn = consumed + returned still closes, with
   nothing returned from it.
-- **Sizing:** N + k as for the other technologies, in blocks [A]; for an islanded campus that is a reserve of about 3-7%
-  at 150-300 MW, with k a setting.
+- **Sizing (decision 5, "realistic implementations"):** modular plants carry a reserve share, not a spare unit. N servers
+  carry the campus's 1-in-10-year highest hour (as now); the plant gets the fewest more servers M such that, with each up
+  at the central availability, the chance that fewer than N are up in an hour is under 1 in 10,000 (binomial) [A: about
+  four nines, inside the vendor's claims]. At 920 servers and 0.935 availability that is 1,017 servers, a reserve
+  of 10.5% (5.5% at 0.97, 15.7% at 0.90). The other technologies keep N + k.
 - **BMI:** `GasPlantBmi` takes `technology="sofc"` with nothing else changed.
 
 ## Checks
@@ -88,19 +96,22 @@ condenser, its heat in the exhaust ("other"), and the energy balance fuel = net 
 
 ## Version
 
-A new technology changes no existing number (`fuel_cell` keeps its range); public API in the release that carries it,
-with 0018.
+`fuel_cell` becomes the solid oxide plant (decision 1), so its numbers change: a model version step (1.17 if 3.24.0 is
+model 1.16), and `MODELS` records it. No study has run `fuel_cell` yet.
 
-## Decisions for Andrew
+## Decisions (Andrew, Nov 16, 2026)
 
-1. **A new technology `sofc`**, keeping `fuel_cell` as it is (proposed), or replace `fuel_cell`'s range with solid oxide's
-   (changes its numbers; a model version step).
-2. **Heat rate 6,500-7,500 Btu/kWh HHV**, the stack-life average to EIA's measured fleet, with no aging hour by hour
-   (proposed); or the datasheet's full 5,811-7,127; or a stack-age setting.
-3. **Process water 0.01-0.69 gal/MWh**, consumed (proposed).
-4. **Air permits** stay in the study's notes, not in the package (proposed, per 0014's scope rule); or an aggregate of
-   five or more permits, unnamed, as a range.
-5. **Blocks of 10 MW** as the unit for outages and N + k (proposed).
+1. **`fuel_cell`'s range is replaced by solid oxide's** ("it's early, we can change fuel cells' range"), not a new
+   technology.
+2. **Aging:** open; Andrew asked how hard it is. Coding a heat rate that climbs between stack swaps is half a day with
+   tests. What it would mean is the harder part: a run's 23-30 years of weather are samples of the climate, not a plant's
+   years, so aging along the run would tie stack age to particular weather years. Proposed: the age in the draws (the
+   range above, from EIA's plants by age), and, if wanted, an `age_years` setting that picks the part of the range for a
+   plant of that age (1-3 years: 6,600-7,000; 6-8: 7,200-7,500) [A].
+3. **Start-up water is consumed**, as it is: evaporated or reacted, not drained (Andrew: "whichever it is"). Above.
+4. **Air permits stay in the study's notes, not in the package.** Agreed.
+5. **The unit and reserve as real plants are built** ("should reflect realistic implementations"): the 325 kW server,
+   outages per server, and a reserve share from the servers' availability, above.
 
 ## References
 
