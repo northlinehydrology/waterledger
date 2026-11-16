@@ -145,7 +145,8 @@ Carlo runner, and changes no data center or place number, so it reads model 1.11
   - **On a study's own forcing** (branch `supply-on-aorc`; [design 0018](docs/design/0018-supply-on-a-study-forcing.md)): PV from
     global horizontal radiation alone (`pv.hourly_from_ghi`; Erbs's split, PVsyst's default, AORC's time stamp checked), scaled by
     `pv.RANGES_AORC` to EIA's 2024 tracking fleet on AORC (0.87 overall, 0.73-1.02 by state). Wind stays on ERA5's 100 m wind, a stated
-    exception: AORC's 10 m wind steps down on January 1, 2018. The ERA5 path's numbers are unchanged to the bit.
+    exception: AORC's 10 m wind steps down on January 1, 2018. Scenarios run on it through `supply.scenario.ForcingWeather`. The ERA5
+    path's numbers are unchanged to the bit.
 - **Scenarios** (`supply.scenario`): resources and a residual rule (the grid by default, or islanded), dispatched hour by
   hour; plants sized once (gas N+1 at the design dry-bulb, renewables by share of annual MWh); surplus exported without water
   credit; unserved hours reported, with the longest run (gas outages last 48 hours on average [A], model 1.14). The grid-only scenario is today's grid water to the bit.

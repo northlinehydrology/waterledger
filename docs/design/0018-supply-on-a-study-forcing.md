@@ -1,6 +1,6 @@
 # 0018: Solar and wind on a study's own forcing (AORC)
 
-Status: **decided Nov 16, 2026 (Andrew; decisions 1-6 below, 4 as proposed); built on branch `supply-on-aorc` (checks A1-A5 done, Nov 16); not released.**
+Status: **decided Nov 16, 2026 (Andrew; decisions 1-6 below); built on branch `supply-on-aorc` (checks A1-A5 done, Nov 16); not released.**
 Branch `supply-on-aorc`. Builds on 0014 (power supply scenarios). 0015-0017 are taken on other branches, so this is 0018.
 Fuel cells as data centers use them, added to this work the same day, are in the companion note 0019.
 
@@ -201,8 +201,10 @@ wind.hourly_from_10m(times_utc, lon, u10, v10, table, p)           # the table, 
   exactly as now and calls the core, so the operations, and the numbers, are the same.
 - **Identity test:** the ERA5 `pv.hourly`, `pv.output`, `wind.hourly` and a `scenario.Supply` run on fixed inputs equal
   values saved from main (f370fcc) to the bit; `tests/test_supply.py`'s pvlib tests unchanged.
-- `scenario.Supply` and `size` stay on ERA5 (decision 4 asks whether to widen them). The Clam River study composes its
-  plants itself (Basin Ledger), so it would call the two `hourly_from_` functions on its catchments' hourly forcing.
+- `scenario.Supply` and `size` take either ERA5's tuple, as before, or `scenario.ForcingWeather(utc, ghi, wind_10m, u100, v100)`
+  (decision 4): PV by `pv.output_from_ghi` on the forcing with `pv.RANGES_AORC` sampled, wind by `wind.hourly` on ERA5's 100 m wind
+  (decision 6), the runner's temperature for both. So a study on AORC gets the grid, grid-plus-gas and islanded cases, their sizing,
+  unserved hours and water, from the same tested runner; `tests/test_scenarios.py` holds its capacity factors to the functions' own.
 - The `RANGES_AORC` factors hold for AORC as published. A forcing corrected to stations, or another forcing, needs its own
   check A3; the docstrings say so.
 
@@ -250,7 +252,9 @@ carries them, a minor package release: **3.24.0 if done by then, else 3.25.0** (
    day and night exponents.
 3. **Check A3: all of EIA's 2024 plants** (about 45 GB of AORC reads), with SURFRAD (three stations, one year) and
    EIA-930 (MISO, 2024). Agreed, downloads included.
-4. **`scenario.Supply` and `size`:** open; Andrew asked for more on what it means.
+4. **`scenario.Supply` and `size` take a study's forcing** (Andrew, Nov 16: "lets do b"), narrowly: a `ForcingWeather` in place of
+   ERA5's tuple runs PV on the forcing and wind on ERA5 (decision 6); the ERA5 tuple's numbers are unchanged. The alternative, the study
+   writing its own sizing and dispatch around the `hourly_from_` functions, would have kept two copies of that logic, one untested.
 5. **The release:** 3.25.0 after 3.24.0, or in 3.24.0 if done by then; "fine to split".
 6. **Wind on ERA5's 100 m wind, the calculator's path, as a stated exception to the one-forcing rule** (Andrew, Nov 16: "run wind
    on ERA5 100 m and state the exception"). AORC's 10 m wind is not one series over 2000-2022 (above), and no factor fixes a step that

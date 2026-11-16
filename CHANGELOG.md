@@ -18,6 +18,8 @@ ERA5 supply path matches its record from before to the bit (`tests/test_supply_i
     from ERA5's own 10 m and 100 m wind at the place (`waterledger_data.era5.fetch_shear`, `era5.shear`); the hours stay the forcing's.
     Not for AORC: AORC's 10 m wind steps down on January 1, 2018 at most places (confirmed by the Cadillac airport anemometer), so a
     study on AORC runs wind on ERA5's 100 m wind (`wind.hourly`) and says so.
+  - `supply.scenario.ForcingWeather`: `size` and `Supply` take it in place of ERA5's tuple, so a study on AORC runs the grid,
+    grid-plus-gas and islanded scenarios with PV on its forcing (`pv.RANGES_AORC`) and wind on ERA5's 100 m wind.
   - Checks in `docs/methods/power_supply/`: AORC's time stamp (`aorc_timing.py`), the split at three SURFRAD stations (`split_check.py`),
     AORC PV against EIA's fleet (`aorc_check.py`), the ERA5 wind path's hours against EIA-930's MISO wind (`wind_shape_check.py`;
     hourly correlation 0.949), AORC against ERA5 by year (`aorc_drift.py`).

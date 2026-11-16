@@ -23,7 +23,7 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
   `plant.run_location`, the Monte Carlo on the shared runner; `bmi.GasPlantBmi` (`[bmi]`).
 - `supply`: power supply scenarios (design 0014): `pv` (PVWatts, tested against pvlib) and `wind` (the IEA 3.4 MW reference
   curve) from ERA5 radiation and 100 m wind; on a study's own forcing (design 0018), `pv.hourly_from_ghi` from global horizontal
-  radiation alone (`pv.decompose`, `pv.RANGES_AORC`) and `wind.hourly_from_10m` with a month-by-hour shear table; `scenario`, resources and a residual rule as the shared runner's `extra=`, with
+  radiation alone (`pv.decompose`, `pv.RANGES_AORC`) and `wind.hourly_from_10m` with a month-by-hour shear table, and `scenario.ForcingWeather` to run scenarios on it; `scenario`, resources and a residual rule as the shared runner's `extra=`, with
   sizing; `land`, solar and wind projects' land, runoff and construction water.
 - `heat_rejection`: cooling towers, hybrid and dry coolers, assist's adiabatic pads, the loops' chillers, pumps and fans, their equipment ranges,
   psychrometrics and Latin hypercube sampling, shared by every water user; each user keeps its own operating settings

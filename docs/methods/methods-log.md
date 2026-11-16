@@ -2599,5 +2599,6 @@ unit, outages last 24 hours, and the count carries a reserve from the servers' a
 of N + k. Air permits stay in the study's notes.
 
 **Numbers.** The ERA5 supply path is unchanged to the bit (`tests/test_supply_identity.py`, against main f370fcc). Fuel cells' numbers
-change, so the release that carries this needs a model step. Open: whether `scenario.Supply` and `size` take a study's forcing (0018,
-decision 4).
+change, so the release that carries this needs a model step. **Decision 4 (Andrew, Nov 16):** `scenario.Supply` and `size` take a study's
+forcing (`scenario.ForcingWeather`: PV on the forcing, wind on ERA5), so a study's grid, grid-plus-gas and islanded cases come from the same
+tested runner rather than a copy of it.
