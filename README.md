@@ -133,12 +133,19 @@ Carlo runner, and changes no data center or place number, so it reads model 1.11
     at ISO weather gives 158 and 206 gal/MWh consumed and withdrawn against NETL's 186 and 240; against EIA's 2024 fleet, in
     aggregate, 21% under in the Great Lakes at a new plant's heat rate and 12% over at the fleet's own
     ([docs/methods/power_supply](docs/methods/power_supply/)); a year of weather lands inside the published ranges by design.
+  - **Fuel cells are solid oxide** (branch `supply-on-aorc`, the next model step; [design 0019](docs/design/0019-solid-oxide-fuel-cells.md)):
+    6,600-7,500 Btu/kWh HHV from EIA-923's gas fuel cell plants by age, with the fleet's age a setting (`age_years`, sampled when not
+    given); start-up water consumed; the 325 kW server as the unit, with a reserve from the servers' availability.
 - **New solar and wind** (`waterledger_models.supply`): PV by the PVWatts chain, within 0.04% of the AC rating of pvlib's in
   every hour of a test year; wind through the IEA 3.4 MW reference turbine's curve; both from ERA5 radiation and 100 m wind
   at the user's own cell (`waterledger_data.era5.fetch_supply`). PV is scaled to what EIA's 2024 tracking fleet delivered (944
   plants, 24.1% against the chain's 28.5% on ERA5; model 1.14), so West Michigan's tracking PV runs near 19%; wind matches its 2024 fleet in flat country (1,069
   plants; model 1.15), and a place whose cell averages under 5.5 m/s at 100 m gets a note, since ridge and pass sites run far above it.
   Land, runoff and one-time construction water and sediment by project size (`supply.land`).
+  - **On a study's own forcing** (branch `supply-on-aorc`; [design 0018](docs/design/0018-supply-on-a-study-forcing.md)): PV from
+    global horizontal radiation alone (`pv.hourly_from_ghi`; Erbs's split, PVsyst's default, AORC's time stamp checked), scaled by
+    `pv.RANGES_AORC` to EIA's 2024 tracking fleet on AORC (0.87 overall, 0.73-1.02 by state). Wind stays on ERA5's 100 m wind, a stated
+    exception: AORC's 10 m wind steps down on January 1, 2018. The ERA5 path's numbers are unchanged to the bit.
 - **Scenarios** (`supply.scenario`): resources and a residual rule (the grid by default, or islanded), dispatched hour by
   hour; plants sized once (gas N+1 at the design dry-bulb, renewables by share of annual MWh); surplus exported without water
   credit; unserved hours reported, with the longest run (gas outages last 48 hours on average [A], model 1.14). The grid-only scenario is today's grid water to the bit.

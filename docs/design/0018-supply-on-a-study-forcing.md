@@ -1,6 +1,6 @@
 # 0018: Solar and wind on a study's own forcing (AORC)
 
-Status: **decided Nov 16, 2026 (Andrew; decisions 1-6 below, 4 as proposed); being built on branch `supply-on-aorc`.**
+Status: **decided Nov 16, 2026 (Andrew; decisions 1-6 below, 4 as proposed); built on branch `supply-on-aorc` (checks A1-A5 done, Nov 16); not released.**
 Branch `supply-on-aorc`. Builds on 0014 (power supply scenarios). 0015-0017 are taken on other branches, so this is 0018.
 Fuel cells as data centers use them, added to this work the same day, are in the companion note 0019.
 
@@ -144,6 +144,23 @@ tuned except the resource factors, which are what the checks are for.
   month and hour, and the AORC-to-ERA5 ratio of 10 m wind by year over 2000-2022 at the Clam River (the study's drift
   after 2014, against a reference that isn't AORC).
 
+## Found in checks A3 and A4 (Nov 16)
+
+**A3, PV** (`docs/methods/power_supply/aorc_check.py`, `aorc_pv_check.csv`, `aorc_pv_check_monthly.csv`): EIA's 2024 tracking fleet, the
+same 944 plants (56 GW AC) and screens as `pv_check.py`, against `pv.hourly_from_ghi` on AORC at each plant's 1 km point (Erbs, shift 0, the
+plant's own ILR, central parameters, resource 1.0). The chain gives 27.6% where the fleet delivered 24.1%: the factor that matches is 0.87
+overall (ERA5's 0.84), 0.82 in the Great Lakes states (ERA5's 0.81) and 0.90 in Michigan (0.89). Across the 15 states with ten or more plants
+it is 0.73-1.02 (median 0.84; ERA5's 0.75-0.93): AORC runs closer to the fleet in the Southwest (Colorado 0.99, Nevada 1.02, against ERA5's
+0.87 and 0.93) and alike elsewhere, so its spread is wider, as check A2's scatter said it would be. So `pv.RANGES_AORC` is `pv.RANGES` with
+resource 0.73-1.02. By month the Great Lakes' January is 0.52 (snow on the panels, which the factor holds, as on ERA5). The wind half of A3
+was not run (decision 6).
+
+**A4, the hours** (`wind_shape_check.py`, `wind_shape_check.csv`): EIA-930's MISO wind, 2024, against the ERA5 path at the 250 MISO
+plants of the check (31 GW), each at its own hub and summed by nameplate. Hourly correlation 0.949. The night (00-05 CST) over the day
+(10-15) is 1.10-1.29 by season against the fleet's 1.01-1.24, so the path runs 4-9% too strong at night against midday; the largest
+gap in any hour of the seasonal mean is 5-16%. The fixed alpha 0.15 from 100 m to the hub carries little of the day's cycle, so the
+cycle is ERA5's own at 100 m. Accepted as it is; `wind.RANGES`' alpha (0.10-0.20) stays.
+
 ## Found in check A5 (Nov 16): AORC's 10 m wind breaks in 2018
 
 AORC's 10 m wind steps down against ERA5's between 2017 and 2018 (`docs/methods/power_supply/aorc_drift.py`, `aorc_drift.csv`,
@@ -176,8 +193,9 @@ pv.RANGES_AORC                                                   # RANGES with A
 
 wind.shear_table(times_utc, lon, u10, v10, u100, v100)            # 12 x 24 exponents from ERA5 at the place
 wind.hourly_from_10m(times_utc, lon, u10, v10, table, p)           # the table, 10 m to HUB_M
-wind.RANGES_AORC                                                 # shear_scale, losses, resource
 ```
+
+(`wind.RANGES_AORC` was proposed and not set: decision 6.)
 
 - `pv.output` becomes the ERA5 wrapper of a shared core that takes the 10 m wind: it multiplies by (10/100)^(1/7)
   exactly as now and calls the core, so the operations, and the numbers, are the same.
@@ -193,14 +211,12 @@ wind.RANGES_AORC                                                 # shear_scale, 
 | Parameter | Range | Set from |
 |---|---|---|
 | PV `losses`, `gamma`, `ilr`, `albedo` | as `pv.RANGES` | the same sources (Dobos 2014; [A] as there) |
-| PV `resource` | from check A3 | AORC's PV chain against EIA's 2024 tracking fleet, the spread over states with ten or more plants, as on ERA5 |
+| PV `resource` | 0.73-1.02 (check A3) | AORC's PV chain against EIA's 2024 tracking fleet, the spread over states with ten or more plants, as on ERA5 |
 | PV split | none sampled [A] | its bias is inside the resource factor; check A2 reports its share |
 | PV time shift | fixed | check A1 |
 | Wind shear table | set, per place | ERA5's 10 m and 100 m wind at the place's cell, 1995-2024 (Clam cell: 0.15-0.18 midday, 0.27-0.31 night) |
-| Wind `shear_scale` | 0.85-1.15 [A] | ERA5's shear error; check A4 |
-| Wind `losses` | 0.10-0.20 | as `wind.RANGES` |
-| Wind `resource` | from check A3 | AORC's wind chain against EIA's 2024 fleet at 110 m, as on ERA5 |
-| `LOW_WIND_MS` flag | from check A3 | the AORC 10 m mean speed under which the chain runs far low, if there is one |
+| Wind `shear_scale` | not set (decision 6) | a study on AORC runs wind on ERA5 |
+| Wind `losses`, `resource`, `LOW_WIND_MS` | not set (decision 6) | the ERA5 path's (`wind.RANGES`, `wind.LOW_WIND_MS`) |
 
 Sampled by the same Latin hypercube as the ERA5 ranges, central values last.
 

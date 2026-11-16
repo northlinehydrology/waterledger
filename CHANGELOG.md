@@ -12,9 +12,15 @@ ERA5 supply path matches its record from before to the bit (`tests/test_supply_i
   - `supply.pv.hourly_from_ghi` / `output_from_ghi`: the global split into beam and diffuse by `pv.decompose` (Erbs, PVsyst's default, on
     AORC; DIRINT and DISC as options; each held to pvlib's hour by hour, closing on the global every hour), the sun placed by the forcing's
     own time stamp (`geometry(shift_s=)`; AORC's radiation stands at the middle of its hour, `pv.AORC_SHIFT_S = 0`), the 10 m wind as it is.
+  - `pv.RANGES_AORC`: `pv.RANGES` with the resource factor from EIA's 2024 tracking fleet on AORC (944 plants): 0.87 overall, 0.73-1.02
+    across the states with ten or more plants (ERA5's 0.84, 0.75-0.93).
   - `supply.wind.hourly_from_10m`: the 10 m wind to the hub by an exponent for each month and local solar hour, `wind.shear_table`, set
     from ERA5's own 10 m and 100 m wind at the place (`waterledger_data.era5.fetch_shear`, `era5.shear`); the hours stay the forcing's.
-  - Checks in `docs/methods/power_supply/`: AORC's time stamp (`aorc_timing.py`), the split at three SURFRAD stations (`split_check.py`).
+    Not for AORC: AORC's 10 m wind steps down on January 1, 2018 at most places (confirmed by the Cadillac airport anemometer), so a
+    study on AORC runs wind on ERA5's 100 m wind (`wind.hourly`) and says so.
+  - Checks in `docs/methods/power_supply/`: AORC's time stamp (`aorc_timing.py`), the split at three SURFRAD stations (`split_check.py`),
+    AORC PV against EIA's fleet (`aorc_check.py`), the ERA5 wind path's hours against EIA-930's MISO wind (`wind_shape_check.py`;
+    hourly correlation 0.949), AORC against ERA5 by year (`aorc_drift.py`).
 - **Fuel cells are solid oxide on gas** ([design 0019](docs/design/0019-solid-oxide-fuel-cells.md)), as data centers buy them: heat rate
   6,600-7,500 Btu/kWh HHV from EIA-923's plants by age (was 6,300-9,950, all fuel cell types), with `age_years` a setting that narrows it
   (in `gas.plant`, `supply.scenario.Gas` and `GasPlantBmi`); start-up and restart water, 0.01-0.69 gal/MWh, consumed; the 325 kW server as
