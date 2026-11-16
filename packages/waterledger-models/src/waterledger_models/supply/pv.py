@@ -175,9 +175,10 @@ def hourly(times_utc, lat, lon, ghi, beam_horizontal, temp_air, wind_100m, p, mo
 
 
 # ---------------------------------------------------------------- a forcing with global horizontal radiation only (design 0018)
-# AORC's shortwave is NLDAS-2's, NARR's 3-hourly field spread to hours (AORC v1.1 methods, sec. 4.2); its time stamp is set by check A1
-# (docs/methods/power_supply/aorc_timing.py). Until A1 runs: 0, from one July day at the Clam River on which the morning and evening hours mirror
-# each other about solar noon only if each value is centred on its stamp [A].
+# AORC's shortwave is NLDAS-2's, NARR's 3-hourly field spread to hours (AORC v1.1 methods, sec. 4.2). It stands at the middle of its hour, not
+# the end: check A1 (docs/methods/power_supply/aorc_timing.py, 2024) puts clear days' centroids -2 to +1 minutes from solar noon at four points
+# (the Clam River and three SURFRAD stations), the same estimator giving 0 to 4 minutes on SURFRAD's measured radiation averaged that way and
+# 30 to 35 averaged over the hour ending at the stamp.
 AORC_SHIFT_S = 0
 SPLITS = ("dirint", "disc", "erbs")
 DISC_SOLAR_CONSTANT = 1370.0      # DISC's I0 (Maxwell 1987), as pvlib.irradiance.disc
