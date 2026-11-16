@@ -37,7 +37,7 @@ def test_a_dict_built_from_a_set_is_the_same_under_any_hash_seed(tmp_path):
         path = tmp_path / f"{seed}.json"
         subprocess.run([sys.executable, "-c", code, str(path)], env={**os.environ, "PYTHONHASHSEED": seed}, check=True)
         shas.append(_sha(path))
-        assert len(json.load(open(path))) == 200
+        assert len(json.load(open(path, encoding="utf-8"))) == 200
     assert shas[0] == shas[1]
 
 

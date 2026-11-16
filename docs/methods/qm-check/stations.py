@@ -20,10 +20,10 @@ def dew_point(t, rh):
 
 def candidates():
     from waterledger_data import climate
-    p = np.array([(float(r["lat"]), float(r["lon"])) for r in csv.DictReader(open(os.path.join(HERE, "..", "era5-check", "cell_assignment.csv")))])
+    p = np.array([(float(r["lat"]), float(r["lon"])) for r in csv.DictReader(open(os.path.join(HERE, "..", "era5-check", "cell_assignment.csv"), encoding="utf-8"))])
     la, lo = np.radians(p[:, 0]), np.radians(p[:, 1])
     elev = {}
-    for r in csv.DictReader(open(os.path.join(climate.RAW, "isd", "isd-history.csv"))):
+    for r in csv.DictReader(open(os.path.join(climate.RAW, "isd", "isd-history.csv"), encoding="utf-8")):
         elev[f"{r['USAF']}-{r['WBAN']}"] = float(r["ELEV(M)"]) if r["ELEV(M)"] not in ("", "-999", "-999.0", "-0999.0") else None
     out = []
     sites = [{**s, "source": "isd-linked" if "parts" in s else "isd", "elev_m": elev.get(s["id"])} for s in climate.isd_sites()]
@@ -60,5 +60,5 @@ if __name__ == "__main__":
         got = list(pool.map(one, c))
     for g in got:
         g["qualifies"] = "share_observed" in g
-    json.dump(got, open(os.path.join(OUT, "stations.json"), "w"), indent=1, default=str)
+    json.dump(got, open(os.path.join(OUT, "stations.json"), "w", encoding="utf-8"), indent=1, default=str)
     print(len(c), "candidates,", sum(g["qualifies"] for g in got), "qualify,", sum("error" in g for g in got), "errors")

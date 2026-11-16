@@ -14,7 +14,7 @@ PLACES = ["3944856", "5182000", "3916000", "2614765820", "3977000"]     # Lorain
 if __name__ == "__main__":
     lr.load(sys.argv[1])
     era5_dir = sys.argv[2]
-    d = json.load(open(os.path.join(HERE, "station_check_results.json")))
+    d = json.load(open(os.path.join(HERE, "station_check_results.json"), encoding="utf-8"))
     rows = [r for g in PLACES for r in d["rows"] if r["geoid"] == g]
     for r in rows:
         ni, nj = round(r["lat"] * 4), round(r["lon"] * 4)
@@ -34,5 +34,5 @@ if __name__ == "__main__":
         res = {k: (r["era5"] if c["cell"] == r["cells"]["nearest"]["cell"] else done[c["cell"]]) for k, c in r["cells"].items()}
         out.append({k: r[k] for k in ("state", "geoid", "name", "lat", "lon", "published", "nearest_station", "cells")} |
                    {"station": r["nearest"] or r["published"], "era5": res})
-    json.dump({"rows": out}, open(os.path.join(HERE, "land_rule_results.json"), "w"), indent=1)
+    json.dump({"rows": out}, open(os.path.join(HERE, "land_rule_results.json"), "w", encoding="utf-8"), indent=1)
     print("wrote land_rule_results.json,", len(todo), "new cells run")

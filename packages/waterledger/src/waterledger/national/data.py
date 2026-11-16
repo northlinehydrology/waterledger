@@ -40,13 +40,13 @@ class SnapshotData:
 
     def __init__(self, state, folder):
         self.state, self.folder = state, folder
-        self.manifest = json.load(open(os.path.join(folder, "manifest.json")))
+        self.manifest = json.load(open(os.path.join(folder, "manifest.json"), encoding="utf-8"))
         self.date = self.manifest["date"]
         self._j = {}
 
     def _json(self, name):
         if name not in self._j:
-            self._j[name] = json.load(open(os.path.join(self.folder, name + ".json")))
+            self._j[name] = json.load(open(os.path.join(self.folder, name + ".json"), encoding="utf-8"))
         return self._j[name]
 
     @functools.cached_property
@@ -122,7 +122,7 @@ class SnapshotData:
                     raise DataUnavailable(f"{self.state} snapshot {self.date}: {name} does not match its manifest checksum")
                 os.makedirs(os.path.dirname(path), exist_ok=True)
                 open(path, "wb").write(body)
-            self._j[name] = json.load(open(path))
+            self._j[name] = json.load(open(path, encoding="utf-8"))
         return self._j[name]
 
     def staff_runs(self):
@@ -358,7 +358,7 @@ def fetch_snapshot(state, date=None, url=None):
     except Exception:
         if not os.path.exists(mpath):
             raise
-    manifest = json.load(open(mpath))
+    manifest = json.load(open(mpath, encoding="utf-8"))
     for name, f in manifest["files"].items():
         path = os.path.join(folder, name)
         ok = os.path.exists(path) and hashlib.sha256(open(path, "rb").read()).hexdigest() == f["sha256"]
@@ -378,7 +378,7 @@ def _newest_cached(state):
     dates = sorted(d for d in os.listdir(root) if re.fullmatch(SNAPSHOT_ID, d)
                    and os.path.exists(os.path.join(root, d, "manifest.json"))) if os.path.isdir(root) else []
     for d in reversed(dates):
-        m = json.load(open(os.path.join(root, d, "manifest.json")))
+        m = json.load(open(os.path.join(root, d, "manifest.json"), encoding="utf-8"))
         if all(os.path.exists(os.path.join(root, d, n)) for n in m["files"]):
             return os.path.join(root, d)
     return None

@@ -12,12 +12,12 @@ from waterledger_models.battery import physics as bp
 from waterledger_models.battery import plant
 
 HERE = os.path.dirname(__file__)
-_W = json.load(open(os.path.join(HERE, "data", "west_michigan_2023_2024.json")))
+_W = json.load(open(os.path.join(HERE, "data", "west_michigan_2023_2024.json"), encoding="utf-8"))
 TDB = np.array(_W["temperature_2m"], dtype=float)
 RH = np.array(_W["relative_humidity_2m"], dtype=float)
 TWB = hr.wet_bulb(TDB, RH)
 TIMES = [str(t)[:13].replace(" ", "T") + ":00" for t in np.datetime64(_W["start"][:13]) + np.arange(len(TDB)).astype("timedelta64[h]")]
-LAKE_MICHIGAN = json.load(open(os.path.join(HERE, "data", "water_ledger_lakes.json")))["Lake Michigan"]["temps"]
+LAKE_MICHIGAN = json.load(open(os.path.join(HERE, "data", "water_ledger_lakes.json"), encoding="utf-8"))["Lake Michigan"]["temps"]
 WATER_T = plant.lake_hours(TIMES, LAKE_MICHIGAN)
 
 

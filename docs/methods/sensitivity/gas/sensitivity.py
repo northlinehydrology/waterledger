@@ -120,7 +120,7 @@ def run(quick=False):
                 warnings.append(f"{case}/{o}: sum of S1 = {np.nansum(S1):.3f}")
 
     def write(name, data):
-        with open(HERE / name, "w", newline="") as f:
+        with open(HERE / name, "w", encoding="utf-8", newline="") as f:
             wr = csv.DictWriter(f, fieldnames=list(data[0]))
             wr.writeheader()
             for d in data:

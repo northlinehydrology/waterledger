@@ -26,8 +26,8 @@ def _cached(name, fn):
     path = os.path.join(RAW, name)
     if not os.path.exists(path):
         os.makedirs(RAW, exist_ok=True)
-        json.dump(fn(), open(path, "w"))
-    return json.load(open(path))
+        json.dump(fn(), open(path, "w", encoding="utf-8"))
+    return json.load(open(path, encoding="utf-8"))
 
 
 def county_divisions():

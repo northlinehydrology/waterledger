@@ -50,11 +50,11 @@ def _get(url, params, retries=5, post=False):
 def _cached(name, fn):
     path = os.path.join(RAW, name)
     if os.path.exists(path):
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             return json.load(f)
     os.makedirs(RAW, exist_ok=True)
     data = fn()
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f)
     return data
 
@@ -214,7 +214,7 @@ def _watersheds(rings, lat, lon, h12, h8):
 def enrich(munis, bounds, workers=8):
     """Water systems (EPA query per place) and watersheds (local overlap with bulk USGS polygons) for each municipality. Cached per GEOID; safe to re-run."""
     path = os.path.join(RAW, "enrich.json")
-    cache = json.load(open(path)) if os.path.exists(path) else {}
+    cache = json.load(open(path, encoding="utf-8")) if os.path.exists(path) else {}
     cache = {k: v for k, v in cache.items() if "error" not in v}
     todo = [m for m in munis if m["geoid"] not in cache and m["geoid"] in bounds]
     h12 = _layer_polys(6, "huc12,name", "wbd_huc12_mi.json")
@@ -231,9 +231,9 @@ def enrich(munis, bounds, workers=8):
         for i, (gid, res) in enumerate(ex.map(one, todo), 1):
             cache[gid] = res
             if i % 100 == 0:
-                json.dump(cache, open(path, "w"))
+                json.dump(cache, open(path, "w", encoding="utf-8"))
                 print("enriched", i, "of", len(todo))
-    json.dump(cache, open(path, "w"))
+    json.dump(cache, open(path, "w", encoding="utf-8"))
     return cache
 
 

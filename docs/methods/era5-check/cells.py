@@ -4,7 +4,7 @@ import numpy as np
 from waterledger_data.config import CACHE
 C = CACHE + "/snapshots"
 def places(st):
-    d = json.load(open(f"{C}/{st}/2026-11-02.2/places.json"))
+    d = json.load(open(f"{C}/{st}/2026-11-02.2/places.json", encoding="utf-8"))
     x = d["places"] if "places" in d else d
     rows = list(x.values()) if isinstance(x, dict) else x
     return rows

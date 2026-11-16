@@ -127,7 +127,7 @@ def test_newest_cached_ignores_latest_json(cache):
     from waterledger.national import data
     root = os.path.join(cache, "snapshots", "OH")
     os.makedirs(os.path.join(root, "latest.json"))
-    open(os.path.join(root, "latest.json", "manifest.json"), "w").close()       # empty, as a bad fetch once left it
+    open(os.path.join(root, "latest.json", "manifest.json"), "w", encoding="utf-8").close()       # empty, as a bad fetch once left it
     os.makedirs(os.path.join(root, "2026-10-30"))
-    json.dump({"files": {}}, open(os.path.join(root, "2026-10-30", "manifest.json"), "w"))
+    json.dump({"files": {}}, open(os.path.join(root, "2026-10-30", "manifest.json"), "w", encoding="utf-8"))
     assert data._newest_cached("OH").endswith("2026-10-30")

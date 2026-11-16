@@ -36,7 +36,7 @@ def publish(state, root, date=None, build=None, store=None, get=_get, base=BASE,
             raise SystemExit(f"no snapshot under {os.path.join(root, st)}")
         date = dates[-1]
     folder = os.path.join(root, st, date)
-    manifest = json.load(open(os.path.join(folder, "manifest.json")))
+    manifest = json.load(open(os.path.join(folder, "manifest.json"), encoding="utf-8"))
     if not manifest.get("checks"):
         raise SystemExit(f"{st}/{date} has no checks in its manifest: run `waterledger check-snapshot {st} --dir {root}` first")
     if store is None:
@@ -65,7 +65,7 @@ def publish(state, root, date=None, build=None, store=None, get=_get, base=BASE,
     latest = pointer(old, st, date, manifest["model_version"])
     with tempfile.TemporaryDirectory() as d:
         p = os.path.join(d, "latest.json")
-        json.dump(latest, open(p, "w"))
+        json.dump(latest, open(p, "w", encoding="utf-8"))
         store.publish(f"{st}/latest.json", p, TYPES[".json"], cache_control="max-age=300")
     say(f"{len(files)} files" + (", build.json" if build else "") + f", the manifest and latest.json are up: {json.dumps(latest)}")
     return f"{base}/{st}/{date}/manifest.json"

@@ -22,7 +22,7 @@ echo '{}'
 
 
 def _step():
-    text = open(WORKFLOW).read()
+    text = open(WORKFLOW, encoding="utf-8").read()
     head = text.index("- name: Upload to R2")
     block = text[text.index("run: |", head):].split("\n")[1:]
     return "\n".join(line[10:] for line in block if line.startswith(" " * 10) or not line.strip())

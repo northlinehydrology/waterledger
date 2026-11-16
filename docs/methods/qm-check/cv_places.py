@@ -46,7 +46,7 @@ def one(job):
 
 if __name__ == "__main__":
     out, ways = sys.argv[1], [w for w in sys.argv[2:] if w != "--shore"]
-    d = json.load(open(os.path.join(HERE, "..", "era5-check", "station_check_results.json")))
+    d = json.load(open(os.path.join(HERE, "..", "era5-check", "station_check_results.json"), encoding="utf-8"))
     rows = d["rows"]
     if "--shore" in sys.argv:
         A.setup(out)
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     with ProcessPoolExecutor(6, initializer=init, initargs=(out,)) as pool:
         got = list(pool.map(one, jobs))
     path = os.path.join(HERE, "cv_places.json")
-    old = json.load(open(path))["runs"] if os.path.exists(path) else []
+    old = json.load(open(path, encoding="utf-8"))["runs"] if os.path.exists(path) else []
     keep = [x for x in old if (x["geoid"], x["way"]) not in {(r["geoid"], w) for r, w in jobs}]
-    json.dump({"runs": keep + got}, open(path, "w"), indent=1, default=float)
+    json.dump({"runs": keep + got}, open(path, "w", encoding="utf-8"), indent=1, default=float)
     print("wrote cv_places.json,", len(got), "runs")

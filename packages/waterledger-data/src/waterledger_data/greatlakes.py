@@ -17,7 +17,7 @@ def lakes():
     import geopandas as gpd
     path = os.path.join(CACHE, "places", "lakes50.json")
     save(URL, path)
-    feats = [f for f in json.load(open(path))["features"] if f["properties"].get("name") in NAMES]
+    feats = [f for f in json.load(open(path, encoding="utf-8"))["features"] if f["properties"].get("name") in NAMES]
     g = gpd.GeoDataFrame.from_features(feats, crs=4326).to_crs(ALBERS)
     g["name"] = g["name"].map(NAMES)
     return g[["name", "geometry"]].dissolve("name").reset_index()

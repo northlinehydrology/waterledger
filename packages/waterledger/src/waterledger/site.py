@@ -91,6 +91,6 @@ class Site(BaseModel):
             cfg["parameters"] = {**cfg.get("parameters", {}), **{k: float(v) for k, v in parameters.items()}}
         if path:
             import yaml
-            with open(path, "w") as fh:
+            with open(path, "w", encoding="utf-8") as fh:
                 yaml.safe_dump(cfg, fh, sort_keys=False)
         return entry, cfg

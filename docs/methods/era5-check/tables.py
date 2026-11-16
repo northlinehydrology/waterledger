@@ -3,7 +3,7 @@ import json, os, sys
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-d = json.load(open(os.path.join(HERE, "station_check_results.json")))
+d = json.load(open(os.path.join(HERE, "station_check_results.json"), encoding="utf-8"))
 lsm = np.load(os.path.join(sys.argv[1], "lsm", "lsm.npz"))["lsm"]
 land = lambda c: float(lsm[360 - round(c["lat"] * 4), (round(c["lon"] * 4) + 1440) % 1440])
 short = lambda s: s.replace(" International Airport", " Intl").replace(" International Ap", " Intl").replace(" Regional Airport", "").replace(" Airport", "").replace(" area", " region point")

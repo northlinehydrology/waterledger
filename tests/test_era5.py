@@ -26,7 +26,7 @@ def test_every_places_cell_is_the_land_rules():
     """era5.cell on the shipped mask gives every place in the four states the cell, distance, land fraction and move of design 0004's
     cell_assignment.csv (the 2026-11-02.2 snapshots' 5,662 places, 189 of them moved)."""
     moved = 0
-    for r in csv.DictReader(open(ASSIGNMENT)):
+    for r in csv.DictReader(open(ASSIGNMENT, encoding="utf-8")):
         c = era5.cell(float(r["lat"]), float(r["lon"]))
         assert (c["id"], c["nearest"]["id"], int(c["moved"])) == (r["cell"], r["nearest_cell"], int(r["moved"])), r["name"]
         assert c["land"] == pytest.approx(float(r["cell_land"]), abs=6e-4) and c["km"] == pytest.approx(float(r["cell_km"]), abs=0.051)
@@ -65,7 +65,7 @@ def _synthetic(cid, seed=0):
 
 def test_a_cell_in_local_standard_time_is_whole_days_1995_2024(cache):
     _synthetic("41.50_-82.00")
-    meta = json.load(open(era5.raw_path("41.50_-82.00")[:-4] + ".json"))
+    meta = json.load(open(era5.raw_path("41.50_-82.00")[:-4] + ".json", encoding="utf-8"))
     assert meta["sha256"] == era5.sha256(era5.raw_path("41.50_-82.00")) and meta["licence"] == "CC-BY-4.0" and "Copernicus" in meta["attribution"]
     times, t, rh = era5.hourly("41.50_-82.00")
     assert times[0] == "1995-01-01T00:00" and times[-1] == "2024-12-31T23:00" and len(times) == 262992
@@ -160,7 +160,7 @@ def test_wrangler_is_called_with_the_bucket_and_remote_and_a_missing_key_is_none
     def fake(cmd, **kw):
         calls.append(cmd)
         if cmd[5] == "get":
-            open(cmd[cmd.index("--file") + 1], "w").close()               # wrangler leaves an empty file when the key is missing
+            open(cmd[cmd.index("--file") + 1], "w", encoding="utf-8").close()               # wrangler leaves an empty file when the key is missing
             return subprocess.CompletedProcess(cmd, 1, "", "✘ [ERROR] The specified key does not exist.")
         return subprocess.CompletedProcess(cmd, 0, "Upload complete.", "")
     s = r2.WranglerStore("waterledger-raw", run=fake)
@@ -212,12 +212,12 @@ def test_a_part_runs_each_cell_once_corrects_the_shore_and_resumes_on_another_ma
     calls = []
     out = E.run_part("OH", 1, 1, workers=1, draws=5, store=bucket, cells=CELLS, run=_run_stub(calls), fetch=fetch)
     assert sorted(out) == sorted(CELLS) and sorted(fetched) == sorted(CELLS) and len(calls) == 2
-    lorain = json.load(open(out["41.50_-82.00"]))
+    lorain = json.load(open(out["41.50_-82.00"], encoding="utf-8"))
     assert lorain["model_version"] == E.RUN_MODEL and lorain["draws"] == 5 and lorain["hours"] == 262992
     assert lorain["correction"]["applied"] and lorain["correction"]["stations"][0]["name"] == "Shore Station"
     before, after = lorain["correction"]["change"]["design_dry_bulb_c"]
     assert after - before == pytest.approx(1.0, abs=1e-6)          # the station is the cell plus 1 C, at the cell's own elevation
-    assert json.load(open(out["43.00_-85.50"]))["correction"]["reason"] == "no land station within 100 km"     # a land cell; the only station is on Lorain's shore, 340 km off
+    assert json.load(open(out["43.00_-85.50"], encoding="utf-8"))["correction"]["reason"] == "no land station within 100 km"     # a land cell; the only station is on Lorain's shore, 340 km off
     keys = set(bucket.puts)
     for c in CELLS:
         assert f"runs/era5/model{E.RUN_MODEL}/{c}.json" in keys and f"era5/{c}/2026-11-04.npz" in keys and f"era5/{c}/latest.json" in keys
@@ -229,7 +229,7 @@ def test_a_part_runs_each_cell_once_corrects_the_shore_and_resumes_on_another_ma
     monkeypatch.setattr(era5, "RAW", str(elsewhere / "raw"))
     monkeypatch.setattr(E, "RUNS", str(elsewhere / "runs"))
     got = E.run_part("OH", 1, 1, workers=1, draws=5, store=bucket, cells=CELLS, run=_run_stub(calls), fetch=fetch)
-    assert len(calls) == 2 and len(fetched) == 2 and json.load(open(got["41.50_-82.00"])) == lorain
+    assert len(calls) == 2 and len(fetched) == 2 and json.load(open(got["41.50_-82.00"], encoding="utf-8")) == lorain
     assert era5.raw_path("43.00_-85.50")                            # the raw series came down too
 
 
@@ -240,7 +240,7 @@ def test_a_part_finishes_when_r2_fails(cache, monkeypatch, capsys):
                      fetch=lambda ids: [_synthetic(c) for c in ids])
     assert len(calls) == 2 and all(os.path.exists(p) for p in out.values())
     assert f"could not upload runs/era5/model{E.RUN_MODEL}/" in capsys.readouterr().err
-    assert json.load(open(out["41.50_-82.00"]))["correction"]["reason"] == "no shore station within 100 km"
+    assert json.load(open(out["41.50_-82.00"], encoding="utf-8"))["correction"]["reason"] == "no shore station within 100 km"
 
 
 def test_a_restart_uploads_finished_results_r2_does_not_have(cache, monkeypatch):
@@ -317,7 +317,7 @@ def test_open_copy_cells_and_one_run(cache):
     from waterledger_models.datacenter import cooling
     paths = era5.fetch(["41.50_-82.00", "43.00_-82.50"])
     for c, p in paths.items():
-        meta = json.load(open(p[:-4] + ".json"))
+        meta = json.load(open(p[:-4] + ".json", encoding="utf-8"))
         assert meta["missing"] == {"temperature_2m": 0, "dew_point_2m": 0} and meta["sha256"] == era5.sha256(p)
         times, t, rh = era5.hourly(c)
         assert len(times) == 262992 and -40 < min(t) and max(t) < 45 and max(rh) <= 100

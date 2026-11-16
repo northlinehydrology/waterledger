@@ -34,7 +34,7 @@ def era5(scratch, cell):
     """(times, T, Td) at a cell in local standard time, 1995-2024."""
     if cell not in _series:
         from waterledger_models.weather import to_local_standard
-        h = json.load(open(os.path.join(scratch, "era5", cell + ".json")))
+        h = json.load(open(os.path.join(scratch, "era5", cell + ".json"), encoding="utf-8"))
         times, keep = to_local_standard(h["hourly"]["time"], h["longitude"], "1995-01-01", "2024-12-31")
         _series[cell] = (np.array(times), np.array(h["hourly"]["temperature_2m"])[keep], np.array(h["hourly"]["dew_point_2m"])[keep])
     return _series[cell]
@@ -44,7 +44,7 @@ def anchors(out, orog):
     """Qualifying stations with their record, their cell, the station's quantiles `qt` and its cell's `qe`, both on the station's hours."""
     scratch = os.path.dirname(os.path.abspath(out))
     got = []
-    for s in json.load(open(os.path.join(out, "stations.json"))):
+    for s in json.load(open(os.path.join(out, "stations.json"), encoding="utf-8")):
         if not s.get("qualifies"):
             continue
         z = np.load(os.path.join(out, "stations", s["id"] + ".npz"))

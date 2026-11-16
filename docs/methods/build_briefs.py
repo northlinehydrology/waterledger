@@ -36,7 +36,7 @@ CELLB = ParagraphStyle("cellb", parent=CELL, fontName="Helvetica-Bold")
 
 def load(state):
     folder = fetch_snapshot(state)
-    j = lambda n: json.load(open(os.path.join(folder, n + ".json")))
+    j = lambda n: json.load(open(os.path.join(folder, n + ".json"), encoding="utf-8"))
     return folder, j("manifest"), j("places")["places"], j("supply"), j("wastewater")["plants"], j("receiving"), j("climate"), j("energy")
 
 

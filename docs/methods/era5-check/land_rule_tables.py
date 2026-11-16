@@ -2,7 +2,7 @@
 import json, os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-d = json.load(open(os.path.join(HERE, "land_rule_results.json")))
+d = json.load(open(os.path.join(HERE, "land_rule_results.json"), encoding="utf-8"))
 pct = lambda a, b: f"{100 * (a / b - 1):+.0f}%"
 KIND = [("nearest", "Nearest cell"), ("rule", "Land rule"), ("land_0.9", "At least 90% land (sensitivity)")]
 print("| Place | Station (km) | " + " | ".join(f"{t} (km, land)" for _, t in KIND) + " |")

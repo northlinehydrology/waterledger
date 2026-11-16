@@ -19,8 +19,8 @@ def _cached(name, fn):
     path = os.path.join(RAW, name)
     if not os.path.exists(path):
         os.makedirs(RAW, exist_ok=True)
-        json.dump(fn(), open(path, "w"))
-    return json.load(open(path))
+        json.dump(fn(), open(path, "w", encoding="utf-8"))
+    return json.load(open(path, encoding="utf-8"))
 
 
 def _paged(url, where, fields, order, page=2000, geometry=False):
@@ -172,7 +172,7 @@ def watersheds_by_place(state, places):
     from waterledger_data.census import places_key
     path = os.path.join(RAW, f"{state}_{places_key(places)}_by_place_r2.json")   # keyed by the places, so a changed place list is worked out afresh; r2: the keeps() rule
     if os.path.exists(path):
-        return json.load(open(path))
+        return json.load(open(path, encoding="utf-8"))
     import shapely
     pl = places[["geoid", "geometry"]].to_crs(ALBERS)
     pl["geometry"] = shapely.make_valid(pl.geometry.values)
@@ -192,5 +192,5 @@ def watersheds_by_place(state, places):
             elif e["h8"] is None:
                 e["h8"] = {"code": r.huc, "name": r.name}
     os.makedirs(RAW, exist_ok=True)
-    json.dump(out, open(path, "w"))
+    json.dump(out, open(path, "w", encoding="utf-8"))
     return out
