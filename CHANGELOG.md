@@ -2,6 +2,12 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## Unreleased
+
+- **Windows.** The tests and the BMI checks run on windows-latest on every push. Every text file is opened as UTF-8, as on Mac
+  and Linux (Windows' default is cp1252, which garbles or refuses a name like Cañon City), and a lint step keeps it so
+  (ruff's PLW1514). A snapshot published from Windows gets keys with `/`, not `\`. No model numbers change.
+
 ## 3.23.0 (Nov 13, 2026; model 1.15)
 
 waterledger and waterledger-data 3.23.0; waterledger-models stays 3.22.0. No model numbers change.
