@@ -19,7 +19,8 @@ RH = np.array(_W["relative_humidity_2m"], dtype=float)
 
 @pytest.mark.parametrize("design", ph.DESIGNS)
 def test_data_center_results_are_unchanged(design):
-    """Hourly water, power and heat at central parameters as they were before the move (model 1.11). The record was written on macOS, where
+    """Hourly water, power and heat at central parameters as recorded: before the move (model 1.11), which matched to the bit, and again at
+    model 1.16, whose numbers differ. The record was written on macOS, where
     the move matched it to the bit; Linux's NumPy builds differ in the last bit or two of some values (as macOS and Linux snapshot builds do,
     methods log, Oct 30), so the record is held to 1e-12 of each value."""
     twb = ph.wet_bulb(TDB, RH)
