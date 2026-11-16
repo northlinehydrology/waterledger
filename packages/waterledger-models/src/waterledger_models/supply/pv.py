@@ -14,8 +14,8 @@ is their difference, so no decomposition model is needed. Each hour:
   AC                   PVWatts' inverter curve, clipped at the AC rating; DC over AC is the inverter loading ratio
 
 A study's own forcing (design 0018): AORC, like most hydrologic forcings, gives only global horizontal radiation and the 10 m wind. For it,
-hourly_from_ghi() splits the global into beam and diffuse with decompose(): DIRINT (Perez et al. 1992), DISC (Maxwell 1987) or Erbs et al.
-(1982), as pvlib implements them, the split closing on the global every hour; places the sun by the forcing's own time stamp (shift_s;
+hourly_from_ghi() splits the global into beam and diffuse with decompose(): Erbs et al. (1982) on AORC (AORC_SPLIT, check A2), or DIRINT
+(Perez et al. 1992) or DISC (Maxwell 1987), as pvlib implements them, the split closing on the global every hour; places the sun by the forcing's own time stamp (shift_s;
 AORC_SHIFT_S); and takes the 10 m wind as it is. Then the same chain. ERA5's functions are unchanged to the bit (tests/test_supply_identity.py).
 
 pvlib (Holmgren et al. 2018) is the test reference: tests/test_supply.py holds this chain to pvlib's functions hour by hour on the same inputs,
@@ -181,6 +181,11 @@ def hourly(times_utc, lat, lon, ghi, beam_horizontal, temp_air, wind_100m, p, mo
 # 30 to 35 averaged over the hour ending at the stamp.
 AORC_SHIFT_S = 0
 SPLITS = ("dirint", "disc", "erbs")
+# The split on AORC (design 0018, decision 1, Andrew Nov 16: "the industry norm"): Erbs, PVsyst's default. Check A2
+# (docs/methods/power_supply/split_check.py, three SURFRAD stations, 2024) gave it the smallest hourly and daily PV scatter on AORC's global at
+# all three and the smallest annual bias, DIRINT next, DISC last; on measured radiation DIRINT was best. AORC's hours are NARR's 3-hourly
+# radiation spread out, so a split that commits more to beam loses when the cloud is in the wrong hour.
+AORC_SPLIT = "erbs"
 DISC_SOLAR_CONSTANT = 1370.0      # DISC's I0 (Maxwell 1987), as pvlib.irradiance.disc
 MIN_COS_ZENITH = 0.065            # pvlib's floor on cos(zenith) in the clearness index
 MAX_ZENITH = 87.0                 # no beam with the sun lower (pvlib's max_zenith)
@@ -278,14 +283,14 @@ def decompose(g, ghi, method="dirint", dew_point=None, pressure=101325.0):
     return np.clip(dni * np.maximum(g["cos_zenith"], 0.0), 0.0, np.maximum(ghi, 0.0))
 
 
-def output_from_ghi(g, ghi, temp_air, wind_10m, p, method="dirint", dew_point=None, pressure=101325.0):
+def output_from_ghi(g, ghi, temp_air, wind_10m, p, method=AORC_SPLIT, dew_point=None, pressure=101325.0):
     """AC output per MW AC each hour (0-1) on a geometry() from a forcing that gives global horizontal radiation and the 10 m wind (AORC):
     the beam by decompose() on the forcing's own radiation, then output()'s chain. p: RANGES_AORC's parameters (scalars or (n, 1) arrays)."""
     return _chain(g, ghi, decompose(g, ghi, method, dew_point, pressure), temp_air, np.asarray(wind_10m, float), p)
 
 
-def hourly_from_ghi(times_utc, lat, lon, ghi, temp_air, wind_10m, p, shift_s=AORC_SHIFT_S, mount="tracking", tilt=None, method="dirint",
+def hourly_from_ghi(times_utc, lat, lon, ghi, temp_air, wind_10m, p, shift_s=AORC_SHIFT_S, mount="tracking", tilt=None, method=AORC_SPLIT,
                     dew_point=None, pressure=101325.0):
     """hourly() for a forcing that gives global horizontal radiation and the 10 m wind: geometry() at the forcing's shift_s, then
-    output_from_ghi(). The times must be consecutive hours (DIRINT reads each hour's neighbours)."""
+    output_from_ghi(). The defaults are AORC's (shift_s AORC_SHIFT_S, method AORC_SPLIT). For DIRINT the times must be consecutive hours."""
     return output_from_ghi(geometry(times_utc, lat, lon, mount, tilt, shift_s), ghi, temp_air, wind_10m, p, method, dew_point, pressure)

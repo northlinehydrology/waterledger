@@ -46,7 +46,7 @@ wind is NARR's 10 m wind (Xia et al. 2012; Cosgrove et al. 2003). Four consequen
 
 ## 1. Splitting global horizontal radiation
 
-**Agreed: DIRINT** (Perez et al. 1992, ASHRAE Transactions 98(1):354-369), as pvlib implements it
+**First agreed: DIRINT; chosen after check A2: Erbs** (decision 1). DIRINT (Perez et al. 1992, ASHRAE Transactions 98(1):354-369), as pvlib implements it
 (`pvlib.irradiance.dirint`), **with DISC (Maxwell 1987, SERI/TR-215-3087) and Erbs (Erbs et al. 1982, Solar Energy
 28:293-302) run beside it in the check**, and the one used chosen by check A2.
 
@@ -205,6 +205,13 @@ carries them, a minor package release: **3.24.0 if done by then, else 3.25.0** (
 1. **The split: DIRINT**, with DISC and Erbs beside it and the one used chosen by check A2 on AORC at SURFRAD stations.
    Agreed, "unless there are industry or academic norms for this that we would be going against or not using properly":
    PVsyst's Erbs and the NSRDB's DISC are in the check (section 1).
+   **Check A2 (Nov 16) and the choice: Erbs.** On AORC's global at Bondville, Penn State and Sioux Falls (2024), Erbs had the
+   smallest hourly PV scatter (41.1-44.3% against DIRINT's 41.4-45.0% and DISC's 42.1-45.5%), the smallest daily scatter and the
+   smallest annual bias (+3.0 to +7.1%) at all three; on measured radiation DIRINT was best (annual PV bias -0.3 to -0.8%). The
+   rule as written would have fallen to DISC, last on AORC. Andrew: "yes, let's do the industry norm": Erbs, PVsyst's default,
+   is `pv.AORC_SPLIT`; DIRINT and DISC stay as options. Also from A2: AORC's own global scatters more than ERA5's against the
+   stations (daily 26-31% against 20-22%, correlation 0.89-0.90 against 0.94-0.95; annual biases alike), so PV on AORC is
+   rougher hour by hour and day by day than the calculator's.
 2. **The shear: a month-by-hour table from ERA5's 10 m and 100 m wind at the place.** Andrew chose it over the sampled
    day and night exponents.
 3. **Check A3: all of EIA's 2024 plants** (about 45 GB of AORC reads), with SURFRAD (three stations, one year) and
