@@ -20,7 +20,8 @@ AORC_SHIFT_S); and takes the 10 m wind as it is. Then the same chain. ERA5's fun
 
 pvlib (Holmgren et al. 2018) is the test reference: tests/test_supply.py holds this chain to pvlib's functions hour by hour on the same inputs,
 tests/test_supply_split.py the splits.
-Parameters: RANGES, each [A] unless sourced in docs/research/power-supply-water.md.
+Parameters: RANGES (ERA5's path) and RANGES_AORC (AORC's: the resource factor from check A3), each [A] unless sourced in
+docs/research/power-supply-water.md.
 """
 import warnings
 
@@ -35,6 +36,12 @@ RANGES = {
                                    # their cells (28.5%), 0.84 overall and 0.76-0.92 across the states with ten or more plants. It holds ERA5's
                                    # radiation bias with snow, curtailment, outages and age, which the check can't separate (0014, check 5;
                                    # docs/methods/power_supply/pv_check.py)
+}
+RANGES_AORC = RANGES | {
+    "resource": (0.73, 1.02),      # the same on AORC (hourly_from_ghi, Erbs, shift 0): EIA's 2024 tracking fleet (944 plants, 24.1%) against
+                                   # this chain on AORC at the plants' 1 km points (27.6%), 0.87 overall and 0.73-1.02 across the 15 states with
+                                   # ten or more plants, wider than ERA5's: AORC's radiation scatters more (design 0018, checks A2 and A3;
+                                   # docs/methods/power_supply/aorc_check.py)
 }
 GCR = 0.35                         # ground coverage ratio of a tracking array [A]
 MAX_ANGLE = 60.0                   # tracker rotation limit, degrees [A]

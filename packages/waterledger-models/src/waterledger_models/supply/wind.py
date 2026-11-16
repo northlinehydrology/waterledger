@@ -98,7 +98,7 @@ def shear_table(times_utc, lon, u10, v10, u100, v100):
 def hourly_from_10m(times_utc, lon, u10, v10, table, p):
     """Output per MW of nameplate each hour (0-1) from a forcing's 10 m wind components, m/s, at UTC hour stamps: the speed x resource, to the
     hub by (HUB_M / 10)^(table[month, solar hour] x shear_scale), through the power curve, less losses. table: shear_table() at the place.
-    p: RANGES_AORC's parameters (scalars or (n, 1) arrays)."""
+    p: shear_scale, losses and resource (scalars or (n, 1) arrays); no resource factor is set for AORC's wind (design 0018, decision 6)."""
     alpha = np.asarray(table, float)[month(times_utc), solar_hour(times_utc, lon)]
     speed = np.hypot(np.asarray(u10, float), np.asarray(v10, float)) * p["resource"] * (HUB_M / 10.0) ** (alpha * p["shear_scale"])
     return power_curve(speed) * (1.0 - p["losses"])

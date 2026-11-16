@@ -86,3 +86,17 @@ def test_the_splits_differ_where_they_should(sky):
         assert beam[dark].sum() < 0.1 * ghi[dark].sum()
         cf[m] = pv.output_from_ghi(g, ghi, temp, w10, P, method=m).mean()
     assert max(cf.values()) / min(cf.values()) < 1.10
+
+
+def test_aorc_ranges_are_eras_but_the_resource_from_check_a3():
+    """RANGES_AORC differs from RANGES only in the resource factor, and that range is check A3's: the states with ten or more plants in
+    docs/methods/power_supply/aorc_pv_check.csv, to two places, with the overall match inside it."""
+    assert set(pv.RANGES_AORC) == set(pv.RANGES)
+    assert all(pv.RANGES_AORC[k] == pv.RANGES[k] for k in pv.RANGES if k != "resource")
+    from pathlib import Path
+    a3 = pd.read_csv(Path(__file__).resolve().parents[1] / "docs" / "methods" / "power_supply" / "aorc_pv_check.csv")
+    states = a3[(a3.group.str.len() == 2) & (a3.plants >= 10)]
+    lo, hi = pv.RANGES_AORC["resource"]
+    assert lo == pytest.approx(states.resource_match.min(), abs=0.005)
+    assert hi == pytest.approx(states.resource_match.max(), abs=0.005)
+    assert lo < a3.loc[a3.group.eq("All states in the check"), "resource_match"].item() < hi
