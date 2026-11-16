@@ -2,6 +2,25 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## Unreleased (branch supply-on-aorc)
+
+waterledger-models and waterledger-data. Fuel cells' numbers change (a model version step at release); no other number changes, and the
+ERA5 supply path matches its record from before to the bit (`tests/test_supply_identity.py`).
+
+- **Solar and wind on a study's own forcing** ([design 0018](docs/design/0018-supply-on-a-study-forcing.md)), so a coupled study keeps one
+  weather forcing. For a forcing that gives only global horizontal radiation and the 10 m wind (AORC):
+  - `supply.pv.hourly_from_ghi` / `output_from_ghi`: the global split into beam and diffuse by `pv.decompose` (Erbs, PVsyst's default, on
+    AORC; DIRINT and DISC as options; each held to pvlib's hour by hour, closing on the global every hour), the sun placed by the forcing's
+    own time stamp (`geometry(shift_s=)`; AORC's radiation stands at the middle of its hour, `pv.AORC_SHIFT_S = 0`), the 10 m wind as it is.
+  - `supply.wind.hourly_from_10m`: the 10 m wind to the hub by an exponent for each month and local solar hour, `wind.shear_table`, set
+    from ERA5's own 10 m and 100 m wind at the place (`waterledger_data.era5.fetch_shear`, `era5.shear`); the hours stay the forcing's.
+  - Checks in `docs/methods/power_supply/`: AORC's time stamp (`aorc_timing.py`), the split at three SURFRAD stations (`split_check.py`).
+- **Fuel cells are solid oxide on gas** ([design 0019](docs/design/0019-solid-oxide-fuel-cells.md)), as data centers buy them: heat rate
+  6,600-7,500 Btu/kWh HHV from EIA-923's plants by age (was 6,300-9,950, all fuel cell types), with `age_years` a setting that narrows it
+  (in `gas.plant`, `supply.scenario.Gas` and `GasPlantBmi`); start-up and restart water, 0.01-0.69 gal/MWh, consumed; the 325 kW server as
+  the unit (`gas.physics.UNIT_MW`), 24-hour outages, and a reserve share from the servers' availability instead of N + k
+  (`gas.physics.units_for`). Check F1 (`fuel_cell_check.py`).
+
 ## 3.23.1 (Nov 16, 2026; model 1.15)
 
 waterledger and waterledger-data 3.23.1, waterledger-models 3.22.1. No model numbers change.

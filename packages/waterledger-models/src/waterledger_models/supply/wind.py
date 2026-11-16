@@ -19,7 +19,9 @@ since a 0.25-degree cell smooths the terrain that makes those sites windy. No fa
 A study's own forcing (design 0018): AORC, like most hydrologic forcings, gives the wind at 10 m, not 100 m. hourly_from_10m() takes it to the hub
 by an exponent for each calendar month and local solar hour (shear_table(), from ERA5's own 10 m and 100 m wind at the place; Andrew, Nov 16):
 the shear from 10 m changes with stability every day (ERA5 at the Clam River, 2019-2021: 0.15-0.18 at midday, 0.27-0.31 at night), and one
-exponent would put the energy in the wrong hours. The hours are the forcing's; ERA5 only sets the table, a parameter. The curve is at sea-level
+exponent would put the energy in the wrong hours. The hours are the forcing's; ERA5 only sets the table, a parameter. Not for AORC: its 10 m wind
+steps down against ERA5's in 2018 at most places (design 0018, check A5), so a study on AORC runs wind on ERA5's 100 m wind with hourly() and
+says so (decision 6); hourly_from_10m is for a forcing whose 10 m wind is one series, with a resource factor from its own check. The curve is at sea-level
 density with no correction for the hour's [A], as on ERA5's path; it stays under the Betz limit at any density above 0.92 kg/m3
 (tests/test_supply_wind_10m.py).
 """

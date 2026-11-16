@@ -1,6 +1,6 @@
 # 0018: Solar and wind on a study's own forcing (AORC)
 
-Status: **proposed Nov 16, 2026; decisions 1, 2, 3 and 5 agreed by Andrew the same day (below), 4 open; nothing built.**
+Status: **decided Nov 16, 2026 (Andrew; decisions 1-6 below, 4 as proposed); being built on branch `supply-on-aorc`.**
 Branch `supply-on-aorc`. Builds on 0014 (power supply scenarios). 0015-0017 are taken on other branches, so this is 0018.
 Fuel cells as data centers use them, added to this work the same day, are in the companion note 0019.
 
@@ -232,7 +232,12 @@ carries them, a minor package release: **3.24.0 if done by then, else 3.25.0** (
    EIA-930 (MISO, 2024). Agreed, downloads included.
 4. **`scenario.Supply` and `size`:** open; Andrew asked for more on what it means.
 5. **The release:** 3.25.0 after 3.24.0, or in 3.24.0 if done by then; "fine to split".
-6. **What wind runs on where a study's forcing is AORC (open; found Nov 16):** AORC's 10 m wind is not one series over 2000-2022 (above).
+6. **Wind on ERA5's 100 m wind, the calculator's path, as a stated exception to the one-forcing rule** (Andrew, Nov 16: "run wind
+   on ERA5 100 m and state the exception"). AORC's 10 m wind is not one series over 2000-2022 (above), and no factor fixes a step that
+   differs by place; ERA5's 100 m path is homogeneous and checked against EIA's fleet (0014, check 5). A study on AORC runs PV on its own
+   forcing (`pv.hourly_from_ghi`) and wind on ERA5 at the place's cell (`waterledger_data.era5.fetch_supply`, `era5.supply`,
+   `wind.hourly`), aligned on UTC hours, and says so. `wind.hourly_from_10m` and `shear_table` stay for a forcing whose 10 m wind is
+   homogeneous, with no ranges set for AORC; check A3 runs for PV only, and A4 checks the ERA5 path's hours.
 
 ## References
 
