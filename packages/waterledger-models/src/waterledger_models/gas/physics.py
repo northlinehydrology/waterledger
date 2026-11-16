@@ -28,6 +28,12 @@ utility's water it follows the place's sewer rule (15 of 35; 10 discharge to a s
 near-zero flows, to the sewer [A]. A lake-cooled plant's once-through water always returns to the lake. Gas used to make the fuel, and water upstream of the plant, are outside the boundary
 (design 0014, decision 11). Ranges and sources: RANGES and SOURCES below; the evidence is in docs/research/power-supply-water.md.
 
+Fuel cells are solid oxide units on pipeline gas, as data centers buy them (design 0019, decided Nov 16, 2026): the heat rate from EIA-923's gas
+fuel cell plants by age, 2022-2024, in aggregate (about 6,650 at one to three years to 7,400 at six to eight; Bloom's Energy Server 6.5 data
+sheet gives 5,811 new to 7,127 before the stacks are swapped), a little water at start-up and restarts, consumed, and the unit the 325 kW
+server with a reserve share from the servers' availability rather than N + k. A plant's age is in the draws, or an `age_years` setting; the
+model holds no state from hour to hour.
+
 Departure from design 0014: the cooling's own fans and pumps are not worked from heat_rejection.loop, which models a facility water loop with
 chillers, not a steam condenser; they are in the auxiliary share, with dry cooling's larger fans as its own range [A].
 """
@@ -55,9 +61,23 @@ TECH = {
            "part_load_half": (0.15, 0.25), "aux_share": (0.005, 0.015)},
     "engine": {"heat_rate": (8200.0, 9900.0), "derate_wet": (0.0015, 0.0021), "derate_dry": (0.0015, 0.0021), "hr_slope": (0.0, 0.001),
                "part_load_half": (0.08, 0.10), "jacket_share": (0.25, 0.40), "aux_share": (0.01, 0.03)},
-    "fuel_cell": {"heat_rate": (6300.0, 9950.0), "derate_wet": (0.0, 0.0), "derate_dry": (0.0, 0.0), "hr_slope": (0.0, 0.0),
-                  "part_load_half": (0.0, 0.05), "aux_share": (0.01, 0.03)},
+    "fuel_cell": {"heat_rate": (6600.0, 7500.0), "derate_wet": (0.0, 0.0), "derate_dry": (0.0, 0.0), "hr_slope": (0.0, 0.0),
+                  "part_load_half": (0.0, 0.05), "aux_share": (0.01, 0.03), "process_water": (0.01, 0.69)},
 }
+# A solid oxide fuel cell plant's heat rate by its age, years since it came online (design 0019, decision 2): EIA-923 2022-2024 for gas fuel cell
+# plants of 1-5 MW, not CHP, over 50% capacity factor each year, by the year they came online (aggregate; 73 plants) [A: the bands]. The range
+# in TECH spans them, for a plant of any age.
+AGE_HEAT_RATE = ((0.0, 3.0, (6600.0, 7000.0)), (3.0, 5.0, (6800.0, 7200.0)), (5.0, float("inf"), (7200.0, 7500.0)))
+# The unit a plant is built of, MW, where it is not the caller's: a fuel cell's is the 325 kW server (Bloom Energy Server 6.5 data sheet).
+UNIT_MW = {"fuel_cell": 0.325}
+# A forced outage's mean length by technology, hours, where it is not OUTAGE_HOURS: a fuel cell server's modules are swapped with the server
+# running (Bloom, Form S-1, 2018; a 2023 state air filing) [A: 24].
+OUTAGE_HOURS_BY_TECH = {"fuel_cell": 24.0}
+# Modular plants (fuel cells) carry a reserve share, not N + k: the fewest units with the chance that fewer than needed are up in an hour under this
+# at the central availability (design 0019, decision 5) [A: about four nines, inside the vendor's claims of 99.9-99.999%].
+RESERVE_RISK = 1e-4
+MODULAR = ("fuel_cell",)
+
 # Shared by every technology
 COMMON = {
     "availability": (0.90, 0.97),          # a unit's share of hours available [A]
@@ -83,7 +103,10 @@ def default_discharge(technology, design, supply="utility"):
 # NOx control is a setting, not a draw: dry low-NOx (0) or water injection at a water-to-fuel mass ratio of 0.5-1.0 (AP-42 sec. 3.1.4.1, p. 3.1-6).
 NOX = {"dln": 0.0, "water": (0.5, 1.0)}
 SOURCES = {
-    "heat_rate": "EIA AEO2023 Table 1; NETL Rev. 4a Exhibit ES-4; EPA CHP Catalog Tables 2-2, 3-2, 6-3",
+    "heat_rate": "EIA AEO2023 Table 1; NETL Rev. 4a Exhibit ES-4; EPA CHP Catalog Tables 2-2, 3-2; fuel cells: EIA-923 2022-2024 in aggregate "
+                 "(design 0019) and Bloom Energy Server 6.5 data sheet (Feb 2026)",
+    "process_water": "fuel cells' start-up and restart water, gal/MWh, consumed: Bloom (about 780 gal a year per 10 MW, 2026; 0.69 gal/MWh in a "
+                     "2023 state air filing) [A: the range]",
     "derate_wet": "EPA CHP Catalog p. 3-10 (turbines), p. 2-12 (engines); Sathaye et al. 2011 p. 11 (combined cycle, wet)",
     "derate_dry": "Sathaye et al. 2011 p. 11 (combined cycle, dry, about 0.7%) [A]",
     "hr_slope": "EPA CHP Catalog p. 3-10 (turbines); Meng and Sanders 2019 sec. 4 (combined cycle) [A]",
@@ -98,13 +121,26 @@ SOURCES = {
 }
 
 
-def ranges(technology, design, nox="dln"):
-    """Every sampled parameter for this technology and design: its own, the shared ones, and the heat rejection's or the lake's where it has one."""
+def heat_rate_for_age(age_years):
+    """A fuel cell plant's heat rate range, Btu/kWh HHV, at its age (AGE_HEAT_RATE)."""
+    if age_years < 0:
+        raise ValueError("age_years must be 0 or more")
+    return next(r for lo, hi, r in AGE_HEAT_RATE if lo <= age_years < hi)
+
+
+def ranges(technology, design, nox="dln", age_years=None):
+    """Every sampled parameter for this technology and design: its own, the shared ones, and the heat rejection's or the lake's where it has one.
+    age_years (fuel cells only): the plant's age, which narrows the heat rate to that age's (heat_rate_for_age); without it the draws span every
+    age."""
     if technology not in TECHNOLOGIES:
         raise ValueError(f"technology must be one of {TECHNOLOGIES}")
     if design not in DESIGNS[technology]:
         raise ValueError(f"{technology} designs are {DESIGNS[technology]}, not {design!r}")
     r = {**TECH[technology], **COMMON}
+    if age_years is not None:
+        if technology != "fuel_cell":
+            raise ValueError("age_years is for fuel cells")
+        r["heat_rate"] = heat_rate_for_age(float(age_years))
     if design in ("towers", "hybrid", "assist"):
         r.update({**hr.EQUIPMENT, **OPERATING})
     if design == "lake":
@@ -118,8 +154,36 @@ def ranges(technology, design, nox="dln"):
     return r
 
 
-def central_parameters(technology, design, nox="dln"):
-    return {k: (a + b) / 2 for k, (a, b) in ranges(technology, design, nox).items()}
+def central_parameters(technology, design, nox="dln", age_years=None):
+    return {k: (a + b) / 2 for k, (a, b) in ranges(technology, design, nox, age_years).items()}
+
+
+def unit_mw(technology, given=None):
+    """A unit's net MW at ISO: the caller's, else the technology's (UNIT_MW), else 300."""
+    return float(given) if given is not None else UNIT_MW.get(technology, 300.0)
+
+
+def outage_hours(technology):
+    return OUTAGE_HOURS_BY_TECH.get(technology, OUTAGE_HOURS)
+
+
+def units_for(technology, need_mw, unit_capacity_mw, availability, k=1):
+    """Units to build to carry need_mw on units of unit_capacity_mw each: N + k for the large-unit technologies, N the units that carry it; for a
+    modular plant (MODULAR) the fewest units M with P(fewer than N of M up in an hour) under RESERVE_RISK, each up at `availability` (binomial;
+    k is not used)."""
+    n = int(np.ceil(need_mw / unit_capacity_mw - 1e-9))
+    if technology not in MODULAR:
+        return n + k
+    from math import exp, lgamma, log
+    a = float(availability)
+    if a >= 1.0:
+        return n
+    m = n
+    while True:
+        logs = [lgamma(m + 1) - lgamma(j + 1) - lgamma(m - j + 1) + j * log(a) + (m - j) * log(1 - a) for j in range(n)]
+        if sum(exp(x) for x in logs) < RESERVE_RISK:
+            return m
+        m += 1
 
 
 def _humidity_ratio(tdb, rh):
@@ -133,7 +197,7 @@ def hourly(demand_mw, tdb, twb, rh, technology, design, p, units, unit_mw, inlet
 
     MW: "served", "unserved", "fuel", "gross", "aux", "condenser", "other", "capacity" (available), "units_online", "inlet_t" (C).
     Gallons: "withdrawn", "consumed", "returned" (= "to_sewer" + "to_source" + "to_stream"), and the parts "evap", "drift", "blow", "once_through",
-    "lake_evap", "nox", "nox_reject", "inlet". discharge: where the blowdown and the demineralizer's reject go (DISCHARGES, default_discharge)."""
+    "lake_evap", "nox", "nox_reject", "inlet", "process" (a fuel cell's start-up water). discharge: where the blowdown and the demineralizer's reject go (DISCHARGES, default_discharge)."""
     if discharge not in DISCHARGES:
         raise ValueError(f"discharge must be one of {DISCHARGES}")
     if technology not in TECHNOLOGIES or design not in DESIGNS[technology]:
@@ -207,12 +271,15 @@ def hourly(demand_mw, tdb, twb, rh, technology, design, p, units, unit_mw, inlet
     to_stream = waste if discharge == "stream" else zero
     to_source = once - lake_evap + (waste if discharge == "source" else zero)
     evaporated = waste if discharge == "none" else zero        # zero liquid discharge: evaporated on site
+    # a fuel cell's start-up and restart water, per MWh served: raised to steam for the reformer, reacted or out the exhaust, so consumed
+    process = p.get("process_water", 0.0) * served
     return {
         "served": served, "unserved": unserved, "fuel": fuel, "gross": gross, "aux": aux, "condenser": condenser, "other": other,
         "capacity": capacity, "units_online": online, "inlet_t": inlet_t,
         "evap": evap, "drift": drift, "blow": blow, "once_through": once, "lake_evap": lake_evap, "nox": nox, "nox_reject": nox_reject, "inlet": inlet,
-        "withdrawn": evap + drift + blow + once + nox + nox_reject + inlet,
-        "consumed": evap + drift + lake_evap + nox + inlet + evaporated,
+        "process": process,
+        "withdrawn": evap + drift + blow + once + nox + nox_reject + inlet + process,
+        "consumed": evap + drift + lake_evap + nox + inlet + evaporated + process,
         "returned": to_sewer + to_source + to_stream, "to_sewer": to_sewer, "to_source": to_source, "to_stream": to_stream,
     }
 

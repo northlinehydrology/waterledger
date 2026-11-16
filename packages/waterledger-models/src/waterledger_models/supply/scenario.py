@@ -37,12 +37,15 @@ WASHING = {"pv_washing": (0.0, 5.0)}
 
 @dataclass
 class Gas:
-    """A gas plant resource: technology and design (gas.physics.DESIGNS), unit size, and units (None: sized N + k)."""
+    """A gas plant resource: technology and design (gas.physics.DESIGNS), unit size (None: the technology's, gas.physics.UNIT_MW, else 300), and
+    units (None: sized N + k, or for fuel cells N plus a reserve share, gas.physics.units_for). age_years: a fuel cell plant's age, stated
+    rather than sampled (design 0019)."""
     technology: str = "cc"
     design: str = "towers"
-    unit_mw: float = 300.0
+    unit_mw: float | None = None
     units: int | None = None
     k: int = 1
+    age_years: float | None = None
     firm_mw: float | None = None         # grid-parallel: serves this much of the load each hour, the residual takes the rest
     nox: str = "dln"
     inlet_cooling: bool = False
@@ -92,14 +95,16 @@ def size(model, times, temps, rhs, scenarios, design, supply_weather, lat, lon):
             sc.pv_mw = sc.pv_share * annual_mwh / (float(pv.output(g, ghi, beam, tdb, np.hypot(u, v), _lhs(pv.RANGES, 1, 0)[-1]).mean()) * HOURS_A_YEAR)
         if sc.wind_share is not None:
             sc.wind_mw = sc.wind_share * annual_mwh / (float(wind.hourly(u, v, _lhs(wind.RANGES, 1, 0)[-1]).mean()) * HOURS_A_YEAR)
-        if sc.gas is not None and sc.gas.units is None:
+        if sc.gas is not None:
             gas = Gas(**vars(sc.gas))
-            p = hr.for_location(gp.central_parameters(gas.technology, gas.design, gas.nox), tdb)
-            t = np.array([p["design_db"]])
-            cap = gp.hourly(1e9, t, hr.wet_bulb(t, np.array([40.0])), np.array([40.0]), gas.technology, gas.design, p, 1, gas.unit_mw,
-                            gas.inlet_cooling, water_t=np.array([10.0]) if gas.design == "lake" else None)["capacity"][0]
-            need = (gas.firm_mw if gas.firm_mw is not None else peak)
-            gas.units = int(np.ceil(need / cap - 1e-9)) + gas.k
+            gas.unit_mw = gp.unit_mw(gas.technology, gas.unit_mw)
+            if gas.units is None:
+                p = hr.for_location(gp.central_parameters(gas.technology, gas.design, gas.nox, gas.age_years), tdb)
+                t = np.array([p["design_db"]])
+                cap = gp.hourly(1e9, t, hr.wet_bulb(t, np.array([40.0])), np.array([40.0]), gas.technology, gas.design, p, 1, gas.unit_mw,
+                                gas.inlet_cooling, water_t=np.array([10.0]) if gas.design == "lake" else None)["capacity"][0]
+                need = (gas.firm_mw if gas.firm_mw is not None else peak)
+                gas.units = gp.units_for(gas.technology, need, cap, p["availability"], gas.k)
             sc.gas = gas
         out[name] = sc
     return out
@@ -129,7 +134,8 @@ class Supply:
         self.utc, self.ghi, self.beam, self.u, self.v = (np.asarray(x) for x in supply_weather)
         self.pv_draws = _lhs({**pv.RANGES, **WASHING}, n, seed)
         self.wind_draws = _lhs(wind.RANGES, n, seed + 1)
-        self.gas_draws = {name: _lhs(gp.ranges(sc.gas.technology, sc.gas.design, sc.gas.nox), n, seed + 2) for name, sc in scenarios.items() if sc.gas}
+        self.gas_draws = {name: _lhs(gp.ranges(sc.gas.technology, sc.gas.design, sc.gas.nox, sc.gas.age_years), n, seed + 2)
+                          for name, sc in scenarios.items() if sc.gas}
         self.seed = seed
 
     def setup(self, times, tdb, twb, rh):
@@ -155,8 +161,9 @@ class Supply:
             g = sc.gas
             demand = np.minimum(rest, g.firm_mw) if g.firm_mw is not None else rest
             p = hr.for_location(self.gas_draws[name][i], self.tdb)
-            up = gp.outages(g.units, p["availability"], len(load), self.seed + 1000 * i) if g.outages else None
-            gh = gp.hourly(demand, self.tdb, self.twb, self.rh, g.technology, g.design, p, g.units, g.unit_mw, g.inlet_cooling, self.water_t, up,
+            up = gp.outages(g.units, p["availability"], len(load), self.seed + 1000 * i, gp.outage_hours(g.technology)) if g.outages else None
+            gh = gp.hourly(demand, self.tdb, self.twb, self.rh, g.technology, g.design, p, g.units, gp.unit_mw(g.technology, g.unit_mw), g.inlet_cooling,
+                           self.water_t, up,
                            g.discharge or gp.default_discharge(g.technology, g.design, g.supply))
             rest = rest - gh["served"]
         grid = rest if sc.residual == "grid" else 0.0 * rest
@@ -197,7 +204,8 @@ class Supply:
                     out.water[f"{pre}gas_{role}"] = (gh[role], 1.0)
                     out.peak[f"{pre}gas_{role}"] = (ghp[role], 1.0)
                 served = float(gh["served"].sum())
-                s.update({"gas_fuel_mw_avg": float(gh["fuel"].mean()), "gas_capacity_factor": float(gh["served"].mean()) / (g.units * g.unit_mw),
+                s.update({"gas_fuel_mw_avg": float(gh["fuel"].mean()),
+                          "gas_capacity_factor": float(gh["served"].mean()) / (g.units * gp.unit_mw(g.technology, g.unit_mw)),
                           "gas_withdrawn_gal_per_mwh": float(gh["withdrawn"].sum()) / served if served > 0 else 0.0,
                           "gas_consumed_gal_per_mwh": float(gh["consumed"].sum()) / served if served > 0 else 0.0})
                 local_w += float(gh["withdrawn"].sum()) / self.ndays / 1e6

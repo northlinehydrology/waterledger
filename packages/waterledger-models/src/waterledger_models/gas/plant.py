@@ -13,41 +13,45 @@ from waterledger_models.gas import physics as gp
 DRAWS = 400
 
 
-def draws(technology, design, n=DRAWS, seed=7, nox="dln", settings=None):
-    """The Monte Carlo draws, then the central run last: [{name: value}]. settings fixes parameters in every run."""
-    r = gp.ranges(technology, design, nox)
+def draws(technology, design, n=DRAWS, seed=7, nox="dln", settings=None, age_years=None):
+    """The Monte Carlo draws, then the central run last: [{name: value}]. settings fixes parameters in every run; age_years states a fuel cell
+    plant's age instead of sampling it (design 0019)."""
+    r = gp.ranges(technology, design, nox, age_years)
     settings = settings or {}
     unknown = set(settings) - set(r)
     if unknown:
         raise ValueError(f"unknown settings: {sorted(unknown)}")
     lh = hr.latin_hypercube(r, n, seed)
-    out = [{k: float(v[i]) for k, v in lh.items()} for i in range(n)] + [gp.central_parameters(technology, design, nox)]
+    out = [{k: float(v[i]) for k, v in lh.items()} for i in range(n)] + [gp.central_parameters(technology, design, nox, age_years)]
     return [{**p, **settings} for p in out]
 
 
 def run_location(times, temps, rhs, technology, design, units, unit_mw, capacity_factor=1.0, n=DRAWS, seed=7, nox="dln", inlet_cooling=False,
-                 outages=False, water_temps=None, settings=None, supply="utility", discharge=None):
+                 outages=False, water_temps=None, settings=None, supply="utility", discharge=None, age_years=None):
     """Monte Carlo for one gas plant at one location: `units` identical units of `unit_mw` net MW at ISO, asked for `capacity_factor` of its ISO
     rating every hour. Results as runs.run_location gives them for the plant's water (MGD) and its own electricity (the auxiliary load, MW), with
     the plant's own measures: net_mw_avg, unserved_mw_avg, fuel_mw_avg, heat_rate_avg (Btu/kWh, HHV, fuel over net) and water per MWh net,
     withdrawn_gal_per_mwh and consumed_gal_per_mwh. outages: draw each hour's units up at the sampled availability (physics.outages). supply: where
-    its water comes from ("surface", "ground" or "utility"), which sets where its wastewater goes unless discharge is given (physics.default_discharge)."""
+    its water comes from ("surface", "ground" or "utility"), which sets where its wastewater goes unless discharge is given (physics.default_discharge).
+    unit_mw None: the technology's (physics.UNIT_MW). age_years: a fuel cell plant's age, stated rather than sampled."""
     discharge = discharge or gp.default_discharge(technology, design, supply)
-    model = _GasRuns(technology, design, units, unit_mw, capacity_factor, n, seed, nox, inlet_cooling, outages, water_temps, settings, discharge)
+    model = _GasRuns(technology, design, units, gp.unit_mw(technology, unit_mw), capacity_factor, n, seed, nox, inlet_cooling, outages, water_temps,
+                     settings, discharge, age_years)
     return runs.run_location(model, times, temps, rhs)
 
 
 class _GasRuns:
     """The gas plant's part of the shared runner: its draws and each draw's hours."""
 
-    def __init__(self, technology, design, units, unit_mw, capacity_factor, n, seed, nox, inlet_cooling, outages, water_temps, settings, discharge="sewer"):
+    def __init__(self, technology, design, units, unit_mw, capacity_factor, n, seed, nox, inlet_cooling, outages, water_temps, settings, discharge="sewer",
+                 age_years=None):
         self.technology, self.design, self.units, self.unit_mw, self.cf = technology, design, units, unit_mw, capacity_factor
         self.n, self.seed, self.nox, self.inlet_cooling, self.outages, self.settings = n, seed, nox, inlet_cooling, outages, settings
-        self.water_temps, self.discharge = water_temps, discharge
+        self.water_temps, self.discharge, self.age_years = water_temps, discharge, age_years
         self.designs = (design,)
 
     def draws(self):
-        return draws(self.technology, self.design, self.n, self.seed, self.nox, self.settings)
+        return draws(self.technology, self.design, self.n, self.seed, self.nox, self.settings, self.age_years)
 
     def setup(self, times, tdb, twb, rh):
         from waterledger_models.battery.plant import lake_hours
@@ -57,7 +61,7 @@ class _GasRuns:
 
     def run(self, design, p):
         p = hr.for_location(p, self.tdb)
-        up = gp.outages(self.units, p["availability"], len(self.tdb), self.seed + self.i) if self.outages else None
+        up = gp.outages(self.units, p["availability"], len(self.tdb), self.seed + self.i, gp.outage_hours(self.technology)) if self.outages else None
         self.i += 1
         demand = self.cf * self.units * self.unit_mw
         h = gp.hourly(demand, self.tdb, self.twb, self.rh, self.technology, design, p, self.units, self.unit_mw, self.inlet_cooling, self.water_t, up,
