@@ -2682,3 +2682,36 @@ its peak day is where the difference shows. `scenario()` starts the same way.
 
 **Short form** (methods pages): Where the cooling design isn't published, the calculator starts from dry coolers with pads on the
 hottest days, since most proposals say closed loop and closed loop doesn't rule out water in the hottest weather.
+
+## Nov 16, 2026: the ERA5 check judges hybrid and pads against towers' water (model 1.16)
+
+- **Decision.** In the ERA5 check (`waterledger era5 check ST`), the places' hybrid and pads (assist) differences are measured as a
+  share of towers' water at the same place, not of their own water. P2 to P4 are redefined that way, and pads gets its own
+  criteria (P6 average day, P7 peak day), since pads is now the starting design wherever none is published. Towers (P5) and the
+  weather criteria (W1 to W7) are unchanged. Andrew, Nov 16, 2026 ("Change the test is better").
+- **Why.** At model 1.16 a hybrid or pads plant evaporates only above the operator's switch setting (26.5-32 C, design 0016). On an
+  average day that is about 1% of towers' water in Michigan and 7% in Texas (it was about 8% in Michigan at 1.11). A percent of so small
+  a number mostly measures how many of the hottest hours cross the switch, so a small difference in those hours between the
+  cell and the station moves it a lot. Michigan's rebuild check at 1.16 had the same weather results as before, all passing, and towers
+  within 0.3%, but hybrid's average day differed by a median 15.0% of its own water (limit 8%) and the peak day by 7.9% (limit 6%). In
+  water that is about 0.2% of towers' average day, about 0.001 MGD per 100 MW. The mean difference was 1%, so there is no bias.
+- **Considered.** Re-accepting each state's check with a note. That would leave a test that every state fails and that no longer says
+  whether the weather is good enough.
+- **Limits.** Set as before, from the four states the first limits came from (Michigan, Ohio, Virginia, Texas), now at model 1.16 with 12
+  places each, worst result plus a margin about as wide as the first limits':
+
+  | | Test (as % of towers' water at the place) | Limit | Four states at 1.16 |
+  |---|---|---|---|
+  | P2 | hybrid average day, median absolute difference | 1% | 0.10-0.53 (Texas) |
+  | P3 | hybrid average day, absolute mean difference | 0.75% | 0.04-0.29 (Texas) |
+  | P4 | hybrid peak day, median absolute difference | 6% | 1.5-4.0 (Ohio) |
+  | P6 | pads average day, median absolute difference | 1% | 0.17-0.54 (Texas) |
+  | P7 | pads peak day, median absolute difference | 6% | 1.3-3.8 (Texas) |
+
+  On the peak day a hybrid runs wet, about half of towers' water in all four states, so the peak-day limits stay near the first ones.
+  In their own terms the four states' hybrid average days differ by a median 6.2-15.0% (Michigan) and pads by 7.4-17.9%.
+- **Records.** Each place row in check.json now also carries the p50s from the cell and the station (`p50`) and the differences as a share
+  of towers (`of_towers_pct`), so a later change to the criteria can be judged again without running the places.
+- **Open.** Pennsylvania, New York and Arizona were accepted with notes on Nov 13; their weather failures (W2-W5) don't depend on this
+  change, and their notes' hybrid figures are updated after their 1.16 checks.
+

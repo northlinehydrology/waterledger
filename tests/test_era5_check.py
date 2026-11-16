@@ -87,7 +87,7 @@ def test_era5_2c_cool_on_land_is_corrected_from_the_stations_left(cache):
 
 def test_a_land_error_left_after_correction_fails_and_says_why(tmp_path):
     land = [{"cell_land": 1.0, "corrected": True, "uncorrected": {"ddb": -2.0, "wb": 0.05}, "decided": {"ddb": -1.9, "wb": 0.05}}] * 6
-    places = [{"difference_pct": {f"{d}.{s}": 1.0 for d, s in C.STATS}}] * 5
+    places = [{"difference_pct": {f"{d}.{s}": 1.0 for d, s in C.STATS}, "of_towers_pct": {f"{d}.{s}": 0.1 for d, s in C.STATS if d != "towers"}}] * 5
     crit, ok = C.judge(land, places)
     by = {c["id"]: c for c in crit}
     assert not ok and by["W2"]["pass"] is False and by["W3"]["pass"] is False and by["W2"]["value"] == pytest.approx(1.9)
@@ -106,7 +106,7 @@ def test_too_few_stations_or_weather_only_cannot_pass(cache):
 def test_shore_criteria_wait_for_three_corrected_cells():
     land = [{"cell_land": 1.0, "corrected": False, "uncorrected": {"ddb": 0.1, "wb": 0.05}, "decided": {"ddb": 0.1, "wb": 0.05}}] * 6
     shore = [{"cell_land": 0.6, "corrected": True, "uncorrected": {"ddb": -1.0, "wb": 0.0}, "decided": {"ddb": 0.9, "wb": 0.0}}] * 2
-    places = [{"difference_pct": {f"{d}.{s}": 1.0 for d, s in C.STATS}}] * 5
+    places = [{"difference_pct": {f"{d}.{s}": 1.0 for d, s in C.STATS}, "of_towers_pct": {f"{d}.{s}": 0.1 for d, s in C.STATS if d != "towers"}}] * 5
     crit, ok = C.judge(land + shore, places)
     assert ok and {c["id"]: c["pass"] for c in crit}["W5"] is None
     crit, ok = C.judge(land + shore * 2, places)                       # four corrected, each 0.9 C off: over 0.5 C
@@ -156,7 +156,7 @@ def test_a_humid_peak_day_on_corrected_cells_fails_w7():
     """W7 (model 1.10): corrected cells whose 1-in-10-year peak day runs humid, on average, fail; one that is right, or rows from before W7, don't."""
     row = lambda wb_peak: {"cell_land": 1.0, "corrected": True, "uncorrected": {"ddb": 0.1, "wb": 0.05, "wb_peak_day": 0.5},
                            "decided": {"ddb": 0.1, "wb": 0.05, "wb_peak_day": wb_peak}}
-    places = [{"difference_pct": {f"{d}.{s}": 1.0 for d, s in C.STATS}}] * 5
+    places = [{"difference_pct": {f"{d}.{s}": 1.0 for d, s in C.STATS}, "of_towers_pct": {f"{d}.{s}": 0.1 for d, s in C.STATS if d != "towers"}}] * 5
     crit, ok = C.judge([row(0.72)] * 6, places)
     assert not ok and {c["id"]: c for c in crit}["W7"]["value"] == pytest.approx(0.72)
     crit, ok = C.judge([row(0.23)] * 6, places)
