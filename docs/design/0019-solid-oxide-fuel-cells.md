@@ -1,6 +1,10 @@
 # 0019: Fuel cells as data centers use them (solid oxide on natural gas)
 
-Status: **decided Nov 16, 2026 (Andrew; all five decisions, below); nothing built.** Branch `supply-on-aorc`, beside 0018 (solar and wind on a
+Status: **decided Nov 16, 2026 (Andrew; all five decisions, below); built the same day on branch `supply-on-aorc`** (`gas.physics`: the
+fuel cell range, `AGE_HEAT_RATE`, `heat_rate_for_age`, `process_water`, `UNIT_MW`, `OUTAGE_HOURS_BY_TECH`, `units_for`; `age_years` in
+`gas.plant`, `supply.scenario.Gas` and `GasPlantBmi`; tests in `tests/test_fuel_cells.py`; check F1 in
+`docs/methods/power_supply/fuel_cell_check.py`). A plant's age is sampled when not given, and assumed and stated when it is (Andrew: "we
+can either sample it or assume it and state"). Branch `supply-on-aorc`, beside 0018 (solar and wind on a
 study's forcing). Andrew (Nov 16, relayed by the Clam River session): "we should add fuel cells to the power types work
 with solar and wind." It does not depend on 0018: a fuel cell barely answers to the weather.
 
