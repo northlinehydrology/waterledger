@@ -1,6 +1,6 @@
 # 0019: Fuel cells as data centers use them (solid oxide on natural gas)
 
-Status: **proposed Nov 16, 2026; decisions 1, 3, 4 and 5 agreed by Andrew the same day (below), 2 open; nothing built.** Branch `supply-on-aorc`, beside 0018 (solar and wind on a
+Status: **decided Nov 16, 2026 (Andrew; all five decisions, below); nothing built.** Branch `supply-on-aorc`, beside 0018 (solar and wind on a
 study's forcing). Andrew (Nov 16, relayed by the Clam River session): "we should add fuel cells to the power types work
 with solar and wind." It does not depend on 0018: a fuel cell barely answers to the weather.
 
@@ -67,7 +67,7 @@ condenser, its heat in the exhaust ("other"), and the energy balance fuel = net 
 | Parameter | `sofc` | Set from |
 |---|---|---|
 | Heat rate, HHV | 6,600-7,500 Btu/kWh, sampled | EIA's plants by age, 2022-2024: about 6,650 at one to three years to 7,400 at six to eight; each draw is a plant at some point in its life [A]. The datasheet's new-stack 5,811 is outside it |
-| Aging | in the draws, not hour by hour (decision 2) | a run's decades of weather are samples of the climate, not a plant's years |
+| Aging | in the draws, and `age_years` an optional setting; never state (decision 2) | a run's decades of weather are samples of the climate, not a plant's years |
 | Derate, heat-rate slope | 0 | datasheet: -20 to 45 C, no derate given [A] |
 | Part-load penalty at half load | 0-0.05, as `fuel_cell` | vendor claim of little change; no independent figure [A] |
 | Auxiliary share | 0.01-0.03, as `fuel_cell` | the datasheet's output is already net AC [A] |
@@ -108,6 +108,11 @@ model 1.16), and `MODELS` records it. No study has run `fuel_cell` yet.
    years, so aging along the run would tie stack age to particular weather years. Proposed: the age in the draws (the
    range above, from EIA's plants by age), and, if wanted, an `age_years` setting that picks the part of the range for a
    plant of that age (1-3 years: 6,600-7,000; 6-8: 7,200-7,500) [A].
+   **Settled (Andrew, Nov 16): no state.** Asked whether `age_years` would be state the model holds: no, a setting read
+   once, as `technology` or `units` are; aging along the run would be (hours since the last swap, carried step to step
+   and through a restart). Andrew: that is "from a model and code perspective the most important change", so the model
+   stays a function of the hour's inputs and fixed settings. Built: the age in the draws (6,600-7,500) and `age_years`
+   as an optional setting.
 3. **Start-up water is consumed**, as it is: evaporated or reacted, not drained (Andrew: "whichever it is"). Above.
 4. **Air permits stay in the study's notes, not in the package.** Agreed.
 5. **The unit and reserve as real plants are built** ("should reflect realistic implementations"): the 325 kW server,
