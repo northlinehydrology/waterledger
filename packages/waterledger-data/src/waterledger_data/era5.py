@@ -5,6 +5,8 @@
     hourly(cell)            (times, temp_c, rh_pct) in local standard time, the form climate.isd_hourly and cooling.run_location use
     fetch_supply(cells)     each cell's hourly radiation and 100 m wind, for supply scenarios (design 0014), into a raw cache of their own
     supply(cell)            (times, utc, ghi, beam_horizontal, u100, v100) on the same local hours as hourly(cell)
+    fetch_shear(cells)      each cell's hourly 10 m and 100 m wind, to set a study's shear table (design 0018), into a raw cache of their own
+    shear(cell)             (utc, u10, v10, u100, v100) over FIRST-LAST in UTC, for supply.wind.shear_table
 
 The source is Open-Meteo's open-data copy of Copernicus ERA5 on AWS (s3://openmeteo/data/copernicus_era5; anonymous, no key,
 CC-BY 4.0; values stored to 0.05 C), the copy the station check and the quantile-mapping prototype used. CDS's time-series
@@ -34,6 +36,10 @@ CITATION = ("Hersbach, H., et al. (2023). ERA5 hourly data on single levels from
 MAGNUS = 17.625, 243.04                                     # Alduchov and Eskridge (1996), as climate.isd_hourly uses
 RAW = os.path.join(CACHE, "era5", "raw")
 RAW_SUPPLY = os.path.join(CACHE, "era5", "raw_supply")     # apart from RAW, so raw_path's newest file there is always a temperature record
+# For a study on its own forcing (design 0018): the 10 m and 100 m wind components, m/s, instantaneous at the hour, only to set the place's shear
+# table (waterledger_models.supply.wind.shear_table); the study's hours stay its own forcing's.
+SHEAR_VARIABLES = ("wind_u_component_10m", "wind_v_component_10m", "wind_u_component_100m", "wind_v_component_100m")
+RAW_SHEAR = os.path.join(CACHE, "era5", "raw_shear")
 
 
 @functools.lru_cache(maxsize=1)
@@ -146,6 +152,11 @@ def fetch_supply(cells, workers=16, today=None):
     return _fetch(cells, SUPPLY_VARIABLES, RAW_SUPPLY, workers, today)
 
 
+def fetch_shear(cells, workers=16, today=None):
+    """fetch for the shear variables (SHEAR_VARIABLES), into RAW_SHEAR: the cells a study on its own forcing sets a shear table at (design 0018)."""
+    return _fetch(cells, SHEAR_VARIABLES, RAW_SHEAR, workers, today)
+
+
 def _fetch(cells, variables, root, workers, today):
     import fsspec
     from concurrent.futures import ThreadPoolExecutor
@@ -239,3 +250,18 @@ def supply(cid, first=FIRST, last=LAST):
     if any(np.isnan(v).any() for v in vals):
         raise ValueError(f"ERA5 cell {cid}: supply hours missing in {first}-{last}")
     return ([str(x)[:16] for x in lst[keep].astype("datetime64[m]")], utc[keep], *vals)
+
+
+def shear(cid, first=FIRST, last=LAST):
+    """(utc, u10, v10, u100, v100) for the cell over the UTC hours of first-last: the hour stamps (datetime64[h]) and the 10 m and 100 m wind
+    components (m/s), for waterledger_models.supply.wind.shear_table. Needs the cell in RAW_SHEAR (fetch_shear). Raises if any hour is missing."""
+    path = raw_path(cid, RAW_SHEAR)
+    if not path:
+        raise FileNotFoundError(f"ERA5 cell {cid} has no shear variables in the raw cache; era5.fetch_shear([{cid!r}]) first")
+    z = np.load(path)
+    utc = np.datetime64(str(z["start_utc"]), "h") + np.arange(len(z[SHEAR_VARIABLES[0]]))
+    keep = (utc >= np.datetime64(f"{first}-01-01T00", "h")) & (utc < np.datetime64(f"{last + 1}-01-01T00", "h"))
+    vals = [z[v].astype(float)[keep] for v in SHEAR_VARIABLES]
+    if any(np.isnan(v).any() for v in vals):
+        raise ValueError(f"ERA5 cell {cid}: shear hours missing in {first}-{last}")
+    return (utc[keep], *vals)

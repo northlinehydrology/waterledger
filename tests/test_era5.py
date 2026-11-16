@@ -17,6 +17,7 @@ ASSIGNMENT = os.path.join(HERE, "..", "docs", "methods", "era5-check", "cell_ass
 def cache(tmp_path, monkeypatch):
     monkeypatch.setattr(era5, "RAW", str(tmp_path / "raw"))
     monkeypatch.setattr(era5, "RAW_SUPPLY", str(tmp_path / "raw_supply"))
+    monkeypatch.setattr(era5, "RAW_SHEAR", str(tmp_path / "raw_shear"))
     monkeypatch.setattr(E, "RUNS", str(tmp_path / "runs"))
     monkeypatch.setattr(E, "ANCHORS", str(tmp_path / "anchors"))
     return tmp_path
@@ -98,6 +99,24 @@ def test_supply_variables_sit_beside_the_temperature_on_the_same_hours(cache):
     assert str(utc[0]) == "1995-01-01T05" and g[0] == pytest.approx(ghi[5]) and np.hypot(u, v)[0] == pytest.approx(5.0)
     with pytest.raises(FileNotFoundError, match="fetch_supply"):
         era5.supply("43.00_-82.50")
+
+
+def test_shear_winds_have_a_cache_of_their_own_and_set_a_table(cache):
+    """The 10 m and 100 m wind for a study's shear table (design 0018) sit apart from the temperature and supply caches; shear() gives them over
+    the UTC hours of the years asked, and wind.shear_table reads them."""
+    from waterledger_models.supply import wind
+    _synthetic("41.50_-82.00")
+    n = int((era5.END - era5.START).astype(int))
+    u10 = (3 + np.sin(np.arange(n) / 50.0)).astype(np.float32)
+    era5.write_raw("41.50_-82.00", {"wind_u_component_10m": u10, "wind_v_component_10m": np.zeros(n, np.float32),
+                                    "wind_u_component_100m": u10 * np.float32(10 ** 0.25), "wind_v_component_100m": np.zeros(n, np.float32)},
+                   "2026-11-16", {"source": "test"}, era5.RAW_SHEAR)
+    assert era5.raw_path("41.50_-82.00").endswith("2026-11-04.npz") and era5.raw_path("41.50_-82.00", era5.RAW_SUPPLY) is None
+    utc, a, b, c, d = era5.shear("41.50_-82.00", 2000, 2001)
+    assert str(utc[0]) == "2000-01-01T00" and str(utc[-1]) == "2001-12-31T23" and len(utc) == len(a) == 731 * 24
+    assert wind.shear_table(utc, -82.0, a, b, c, d) == pytest.approx(np.full((12, 24), 0.25), abs=1e-6)
+    with pytest.raises(FileNotFoundError, match="fetch_shear"):
+        era5.shear("43.00_-82.50")
 
 
 @pytest.mark.live
