@@ -1,7 +1,7 @@
 """The ERA5 path (design 0004): the land rule's cells, the raw cache, local standard time, parts, the per-cell results cache and
 the optional R2 step (a folder stands in for the bucket; wrangler is faked). Offline but for the `live` tests, which read a few cells
 from Open-Meteo's open copy of ERA5."""
-import csv, json, os, subprocess
+import csv, json, os, subprocess, sys
 
 import numpy as np
 import pytest
@@ -293,6 +293,7 @@ if __name__ == "__main__":
 '''
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="POSIX process groups and pgrep; Ctrl-C reaches a Windows console's processes another way")
 def test_ctrl_c_ends_a_part_and_its_workers(tmp_path):
     """SIGINT to the process group, as Ctrl-C sends it: the part stops within seconds and leaves no workers behind."""
     import signal, sys, time

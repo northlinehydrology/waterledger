@@ -52,7 +52,8 @@ def publish(state, root, date=None, build=None, store=None, get=_get, base=BASE,
     code, body = get(f"{base}/{st}/latest.json")               # read before anything is written
     old = json.loads(body) if code == 200 else None
 
-    files = sorted(os.path.relpath(os.path.join(d, f), folder) for d, _, names in os.walk(folder) for f in names)
+    # the store's keys with /, whatever the platform's separator (Windows' \\ would make a key named cells\\42.50_-88.00.json)
+    files = sorted(os.path.relpath(os.path.join(d, f), folder).replace(os.sep, "/") for d, _, names in os.walk(folder) for f in names)
     files = [f for f in files if f != "manifest.json"]
     up = lambda f: store.publish(f"{st}/{date}/{f}", os.path.join(folder, f), TYPES.get(os.path.splitext(f)[1], "application/octet-stream"))
     with ThreadPoolExecutor(workers) as pool:
