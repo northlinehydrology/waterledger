@@ -1,0 +1,37 @@
+point,year,aorc_10m_speed,era5_10m_speed,ratio
+Clam River MI,2015,5.016,3.574,1.403
+Clam River MI,2016,4.871,3.484,1.398
+Clam River MI,2017,5.001,3.557,1.406
+Clam River MI,2018,2.703,3.449,0.784
+Clam River MI,2019,2.368,3.535,0.67
+Clam River MI,2020,2.647,3.53,0.75
+Bondville IL,2015,4.269,3.921,1.089
+Bondville IL,2016,4.1,3.823,1.072
+Bondville IL,2017,4.401,4.02,1.095
+Bondville IL,2018,2.944,3.854,0.764
+Bondville IL,2019,3.473,3.928,0.884
+Bondville IL,2020,3.685,3.809,0.968
+Penn State PA,2015,4.605,2.774,1.66
+Penn State PA,2016,4.785,2.872,1.666
+Penn State PA,2017,4.855,2.887,1.682
+Penn State PA,2018,1.99,2.85,0.698
+Penn State PA,2019,2.239,2.856,0.784
+Penn State PA,2020,2.497,2.912,0.857
+Sioux Falls SD,2015,5.06,4.387,1.154
+Sioux Falls SD,2016,5.024,4.429,1.134
+Sioux Falls SD,2017,4.886,4.269,1.144
+Sioux Falls SD,2018,4.089,4.14,0.988
+Sioux Falls SD,2019,3.924,4.353,0.902
+Sioux Falls SD,2020,4.312,4.298,1.003
+central Iowa,2015,4.698,4.18,1.124
+central Iowa,2016,4.662,4.145,1.125
+central Iowa,2017,4.783,4.212,1.136
+central Iowa,2018,2.821,3.984,0.708
+central Iowa,2019,2.977,4.181,0.712
+central Iowa,2020,3.183,4.213,0.756
+Texas plains,2015,4.456,4.314,1.033
+Texas plains,2016,4.56,4.468,1.021
+Texas plains,2017,4.58,4.498,1.018
+Texas plains,2018,4.636,4.522,1.025
+Texas plains,2019,4.397,4.465,0.985
+Texas plains,2020,4.698,4.531,1.037

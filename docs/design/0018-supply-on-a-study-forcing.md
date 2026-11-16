@@ -144,6 +144,20 @@ tuned except the resource factors, which are what the checks are for.
   month and hour, and the AORC-to-ERA5 ratio of 10 m wind by year over 2000-2022 at the Clam River (the study's drift
   after 2014, against a reference that isn't AORC).
 
+## Found in check A5 (Nov 16): AORC's 10 m wind breaks in 2018
+
+AORC's 10 m wind steps down against ERA5's between 2017 and 2018 (`docs/methods/power_supply/aorc_drift.py`, `aorc_drift.csv`,
+`aorc_wind_break.csv`). At the Clam River the ratio of mean speeds is 1.31-1.45 in every year 2000-2017 and 0.67-0.82 in 2018-2022, so
+the AORC path's wind capacity factor there falls from 0.44-0.51 to 0.14-0.23 while the ERA5 path's stays at 0.25-0.30. Over 2015-2020 the
+same step shows at Bondville (1.07-1.10 to 0.76-0.97), Penn State (1.66-1.68 to 0.70-0.86), Sioux Falls (1.13-1.15 to 0.90-1.00) and central
+Iowa (1.12-1.14 to 0.71-0.76), not on the Texas plains (0.98-1.04 throughout), and it recovers partly by 2020 at some. AORC's shortwave shows
+no step (0.98-1.06 against ERA5 every year at the Clam River). AORC v1.1 keeps NLDAS-2's wind through the record (methods, sec. 4.2), and
+NLDAS-2's is NARR's diagnostic 10 m wind; no documented change was found. The Clam River study saw its forcing's wind fall against the
+Cadillac airport's "after 2014" (STUDY.md, 3.1); this is likely the same step.
+
+So no one resource factor serves AORC's wind over a record that crosses 2018, and the step differs by place, so neither does one factor a
+period. Check A3's factor (2024) holds for 2018 on. Decision 6 asks what the study's wind runs on.
+
 ## 4. API
 
 New entry points beside the old ones, named by what they take, not by the forcing. The ERA5 functions keep their
@@ -218,6 +232,7 @@ carries them, a minor package release: **3.24.0 if done by then, else 3.25.0** (
    EIA-930 (MISO, 2024). Agreed, downloads included.
 4. **`scenario.Supply` and `size`:** open; Andrew asked for more on what it means.
 5. **The release:** 3.25.0 after 3.24.0, or in 3.24.0 if done by then; "fine to split".
+6. **What wind runs on where a study's forcing is AORC (open; found Nov 16):** AORC's 10 m wind is not one series over 2000-2022 (above).
 
 ## References
 
