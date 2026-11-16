@@ -1,7 +1,8 @@
 # 0018: Solar and wind on a study's own forcing (AORC)
 
-Status: **proposed Nov 16, 2026, for Andrew; nothing built.** Branch `supply-on-aorc`. Builds on 0014 (power supply
-scenarios). 0015-0017 are taken on other branches, so this is 0018.
+Status: **proposed Nov 16, 2026; decisions 1, 2, 3 and 5 agreed by Andrew the same day (below), 4 open; nothing built.**
+Branch `supply-on-aorc`. Builds on 0014 (power supply scenarios). 0015-0017 are taken on other branches, so this is 0018.
+Fuel cells as data centers use them, added to this work the same day, are in the companion note 0019.
 
 ## Why
 
@@ -45,9 +46,16 @@ wind is NARR's 10 m wind (Xia et al. 2012; Cosgrove et al. 2003). Four consequen
 
 ## 1. Splitting global horizontal radiation
 
-**Proposed: DIRINT** (Perez et al. 1992, ASHRAE Transactions 98(1):354-369), as pvlib implements it
+**Agreed: DIRINT** (Perez et al. 1992, ASHRAE Transactions 98(1):354-369), as pvlib implements it
 (`pvlib.irradiance.dirint`), **with DISC (Maxwell 1987, SERI/TR-215-3087) and Erbs (Erbs et al. 1982, Solar Energy
 28:293-302) run beside it in the check**, and the one used chosen by check A2.
+
+- **Practice it is held to** (Andrew asked that it go against no norm): PVsyst, the usual tool for bankable estimates,
+  splits with Erbs by default (as reported in pvlib's and Sandia's comparisons); NREL's NSRDB took cloudy-sky beam from
+  DISC through PSM v3 and from FARMS-DNI from v4 (2023), its 2024 validation finding DISC better in scattered cloud and
+  FARMS-DNI in overcast. Both of the industry's choices are in check A2, scored on the same footing; if DIRINT does not
+  clearly beat them on AORC, DISC is used, as NREL's national dataset did [A: "clearly" is a smaller plane-of-array
+  error over all three stations].
 
 - DIRINT is DISC (clearness index and air mass to beam normal) with a correction from Perez's 6 x 6 x 7 x 5 coefficient
   table by the hour's clearness, the zenith, the dew point (AORC has specific humidity and pressure) and the change in
@@ -69,10 +77,20 @@ wind is NARR's 10 m wind (Xia et al. 2012; Cosgrove et al. 2003). Four consequen
 
 ## 2. From 10 m to the hub
 
-**Proposed: a day and a night power-law exponent, each sampled, 10 m straight to the 110 m hub.**
+**Agreed (Andrew, Nov 16): an exponent for each month and hour of the day, set at the place from ERA5's own 10 m and
+100 m wind.** The hours stay AORC's; ERA5 sets a parameter, as it already sets the resource factors.
 
-`speed_hub = |(u10, v10)| x resource x (110 / 10)^alpha`, with `alpha = alpha_day` while the sun is up at the hour and
-`alpha_night` otherwise [A: the switch at the horizon].
+`speed_hub = |(u10, v10)| x resource x (110 / 10)^(alpha[month, hour] x shear_scale)`
+
+- `alpha[month, hour]` = ln(mean |U100| / mean |U10|) / ln 10 over the hours of that calendar month and local solar
+  hour in ERA5 at the place's cell, 1995-2024 (the calculator's 30 years) [A: the ratio of means, so calm hours don't
+  blow it up]. A 12 x 24 table, worked once per place by `wind.shear_table` from the two ERA5 series; the study passes
+  the table, so the ERA5 fetch stays outside the coupled run.
+- The table's exponent is taken on to 110 m [A: ERA5 gives nothing above 100 m; at 0.24 the last 10 m adds 2% to the
+  speed].
+- `shear_scale` 0.85-1.15, sampled [A], for ERA5's own shear error; check A4 narrows or widens it.
+
+The reasons for an hourly exponent, and the sources, as first proposed:
 
 - **One exponent can't carry the hours.** The shear from 10 m changes with stability every day. ERA5's own 10 m and 100 m
   wind at the Clam River cell (44.25_-85.25, 2019-2021, computed for this note) give a 10-100 m exponent of 0.15-0.18 at
@@ -85,18 +103,17 @@ wind is NARR's 10 m wind (Xia et al. 2012; Cosgrove et al. 2003). Four consequen
   and Iowa towers (2008, NREL/PO-500-43150): average exponents from 1/7 to 0.25 or more. Night values in those studies
   and the per-class exponents of Irwin (1979, Atmospheric Environment 13:191-194; rural D 0.15, E 0.35, F 0.55) bracket
   ERA5's.
-- **Proposed ranges** [A]: `alpha_day` 0.12-0.20, `alpha_night` 0.22-0.40, around ERA5's 0.16 and 0.29 at the Clam
-  cell and inside the tower literature. The tables from the two NREL papers are to be read before the ranges are fixed.
+- **The tower literature is the check on the table**, not its source: the two NREL papers' tables are read, and the
+  table's day and night values at their towers' cells compared.
 - **The level comes from the resource factor; the shape from the exponents.** As on ERA5, a factor on the speed is set
   where the AORC chain meets EIA's fleet (check A3), at central exponents. Check A4 tests the day-night shape against
   EIA-930's hourly wind in MISO.
 - **Not proposed, unless check A4 fails:** a stability class each hour from AORC's own fields (Turner's method from the
   sun's elevation, the wind and cloud read from downward longwave; Irwin's exponents), or an exponent falling with the
   night's wind speed (ERA5 at the Clam cell: 0.32 under 3 m/s, 0.24 at 5-8 m/s). Each adds parameters with weaker sources.
-- **Alternative for Andrew (decision 2):** set the exponents by month and hour at the place from ERA5's own 10 m and
-  100 m wind (a 12 x 24 table). The hours stay AORC's; ERA5 only sets a parameter, as it already sets the resource
-  factors. It is place-specific and captures the season, but brings ERA5's surface layer into a study on AORC, and
-  ERA5's 10 m wind is not AORC's.
+- **The first proposal, not taken:** a sampled day and a night exponent (0.12-0.20 and 0.22-0.40) from the tower
+  literature. The table is place-specific and carries the season; it brings ERA5's surface layer into a study on AORC,
+  and ERA5's 10 m wind is not AORC's, which check A5 shows.
 - **Energy balance:** no turbine hour may exceed the Betz limit at the hour's air density (16/27 x 1/2 rho A v^3, rho
   from AORC's temperature and pressure); a test holds the power curve and losses under it. No density correction of the
   curve [A], as on the ERA5 path, so the two stay comparable.
@@ -115,7 +132,8 @@ tuned except the resource factors, which are what the checks are for.
   split.
 - **A3, AORC against EIA's fleet** (0014 check 5, the same plants, year and screens as `pv_check.py` and `wind_check.py`,
   2024): the AORC chain at each plant's 1 km point, state ratios and the resource factor that matches each state.
-  Gives the AORC ranges. Cost: AORC's zarr chunks are 144 hours x 128 x 256 points, about 1.3-2.2 MB of shortwave and
+  Gives the AORC ranges. The shear table at each plant comes from ERA5's 10 m and 100 m wind at its cell (the 100 m
+  already cached by `wind_check.py` for 2024; 1995-2024 for the table). Agreed: all of EIA's 2024 plants. Cost: AORC's zarr chunks are 144 hours x 128 x 256 points, about 1.3-2.2 MB of shortwave and
   0.7-0.8 MB of each wind component a chunk. The 953 PV and 1,076 wind plants fall in 249 spatial chunks, about 45 GB of
   reads for the year; the interior and Great Lakes states alone (274 PV, 740 wind plants, 138 chunks) about 24 GB.
   Fetched once into the power work cache, apart from everything else.
@@ -138,8 +156,9 @@ pv.output_from_ghi(g, ghi, temp_air, wind_10m, p, dew_point=None)  # decompose, 
 pv.hourly_from_ghi(times_utc, lat, lon, ghi, temp_air, wind_10m, p, mount="tracking", tilt=None, shift_s=..., dew_point=None)
 pv.RANGES_AORC                                                   # RANGES with AORC's resource factor
 
-wind.hourly_from_10m(times_utc, lat, lon, u10, v10, p)            # day and night exponents, 10 m to HUB_M
-wind.RANGES_AORC                                                 # alpha_day, alpha_night, losses, resource
+wind.shear_table(times_utc, lon, u10, v10, u100, v100)            # 12 x 24 exponents from ERA5 at the place
+wind.hourly_from_10m(times_utc, lon, u10, v10, table, p)           # the table, 10 m to HUB_M
+wind.RANGES_AORC                                                 # shear_scale, losses, resource
 ```
 
 - `pv.output` becomes the ERA5 wrapper of a shared core that takes the 10 m wind: it multiplies by (10/100)^(1/7)
@@ -159,8 +178,8 @@ wind.RANGES_AORC                                                 # alpha_day, al
 | PV `resource` | from check A3 | AORC's PV chain against EIA's 2024 tracking fleet, the spread over states with ten or more plants, as on ERA5 |
 | PV split | none sampled [A] | its bias is inside the resource factor; check A2 reports its share |
 | PV time shift | fixed | check A1 |
-| Wind `alpha_day` | 0.12-0.20 [A] | the tall-tower literature; ERA5 at the Clam cell 0.15-0.18 |
-| Wind `alpha_night` | 0.22-0.40 [A] | the same; ERA5 0.27-0.31; Irwin's E class 0.35 |
+| Wind shear table | set, per place | ERA5's 10 m and 100 m wind at the place's cell, 1995-2024 (Clam cell: 0.15-0.18 midday, 0.27-0.31 night) |
+| Wind `shear_scale` | 0.85-1.15 [A] | ERA5's shear error; check A4 |
 | Wind `losses` | 0.10-0.20 | as `wind.RANGES` |
 | Wind `resource` | from check A3 | AORC's wind chain against EIA's 2024 fleet at 110 m, as on ERA5 |
 | `LOW_WIND_MS` flag | from check A3 | the AORC 10 m mean speed under which the chain runs far low, if there is one |
@@ -170,8 +189,7 @@ Sampled by the same Latin hypercube as the ERA5 ranges, central values last.
 ## 6. Version
 
 No existing number changes, so `MODEL_VERSION` stays; the new functions and ranges are public API in the release that
-carries them, a minor package release. Proposed: **waterledger-models 3.25.0, after 3.24.0**, which goes out tomorrow
-without waiting for this. Nothing touches the 3.24.0 branches' files (checked Nov 16: no other branch changes `supply/`).
+carries them, a minor package release: **3.24.0 if done by then, else 3.25.0** (decision 5); 3.24.0 does not wait. Nothing touches the 3.24.0 branches' files (checked Nov 16: no other branch changes `supply/`).
 
 ## Order of work, each step its own commit
 
@@ -182,16 +200,17 @@ without waiting for this. Nothing touches the 3.24.0 branches' files (checked No
 4. Check A3 (AORC against EIA's fleet; the fetch), A4 (EIA-930 MISO), A5 (AORC against ERA5); the AORC ranges set.
 5. README, the supply docstrings, the methods log, CHANGELOG; a release on Andrew's word.
 
-## Decisions for Andrew
+## Decisions (Andrew, Nov 16, 2026)
 
-1. **The split:** DIRINT, with DISC and Erbs beside it and the one used chosen by check A2 on AORC at SURFRAD stations.
-2. **The shear:** a sampled day and night exponent, 10 m to the hub (proposed); or a month-by-hour table set from ERA5's
-   own 10 m and 100 m wind at the place.
-3. **Check A3's reach:** all of EIA's 2024 plants, comparable with the ERA5 tables (about 45 GB of AORC reads), or the
-   interior and Great Lakes states only (about 24 GB). Plus SURFRAD (three stations, one year, a few hundred MB) and
-   EIA-930 (MISO, 2024).
-4. **`scenario.Supply` and `size`:** stay on ERA5 (proposed; the study composes its own), or take the AORC weather too.
-5. **The release:** 3.25.0 after 3.24.0 (proposed).
+1. **The split: DIRINT**, with DISC and Erbs beside it and the one used chosen by check A2 on AORC at SURFRAD stations.
+   Agreed, "unless there are industry or academic norms for this that we would be going against or not using properly":
+   PVsyst's Erbs and the NSRDB's DISC are in the check (section 1).
+2. **The shear: a month-by-hour table from ERA5's 10 m and 100 m wind at the place.** Andrew chose it over the sampled
+   day and night exponents.
+3. **Check A3: all of EIA's 2024 plants** (about 45 GB of AORC reads), with SURFRAD (three stations, one year) and
+   EIA-930 (MISO, 2024). Agreed, downloads included.
+4. **`scenario.Supply` and `size`:** open; Andrew asked for more on what it means.
+5. **The release:** 3.25.0 after 3.24.0, or in 3.24.0 if done by then; "fine to split".
 
 ## References
 
@@ -215,6 +234,9 @@ without waiting for this. Nothing touches the 3.24.0 branches' files (checked No
   models. ASHRAE Transactions 98(1):354-369.
 - Pinker, R. T., et al. (2003). Surface radiation budgets in support of the GEWEX Continental-Scale International Project
   (GCIP) and the GEWEX Americas Prediction Project (GAPP). J. Geophys. Res. 108(D22):8844.
+- NREL (2024). Integrating FARMS-DNI into the NSRDB (NREL/TP, fy24osti/87671); NSRDB release notes, v4.0.0 (May 2023).
+- Sengupta, M., et al. (2018). The National Solar Radiation Data Base (NSRDB). Renewable and Sustainable Energy Reviews
+  89:51-60.
 - Schwartz, M., and Elliott, D. (2006). Wind Shear Characteristics at Central Plains Tall Towers. NREL/CP-500-40019.
 - Xia, Y., et al. (2012). Continental-scale water and energy flux analysis and validation for the North American Land Data
   Assimilation System project phase 2 (NLDAS-2). J. Geophys. Res. 117:D03109.
