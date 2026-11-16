@@ -116,3 +116,38 @@ def test_renewables_land_runoff_and_construction():
     assert land.pv_site(10, rows="across")["impervious_share"] > land.pv_site(10, rows="contour")["impervious_share"]
     with pytest.raises(ValueError):
         land.pv_site(10, mount="floating")
+
+
+FW = S.ForcingWeather(UTC, WX[1], 0.7 * np.hypot(WX[3], WX[4]), WX[3], WX[4])     # a forcing's global and 10 m wind; ERA5's 100 m wind
+
+
+def test_a_study_forcing_runs_pv_on_its_global_and_wind_on_era5():
+    """Design 0018, decision 4: with a ForcingWeather, size() and Supply run PV through pv.hourly_from_ghi on the forcing (Erbs, its time stamp,
+    its 10 m wind for the cells, the runner's temperature) and sample pv.RANGES_AORC; wind stays ERA5's 100 m path (decision 6), the same
+    hours as with the ERA5 tuple. The central draw's capacity factors are the functions' own, and sizing reads them."""
+    from waterledger_models.supply import pv, wind
+    sc = {"s": S.Scenario(pv_share=0.5, wind_share=0.5)}
+    r, sized = _run_on(sc, FW)
+    central = {k: (a + b) / 2 for k, (a, b) in pv.RANGES_AORC.items()}
+    cf_pv = pv.hourly_from_ghi(UTC, LAT, LON, WX[1], T, FW.wind_10m, central).mean()
+    assert r["supply_s_pv_cf"]["central"] == pytest.approx(cf_pv, rel=1e-12)
+    cf_wind = wind.hourly(WX[3], WX[4], {k: (a + b) / 2 for k, (a, b) in wind.RANGES.items()}).mean()
+    assert r["supply_s_wind_cf"]["central"] == pytest.approx(cf_wind, rel=1e-12)
+    era5, sized_era5 = _run(sc)
+    assert r["supply_s_wind_cf"]["central"] == era5["supply_s_wind_cf"]["central"]
+    assert sized["s"].wind_mw == sized_era5["s"].wind_mw
+    assert sized["s"].pv_mw * cf_pv == pytest.approx(sized_era5["s"].pv_mw * era5["supply_s_pv_cf"]["central"], rel=1e-12)
+    assert r["supply_s_annual_matching"]["central"] == pytest.approx(1.0, rel=0.02)
+    sup = S.Supply(sized, FW, LAT, LON, N)
+    lo, hi = pv.RANGES_AORC["resource"]
+    assert all(lo <= d["resource"] <= hi for d in sup.pv_draws)
+
+
+def test_a_forcing_weather_must_share_its_hours():
+    with pytest.raises(ValueError):
+        S.ForcingWeather(UTC, WX[1][:-1], np.hypot(WX[3], WX[4]), WX[3], WX[4])
+
+
+def _run_on(scenarios, wx, design="hybrid"):
+    sized = S.size(_model(), TIMES, T, RH, scenarios, design, wx, LAT, LON)
+    return runs.run_location(_model(), TIMES, T, RH, designs=(design,), grid=GRID, extra=S.Supply(sized, wx, LAT, LON, N))[design], sized
