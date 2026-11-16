@@ -153,7 +153,11 @@ same step shows at Bondville (1.07-1.10 to 0.76-0.97), Penn State (1.66-1.68 to 
 Iowa (1.12-1.14 to 0.71-0.76), not on the Texas plains (0.98-1.04 throughout), and it recovers partly by 2020 at some. AORC's shortwave shows
 no step (0.98-1.06 against ERA5 every year at the Clam River). AORC v1.1 keeps NLDAS-2's wind through the record (methods, sec. 4.2), and
 NLDAS-2's is NARR's diagnostic 10 m wind; no documented change was found. The Clam River study saw its forcing's wind fall against the
-Cadillac airport's "after 2014" (STUDY.md, 3.1); this is likely the same step.
+Cadillac airport's "after 2014" (STUDY.md, 3.1); this is likely the same step. **Confirmed by a measured wind (the Clam River session,
+Nov 16; the study's AUDIT.md, "The forcing's wind steps down on January 1, 2018"):** the study's forcing, basin mean, over the Cadillac
+airport anemometer (ISD 72638414817, daily means) is 1.47-1.58 every water year 2005-2017 and 0.90-1.16 in 2018-2022; by month 1.48-1.99
+through December 2017, 1.09 in January 2018 and 0.89-1.06 after, while the airport's own wind holds at 3.0-3.3 m/s. A step on New Year's
+Day is a seam in the dataset, not the weather.
 
 So no one resource factor serves AORC's wind over a record that crosses 2018, and the step differs by place, so neither does one factor a
 period. Check A3's factor (2024) holds for 2018 on. Decision 6 asks what the study's wind runs on.
