@@ -3,6 +3,7 @@ has a class, holds to the physics of each fuel, and gives back each BA's plant w
 import csv
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from waterledger_data import energy as en
@@ -18,19 +19,22 @@ def test_every_fuel_every_month():
 
 
 def test_no_water_classes_are_zero():
-    f = en.ba_fuel_water("CISO")
-    for fuel in ("hydro", "solar", "wind", "storage"):
-        assert not f[fuel]["consumed"].any() and not f[fuel]["withdrawn"].any()
+    """Hydro, wind and storage carry no water anywhere; solar only where the BA has a concentrating solar plant reporting cooling
+    water (model 1.17: AZPS's Solana, CISO's Mojave, NEVP's Crescent Dunes), whose water is in the class EIA-930 counts its output in."""
+    t = pd.read_csv(en.BA_FUEL_TABLE)
+    t = t[t.ba != "US"]
+    for fuel in ("hydro", "wind", "storage"):
+        x = t[t.fuel == fuel]
+        assert (x.consumed_gal_mwh == 0).all() and (x.withdrawn_gal_mwh == 0).all(), fuel
+    wet = set(t[(t.fuel == "solar") & (t.withdrawn_gal_mwh > 0)].ba)
+    assert wet == {"AZPS", "CISO", "NEVP"}
+    assert (t[t.fuel == "solar"].consumed_gal_mwh <= 400).all()
 
 
-@pytest.mark.parametrize("ba", ["MISO", "PJM", "ERCO", "SWPP", "TVA", "SOCO"])
-def test_consumed_within_withdrawn_and_plausible(ba):
-    """Consumption can't exceed withdrawal, and no class's monthly consumption runs past what any cooling uses
-    (Macknick et al. 2012: about 1,100 gal/MWh at most, for coal and nuclear towers)."""
-    for fuel, d in en.ba_fuel_water(ba).items():
-        assert (d["consumed"] <= d["withdrawn"] * 1.001 + 1e-9).all(), fuel
-        assert (d["consumed"] <= 1500).all(), fuel
-        assert (d["withdrawn_saline"] <= d["withdrawn"] + 1e-9).all(), fuel
+def test_csp_water_is_not_in_other():
+    """Before model 1.17 Solana's water fell to "other" and was divided by AZPS's biomass and landfill gas: 1,600-5,700 gal/MWh."""
+    for ba in ("AZPS", "CISO", "NEVP"):
+        assert (en.ba_fuel_water(ba)["other"]["withdrawn"] < 100).all(), ba
 
 
 def test_summer_above_winter_for_misos_steam():

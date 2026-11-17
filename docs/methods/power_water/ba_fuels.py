@@ -15,10 +15,14 @@ Method
                            the plant's year
   generation             = all of a class's net generation in the BA and month (EIA-923), plants with no water included,
                            so a gas factor carries the combustion turbines that use none
+  a plant with no thermal generation in EIA-923 (a concentrating solar plant: Solana, Mojave Solar, Crescent Dunes) has its
+                           water split by its own generation, so a CSP plant's water is in the solar class, where EIA-930
+                           counts its output (model 1.17; before, it fell to "other" and was divided by the BA's biomass
+                           and landfill gas: AZPS "other" was 1,600-5,700 gal/MWh against 69 for the U.S.)
   factor                 = water / generation, gal/MWh; basis "month". A month whose class generation is under a quarter
                            of the class's monthly mean, or not positive, takes the BA's annual factor (basis "year"); a
                            class with no generation in the BA takes the U.S. factor for the class (ba "US", basis "us")
-  hydro, solar, wind, storage: 0 (reservoir evaporation is not counted, as in the state table)
+  hydro, wind, storage: 0, and solar without CSP (reservoir evaporation is not counted, as in the state table)
   withdrawal at least consumption, plant by plant [A]: three plants report consumption with no withdrawal (Stanton,
                            FL; Kings Mountain, NC; Ingleside Cogeneration, TX), most likely reclaimed or utility water that
                            EIA's withdrawal leaves out. The same rule as the state table (states.py, from branch
@@ -101,11 +105,18 @@ def main():
     th = g[g.fuel.isin(THERMAL) & (g.mwh > 0)]
     by_m = {k: v.droplevel([0, 1]) for k, v in th.groupby(['plant', 'month', 'fuel']).mwh.sum().groupby(level=[0, 1])}
     by_y = {k: v.droplevel(0) for k, v in th.groupby(['plant', 'fuel']).mwh.sum().groupby(level=0)}
+    pos = g[g.mwh > 0]
+    own_m = {k: v.droplevel([0, 1]) for k, v in pos.groupby(['plant', 'month', 'fuel']).mwh.sum().groupby(level=[0, 1])}
+    own_y = {k: v.droplevel(0) for k, v in pos.groupby(['plant', 'fuel']).mwh.sum().groupby(level=0)}
     parts = []
     for r in pm.itertuples():
         sh = by_m.get((r.plant, r.month))
         if sh is None:
             sh = by_y.get(r.plant)
+        if sh is None:                  # no thermal generation: the plant's own classes (a CSP plant's is solar)
+            sh = own_m.get((r.plant, r.month))
+        if sh is None:
+            sh = own_y.get(r.plant)
         if sh is None:
             sh = pd.Series({TECH_CLASS.get(r.tech, 'other'): 1.0})
         sh = sh / sh.sum()
@@ -124,7 +135,7 @@ def main():
     us = t[t.fuel.isin(THERMAL)].groupby('fuel')[['mwh', 'cons', 'wd', 'wd_saline']].sum()
     for (ba, fuel), grp in t.groupby(['ba', 'fuel']):
         yr = grp[['mwh', 'cons', 'wd', 'wd_saline']].sum()
-        if fuel in NO_WATER:
+        if fuel in NO_WATER and grp.cons.sum() == 0 and grp.wd.sum() == 0:
             for m in range(1, 13):
                 mwh = grp.loc[grp.month == m, 'mwh'].sum()
                 rows.append((ba, fuel, m, mwh, 0.0, 0.0, 0.0, 'none'))
