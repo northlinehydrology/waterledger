@@ -5,6 +5,46 @@ evaporating water, against towers that do. Public material often calls the diffe
 1.16 (waterledger-models 3.24.0, branch `chiller-temperature-curve`, not yet released) against published and disclosed
 evidence, design by design and place by place. No code was changed. The changes in section 8 are proposals for Andrew.
 
+## Update, Nov 17, 2026: what came of the proposals (model 1.17)
+
+Andrew asked on Nov 16 for all six proposals in section 8 to be done. P2, P3 and P6 change the numbers and go into model 1.17
+(waterledger 3.25.0, branch `model-1.17`, not released, after model 1.16's release); P1's package side is in the same branch;
+P1's page and P4-P5's copy are on the Northline repository's branch `claude/zealous-mclean-10341d`. The sections below are
+the Nov 16 check of model 1.16 and stand as written; the tables at model 1.17 are `cooling-power-evidence/runs/tables_117.md`
+(`tables_117.py`, in memory on `model-1.17`, nothing written to the cache), with a second Arizona Public Service cell
+(33.00, -111.25).
+
+| Proposal | Done | Where |
+|---|---|---|
+| P1, three numbers on the site | The package side: `Site.by_design` returns each design's yearly MWh, hottest-hour MW, the balancing authority's hourly grid water and the differences against towers (design 0020, proposal 1). The cooling-systems page shows the three numbers by design and plant. The calculators' tables go into the trade-off session's build. | waterledger `model-1.17`; Northline `claude/zealous-mclean-10341d` |
+| P2, water-cooled chillers on 90.1's curve | Built: a fitted loss (0.0471, within 3% of 90.1's centrifugal curve) and no gain below the curve's smallest lift, in place of the cap of 8 (design 0021) | waterledger `model-1.17` |
+| P3, an outside-air evaporative design | Built: `outside_air`, with a sampled pad control (design 0022). Not on the site's buttons until Andrew's local check | waterledger `model-1.17` |
+| P4, the base overhead | Kept, and said on the methods pages (option a) | Northline `claude/zealous-mclean-10341d` |
+| P5, grid water with and without reservoirs | Said on the methods pages, with each state's balancing authorities both ways | Northline `claude/zealous-mclean-10341d` |
+| P6, Arizona Public Service's marginal factor | A real fault, fixed for every balancing authority: EIA-930 spikes screened, a Theil-Sen slope, Palo Verde's own factor, concentrating solar's water as solar (design 0008) | waterledger `model-1.17` |
+
+**What moved, at model 1.17** (shared plant unless named, p50, per 100 MW of IT; `runs/tables_117.md`):
+
+- **Dry's yearly gap over towers.** It is a little wider, because towers' chillers now gain efficiency in mild hours.
+  - Shared plant: Grand Rapids 3.6% (was 3.3), Loudoun County 4.3% (3.7), Dallas 6.0% (4.9), Phoenix 9.9% (9.2), the second
+    Phoenix cell 9.3%.
+  - Chilled plant: 4.8-9.3%. Warm plant: 1.9-6.7%.
+- **The hottest hour at 1 GW.** Dry needs 83, 97, 119 and 148 MW more than towers on the shared plant (was 75, 87, 109 and 136),
+  and 114-180 MW more on the chilled plant.
+- **Towers' hottest hour is still about 1.256 everywhere.** That is now physics, not the cap: the four places' hottest-hour
+  wet-bulbs are within about 2 K, and 90.1's curve is flat (design 0021).
+- **Grid water.** The power plant water for dry's extra electricity is 3.0-4.4% of the towers' own water in Michigan, Virginia and
+  Texas, and 13.3-14.2% at Phoenix's AZPS and SRP.
+  - Arizona Public Service's marginal factor on the peak day falls from 7.4 to 0.91 MGD per 100 MW. Its average withdrawal falls
+    from 7.2 to 1.0, since Palo Verde now carries its own factor.
+- **Outside air (all air-cooled halls).**
+  - PUE 1.107 a year at every place, against towers' 1.134-1.163.
+  - Water on 1% (Grand Rapids) to 32% (Phoenix) of the hours.
+  - Phoenix withdraws 0.25 L per IT kWh, against towers' 1.82 (design 0022's check).
+  - With the plant's sampled liquid racks it is 1.122-1.150, and in Phoenix it sits above towers (1.150 against 1.144).
+
+Section 9's paragraphs are updated to these numbers.
+
 Conventions:
 
 - Model numbers are per 100 MW of IT capacity and are medians (p50) over the 400 draws, unless marked central (every
@@ -460,13 +500,13 @@ None of these is built.
 
 ## 9. The trade-off in plain words
 
-For the cooling-systems page and for talks with Zach Easton. The numbers are model 1.16, shared loop, per the tables
-above.
+For the cooling-systems page and for talks with Zach Easton. The numbers are model 1.17 (updated Nov 17), shared loop,
+per `runs/tables_117.md`.
 
 > Cooling towers get rid of a data center's heat by evaporating water. Dry coolers do it with fans and outside air, and
 > when the air is too warm for that they turn on chillers, compressors that run on electricity. Over a whole year the
-> difference in electricity is small: a campus with dry cooling uses about 3 to 5 percent more than the same campus
-> with towers in Michigan, Virginia and Texas, and about 9 percent more in Phoenix. That's because the chillers only
+> difference in electricity is small: a campus with dry cooling uses about 4 to 6 percent more than the same campus
+> with towers in Michigan, Virginia and Texas, and about 10 percent more in Phoenix. That's because the chillers only
 > run in warm weather, and the fans and pumps cost about the same either way. Published figures agree. Google's
 > air-cooled campus in Nevada runs about 6 percent above its evaporative one, and Microsoft calls the increase from
 > dropping evaporative cooling "nominal." The power plants' water for that extra electricity is a few percent of what
@@ -474,10 +514,10 @@ above.
 >
 > The difference is at the peak. In the hottest hour of a hot summer every chiller runs, and an air-cooled chiller
 > needs about twice the electricity per unit of heat that a water-cooled one needs. A 1-gigawatt campus with dry
-> cooling needs about 75 to 135 megawatts more than one with towers in that hour, and that hour comes when the grid is
+> cooling needs about 85 to 150 megawatts more than one with towers in that hour, and that hour comes when the grid is
 > already stretched. How cold the building keeps its water matters as much as the choice of design. The same dry campus
-> in Dallas uses about 10 percent more electricity a year on an older chilled-water plant (7-13 C water) than on a
-> modern loop at about 23 C. That's twice the gap between dry cooling and towers. Plants with warm liquid loops (30-42 C
+> in Dallas uses about 9 percent more electricity a year on an older chilled-water plant (7-13 C water) than on a
+> modern loop at about 23 C. That's half again the gap between dry cooling and towers. Plants with warm liquid loops (30-42 C
 > water) narrow the yearly gap to 2 to 7 percent.
 
 ## 10. Methods record
