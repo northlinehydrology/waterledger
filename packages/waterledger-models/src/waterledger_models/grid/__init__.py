@@ -9,8 +9,16 @@ UTC hour, the hours are split into temperature bins (quintiles by default), and 
     average   the plants' water per MWh of the BA's generation in those hours, weighted by generation, so the table
               applied to the fit hours gives back their water exactly;
     marginal  the water per MWh of added generation (Siler-Evans et al. 2012): the slope of the hour-to-hour change in
-              the BA's plant water against the change in its generation, by month and bin. Where a bin has too few hour
-              pairs or no spread in generation, the month's average stands in.
+              the BA's plant water against the change in its generation, by month and bin. The slope is Theil-Sen's (the
+              median of the pairwise slopes; Theil 1950, Sen 1968), which a few bad hours can't move: up to 29% of the pairs
+              can be wrong without carrying it off (model 1.17; before, an ordinary least-squares slope, which single-hour
+              spikes in EIA-930 carried to 2,500-3,000 gal/MWh in AZPS). Only pairs of hours the caller marks as pairable
+              are used (`pair_ok`: waterledger_data.grid930.intensity screens spikes, dropouts and gaps). Where a bin has
+              too few hour pairs or no spread in generation, the month's average stands in.
+A factor outside the range of the BA's fuel factors for its month (`bounds`) is reported, never changed: fit() warns and
+lists it in the table's meta["outside"]. An average can't leave the range unless a class's generation is negative (pumped
+hydro, batteries); a marginal slope can if, as the BA's generation rises, a water-free class falls while a thermal class
+rises by more.
 Applied to the user's own hours, over any run of years, the table gives the water at the plants in each hour, so a hot
 hour meets the grid's own hot-hour mix. Imports are not counted (the BA's own plants); the table says so in `note`.
 
@@ -21,8 +29,11 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+import warnings
+
 BINS = 5
 MIN_PAIRS = 60                 # hour pairs a month and bin needs for its own marginal slope
+MAX_PAIRWISE = 500_000         # pairwise slopes in a Theil-Sen median; above it, a fixed sample of them
 
 
 @dataclass(frozen=True)
@@ -62,9 +73,26 @@ def _bin(edges, month, hod, temp_c):
     return (np.asarray(temp_c)[:, None] > e).sum(axis=1)
 
 
-def fit(ba, hour_utc, consumed, withdrawn, generation, temp_c, bins=BINS):
+def theil_sen(y, x, seed=0):
+    """Theil-Sen slope of y on x: the median of the slopes between every two points with different x (a fixed random sample of
+    MAX_PAIRWISE of them where there are more). NaN if no two x differ."""
+    y, x = np.asarray(y, dtype=float), np.asarray(x, dtype=float)
+    n = len(x)
+    if n * (n - 1) // 2 <= MAX_PAIRWISE:
+        i, j = np.triu_indices(n, 1)
+    else:
+        rng = np.random.default_rng(seed)
+        i, j = rng.integers(0, n, MAX_PAIRWISE), rng.integers(0, n, MAX_PAIRWISE)
+    dx = x[j] - x[i]
+    keep = dx != 0
+    return float(np.median((y[j] - y[i])[keep] / dx[keep])) if keep.any() else np.nan
+
+
+def fit(ba, hour_utc, consumed, withdrawn, generation, temp_c, bins=BINS, pair_ok=None, bounds=None):
     """A GridTable from a BA's hourly intensity (gal/MWh), generation (MW) and the user's air temperature (degC) on the
-    same UTC hours. Hours with any of them missing are left out."""
+    same UTC hours. Hours with any of them missing are left out. `pair_ok` (bool per hour), where given, marks the hours that
+    may be differenced with the hour before; `bounds` ({"consumed": (lo, hi), "withdrawn": (lo, hi)}, 12 monthly values each),
+    the range of the BA's fuel factors, against which every factor is checked (module docstring)."""
     hour_utc = np.asarray(hour_utc)
     consumed, withdrawn, generation, temp_c = (np.asarray(a, dtype=float) for a in (consumed, withdrawn, generation, temp_c))
     month, hod, year = calendar(hour_utc)
@@ -88,7 +116,10 @@ def fit(ba, hour_utc, consumed, withdrawn, generation, temp_c, bins=BINS):
 
     # marginal: hour-to-hour changes, binned by the later hour's month and temperature bin
     mc, mw = np.full((12, bins), np.nan), np.full((12, bins), np.nan)
-    nxt = np.flatnonzero(ok[1:] & ok[:-1] & (np.diff(hour_utc) == 1)) + 1
+    pairable = ok[1:] & ok[:-1] & (np.diff(hour_utc) == 1)
+    if pair_ok is not None:
+        pairable &= np.asarray(pair_ok, dtype=bool)[1:]
+    nxt = np.flatnonzero(pairable) + 1
     b_all = np.zeros(len(hour_utc), dtype=int)
     has_edges = ok & np.isfinite(edges[month, hod]).all(axis=1)
     b_all[has_edges] = _bin(edges, month[has_edges], hod[has_edges], temp_c[has_edges])
@@ -100,13 +131,33 @@ def fit(ba, hour_utc, consumed, withdrawn, generation, temp_c, bins=BINS):
             month_avg = np.nanmean(avg[k][m])
             for i in range(bins):
                 s = (month[nxt] == m) & (b_all[nxt] == i)
-                if s.sum() >= MIN_PAIRS and np.var(dg[s]) > 0:
-                    out[m, i] = np.cov(dw[s], dg[s])[0, 1] / np.var(dg[s], ddof=1)
-                else:
-                    out[m, i] = month_avg
+                slope = theil_sen(dw[s], dg[s]) if s.sum() >= MIN_PAIRS else np.nan
+                out[m, i] = slope if np.isfinite(slope) else month_avg
     years = tuple(int(y) for y in np.unique(year[ok]))
+    outside = check(avg, {"consumed": mc, "withdrawn": mw}, bounds) if bounds else []
+    if outside:
+        warnings.warn(f"{ba}: {len(outside)} grid factors outside the range of its fuel factors, e.g. {outside[0]}", stacklevel=2)
     return GridTable(ba=ba, edges=edges, consumed=avg["consumed"], withdrawn=avg["withdrawn"],
-                     marginal_consumed=mc, marginal_withdrawn=mw, years=years)
+                     marginal_consumed=mc, marginal_withdrawn=mw, years=years, meta={"outside": outside})
+
+
+TOLERANCE = 0.5                # gal/MWh: the fuel factors are kept to two decimals
+
+
+def check(avg, marginal, bounds):
+    """Factors outside the BA's fuel-factor range for their month: [(kind, month 1-12, where, value, lo, hi)], where is
+    ("hour", h, bin) for an average and ("bin", bin) for a marginal."""
+    out = []
+    for k, (lo, hi) in bounds.items():
+        lo, hi = np.asarray(lo, dtype=float), np.asarray(hi, dtype=float)
+        for m in range(12):
+            a = avg[k][m]
+            for h, i in zip(*np.nonzero(np.isfinite(a) & ((a < lo[m] - TOLERANCE) | (a > hi[m] + TOLERANCE)))):
+                out.append((k, m + 1, ("hour", int(h), int(i)), round(float(a[h, i]), 1), round(float(lo[m]), 1), round(float(hi[m]), 1)))
+            r = marginal[k][m]
+            for i in np.flatnonzero(np.isfinite(r) & ((r < lo[m] - TOLERANCE) | (r > hi[m] + TOLERANCE))):
+                out.append((f"marginal_{k}", m + 1, ("bin", int(i)), round(float(r[i]), 1), round(float(lo[m]), 1), round(float(hi[m]), 1)))
+    return out
 
 
 def lookup(table, month, hour_utc_of_day, temp_c):

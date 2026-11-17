@@ -110,7 +110,9 @@ def grid_factors(cid, times, temps, bas):
     0008, part 1, step 5). Each BA's GridTable is fit on its EIA-930 hours (2019 on) paired with the cell's own corrected temperature in the
     same UTC hours, then applied to all the run's hours, so the 30 weather years meet the grid's mix by month, hour and temperature. The run's
     times are local standard time at the cell's longitude (era5.local); the table's hours are UTC. A BA with no EIA-930 file or plant
-    water table, or under a year of hours in common, is left out. A month-hour-bin the fit left empty takes the BA's mean for that kind."""
+    water table, or under a year of hours in common, is left out. A month-hour-bin the fit left empty takes the BA's mean for that kind.
+    Hours EIA-930 screening leaves out (grid930.intensity: spikes, dropouts, gaps) are in neither the averages nor the hour pairs of the
+    marginal slope, and every factor is checked against the BA's fuel factors (model 1.17)."""
     return grid_factors_offset(times, temps, bas, round(era5.indexes(cid)[1] / 4 / 15))
 
 
@@ -136,7 +138,9 @@ def grid_factors_offset(times, temps, bas, offset_h):
         common, ia, ib = np.intersect1d(hours["hour"].astype("datetime64[h]"), utc, return_indices=True)
         if len(common) < 8760:
             continue
-        table = G.fit(ba, common, hours["consumed"][ia], hours["withdrawn"][ia], hours["generation"][ia], t[ib])
+        pair_ok = hours["pair_ok"][ia] if "pair_ok" in hours else None      # screened hours (model 1.17)
+        table = G.fit(ba, common, hours["consumed"][ia], hours["withdrawn"][ia], hours["generation"][ia], t[ib], pair_ok=pair_ok,
+                      bounds=hours.get("bounds"))
         f = {k: np.asarray(v, dtype=float) for k, v in G.lookup(table, month, hod, t).items()}
         out[ba] = {k: np.where(np.isfinite(v), v, np.nanmean(v)) for k, v in f.items()}
     return out
