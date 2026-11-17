@@ -39,3 +39,59 @@ def test_unknown_fuel_word_is_an_error():
 
 def test_every_class_listed():
     assert {c for _, c in g._WORDS} == set(g.FUELS)
+
+
+# --- screening the hours (model 1.17) -----------------------------------------------------------------------------------
+import numpy as np
+
+
+def _ba(n=24 * 60, seed=0):
+    """A synthetic BA's hours: coal and gas following a daily load with noise, a flat 30 MW of "other", and solar by day."""
+    rng = np.random.default_rng(seed)
+    hour = np.arange(n) + 438_000
+    load = 3000 + 800 * np.sin(2 * np.pi * (hour % 24 - 8) / 24)
+    d = {"hour": hour, **{k: np.full(n, np.nan, dtype="float32") for k in g.FUELS}}
+    d["coal"] = (1500 + 0.2 * (load - 3000) + rng.normal(0, 15, n)).astype("float32")
+    d["gas"] = (load - 1500 + rng.normal(0, 30, n)).astype("float32")
+    d["other"] = (30 + rng.normal(0, 1, n)).astype("float32")
+    d["solar"] = np.clip(900 * np.sin(2 * np.pi * (hour % 24 - 6) / 24), 0, None).astype("float32")
+    return d
+
+
+def test_natural_hours_are_kept():
+    s = g.screen(_ba())
+    assert s["hour_ok"].all() and s["screened"] == {}
+    assert s["pair_ok"][1:].all() and not s["pair_ok"][0]
+
+
+def test_a_one_hour_spike_is_screened():
+    """AZPS's "other" at 6,137 MW for one hour on 2019-05-30T23 against about 31 MW."""
+    d = _ba()
+    d["other"][500] = 6137
+    s = g.screen(d)
+    assert not s["hour_ok"][500] and s["hour_ok"].sum() == len(d["hour"]) - 1
+    assert not s["pair_ok"][500] and not s["pair_ok"][501] and s["screened"] == {"other": 1}
+
+
+def test_a_two_hour_spike_and_a_dropout_are_screened():
+    d = _ba()
+    d["gas"][700:702] += 5000              # AZPS 2024-03-07T16-17, two hours
+    d["coal"][900] = 0                     # a fleet can't stop and restart in an hour
+    s = g.screen(d)
+    assert list(np.flatnonzero(~s["hour_ok"])) == [700, 701, 900]
+
+
+def test_a_gap_is_screened_and_a_class_that_stops_reporting_is_zero():
+    """A NaN run with the class generating on both sides is a gap; a class that stops being reported (AZPS nuclear from
+    2019-12-04T08) is 0 MW, and the hour it stops is not paired with the hour before."""
+    d = _ba()
+    d["coal"][300:303] = np.nan
+    d["gas"][1000:] = np.nan
+    s = g.screen(d)
+    assert not s["hour_ok"][300:303].any() and s["hour_ok"][1000:].all()
+    assert not s["pair_ok"][1000] and s["pair_ok"][1001:].all()
+
+
+def test_the_screen_is_set_from_the_data():
+    """k = 4 ramps: above every large fleet's natural reversals (0.9-3.4), below the artifacts seen (4.9 and 6.4)."""
+    assert g.SPIKE_K == 4.0 and g.SPIKE_HOURS == 3 and g.FLOOR == 0.01
