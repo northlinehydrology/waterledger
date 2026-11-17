@@ -16,7 +16,7 @@ these functions and ranges, so the two cannot drift apart.
 import numpy as np
 
 from waterledger_models import heat_rejection as hr
-from waterledger_models.heat_rejection import (CFM_M3S, CHILLER_COP_CAP, CP_AIR, CP_WATER, EQUIPMENT, GAL_M3, GLYCOL, HFG, HYBRID_MIN_RAMP, KG_GAL,  # noqa: F401
+from waterledger_models.heat_rejection import (CFM_M3S, CP_AIR, CP_WATER, EQUIPMENT, GAL_M3, GLYCOL, HFG, HYBRID_MIN_RAMP, KG_GAL,  # noqa: F401
                                                KWH_BTU, LATENT_KJ, LB_GAL, RHO_AIR, RHO_WATER, SWITCH_SETTINGS, TOWER_DESIGN_WB, _fan_kw, _humidity_ratio,
                                                _pump_kw, _ramp, _saturated_enthalpy, _saturation_kpa, _strata, design_dry_bulb, evaporative_ratio, for_location,
                                                glycol_properties, latin_hypercube, wet_bulb)
@@ -169,7 +169,7 @@ SOURCES = {
     "air_rise": f"{_LM}; the chilled plant 11-14 K, from ASHRAE 90.4-2022 Addendum g's 11 K basis [A]",
     "hx_approach": f"{_LM}; the dry coolers' glycol exchanger by analogy (model 1.9) [A]",
     "pump_tower_kpa": f"{_LM}; the dry coolers' glycol loop by analogy (model 1.9) [A]",
-    "carnot_water": "WAC 51-11C-403323 (replica of ASHRAE 90.1 Table 6.8.1-3); +/-11% from Lei and Masanet; fitted with the temperature offsets [A]",
+    "carnot_water": "With WATER_CHILLER_LOSS fitted to ASHRAE 90.1's water-cooled centrifugal EIR-FT curve (PNNL-26917, Table 81): COP 5.33-6.70 at AHRI's rating point, code minimum (WAC 51-11C-403323, replica of ASHRAE 90.1 Table 6.8.1-3, COP 6.28) +/-11% from Lei and Masanet [A]",
     "carnot_air": "With AIR_CHILLER_LOSS fitted to ASHRAE 90.1's air-cooled screw EIR-FT curve (PNNL-26917, Table 80): COP 2.96 at the rating point, EER 10.1 (90.1 Path A); 3.61 [A]",
     "air_cop_cap": "ASHRAE 90.1's EIR-FT curve, fitted over its whole range (7.6); 5 [A], the value through model 1.15; makers' part-load figures above it (Mitsubishi MECH-iC, Daikin Pathfinder)",
     "dc_approach": "ThermoKey catalogue point (10 K); makers' quotes for larger coils (5 K) [A]",

@@ -30,7 +30,7 @@ F = {k: i for i, k in enumerate(FIELDS)}
 # physics.py's constants, which Numba takes in as fixed values when it compiles
 RHO_AIR, RHO_WATER, CP_AIR, CP_WATER, LATENT_KJ = ph.RHO_AIR, ph.RHO_WATER, ph.CP_AIR, ph.CP_WATER, ph.LATENT_KJ
 KWH_BTU, HFG, LB_GAL, KG_GAL, DEHUMIDIFY_WATER = ph.KWH_BTU, ph.HFG, ph.LB_GAL, ph.KG_GAL, ph.DEHUMIDIFY_WATER
-COP_WATER = ph.CHILLER_COP_CAP["water"]
+WATER_LOSS, WATER_MIN_LIFT = hr.WATER_CHILLER_LOSS, hr.WATER_MIN_LIFT
 AIR_LOSS = hr.AIR_CHILLER_LOSS
 
 
@@ -99,7 +99,7 @@ def _loop_terms(supply, t, wb, hsat_wb, coil_air, wet, v):
     outside = wet * (wb + v[14] + v[15]) + (1 - wet) * (coil_air + v[16] + v[15])
     free = _clip(((ret - outside) - 0.0) / ((ret - supply) - 0.0), 0.0, 1.0)
     evaporator = supply - 2.0
-    water_cooled = min(v[18] * (evaporator + 273.15) / max(wb + v[14] + v[17] / 1.8 + 2.0 - evaporator, 1.0), COP_WATER)
+    water_cooled = 1.0 / (WATER_LOSS + max(wb + v[14] + v[17] / 1.8 + 2.0 - evaporator, WATER_MIN_LIFT) / (v[18] * (evaporator + 273.15)))
     air_cooled = min(1.0 / (AIR_LOSS + max(coil_air + 12.0 - evaporator, 1.0) / (v[19] * (evaporator + 273.15))), v[39])
     hot_water = max(wb + v[14] + v[17] / 1.8, ret - v[15])
     rise = max(ret - v[15] - v[16] - coil_air, v[31])

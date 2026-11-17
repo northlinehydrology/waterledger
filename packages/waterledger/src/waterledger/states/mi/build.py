@@ -207,7 +207,7 @@ PARAM_SOURCES = {
     "supply_air": ["schneider_rd109", "ocp2024_30c", "ashrae_tc99_2021", "ashrae_904g", "ashrae_904_5a"], "air_rise": ["lei2021", "ashrae_904g"],
     "chilled_water": ["ashrae_904_5a"], "glycol_share": ["dow_dowfrost"],
     **{k: ["lei2021"] for k in ("ups", "dist_loss", "light", "coil_eff", "water_rise", "crah_pa", "fan_eff", "tower_fan_pa", "lg", "tower_approach", "hx_approach", "pump_chw_kpa", "pump_tower_kpa", "pump_econ_kpa", "pump_eff")},
-    "carnot_water": ["wa_energy_code", "lei2021"], "carnot_air": ["wa_energy_code", "pnnl_prm2016"], "air_cop_cap": ["pnnl_prm2016", "mitsubishi_mechic", "daikin_pathfinder"], "dc_approach": ["thermokey_sheet"], "dc_fan_pa": ["lei2021"],
+    "carnot_water": ["wa_energy_code", "pnnl_prm2016", "lei2021"], "carnot_air": ["wa_energy_code", "pnnl_prm2016"], "air_cop_cap": ["pnnl_prm2016", "mitsubishi_mechic", "daikin_pathfinder"], "dc_approach": ["thermokey_sheet"], "dc_fan_pa": ["lei2021"],
     "liquid_water": ["schneider_rd109", "nvidia_rubin2026", "ocp2024_30c"], "liquid_air_share": ["hpe_nvl72", "schneider_wp210"],
     "liquid_share": ["uptime_dlc2024", "schneider_rd109"],
     "staff_core": ["jlarc2024", "gilroy2022"], "staff_per_mw": ["meta_richland", "meta_elpaso", "oracle_saline2026", "gilroy2022"],
