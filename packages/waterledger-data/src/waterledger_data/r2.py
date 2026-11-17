@@ -41,7 +41,7 @@ class Store:
         """The sha256 R2 holds for `key`, or None if it has none."""
         with tempfile.TemporaryDirectory() as d:
             p = os.path.join(d, "sha")
-            return open(p).read().strip() if self._get_file(key + ".sha256", p) else None
+            return open(p, encoding="utf-8").read().strip() if self._get_file(key + ".sha256", p) else None
 
     def put(self, key, path):
         """Upload `path` to `key` unless R2 already has it with the same checksum. True when R2 holds it after; a failure warns, keeps the
@@ -53,7 +53,7 @@ class Store:
             self._put_file(key, path)
             with tempfile.TemporaryDirectory() as d:
                 p = os.path.join(d, "sha")
-                open(p, "w").write(sha)
+                open(p, "w", encoding="utf-8").write(sha)
                 self._put_file(key + ".sha256", p)
             return True
         except Exception as e:                       # noqa: BLE001  any failure: warn and go on

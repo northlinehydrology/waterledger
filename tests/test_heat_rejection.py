@@ -11,8 +11,8 @@ from waterledger_models.battery import physics as bp
 from waterledger_models.datacenter import physics as ph
 
 HERE = os.path.dirname(__file__)
-REF = json.load(open(os.path.join(HERE, "data", "datacenter_before_heat_rejection.json")))
-_W = json.load(open(os.path.join(HERE, "data", "west_michigan_2023_2024.json")))
+REF = json.load(open(os.path.join(HERE, "data", "datacenter_before_heat_rejection.json"), encoding="utf-8"))
+_W = json.load(open(os.path.join(HERE, "data", "west_michigan_2023_2024.json"), encoding="utf-8"))
 TDB = np.array(_W["temperature_2m"], dtype=float)
 RH = np.array(_W["relative_humidity_2m"], dtype=float)
 

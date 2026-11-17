@@ -29,7 +29,7 @@ def pick(res):
 
 def era5(path):
     from waterledger_models.weather import to_local_standard
-    h = json.load(open(path))
+    h = json.load(open(path, encoding="utf-8"))
     lon = h["longitude"]
     times, keep = to_local_standard(h["hourly"]["time"], lon, "1995-01-01", "2024-12-31")
     t = np.array(h["hourly"]["temperature_2m"])[keep]
@@ -59,9 +59,9 @@ if __name__ == "__main__":
     stations = climate.isd_stations()
     rows, jobs = [], []
     for st, ids in SAMPLE.items():
-        places = json.load(open(f"{SNAP}/{st}/2026-11-02.2/places.json"))["places"]
+        places = json.load(open(f"{SNAP}/{st}/2026-11-02.2/places.json", encoding="utf-8"))["places"]
         places = places if isinstance(places, dict) else {p["geoid"]: p for p in places}
-        clim = json.load(open(f"{SNAP}/{st}/2026-11-02.2/climate.json"))["divisions"]
+        clim = json.load(open(f"{SNAP}/{st}/2026-11-02.2/climate.json", encoding="utf-8"))["divisions"]
         for g in ids:
             p = places[g]
             div = clim[p["division"]]
@@ -84,7 +84,7 @@ if __name__ == "__main__":
             if near and near["id"] != div.get("station_id"):
                 jobs.append(("station", g, near))
     # one published point rerun from its station record, to show the runs here reproduce the snapshot
-    oh = json.load(open(f"{SNAP}/OH/2026-11-02.2/climate.json"))["divisions"]["3301"]
+    oh = json.load(open(f"{SNAP}/OH/2026-11-02.2/climate.json", encoding="utf-8"))["divisions"]["3301"]
     jobs.append(("check", "OH 3301", next(s for s in stations if s["id"] == oh["station_id"])))
     with ProcessPoolExecutor(workers) as pool:
         done = list(pool.map(run, [(("station" if k == "check" else k), key, a) for k, key, a in jobs]))
@@ -95,5 +95,5 @@ if __name__ == "__main__":
         r["era5"] = by[("era5", r["geoid"])]
         r["nearest"] = by.get(("station", r["geoid"]))         # None: the published station is already the nearest qualifying one
     check = {"published": pick(oh["per_100mw"]), "rerun": by[("check", "OH 3301")]}
-    json.dump({"rows": rows, "reproduction_check": check}, open(out_path, "w"), indent=1)
+    json.dump({"rows": rows, "reproduction_check": check}, open(out_path, "w", encoding="utf-8"), indent=1)
     print("wrote", out_path, len(rows), "places,", len(jobs), "runs")

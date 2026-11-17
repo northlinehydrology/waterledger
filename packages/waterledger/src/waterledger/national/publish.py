@@ -36,7 +36,7 @@ def publish(state, root, date=None, build=None, store=None, get=_get, base=BASE,
             raise SystemExit(f"no snapshot under {os.path.join(root, st)}")
         date = dates[-1]
     folder = os.path.join(root, st, date)
-    manifest = json.load(open(os.path.join(folder, "manifest.json")))
+    manifest = json.load(open(os.path.join(folder, "manifest.json"), encoding="utf-8"))
     if not manifest.get("checks"):
         raise SystemExit(f"{st}/{date} has no checks in its manifest: run `waterledger check-snapshot {st} --dir {root}` first")
     if store is None:
@@ -52,7 +52,8 @@ def publish(state, root, date=None, build=None, store=None, get=_get, base=BASE,
     code, body = get(f"{base}/{st}/latest.json")               # read before anything is written
     old = json.loads(body) if code == 200 else None
 
-    files = sorted(os.path.relpath(os.path.join(d, f), folder) for d, _, names in os.walk(folder) for f in names)
+    # the store's keys with /, whatever the platform's separator (Windows' \\ would make a key named cells\\42.50_-88.00.json)
+    files = sorted(os.path.relpath(os.path.join(d, f), folder).replace(os.sep, "/") for d, _, names in os.walk(folder) for f in names)
     files = [f for f in files if f != "manifest.json"]
     up = lambda f: store.publish(f"{st}/{date}/{f}", os.path.join(folder, f), TYPES.get(os.path.splitext(f)[1], "application/octet-stream"))
     with ThreadPoolExecutor(workers) as pool:
@@ -65,7 +66,7 @@ def publish(state, root, date=None, build=None, store=None, get=_get, base=BASE,
     latest = pointer(old, st, date, manifest["model_version"])
     with tempfile.TemporaryDirectory() as d:
         p = os.path.join(d, "latest.json")
-        json.dump(latest, open(p, "w"))
+        json.dump(latest, open(p, "w", encoding="utf-8"))
         store.publish(f"{st}/latest.json", p, TYPES[".json"], cache_control="max-age=300")
     say(f"{len(files)} files" + (", build.json" if build else "") + f", the manifest and latest.json are up: {json.dumps(latest)}")
     return f"{base}/{st}/{date}/manifest.json"

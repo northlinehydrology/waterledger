@@ -26,7 +26,7 @@ def snap(tmp_path_factory):
 def test_carries_the_site_files(snap):
     import json
     for n in ("places", "estimates", "waters", "power"):
-        assert json.load(open(os.path.join(snap.folder, "michigan", n + ".json"))) == sc.data(n)
+        assert json.load(open(os.path.join(snap.folder, "michigan", n + ".json"), encoding="utf-8")) == sc.data(n)
 
 
 def test_shared_files_agree_with_michigan(snap):

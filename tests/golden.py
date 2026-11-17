@@ -13,7 +13,7 @@ HERE = os.path.dirname(__file__)
 
 def weather():
     import datetime as dt
-    w = json.load(open(os.path.join(HERE, "data", "west_michigan_2023_2024.json")))
+    w = json.load(open(os.path.join(HERE, "data", "west_michigan_2023_2024.json"), encoding="utf-8"))
     t0 = dt.datetime.fromisoformat(w["start"])
     times = [(t0 + dt.timedelta(hours=k)).strftime("%Y-%m-%dT%H:%M") for k in range(len(w["temperature_2m"]))]
     return times, w["temperature_2m"], w["relative_humidity_2m"]
@@ -24,5 +24,5 @@ def results():
 
 
 if __name__ == "__main__":
-    json.dump(results(), open(os.path.join(HERE, "data", "golden_cooling.json"), "w"), indent=0)
+    json.dump(results(), open(os.path.join(HERE, "data", "golden_cooling.json"), "w", encoding="utf-8"), indent=0)
     print("wrote tests/data/golden_cooling.json")

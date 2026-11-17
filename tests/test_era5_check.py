@@ -69,8 +69,8 @@ def test_a_state_like_the_four_passes(cache):
     held = next(r for r in shore if r["id"] == "s6")
     assert "Station 6" not in [a[1] for a in held["anchors"]]                     # held out of its own correction
     assert by["P1"]["value"] == 8 and by["P2"]["pass"] and by["P5"]["pass"]
-    assert json.load(open(cache / "out" / "check.json"))["verdict"] == "pass"
-    md = open(cache / "out" / "check.md").read()
+    assert json.load(open(cache / "out" / "check.json", encoding="utf-8"))["verdict"] == "pass"
+    md = open(cache / "out" / "check.md", encoding="utf-8").read()
     assert md.startswith("# ERA5 check: OH") and "**PASS**" in md and "| W2 |" in md and "Places through the cooling model" in md
 
 
@@ -147,7 +147,7 @@ def test_cells_as_json_say_when_a_state_is_done(cache, monkeypatch, capsys):
     assert (got["cells"], got["done"], got["complete"]) == (6, 0, False) and [p["cells"] for p in got["parts"]] == [3, 3]
     os.makedirs(E.RUNS)
     for c in LAND:
-        open(E.result_path(c), "w").write("{}")
+        open(E.result_path(c), "w", encoding="utf-8").write("{}")
     cli.main(["era5", "cells", "OH", "--json"])
     assert json.loads(capsys.readouterr().out)["complete"] is True
 

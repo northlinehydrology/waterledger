@@ -3277,7 +3277,7 @@ requires-dist = [
 
 [[package]]
 name = "waterledger-data"
-version = "3.23.0"
+version = "3.23.1"
 source = { editable = "packages/waterledger-data" }
 dependencies = [
     { name = "certifi" },

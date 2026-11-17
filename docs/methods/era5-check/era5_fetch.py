@@ -42,6 +42,6 @@ for c in todo:
     json.dump({"latitude": c[0] / 4, "longitude": c[1] / 4, "missing": missing,
                "source": "Copernicus ERA5 via s3://openmeteo/data/copernicus_era5 (CC-BY 4.0), UTC",
                "hourly": {"time": times, **{k: [round(float(v), 2) for v in x] for k, x in series.items()}}},
-              open(os.path.join(OUT, f"{c[0] / 4:.2f}_{c[1] / 4:.2f}.json"), "w"))
+              open(os.path.join(OUT, f"{c[0] / 4:.2f}_{c[1] / 4:.2f}.json"), "w", encoding="utf-8"))
     print(c, "missing", missing, flush=True)
 print(len(todo), "cells in", round(time.perf_counter() - a), "s")

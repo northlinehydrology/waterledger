@@ -46,5 +46,5 @@ def test_unknown_ba_has_none():
 
 
 def test_basis_recorded():
-    bases = {r["basis"] for r in csv.DictReader(open(en.BA_FUEL_TABLE))}
+    bases = {r["basis"] for r in csv.DictReader(open(en.BA_FUEL_TABLE, encoding="utf-8"))}
     assert bases <= {"month", "year", "us", "none", "missing"}

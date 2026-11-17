@@ -4,7 +4,7 @@ Package changes (code). Changes to the numbers are listed by model version on th
 
 ## 3.24.0 (Nov 16, 2026; model 1.16)
 
-waterledger and waterledger-models 3.24.0; waterledger-data stays 3.23.0. Model 1.16. Data center, battery cell plant and supply numbers change; every state's snapshot is rebuilt.
+waterledger and waterledger-models 3.24.0; waterledger-data stays 3.23.1. Model 1.16. Data center, battery cell plant and supply numbers change; every state's snapshot is rebuilt.
 
 - **Air-cooled chillers respond to the air** (design 0015; `docs/methods/methods-log.md`, Nov 15): `heat_rejection.chiller_cop`
   with a fixed-loss term, `AIR_CHILLER_LOSS` (0.0767), fitted to ASHRAE 90.1's air-cooled screw chiller curve (PNNL-26917,
@@ -22,6 +22,14 @@ waterledger and waterledger-models 3.24.0; waterledger-data stays 3.23.0. Model 
   proposals say closed loop, which doesn't rule out water in the hottest weather. Pass `cool="dry"` for the old start.
 - **Cell runs and snapshots are model 1.16's** (`national.era5.RUN_MODEL`, `MODELS["1.16"]`): this package reads 1.16
   snapshots once they are published, and the newest earlier ones (model 1.11's) with a note until then.
+
+## 3.23.1 (Nov 16, 2026; model 1.15)
+
+waterledger and waterledger-data 3.23.1, waterledger-models 3.22.1. No model numbers change.
+
+- **Windows.** The tests and the BMI checks run on windows-latest on every push. Every text file is opened as UTF-8, as on Mac
+  and Linux (Windows' default is cp1252, which garbles or refuses a name like Cañon City), and a lint step keeps it so
+  (ruff's PLW1514). A snapshot published from Windows gets keys with `/`, not `\`. No model numbers change.
 
 ## 3.23.0 (Nov 13, 2026; model 1.15)
 

@@ -43,7 +43,7 @@ def test_sends_the_snapshot_whole_with_the_manifest_and_latest_last(tmp_path):
     assert keys[-2:] == ["WI/2026-11-06/manifest.json", "WI/latest.json"]
     assert set(keys[:-2]) == {"WI/2026-11-06/places.json", "WI/2026-11-06/cells/42.50_-88.00.json", "WI/2026-11-06/build.json"}
     assert all(t == "application/json" for _, t, _ in store.sent) and store.sent[-1][2] == "max-age=300"
-    latest = json.load(open(bucket / "WI" / "latest.json"))
+    latest = json.load(open(bucket / "WI" / "latest.json", encoding="utf-8"))
     assert latest == {"state": "WI", "latest": "2026-10-01", "current": "2026-11-06", "by_model": {"1.7": "2026-10-01", "1.8": "2026-11-06"}}
     assert not any(k.endswith(".sha256") for k in keys)
 

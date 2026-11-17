@@ -35,7 +35,7 @@ def census():
     path = os.path.join(wl.RAW_PLACES, "villages_mi.json")
     d = pl._get(f"{pl.TIGER}/Places_CouSub_ConCity_SubMCD/MapServer/4/query",
                 {"where": "STATE='26' AND LSADC='47'", "outFields": "BASENAME,GEOID,INTPTLAT,INTPTLON", "returnGeometry": "false", "resultRecordCount": 2000, "f": "json"})
-    json.dump([f["attributes"] for f in d["features"]], open(path, "w"))
+    json.dump([f["attributes"] for f in d["features"]], open(path, "w", encoding="utf-8"))
 
 
 def water_systems():
@@ -49,7 +49,7 @@ def attains():
     _fresh(wi)
     for layer in (0, 1, 2):
         rows = wi._paged(f"{wi.ATTAINS}/{layer}/query", "state='MI'", "assessmentunitidentifier,assessmentunitname,ircategory,reportingcycle")
-        json.dump({"features": [{"attributes": a} for a in rows]}, open(os.path.join(wi.RAW, f"attains_{layer}_0.json"), "w"))
+        json.dump({"features": [{"attributes": a} for a in rows]}, open(os.path.join(wi.RAW, f"attains_{layer}_0.json"), "w", encoding="utf-8"))
     wi.attains()
     wi.recode_aus()
 

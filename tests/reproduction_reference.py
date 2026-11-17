@@ -32,5 +32,5 @@ if __name__ == "__main__":
            "note": f"West Michigan's estimates per 100 MW of IT capacity (cooling water with loop top-ups; p10/p50/p90 over {DRAWS} runs, seed 7, and the central run), rounded to 5 decimal places as published, "
                    f"and the {DRAWS} staff water draws [core people, people per MW, gallons per person a day, share used up, maintenance base, maintenance per MW, maintenance share used up], seed 13, which Water Ledger adds at the campus's size.",
            "per_100mw": per_100mw, "staff_runs": cw.staff_runs(DRAWS)}
-    json.dump(out, open(os.path.join(HERE, "data", "water_ledger_west_michigan.json"), "w"), indent=0)
+    json.dump(out, open(os.path.join(HERE, "data", "water_ledger_west_michigan.json"), "w", encoding="utf-8"), indent=0)
     print("wrote tests/data/water_ledger_west_michigan.json")

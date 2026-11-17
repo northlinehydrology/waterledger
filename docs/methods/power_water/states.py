@@ -118,7 +118,7 @@ def main():
 
     p['cool'] = by_water_body(p['Plant Code'], p['cool'])
 
-    fac = pd.DataFrame(json.load(open(os.path.join(D, 'dl', 'api', 'facility_gen_2024.json'))))
+    fac = pd.DataFrame(json.load(open(os.path.join(D, 'dl', 'api', 'facility_gen_2024.json'), encoding='utf-8')))
     fac['generation'] = pd.to_numeric(fac['generation'], errors='coerce')
     fac = fac.groupby('plantCode').generation.sum()
     p['plant_gen'] = p['Plant Code'].astype(str).map(fac).fillna(0.0)
@@ -159,7 +159,7 @@ def main():
     p['wd_saline_adj'] = p.wd_adj * p.saline_share
     p['wd_saline_bu'] = p.wd_bu * p.saline_share
 
-    sg = pd.DataFrame(json.load(open(os.path.join(D, 'dl', 'api', 'state_gen_2024.json'))))
+    sg = pd.DataFrame(json.load(open(os.path.join(D, 'dl', 'api', 'state_gen_2024.json'), encoding='utf-8')))
     sg['generation'] = pd.to_numeric(sg['generation'], errors='coerce') * 1000.0     # thousand MWh -> MWh
     piv = sg.pivot_table(index='location', columns='fueltypeid', values='generation', aggfunc='sum')
     rows = []

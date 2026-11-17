@@ -12,7 +12,7 @@ POWER_WATER = os.path.join(os.path.dirname(__file__), "..", "docs", "methods", "
 
 
 def _rows(name):
-    return list(csv.DictReader(open(os.path.join(POWER_WATER, name))))
+    return list(csv.DictReader(open(os.path.join(POWER_WATER, name), encoding="utf-8")))
 
 
 def _plant(code):
@@ -40,7 +40,7 @@ def test_the_pond_median_holds_up_against_the_heat_a_reactor_rejects():
 
 def test_virginias_state_figure_by_hand():
     """North Anna 112,968 + Surry 587,687 + Chesterfield 59,530 + the other plants 9,241 = 769,426 Mgal; over 102,698,615 MWh, 7,492 gal/MWh or 28.36 L/kWh."""
-    va = next(r for r in csv.DictReader(open(en.STATE_TABLE)) if r["state"] == "VA")
+    va = next(r for r in csv.DictReader(open(en.STATE_TABLE, encoding="utf-8")) if r["state"] == "VA")
     assert float(va["withdrawn_state_l_per_kwh"]) == pytest.approx(769426e6 / 102698615 * 3.78541 / 1000, abs=0.02)
 
 
@@ -54,7 +54,7 @@ def test_michigan_and_ohio_have_no_built_reservoir_but_texas_does():
 
 
 def test_fresh_and_saline_add_to_withdrawn_in_every_state():
-    for r in csv.DictReader(open(en.STATE_TABLE)):
+    for r in csv.DictReader(open(en.STATE_TABLE, encoding="utf-8")):
         if not r["withdrawn_l_per_kwh"]:
             continue
         w = en.state_power_water(r["state"])
@@ -122,7 +122,7 @@ def test_notes_name_no_plant_or_state_but_their_own():
 def test_solar_weight_is_the_states_own_then_the_countrys():
     """Alaska and Puerto Rico have no plant figure but do have generation. A state with no row takes the U.S. share, worked here over the table: never Michigan's 0.1589."""
     assert en.pv_share("AK") == 0.0593 and en.pv_share("PR") == 0.6293 and en.pv_share("OH") == 0.5865
-    rows = list(csv.DictReader(open(en.STATE_TABLE)))
+    rows = list(csv.DictReader(open(en.STATE_TABLE, encoding="utf-8")))
     solar = sum(float(r["solar_share"]) * float(r["net_gen_mwh"]) for r in rows)
     wind = sum(float(r["wind_share"]) * float(r["net_gen_mwh"]) for r in rows)
     assert en.pv_share("ZZ") == pytest.approx(solar / (solar + wind)) and 0.25 < en.pv_share("ZZ") < 0.4

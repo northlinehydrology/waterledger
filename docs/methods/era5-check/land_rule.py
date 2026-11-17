@@ -50,7 +50,7 @@ def main():
     load(sys.argv[1])
     rows, summary = [], {}
     for st in ("MI", "OH", "VA", "TX"):
-        x = json.load(open(f"{SNAP}/{st}/2026-11-02.2/places.json"))["places"]
+        x = json.load(open(f"{SNAP}/{st}/2026-11-02.2/places.json", encoding="utf-8"))["places"]
         places = list(x.values()) if isinstance(x, dict) else x
         s = {"places": len(places), "moved": 0, "cells_nearest": set(), "cells": set(), "moved_km_max": 0.0}
         for p in places:
@@ -66,7 +66,7 @@ def main():
             s["cells_nearest"].add(r["nearest_cell"]); s["cells"].add(r["cell"])
             s["moved_km_max"] = max(s["moved_km_max"], r["cell_km"] if moved else 0)
         summary[st] = s
-    with open(os.path.join(HERE, "cell_assignment.csv"), "w", newline="") as f:
+    with open(os.path.join(HERE, "cell_assignment.csv"), "w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0]))
         w.writeheader(); w.writerows(rows)
     allc = set().union(*(s["cells"] for s in summary.values())); alln = set().union(*(s["cells_nearest"] for s in summary.values()))

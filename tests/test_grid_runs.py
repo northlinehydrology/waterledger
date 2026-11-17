@@ -12,7 +12,7 @@ from waterledger.national import era5 as E
 from waterledger_models.datacenter import cooling
 
 HERE = os.path.dirname(__file__)
-_W = json.load(open(os.path.join(HERE, "data", "west_michigan_2023_2024.json")))
+_W = json.load(open(os.path.join(HERE, "data", "west_michigan_2023_2024.json"), encoding="utf-8"))
 TDB = np.array(_W["temperature_2m"], dtype=float)
 RH = np.array(_W["relative_humidity_2m"], dtype=float)
 TIMES = [str(t)[:13].replace(" ", "T") + ":00" for t in np.datetime64(_W["start"][:13]) + np.arange(len(TDB)).astype("timedelta64[h]")]

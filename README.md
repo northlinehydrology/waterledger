@@ -3,6 +3,7 @@
 [![tests](https://github.com/northlinehydrology/waterledger/actions/workflows/tests.yml/badge.svg)](https://github.com/northlinehydrology/waterledger/actions/workflows/tests.yml)
 [![nightly](https://github.com/northlinehydrology/waterledger/actions/workflows/nightly.yml/badge.svg)](https://github.com/northlinehydrology/waterledger/actions/workflows/nightly.yml)
 [![PyPI](https://img.shields.io/pypi/v/waterledger.svg)](https://pypi.org/project/waterledger/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23982423.svg)](https://doi.org/10.5281/zenodo.23982423)
 
 Open Python tools for estimating the water and electricity that large new users add, starting with data
 centers and battery cell plants, and for assembling the public U.S. water data around any place: water systems, watersheds, impaired waters,
@@ -405,5 +406,8 @@ guidance on environmental models and the federal Information Quality Act guideli
 [data problem](https://github.com/northlinehydrology/waterledger/issues/new?template=data-problem.yml) form is the
 project's request-for-correction process. Also: [governance](GOVERNANCE.md), [code of conduct](CODE_OF_CONDUCT.md),
 [security policy](SECURITY.md) and [how to cite](CITATION.cff).
+
+To cite the software, use [doi:10.5281/zenodo.23982423](https://doi.org/10.5281/zenodo.23982423) (all versions;
+each release also has its own DOI). Details in [CITATION.cff](CITATION.cff).
 
 BSD 3-Clause. Copyright Northline Hydrology.
