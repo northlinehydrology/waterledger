@@ -2715,3 +2715,73 @@ hottest days, since most proposals say closed loop and closed loop doesn't rule 
 - **Open.** Pennsylvania, New York and Arizona were accepted with notes on Nov 13; their weather failures (W2-W5) don't depend on this
   change, and their notes' hybrid figures are updated after their 1.16 checks.
 
+
+## Nov 17, 2026: water-cooled chillers on ASHRAE 90.1's curve (design 0021; model 1.17)
+
+**What was wrong.** Through model 1.16 a water-cooled chiller's COP was carnot_water (0.62-0.78) x T_evap / lift, with no loss and a cap of 8
+(FEMP's 5-8 [A]). On the shared and warm loops the lift is small (about 15 K in the hottest hours) and the Carnot term runs well above 8, so the
+cap held in nearly every hour a towers or hybrid plant's chillers ran. A towers plant's hottest-hour PUE was then the same at every place
+(the evidence note `docs/research/cooling-power-evidence.md`, branch `cooling-power-evidence`, P2), and 90.1's own code-minimum
+machine runs above 8 (10.8) at the smallest lift its curve covers.
+
+**Evidence.** ASHRAE 90.1-2016's default EIR-FT curve for water-cooled centrifugal chillers (COMNET 2017, as given in Goel, Rosenberg and
+Eley 2017, PNNL-26917, Table 81), a biquadratic in leaving chilled water (40-54 F) and entering condenser water (60-85 F); at full
+available load COP = rated COP / EIR-FT. It gains about 1.3% of COP per K of lift, where Carnot gains about 3%: the reason design 0015 found
+"a Carnot fraction above 1" when it fitted the old form.
+
+**Method.** The air-cooled form of design 0015: 1/COP = WATER_CHILLER_LOSS + lift / (carnot_water x T_evap), lift = entering condenser
+water + range + 2 - T_evap, T_evap = supply - 2. Fitted by least squares on relative error over the curve's whole range with AHRI's 10 F
+range: loss 0.0471, RMS error 0.8%, largest 2.6% (screw 0.065, scroll 0.068, reciprocating 0.054; the centrifugal is the large-plant
+machine). carnot_water becomes 0.828-1.140, which keeps the rating band of every model before (COP 5.33-6.70 at AHRI's 44 F / 85 F,
+code minimum 6.28 +/-11%, Lei and Masanet). The coefficient now passes 1, and with the loss the COP stays below Carnot's at every lift
+(largest ratio 0.92; test). Below 90.1's smallest lift (12.89 K: 54 F water, 60 F condenser water) the COP holds at its value there
+(WATER_MIN_LIFT [A], replacing the cap): no published full-load curve goes lower, makers' figures below it are part-load values the
+model has no term for, and field measurements run under catalogue ones (GSA GPG-031, 2017). The fit is `docs/methods/chillers/fit_chillers.py`
+(both chiller types, 0015's included, which was never committed), tested in `tests/test_chillers.py`.
+
+**Correction.** Design 0015's carnot_air low end, 0.571, was the joint fit's own value and gives COP 2.91 at the air-cooled rating
+point, not the 2.96 (EER 10.1) 0015 set the band to; 0.584 gives 2.96. The range becomes 0.584-0.761.
+
+**Effect** (model 1.16 cell records against the chiller change alone, in memory, same draws and station correction, 100 MW of IT, p50;
+`docs/methods/chillers/effect.md`). Towers' annual PUE falls 0.003-0.013 (most in Dallas) and their hottest hour about 1.2 MW on the
+shared and warm plants; the chilled plant's hottest hour doesn't move (its lift stays above 90.1's range). Dry and pads move by 0.001-0.004
+through the carnot_air correction. Dry's annual gap over towers on the shared plant: Grand Rapids 3.3 to 3.6%, Loudoun County 3.7 to 4.4%,
+Dallas 4.9 to 6.0%, Phoenix 9.2 to 9.9%. Towers' hottest-hour PUE is still about 1.256 at all four places: the four 1-in-10-year
+hottest-hour wet-bulbs are within about 2 K and the curve is flat, so it is now physics, not the cap, that keeps it close.
+
+**Short form** (methods pages): Water-cooled chillers now follow ASHRAE 90.1's reference curve (fitted within 3%), gaining efficiency as
+the condenser water cools down to the smallest lift the curve covers. Before, they ran at a COP of 8 almost every hour on the warmer loops.
+Towers' electricity falls slightly (0.3-1.3% a year); dry cooling's yearly gap over towers is 3.6-9.9% at the places checked.
+
+## Nov 17, 2026: outside air into the halls, a fifth design (design 0022; model 1.17)
+
+**What was missing.** Every design ran its halls through a facility water loop. The design Meta, Amazon and Microsoft describe for most of
+their fleets is outside air straight into the halls, cooled by wetted media on hot days, and most public dry-against-evaporative comparisons
+are against it (evidence note, P3).
+
+**Method.** The halls' air flow is the room's heat over the computers' air rise; fans at the air handlers' pressure [A]. Below the supply air
+floor outside air is mixed with return air (outside share = rise / (return - outside)); up to the operator's setting (switch_setting,
+design 0016) the supply floats with the weather; above it the pads (assist's media) cool the air, by the adiabatic balance (sensible
+cooling = evaporation x latent heat), from just reaching the setting to the media's full effect down to the floor (pad_full, 0-1 [A]: no
+operator publishes which); air-cooled trim chillers carry what the pads can't. Humidifiers make up their sampled share of the outside air's
+shortfall below the low dew point. No dehumidification [A] (the fleets accept humid supply air). Liquid racks reject through the dry
+design's loop on the plant's water. Water limits cut the pads' evaporation and move it to the trim chillers. Mixing, the adiabatic balance,
+the setting and floor, the books and a hot hour by hand are tested (`tests/test_outside_air.py`); the compiled kernel agrees with physics.py
+to 1e-12.
+
+**Physics kept.** In hours hotter than the halls' return air at the supply floor, pads cooling all the outside air can take more water than
+towers would for the heat (in the test grid: above about 43 C at 5% humidity on the shared plant, 33 C on the chilled plant, whose floor is
+18-22 C). Liquid racks cost this design power in warm hours, where they save it in every other design.
+
+**Check** (four cells, 400 draws, shared plant, all air-cooled halls, p50; `docs/methods/outside-air-check/check.md`). Hours on the pads:
+Grand Rapids 1%, Loudoun County 4%, Dallas 15%, Phoenix 32% (26-39%), against Microsoft's Arizona "less than 40% of the year" and Amazon's
+"about 90% of the time" without water. PUE 1.107 everywhere (hottest hour 1.11-1.12), between Meta's fleet 1.08 and AWS's regions 1.12-1.18.
+Water withdrawn per IT kWh: Phoenix 0.25 L (0.17-0.38), between AWS's fleet 0.12 and Northern California 0.39 and near LBNL 2024's modeled
+0.4; the other three near zero, as AWS's Ohio and Virginia 0.06. Microsoft's unverified Arizona WUE (1.63 and 2.24, from snippets and
+sheets now gone) is six to nine times the model's: not resolved.
+
+**Not on the site.** The design is in the packages and cell runs; waterledger.org's buttons wait for Andrew's local check (Nov 16).
+
+**Short form** (methods pages): A fifth design, outside air into the halls with evaporative pads on hot days, as Meta, Amazon and Microsoft
+run most of their fleets. With air-cooled halls it uses about 1.11 PUE in every climate checked, takes water 1-32% of the hours, and
+withdraws 0.01-0.25 L per IT kWh, close to what those operators report.
