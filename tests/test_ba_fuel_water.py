@@ -37,6 +37,32 @@ def test_csp_water_is_not_in_other():
         assert (en.ba_fuel_water(ba)["other"]["withdrawn"] < 100).all(), ba
 
 
+def test_palo_verde_for_azps_nuclear():
+    """EIA-930 counted Palo Verde in AZPS until Dec 4, 2019; EIA-923 files it under SRP. AZPS's nuclear is the plant's own factor
+    (cooling towers on reclaimed water, about 700 gal/MWh), not the U.S. fleet's 17,236 withdrawn."""
+    az, srp = en.ba_fuel_water("AZPS")["nuclear"], en.ba_fuel_water("SRP")["nuclear"]
+    assert np.allclose(az["withdrawn"], srp["withdrawn"], rtol=0.01) and (az["withdrawn"] < 1000).all()
+
+
+def test_fallbacks_are_labeled():
+    """A class with no EIA-923 generation in the BA says where its factor comes from [A]: the plants, the region or the U.S."""
+    t = pd.read_csv(en.BA_FUEL_TABLE, keep_default_na=False)
+    fb = t[t.basis.isin(["plant", "region"])]
+    assert len(fb) and (fb.basis_from != "").all()
+    assert (fb.groupby(["ba", "fuel"]).gen_mwh.sum() <= 0).all()        # no net EIA-923 generation in the BA that year
+    assert set(t[t.basis == "plant"].basis_from) == {"6008", "2442", "6076", "6045", "2706"}
+
+
+@pytest.mark.parametrize("ba", ["MISO", "PJM", "ERCO", "SWPP", "TVA", "SOCO"])
+def test_consumed_within_withdrawn_and_plausible(ba):
+    """Consumption can't exceed withdrawal, and no class's monthly consumption runs past what any cooling uses
+    (Macknick et al. 2012: about 1,100 gal/MWh at most, for coal and nuclear towers)."""
+    for fuel, d in en.ba_fuel_water(ba).items():
+        assert (d["consumed"] <= d["withdrawn"] * 1.001 + 1e-9).all(), fuel
+        assert (d["consumed"] <= 1500).all(), fuel
+        assert (d["withdrawn_saline"] <= d["withdrawn"] + 1e-9).all(), fuel
+
+
 def test_summer_above_winter_for_misos_steam():
     """Evaporation per MWh rises in warm months (Macknick; the plant reports agree)."""
     f = en.ba_fuel_water("MISO")
@@ -51,4 +77,4 @@ def test_unknown_ba_has_none():
 
 def test_basis_recorded():
     bases = {r["basis"] for r in csv.DictReader(open(en.BA_FUEL_TABLE))}
-    assert bases <= {"month", "year", "us", "none", "missing"}
+    assert bases <= {"month", "year", "plant", "region", "us", "none", "missing"}
