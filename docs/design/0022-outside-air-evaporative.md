@@ -144,9 +144,11 @@ liquid share:
   - The model's bleed (`assist_bleed`, 0-0.5) and pad control (`pad_full`) don't reach them.
   - Not resolved. A verified Microsoft per-site figure would settle it.
 - **Liquid racks.** At the plant's sampled liquid share the design's PUE rises to 1.12-1.15 and its hottest hour to about 1.21: the
-  liquid racks' dry loop needs chillers in warm hours (above). Even so it stays below towers' in every place.
-- **The trade-off.** On these numbers the outside air design beats towers on both water and electricity everywhere, and beats dry
-  on electricity by 0.07-0.15 a year and 0.22-0.28 in the hottest hour. That is why operators who can build it do. Its limits
+  liquid racks' dry loop needs chillers in warm hours (above).
+  - Its year is still below towers' at three places but not in Phoenix (1.150 against 1.144).
+  - Its hottest hour stays below towers' everywhere (1.19-1.21 against 1.25-1.26).
+- **The trade-off.** With air-cooled halls, on these numbers the outside air design beats towers on both water and electricity
+  everywhere. It beats dry (at the plant's liquid share) on electricity by 0.07-0.15 a year and 0.22-0.28 in the hottest hour. That is why operators who can build it do. Its limits
   are the ones it doesn't model:
   - humid supply air;
   - filtration near smoke and dust;
