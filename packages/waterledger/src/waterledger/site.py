@@ -65,9 +65,10 @@ class Site(BaseModel):
             est = est.model_copy(update={"supply": estimate_supply(est, supply, n=supply_draws, storm_years=storm_years)})
         return est
 
-    def by_design(self, designs=("dry", "hybrid", "towers"), plants=None, reference="towers"):
+    def by_design(self, designs=("dry", "assist", "hybrid", "towers"), plants=None, reference="towers"):
         """The same facility with each design, on this site's power option: water evaporated at the site and at power plants (the power option's and the
-        balancing authority's hourly mix), electricity, which evaporates least, and each design against `reference` (DesignTotal). `plants`: the cooling plants inside the building to compare (a data center's: "shared",
+        balancing authority's hourly mix), electricity, which evaporates least, and each design against `reference` (DesignTotal). Pads (assist) are in the
+        default list from 3.25.0 (design 0020, decision 1b). `plants`: the cooling plants inside the building to compare (a data center's: "shared",
         "warm", "chilled"), each in DesignComparison.plants; None: the site's own. `designs` is always the site's own plant."""
         ref = states.provider(self.place.state).reference(self.place)
         power = POWER_ALIASES.get(self.power, self.power) or ref["power"]

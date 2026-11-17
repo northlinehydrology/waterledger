@@ -42,7 +42,7 @@ def case(request):
     try:
         p = wl.place(request.param)
         site = wl.Site(place=p, facility=wl.DataCenter(it_mw=MW, cooling="assist"))
-        cmp = site.by_design(DESIGNS, plants=PLANTS)
+        cmp = site.by_design(plants=PLANTS)
     except Exception as e:                          # noqa: BLE001  no stored snapshot for the state on this machine
         pytest.skip(f"{request.param}: {type(e).__name__}: {e}")
     return site, cmp
