@@ -2716,6 +2716,141 @@ hottest days, since most proposals say closed loop and closed loop doesn't rule 
   change, and their notes' hybrid figures are updated after their 1.16 checks.
 
 
+## Nov 16, 2026: the grid's plant water without EIA-930 spikes or missing fuel rows (design 0008; model 1.17)
+
+**What was wrong.** Found in Arizona: on the 1-in-10-year peak day, AZPS's marginal plant water was 5.6-7.4 MGD per 100 MW of a
+campus's electricity, about 2,500-3,000 gal/MWh. The fuel factors it is built from run 0-1,143. AZPS's average withdrawal was about
+3,700 gal/MWh. Four causes, each checked in every BA:
+
+1. **Single-hour spikes and gaps in EIA-930's adjusted columns** (EIA's own anomaly screening misses some). Examples in AZPS:
+   - "other" at 6,137 MW on 2019-05-30T23 and 5,652 MW on 2024-03-07T16-17, against a usual 31;
+   - gas at 5,905 MW on 2021-09-01T18 (1,093 the hour before);
+   - coal at 7,044 MW on 2025-02-13T23;
+   - nuclear NaN from 2019-12-04T08, which `intensity()` read as 0 MW.
+
+   The marginal slope was an ordinary least-squares fit of the hour-to-hour change in plant water against the change in
+   generation, by month and temperature bin. One such hour among about 900 pairs moved it by thousands of gal/MWh, and the
+   peak-day statistic takes each field's worst day. Removing four hours brought AZPS's March and May back to 360-525.
+2. **A fuel class EIA-923 has no row for.** EIA-930 counted Palo Verde (about 4 GW) in AZPS until Dec 4, 2019. EIA-923 files it
+   under SRP (operator Arizona Public Service). AZPS's nuclear took the U.S. factor, 17,236 gal/MWh withdrawn, which reflects the
+   once-through fleet. Palo Verde's own factor is about 700: cooling towers on reclaimed water. Nineteen other BA classes had the
+   same gap (`ba_fuels.py` prints them).
+3. **Concentrating solar in "other".** Solana (AZPS) reported 806.6 MG of brackish water in 2024 on 828 GWh, which is 974 gal/MWh
+   of its own output. It has no thermal generation in EIA-923 (fuel SUN), so its water fell to the "other" class and was
+   divided by AZPS's other generation, 184 GWh of biomass and landfill gas: 1,600-5,700 gal/MWh against 50 for the U.S. "other".
+   Mojave Solar (CISO, 474 MG) and Crescent Dunes (NEVP, 28 MG) did the same.
+4. **The least-squares slope itself** is carried by heavy tails even after the spikes are gone (PJM below).
+
+**Decisions.**
+
+- **Screen the hours** (`waterledger_data.grid930.screen`). An hour is left out of the averages and of every pair it touches in
+  three cases:
+  - a class runs beyond both neighbouring hours, for 1-3 hours, by more than k times its own 99th-percentile hourly change in
+    the BA (its 1-in-100-hour ramp) and by more than 1% of the BA's median generation;
+  - a coal, gas, nuclear, oil or geothermal fleet falls to a tenth of both neighbours. Whole fleets can't stop and restart that
+    fast. The rule is not applied to "other", which held batteries before July 2024, nor to hydro, solar, wind or storage,
+    whose dawn and pumping swings are real;
+  - a class is NaN in a run with the class generating (over 1% of median) on both sides, a gap.
+
+  A NaN run without generation on both sides is a class not reported (AZPS nuclear after Dec 2019) and is 0 MW. The hour where
+  a class starts or stops being reported is not paired with the hour before, since its change is a reporting change.
+- **k = 4, from the data.** Every series in all 67 BAs, 2019-2025, was scored by its reversals (how far 1-3 hours sit beyond
+  both neighbours) in units of its own ramp, keeping those above the 1% floor. The pooled tail falls as about k^-3.5 to 8-9
+  ramps and as about k^-1.5 beyond, which is the artifact population. There is no clean gap. In the large fleets (MISO, SWPP,
+  ERCOT, PJM, SOCO, TVA coal, gas, wind and solar), the largest natural reversal is 0.9-3.4 ramps. Artifacts confirmed by eye
+  sit at 4.9 (PJM gas at 21 MW for an hour, against about 25 GW) and 6.4 (AZPS gas, above). k = 4 sits above the first group
+  and below the second. At k = 8, the tail break alone, the AZPS gas hour is kept.
+- **What the screen leaves out:** 18,411 of 3.85 million BA-hours (0.48%). MISO and SWPP lose none; AZPS 35, PJM 11, ERCOT 36.
+  Most are gaps: CISO 7,918 (hydro missing Oct 2019-Aug 2020, 1.3-1.9 GW on both sides; read as 0 MW it raised CISO's
+  intensity for 11 months), IPCO 1,344 (geothermal, Nov-Dec 2024), TEPC 1,145 (coal and wind, Feb-Mar 2021). NYIS loses 727,
+  mostly oil dropping to 0 for an hour.
+- **Theil-Sen slope** (Theil 1950; Sen 1968): the median of the pairwise slopes of the change in water against the change in
+  generation, by month and bin, on pairs that both pass the screen. Its breakdown point is 29%. Above 500,000 pairs it uses a
+  fixed random sample (not reached with five bins). On screened data, Theil-Sen and a least-squares fit trimmed at 4 MADs
+  (iterated 3 times) agree within about 5% in PJM. Plain least squares runs typically 10-25% and up to 70% above both. The
+  cause is that 3-11% of PJM's pairs fall beyond 4 MADs: nuclear and once-through coal steps that don't follow load, and
+  EIA-930's day-boundary hours at 04-05 UTC. Theil-Sen was preferred to trimming because it needs no cut-off.
+- **Missing fuel rows** (`docs/methods/power_water/ba_fuels.py`) [A]. A class that EIA-930 reports in a BA (2019-2025, over
+  0.1% of its generation) with no EIA-923 generation there takes the first of these that has a factor:
+  1. **The named plants** EIA-930 counts in the BA but EIA-923 files elsewhere, from their own water and generation by month,
+     checked against EIA-923 2024's operator and BA code:
+     - Palo Verde (6008) for AZPS nuclear;
+     - Four Corners (2442, filed under AZPS) for PNM coal, PNM's share (San Juan closed in 2022);
+     - Colstrip (6076, NWMT) for PSEI coal;
+     - St. Lucie (6045, FPL) for FMPP nuclear (unit 2 shares of FMPA and Orlando);
+     - Asheville (2706, CPLE) for CPLW gas and oil.
+  2. **The BA's EIA-930 region**, all its BAs' water over their generation: CPLW coal and other (CAR), FPL coal and HST
+     gas and oil (FLA), GRID, IPCO and PACW coal (NW), IID coal (CAL), SPA other (CENT), SRP other (SW).
+  3. **The U.S.** NYIS coal: New York's region is NYIS alone, with no coal since 2020.
+
+  A test holds that no class EIA-930 reports falls to the U.S. where a plant or region exists. HST gas and oil take Florida's
+  region, which includes FPL's once-through steam plants: 12,855 and 60,258 gal/MWh withdrawn. That may be high for Homestead's
+  small plant, but there is no better source in the data.
+- **CSP water in solar.** A plant with no thermal generation has its water split by its own EIA-923 generation, so a CSP plant's
+  water goes to solar, where EIA-930 counts its output. AZPS solar becomes 168-380 gal/MWh (Solana's water over all of AZPS's
+  solar), CISO 3-12 and NEVP 0-1. AZPS "other" becomes 0 (its biomass and landfill gas report no water). The U.S. "other"
+  falls from 69 to 50.
+- **Range check, reported, never clipped.** Every average and marginal factor is checked against the range of the fuel factors
+  the BA generates with that month. A factor outside it is listed in the table's `meta["outside"]` with a warning and left as
+  fit. Over the 61 BAs with a table and a year of hours (fit on a fixed synthetic temperature for the check), 26 of 7,320
+  marginal factors fall outside, by at most 1.24% of the month's range, and no average does:
+  - BPAT in July-September and AVRN in February run slightly under 0, as hydro rises with load and gas falls;
+  - AECI in August runs 1.3 gal/MWh over its top factor.
+
+  A test holds every BA within 2% of its range. Making it impossible would need a constrained estimator (the marginal as a
+  non-negative mix of the fuels' factors). That changes what the marginal means, from the BA's water response to the fuels
+  that respond, and was not done.
+
+**Before and after**, one cell each, a flat 100 MW, ERA5 2019-2024 uncorrected at the cell (in memory, nothing written), gal/MWh:
+
+| BA (cell) | kind | basis | average day, before | after | peak day, before | after |
+|---|---|---|---|---|---|---|
+| AZPS (33.50, -112.00) | consumed | average | 491 | 505 | 699 | 723 |
+| | | marginal | 553 | 313 | 3,333 | 397 |
+| | withdrawn | average | 3,702 | 517 | 8,912 | 742 |
+| | | marginal | 666 | 316 | 7,526 | 400 |
+| SRP (33.50, -112.00) | consumed | average | 508 | 507 | 593 | 593 |
+| | | marginal | 285 | 278 | 354 | 338 |
+| | withdrawn | average | 521 | 519 | 609 | 607 |
+| | | marginal | 361 | 304 | 531 | 361 |
+| MISO (42.75, -85.50) | consumed | average | 312 | 312 | 352 | 352 |
+| | | marginal | 277 | 278 | 343 | 336 |
+| | withdrawn | average | 12,338 | 12,338 | 14,326 | 14,326 |
+| | | marginal | 12,604 | 12,618 | 16,516 | 16,430 |
+| PJM (39.00, -77.50) | consumed | average | 282 | 282 | 318 | 318 |
+| | | marginal | 176 | 162 | 214 | 201 |
+| | withdrawn | average | 9,962 | 9,962 | 10,819 | 10,819 |
+| | | marginal | 4,160 | 3,452 | 9,188 | 4,673 |
+| ERCO (30.25, -97.75) | consumed | average | 238 | 238 | 284 | 284 |
+| | | marginal | 238 | 239 | 321 | 295 |
+| | withdrawn | average | 3,612 | 3,612 | 4,316 | 4,316 |
+| | | marginal | 3,973 | 3,939 | 5,650 | 5,129 |
+
+The average-day factor is the average-day MGD x 10^6 / 2,400 MWh. The peak day is RunWater's 1-in-10-year day.
+
+**The state table and `grid_water`, checked for the same mismatch.**
+- **The state mix** (`energy.state_power_water`) has none. Its own-plants part is bounded by the state, not a BA. Its main-BA part
+  is EIA-923 water over EIA-923 generation, both under EIA-923's attribution, so Palo Verde is SRP's on both sides. Arizona and New
+  Mexico import nothing, so their main BA isn't blended in.
+- **The per-BA `grid_water`** in each snapshot's `energy.json` is Siddik et al. (2024) for 2022, and it doesn't carry the AZPS fault:
+  EIA-930 shows no AZPS nuclear after May 2021. The other classes EIA-923 had no row for in 2022 (FMPP nuclear, CPLW gas) get no
+  water in our reconstruction of their method (`reconcile.py`), which matches their published values within the residuals in
+  `reconciliation.md`. FMPP's published value runs below ours (r_w 0.75), so if anything those BAs are understated there, not
+  inflated.
+- Nothing is changed in either. The published values stay as cited. Moving the "<BA> grid average" power options from the 2022
+  table to this hourly table is a separate decision (hand-over note).
+
+**Short form (methods pages):** From model 1.17 the grid's plant water leaves out EIA-930 hours with single-hour spikes, dropouts or
+gaps (0.5% of hours), fits the marginal slope as a median (Theil-Sen) rather than by least squares, puts a fuel EIA-923 has no
+row for at the plant EIA-930 counts (Palo Verde for Arizona Public Service) or its region, and counts concentrating solar plants'
+water as solar: Arizona Public Service's grid water falls from about 3,700 to 520 gal/MWh withdrawn.
+
+**References.** Sen, P. K. (1968). Estimates of the regression coefficient based on Kendall's tau. Journal of the American Statistical
+Association 63, 1379-1389. Theil, H. (1950). A rank-invariant method of linear and polynomial regression analysis. Proceedings of the
+Royal Netherlands Academy of Sciences 53. Siler-Evans, K., Azevedo, I. L., and Morgan, M. G. (2012). Marginal emissions factors for
+the U.S. electricity system. Environmental Science & Technology 46, 4742-4748. Siddik, M. A. B., et al. (2024), as cited above.
+U.S. EIA: Forms EIA-923 (2024) and EIA-930 (2019-2025).
+
 ## Nov 17, 2026: water-cooled chillers on ASHRAE 90.1's curve (design 0021; model 1.17)
 
 **What was wrong.** Through model 1.16 a water-cooled chiller's COP was carnot_water (0.62-0.78) x T_evap / lift, with no loss and a cap of 8
