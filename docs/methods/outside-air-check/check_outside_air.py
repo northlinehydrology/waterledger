@@ -31,7 +31,7 @@ def stations(ids):
     a = os.path.join(E.CACHE, "era5", "anchors")
     out = []
     for i in ids.split(","):
-        meta = json.load(open(os.path.join(a, i + ".json")))
+        meta = json.load(open(os.path.join(a, i + ".json"), encoding="utf-8"))
         out.append({**meta, "shore_land": meta.get("shore_land", meta["cell_land"]), "qt": np.load(os.path.join(a, f"{i}.t-td.npy"))})
     return out
 

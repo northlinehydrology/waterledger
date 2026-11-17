@@ -21,7 +21,7 @@ def main(pairs):
     print("|---|---|---|" + "---|" * len(FIELDS))
     for pair in pairs:
         name, files = pair.split("=", 1)
-        before, after = (json.load(open(os.path.expanduser(f))) for f in files.split(","))
+        before, after = (json.load(open(os.path.expanduser(f), encoding="utf-8")) for f in files.split(","))
         for pl in ("shared", "chilled", "warm"):
             for d in ("dry", "hybrid", "towers"):
                 a, b = plant(before, pl)[d], plant(after, pl)[d]

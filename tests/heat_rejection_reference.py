@@ -18,7 +18,7 @@ PATH = os.path.join(HERE, "data", "datacenter_before_heat_rejection.json")
 
 
 def results(hours):
-    w = json.load(open(os.path.join(HERE, "data", "west_michigan_2023_2024.json")))
+    w = json.load(open(os.path.join(HERE, "data", "west_michigan_2023_2024.json"), encoding="utf-8"))
     tdb, rh = np.array(w["temperature_2m"], dtype=float), np.array(w["relative_humidity_2m"], dtype=float)
     twb = ph.wet_bulb(tdb, rh)
     p = ph.for_location(ph.central_parameters(), tdb)
@@ -31,10 +31,10 @@ def results(hours):
 
 
 if __name__ == "__main__":
-    hours = json.load(open(PATH))["hours"]
+    hours = json.load(open(PATH, encoding="utf-8"))["hours"]
     note = ("Data center hourly rates, heat and power at central parameters (shared plant) at West Michigan. First computed before the heat rejection code "
             "moved to heat_rejection.py (model 1.11, waterledger 3.15.0); rewritten at model 1.16 (air-cooled chillers, the switch setting) and at model "
             f"{MODEL_VERSION} (water-cooled chillers on 90.1's curve, the outside air design), waterledger-models {__version__}, by tests/heat_rejection_reference.py. "
             "tests/test_heat_rejection.py holds the code to them.")
-    json.dump({"note": note, "hours": hours, "designs": results(hours)}, open(PATH, "w"))
+    json.dump({"note": note, "hours": hours, "designs": results(hours)}, open(PATH, "w", encoding="utf-8"))
     print("wrote", PATH)
