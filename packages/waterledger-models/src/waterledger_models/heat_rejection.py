@@ -30,8 +30,11 @@ GAL_M3 = 264.172       # gallons per cubic meter
 # Operating settings: chosen by whoever runs the plant, not fixed by the equipment, so each water user model sets their ranges from its own evidence
 # (datacenter/physics.py, battery/physics.py) and a plant's own documents can fix them for a scenario. The physics here reads them as it reads the equipment's.
 #   coc            cycles of concentration: how far the tower water concentrates before it is bled off. Source water and treatment set the real limit.
-#   switch_margin  K from the user's loop limit to the dry-bulb where a hybrid (or a data center's assist) goes wet (switch_point).
-OPERATING = ("coc", "switch_margin")
+#   switch_setting the operator's dry-bulb setting above which a hybrid (or a data center's assist) uses water, where chillers could carry the load instead
+#                  (model 1.16, design 0016): water is traded for electricity only above it (switch_point).
+#   switch_margin  K from the user's loop limit to the dry-bulb where its dry coil alone can no longer hold the loop (switch_point): where the limit is above
+#                  the setting, as in a warm liquid loop, water waits for it.
+OPERATING = ("coc", "switch_setting", "switch_margin")
 
 # (low, high) ranges of the equipment parameters, sampled in each water user's Monte Carlo. Each user model draws them with its own.
 EQUIPMENT = {
@@ -62,9 +65,18 @@ EQUIPMENT = {
     "pump_eff": (0.60, 0.80),
     # Chillers as a fraction of Carnot COP. Water-cooled: 0.70 from code minimums for large plant (0.560 kW/ton gives 0.72, 0.585 gives 0.69; WAC
     # 51-11C-403323, a stated replica of ASHRAE 90.1 Table 6.8.1-3; its part-load adjustment gives 0.67-0.73), +/-11% (Lei and Masanet's COP error).
-    # Air-cooled: 0.45 from EER 10.1, 0.55 [A]. Both are fitted together with the temperature offsets below (2 K, 2 K, 12 K) [A].
+    # Both are fitted together with the temperature offsets below (2 K, 2 K, 12 K) [A].
+    # Air-cooled (model 1.16): the Carnot term's fraction in 1/COP = AIR_CHILLER_LOSS + lift / (carnot_air x T_evap), with the loss fitted to
+    # ASHRAE 90.1's reference curve (AIR_CHILLER_LOSS). 0.571 gives COP 2.96 (EER 10.1, 90.1's Path A full-load minimum) at the rating point
+    # (6.7 C leaving water, 35 C air); 0.761 gives 3.61 there, the top of the range through model 1.15 (0.45-0.55 of Carnot then) [A].
     "carnot_water": (0.62, 0.78),
-    "carnot_air": (0.45, 0.55),
+    "carnot_air": (0.571, 0.761),
+    # The air-cooled chiller's highest COP (model 1.16, design 0015), which it reaches at small lifts: warm loop water and mild air. Through model 1.15 a
+    # fixed 5 [A]. No published value sets it, and a full-load curve does not reach it. ASHRAE 90.1's reference curve flattens toward 7.6 at the bottom of
+    # its range (the loss fitted over its whole range, 4.4-46 C air, is 0.132), for minimum-efficiency machines on 4.4-12.2 C water. Makers' part-load
+    # figures run higher: Mitsubishi's MECH-iC 500 ton, on about 19 C water, 0.559 kW/ton at 75% load and 30 C air (COP 6.3) and 0.407 at 50% and 20 C
+    # (COP 8.6), given as illustrative; Daikin's Pathfinder, an IPLV over 22 EER (COP 6.4) on 6.7 C water. 5-7.6 [A] (Andrew, Nov 15, 2026).
+    "air_cop_cap": (5.0, 7.6),
     # Dry coolers. No standard or peer-reviewed design values exist, since selection data are proprietary, so these are assumptions tested in the
     # sensitivity analysis [A]: approach, a catalogue point of 10 K (ThermoKey) to the 5 K makers quote for larger coils; air-side pressure and
     # efficiency by analogy with Lei and Masanet's tower fans. The air rise is assist_dt_air's selection-sheet range.
@@ -79,7 +91,7 @@ EQUIPMENT = {
     "assist_dt_air": (9.0, 13.0),
     # Dry coolers with adiabatic pre-cooling, "assist" (model 1.3; shared from model 1.12). Pad saturation effectiveness: EVAPCO (presented at CTI,
     # Feb 2019, p. 2) measured 72-78% at 400-700 fpm across 10 pads, a maker's own test; ASHRAE (2016, ch. 41) gives 70 to over 95% for rigid media.
-    # Microsoft's 85 F is for its direct-air evaporative design, a different system, and is not used here.
+    # Microsoft's 85 F is a switch setting for its direct-air evaporative design, not an effectiveness; it informs the data center's switch_setting (model 1.16).
     "assist_eff": (0.70, 0.80),
     # The pads' bleed as a share of their evaporation: none for once-through pads (Guentner; Spinazzola 2021), up to 0.5 for recirculating pads
     # (SCE ET13SCE1020, 2015, p. 29: 10-50%; ASHRAE 2016 ch. 41 allows 5-100%).
@@ -94,7 +106,14 @@ HYBRID_MIN_RAMP = 1.0      # K [A]: where a location's design dry-bulb is at or 
 # Technical Data Sheet, Form No. 180-01314-1019; 30%: 3.821 and 3.903 at -10 and 40 C, 1033.71 and 1019.56; 40%: 3.668 and 3.768 at 10 and 40 C,
 # 1042.14 and 1026.49), linear in temperature and share.
 GLYCOL = {0.30: (3.870, 1025.2), 0.40: (3.701, 1036.9)}
-CHILLER_COP_CAP = {"water": 8.0, "air": 5.0}          # FEMP's 5-8 for water-cooled; air-cooled part-load code minimums reach about 4.1-4.7 [A]
+CHILLER_COP_CAP = {"water": 8.0}          # FEMP's 5-8 for water-cooled [A]; the air-cooled cap is sampled (EQUIPMENT["air_cop_cap"], model 1.16)
+# An air-cooled chiller's fixed losses, as a share of its load (model 1.16, design 0015): 1/COP = AIR_CHILLER_LOSS + lift / (carnot_air x T_evap), with
+# lift = air at the coil + 12 - T_evap and T_evap = supply - 2 (K). Fitted by least squares on relative error to ASHRAE 90.1's default EIR-FT curve for
+# air-cooled screw chillers (COMNET 2017, as given in PNNL-26917, the 90.1-2016 Performance Rating Method Reference Manual, Table 80) over its
+# range (leaving water 4.4-12.2 C) and the hours chillers run (air 15-46 C): 0.0767, RMS error 4.6%, largest 14%. Through model 1.15 the
+# loss was zero and the COP was capped at 5, which the warm loops reach at every temperature a Great Lakes summer has, so an air-cooled chiller
+# drew the same power at 25 C as at 33 C. The fit is extrapolated in leaving water above 12.2 C by the lift [A], up to the cap (air_cop_cap).
+AIR_CHILLER_LOSS = 0.0767
 CP_AIR, CP_WATER, RHO_AIR, RHO_WATER = 1.01, 4.1868, 1.15, 1000.0     # kJ/kg/K, kg/m3; 4.1868 kJ/kg/K is the 1 BTU/lb/F the water terms use
 
 
@@ -176,9 +195,11 @@ def latin_hypercube(ranges, n, seed, linked=None):
 
 
 def switch_point(p, limit):
-    """Dry-bulb at which a hybrid (or a data center's assist) goes wet, C: the operator's setting. Set "switch_on" to fix it, for example as a scenario; otherwise
-    the plant's own loop limit (the dry-bulb where a dry coil can no longer hold the loop's supply) plus the run's margin, within SWITCH_SETTINGS."""
-    return p["switch_on"] if "switch_on" in p else np.clip(limit + p["switch_margin"], *SWITCH_SETTINGS)
+    """Dry-bulb at which a hybrid (or a data center's assist) goes wet, C. Set "switch_on" to fix it, for example as a scenario; otherwise the later of the
+    operator's setting (below it, chillers carry what the dry coil can't) and the plant's own loop limit (the dry-bulb where a dry coil can no longer hold the
+    loop's supply) plus the run's margin (below it, the dry coil holds the loop and nothing needs water), within SWITCH_SETTINGS (model 1.16, design 0016;
+    through model 1.15 the loop limit alone)."""
+    return p["switch_on"] if "switch_on" in p else np.clip(np.maximum(p["switch_setting"], limit + p["switch_margin"]), *SWITCH_SETTINGS)
 
 
 def hybrid_full(p, switch):
@@ -237,6 +258,12 @@ def tower_water(btu, tdb, wet, p):
     return evap, drift, blow
 
 
+def chiller_cop(condenser, evaporator, eta, loss, cap):
+    """A chiller's COP from its condensing and evaporating temperatures, C: 1/COP = loss + lift / (eta x T_evap), the lift at least 1 K, capped at cap.
+    With no loss it is a fixed fraction of Carnot (water-cooled chillers); air-cooled chillers carry AIR_CHILLER_LOSS (design 0015)."""
+    return np.minimum(1.0 / (loss + np.maximum(condenser - evaporator, 1.0) / (eta * (evaporator + 273.15))), cap)
+
+
 def loop(load, supply, tdb, twb, coil_air, wet, design, p):
     """One facility water loop carrying `load` at `supply` C, in kW per kW of the water user's own load (IT for a data center, plant energy for a
     battery cell plant): chiller power, pump power (both end up as heat to reject) and heat rejection fan power (whose heat goes straight to the exhaust air).
@@ -247,9 +274,8 @@ def loop(load, supply, tdb, twb, coil_air, wet, design, p):
     free = _ramp(ret - outside, 0.0, ret - supply)                # Lei and Masanet: the economizer's share falls from 1 to 0 as outside approaches the return
     chilled = load * (1 - free)
     evaporator = supply - 2.0
-    cop = lambda condenser, eta, cap: np.minimum(eta * (evaporator + 273.15) / np.maximum(condenser - evaporator, 1.0), cap)
-    water_cooled = cop(twb + p["tower_approach"] + p["range_f"] / 1.8 + 2.0, p["carnot_water"], CHILLER_COP_CAP["water"])
-    air_cooled = cop(coil_air + 12.0, p["carnot_air"], CHILLER_COP_CAP["air"])     # its rated COP includes its condenser fans
+    water_cooled = chiller_cop(twb + p["tower_approach"] + p["range_f"] / 1.8 + 2.0, evaporator, p["carnot_water"], 0.0, CHILLER_COP_CAP["water"])
+    air_cooled = chiller_cop(coil_air + 12.0, evaporator, p["carnot_air"], AIR_CHILLER_LOSS, p["air_cop_cap"])  # its rated COP includes its condenser fans
     # the chiller rejects through the same split as the rest of the heat: to evaporating water in the wet share, to air in the rest
     chiller = chilled * (wet / water_cooled + (1 - wet) / air_cooled)
     econ_pump = _pump_kw(load * free / (CP_WATER * p["water_rise"]), p["pump_econ_kpa"], p["pump_eff"])
@@ -293,7 +319,7 @@ def lake_loop(load, supply, water_t, p):
     free = _ramp(ret - (water_t + p["hx_approach"]), 0.0, ret - supply)
     chilled = load * (1 - free)
     evaporator = supply - 2.0
-    cop = np.minimum(p["carnot_water"] * (evaporator + 273.15) / np.maximum(water_t + p["rise_c"] + 2.0 - evaporator, 1.0), CHILLER_COP_CAP["water"])
+    cop = chiller_cop(water_t + p["rise_c"] + 2.0, evaporator, p["carnot_water"], 0.0, CHILLER_COP_CAP["water"])
     chiller = chilled / cop
     pumps = (_pump_kw(load * free / (CP_WATER * p["water_rise"]), p["pump_econ_kpa"], p["pump_eff"])
              + _pump_kw(chilled / (CP_WATER * p["water_rise"]), p["pump_chw_kpa"], p["pump_eff"]))

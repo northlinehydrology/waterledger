@@ -9,7 +9,7 @@ Open Python tools for estimating the water and electricity that large new users 
 centers and battery cell plants, and for assembling the public U.S. water data around any place: water systems, watersheds, impaired waters,
 sewer plants, weather and design storms.
 
-- **Weather-driven cooling water model** for cooling towers, hybrid, closed loop, and dry coolers with adiabatic pre-cooling,
+- **Weather-driven cooling water model** for cooling towers, hybrid, dry coolers or air-cooled chillers, and dry coolers with evaporative pads on hot days,
   hour by hour over decades of weather, with Monte Carlo uncertainty over published parameter ranges; plus lake-source
   (once-through) cooling and staff water.
 - **Battery cell plant model**: the plant's heat, electricity, fuel and water hour by hour per GWh/yr of cells, on the same
@@ -83,7 +83,7 @@ est = site.estimate(supply={"own_gas": Scenario(residual="none", gas=Gas("cc", "
 est.supply["own_gas"].local_consumed     # water the campus's own gas plant evaporates, MGD, on the campus's source or system
 est.supply["pv_wind"].share_grid         # the share of the year's MWh the grid still serves, hour by hour; also unserved_hours_annual, land
 est.household_wells              # the aquifer most household wells draw from, how deep, the water level, where a state has well records
-site.by_design().best            # the cooling design that evaporates least in total, campus and power plants; also .designs and the closed loop figures
+site.by_design().best            # the cooling design that evaporates least in total, campus and power plants; also .designs and the dry-against-towers figures (`closed_loop_*`)
 est.equivalents.homes            # the water as homes at the state's own water for a home (.home_gpd: USGS 2015 over ACS 2015 households); also .golf_courses, .evaporated_share, .electricity_homes, .share_of_home_customers
 est.power_plants["state_mix"].consumed   # water at power plants for one power option, MGD; also .withdrawn, .returned; est.site.power names the one in use
 est.grid_water.consumed_peak_day         # the place's balancing authority, hour by hour (model 1.11): average day and peak day, average and marginal mix
@@ -117,6 +117,20 @@ They are validated, round-trip through JSON, and are described in
 | Illinois | 2,807 cities, villages, towns, townships and counties | ERA5, each place's own cell (276 cells) | [waterledger.org/methods/il](https://waterledger.org/methods/il/), [brief](docs/methods/il.pdf) |
 | New York | 1,584 cities and villages, towns and counties | ERA5, each place's own cell (250 cells) | [waterledger.org/methods/ny](https://waterledger.org/methods/ny/), [brief](docs/methods/ny.pdf) |
 | Arizona | 107 cities, towns and counties | ERA5, each place's own cell (83 cells) | [waterledger.org/methods/az](https://waterledger.org/methods/az/), [brief](docs/methods/az.pdf) |
+
+**Model 1.16** changes the data center and battery cell plant numbers, and every state's snapshot is rebuilt for it:
+- **Air-cooled chillers respond to the air** ([design 0015](docs/design/0015-air-cooled-chillers.md)): their COP has a
+  fixed-loss term fitted to ASHRAE 90.1's reference curve, so it varies with the air below its cap, and the cap is sampled
+  (`air_cop_cap`, 5-7.6) from the same curve and makers' part-load figures. In West Michigan (shared loop, 100 MW) a dry plant's
+  peak day falls about 1 MW and its hottest hour rises about 1 MW; towers are unchanged.
+- **The operator's switch setting** ([design 0016](docs/design/0016-operator-switch-setting.md)): pads and hybrid go wet at
+  the later of a sampled setting (`switch_setting`, 26.5-32.0 C, from what operators state and what their stated time on
+  water implies at their sites, `docs/methods/switch-setting/`) and the loop's limit plus its margin. Through model 1.15 they
+  went wet at the loop's limit alone, 21.1 C on the shared and chilled plants. Pads' average water falls about tenfold and
+  hybrid's five- to sevenfold; their peak day falls about half, since the hottest days are above any setting.
+- **Design names say how heat leaves the building**: dry is "Dry coolers or air-cooled chillers (no evaporation)", and every
+  design has a closed loop inside (`cooling.CLOSED_LOOP`). Codes are unchanged.
+- **`scenario()` starts from pads on hot days** (`assist`) where no cooling is given, as waterledger.org does.
 
 **Model 1.13** adds power supply scenarios ([design 0014](docs/design/0014-power-supply-scenarios.md)) and the shared Monte
 Carlo runner, and changes no data center or place number, so it reads model 1.11's snapshots too:
@@ -324,13 +338,14 @@ with a leading underscore may change in a minor release. The numbers are version
 Three version numbers, each with one meaning:
 
 - **Package versions** (semver) change with the code: a major version for breaking changes.
-- **`waterledger_models.MODEL_VERSION`** (now 1.15) changes when the numbers change; the golden test fails until that is
+- **`waterledger_models.MODEL_VERSION`** (now 1.16) changes when the numbers change; the golden test fails until that is
   done deliberately. Every published estimate names the model version that produced it. One version covers every water
   user type. `waterledger_models.MODELS` records, from 1.12, which types a version changes and the model of the snapshots it
   reads: a version that leaves the snapshots' numbers alone (data centers, the places' water and power) skips them and reads
   the last rebuilt ones. Model 1.12 adds battery cell plants and reads model 1.11's snapshots and cell runs, so a data center
   estimate still names model 1.11. Model 1.13 adds gas plants and supply scenarios the same way, and model 1.14 changes them
-  (outages that last days, PV against the 2024 fleet), and model 1.15 wind against its fleet.
+  (outages that last days, PV against the 2024 fleet), and model 1.15 wind against its fleet. Model 1.16 changes the data
+  center and battery numbers (air-cooled chillers, the operator's switch setting), and every state's snapshot is rebuilt for it.
 - **The snapshot format version** (now 3, in each snapshot's manifest) changes when the structure of a state's data
   files does. Format 3 (from model 1.8) carries cooling by ERA5 cell (`cells/`). The package still reads format 2, which the
   published model 1.7 snapshots are.

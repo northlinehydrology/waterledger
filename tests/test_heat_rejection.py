@@ -19,7 +19,8 @@ RH = np.array(_W["relative_humidity_2m"], dtype=float)
 
 @pytest.mark.parametrize("design", ph.DESIGNS)
 def test_data_center_results_are_unchanged(design):
-    """Hourly water, power and heat at central parameters as they were before the move (model 1.11). The record was written on macOS, where
+    """Hourly water, power and heat at central parameters as recorded: before the move (model 1.11), which matched to the bit, and again at
+    model 1.16, whose numbers differ. The record was written on macOS, where
     the move matched it to the bit; Linux's NumPy builds differ in the last bit or two of some values (as macOS and Linux snapshot builds do,
     methods log, Oct 30), so the record is held to 1e-12 of each value."""
     twb = ph.wet_bulb(TDB, RH)
@@ -60,9 +61,11 @@ def test_tower_water_closes():
 
 
 def test_hybrid_switches_on_its_own_setting():
-    p = {**{k: (a + b) / 2 for k, (a, b) in hr.EQUIPMENT.items()}, "switch_margin": 0.0, "design_db": 31.0}
+    p = {**{k: (a + b) / 2 for k, (a, b) in hr.EQUIPMENT.items()}, "switch_margin": 0.0, "switch_setting": 20.0, "design_db": 31.0}
     assert hr.switch_point(p, 24.0) == pytest.approx(24.0 + p["switch_margin"])
     assert hr.switch_point(p, 10.0) == hr.SWITCH_SETTINGS[0]               # within the settings controllers allow
+    assert hr.switch_point({**p, "switch_setting": 29.4}, 24.0) == 29.4     # the operator's setting, later than the loop's limit (model 1.16)
+    assert hr.switch_point({**p, "switch_setting": 29.4}, 33.0) == 33.0     # a warm loop's dry coil holds to its limit: no water before it
     assert hr.switch_point({**p, "switch_on": 26.0}, 20.0) == 26.0
     t = np.array([10.0, 26.0, 40.0])
     s = hr.wet_share(t, "hybrid", p, switch=25.0)

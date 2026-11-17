@@ -2571,3 +2571,147 @@ Arizona's places are within 40 km of one of the 17 stations (31% within 25 km, 6
 Andrew accepted it on Nov 13, 2026 ("Except weather with a methods note", agreeing to the check with a note). The note is
 `weather_check` in states.toml and on Arizona's methods page. The station correction for land cells decided on Nov 6 is the method
 change that would address it; elevation is the part a station correction alone may not fix.
+
+## Nov 15, 2026: air-cooled chillers that respond to the air (design 0015; model 1.16)
+
+**What was wrong.** Through model 1.15 an air-cooled chiller's COP was carnot_air (0.45-0.55) x T_evap / (T_coil + 12 - T_evap),
+capped at 5 [A]. On the shared and warm loops the chilled water is warm, so the lift is small and the Carnot term runs well above 5:
+the cap held at every air temperature a Great Lakes summer has. A dry plant drew the same chiller power at 25 C as at 33 C, and pads,
+which cool the air ahead of the coil, bought back nothing. Found in the Clam River study's closed-loop set (Nov 15): dry and pads
+both 85.9 MW on the 1-in-10-year peak day, and unchanged at the low end of carnot_air. On the stored West Michigan weather (shared
+loop, 100 MW, 40 draws) the two differed by 0.1 MW on the peak day and not at all in the hottest hour.
+
+**Evidence.** ASHRAE 90.1's default performance curves for air-cooled chillers (COMNET 2017, as given in Rosenberg et al. 2017,
+PNNL-26917, the Standard 90.1-2016 Performance Rating Method Reference Manual, Table 80: EIR-FT, a biquadratic in chilled water
+supply and outdoor dry-bulb, F, valid 40-54 F water and 40-115 F air) give COP falling 2.0-2.7% per K of air at the rating point
+(scroll 2.7, screw 2.5, reciprocating 2.0; 1.8-2.1% at 25 C). The Carnot term gives 2.4% there, so the form was sound and the cap was
+what removed the response. Within their range the curves flatten in cool air: at 15 C and 6.7 C water, EIR is 0.66 of rated, COP 1.5
+times rated. EnergyPlus's Chillers.idf has no air-cooled chillers (all 162 are water-cooled), so it was not used.
+
+**Method.** 1/COP = loss + lift / (carnot_air x T_evap), lift = T_coil + 12 - T_evap, T_evap = supply - 2, then capped. Fitted by least
+squares on relative error to the screw curve over its water range (4.4-12.2 C) and the air in which chillers run (15-46 C), normalized
+to the rating point (6.7 C water, 35 C air) at COP 2.96, EER 10.1, 90.1's Path A full-load minimum: loss 0.0767, carnot 0.571, RMS
+error 4.6%, largest 14% (scroll: 0.068, 0.550, 5.3%, 18%; reciprocating: 0.089, 0.605, 2.1%, 7.5%). Screw is used because large
+air-cooled plants are screw or centrifugal and the manual gives no air-cooled centrifugal curve. carnot_air becomes 0.571-0.761,
+which keeps the rating band of model 1.15 (COP 2.96-3.61 at the rating point). The form is extrapolated above 12.2 C water through the
+lift, which is the physical part; the biquadratics are not used directly, since they are not valid on warm water [A].
+
+**The cap.** Sampled 5-7.6 (`air_cop_cap`, with the well-built-plant group), Andrew's choice on Nov 15 after a search of makers' data
+found no single value:
+- fitted over the curve's whole range (air 4.4-46 C) the loss is 0.132 and carnot 0.761, a ceiling of 7.6 (screw; scroll 7.2,
+  reciprocating 9.1), for minimum-efficiency machines on cold water;
+- Mitsubishi Electric's MECH-iC page: COP 3.95 and 3.88 at full load, 42 C air, 18.9/27.8 C water (capacity AHRI 550/590 certified);
+  for the 500 ton model, 0.559 kW/ton at 75% load and 30 C air (COP 6.3), 0.407 at 50% and 20 C (COP 8.6), 0.426 at 25% and 12.8 C
+  (COP 8.3), NPLV 0.46, stated as illustrative and with no water temperature given for the part-load points;
+- Daikin Applied's Pathfinder (catalogue 640): IPLV over 22 EER (COP 6.4), on 6.7 C water;
+- Trane's TCA sheet (TCA-SLB001-EN, May 2026): 60-85 F leaving water, -20 to 130 F air, no efficiency;
+- 5, the value through model 1.15 [A].
+The makers' figures above 7.6 are part-load values, which the model has no term for.
+
+**Check.** Mitsubishi's full-load point (42 C air, 18.9 C water): the new form gives 3.33-4.08 over carnot_air's range, against 3.88-3.95
+published. Model 1.15 gave 3.5-4.3 there, below its cap, so the hot end barely moves.
+
+**Effect** (stored West Michigan weather 2023-2024, 100 MW of IT, 40 draws, medians, 1.15 to 1.16). Shared loop: dry peak day 94.75 to
+93.66 MW, hottest hour 133.4 to 134.4, annual PUE 1.192 to 1.186; pads 94.65 to 92.74, 133.4 to 131.7, 1.189 to 1.179; hybrid 93.64 to
+92.25, 132.2 to 129.4. What pads buy back over dry: 0.1 to 0.9 MW on the peak day, 0 to 2.7 MW in the hottest hour. Warm loop: dry 88.22
+to 87.35 on the peak day, 127.8 to 125.3 in the hottest hour. Chilled-water plant: its cold water keeps the chillers below 5 on hot
+days, so dry rises 99.85 to 101.18 on the peak day and 144.4 to 145.6 in the hottest hour. Towers are unchanged. Pad and hybrid water
+fall 1-3% on average (less chiller power, less heat to reject). Battery cell plants share the equipment, so their dry and assist numbers
+move too.
+
+**Not changed.** Water-cooled chillers keep no loss and the cap of 8. The same fit to 90.1's water-cooled curves (Table 81, 60-85 F
+condenser water) gives a Carnot fraction above 1 with this model's offsets: the curves are flatter than a Carnot fraction, about
+1.3-1.5% per K. That needs its own form and is open. The 12 K condenser offset stays an assumption [A].
+
+**Short form** (methods pages): Air-cooled chillers now lose efficiency as the air warms, following ASHRAE 90.1's reference curve,
+up to a highest COP of 5-7.6. Before, they ran at a COP of 5 whenever the loop water was warm, whatever the weather, so a dry plant's
+hot hours cost no more than its mild ones and adiabatic pads saved no electricity. Pads now save about 1 MW per 100 MW on the peak
+day and up to about 3 MW in the hottest hour; a dry plant's annual PUE falls slightly. (With the switch setting of the same
+release, below, pads run fewer hours and save about 0.25 MW over the peak day; the hottest hour is unchanged.)
+
+## Nov 15, 2026: the operator's switch setting (design 0016; model 1.16)
+
+**What was wrong.** Assist and hybrid go wet at a switch point. Through model 1.15 it was the loop's limit (the dry-bulb where a dry
+coil can no longer hold the loop's supply) plus -2 to 2 K, within 21.1-35.1 C (70-95 F, US 12,426,214 B1). On the shared and chilled
+plants the limit is about 13 C and below 0 C, so every draw sat at 21.1 C. Northline's checks against operators' stated time on water
+(Nov 15) found the model's hours on water 3 to 20 times theirs: Wisconsin 16% of hours against under 5%, Sidney 22% against 3%,
+Virginia 28% against about 10%.
+
+**Evidence.** Stated settings: Microsoft's direct-air fleet and its Wisconsin campus, water above 85 F (29.4 C) (Microsoft, Jun 24,
+2026; Microsoft Wisconsin materials); Meta El Paso, no cooling water below about 86 F (30 C) (El Paso Water's chief executive, El Paso
+Matters, Oct 24, 2025). Stated time on water: Microsoft, Northern Virginia about 10% of the year and Phoenix up to 40% (Jun 24, 2026),
+Wisconsin under 5%, metro Atlanta the hottest ~55 days (Microsoft local, about Jan 2026); AWS, Sidney about 3% of the year (city FAQ),
+Falls Township outside air about 94% of the year (LevittownNow, Jul 28, 2026), New Carlisle about 7 days a year (TheStatehouseFile,
+AWS statement). These are fleets of outside air with pads; no operator states a setting for dry coolers with pads or for hybrid
+fluid coolers.
+
+**Method.** The setting each statement implies: the dry-bulb exceeded for the stated share of the year's hours, or for a number of
+days the daily maximum exceeded on that many days, from Open-Meteo's archive (ERA5-based) hourly 2 m temperature at the site's point,
+2015-2024 (`docs/methods/switch-setting/implied_switch.py`, `implied.md`): Virginia 26.5 C, Falls Township 28.0, Sidney 28.2, Atlanta
+30.5, New Carlisle 32.0; Phoenix at least 27.4 and Wisconsin at least 25.2 (upper bounds on the share). `switch_setting` is sampled
+26.5-32.0 C, uniform, the lowest and highest point figures; the stated 29.4 and 30 C sit at its middle (29.25). The switch is the later
+of the setting and the loop's limit plus the margin, still within 21.1-35.1 C: below the limit the dry coil holds the loop, between the
+limit and the setting chillers carry the rest, above both the plant uses water. Assist and hybrid are taken to be run as the operators'
+outside-air fleets are [A]. The battery plant takes the same range [A] (no battery plant states one); the gas plant's `switch_on`
+(20-30 C), a condenser setting with no chillers behind it, is unchanged. Reading a share of the year as a share of hours, and ERA5's
+grid cell for the site's own air, are part of the spread [A].
+
+**Effect** (stored West Michigan weather 2023-2024, 100 MW of IT, 40 draws, medians, with design 0015 in both). Shared loop: pads average
+0.070 to 0.0066 MGD, 1-in-10 peak day 0.57 to 0.23, peak-day power 92.74 to 93.41 MW; hybrid 0.059 to 0.0085, 0.58 to 0.33, 92.25 to
+93.26. Warm loop: pads 0.053 to 0.0060, 0.45 to 0.21; hybrid 0.039 to 0.0080, 0.42 to 0.31. Chilled-water plant: pads 0.077 to 0.0072,
+0.62 to 0.25; hybrid 0.062 to 0.0090, 0.62 to 0.36. Annual PUE rises about 0.004-0.006. What pads buy back over dry on the peak day
+falls from 0.9 to about 0.25 MW (shared); in the hottest hour it stays about 2.7 MW. Dry and towers are unchanged.
+
+**Check.** Pads' peak day over average day is now about 35 (shared loop), against about 31 (Mount Pleasant: about 468,000 gpd on the
+hottest days against about 15,000 average, WPR from Wisconsin DNR, May 2026) and 30 (Racine Water Utility records, phase 1, Wisconsin
+Examiner, Sep 2025), both with domestic water in the average; model 1.15 gave 8.
+
+**Short form** (methods pages): Pads and hybrids now use water only above the operator's switch setting, sampled 26.5-32 °C (80-90 °F),
+around the 85-86 °F that Microsoft and Meta state and what AWS's and Microsoft's stated time on water implies at their sites. Below it,
+chillers do the work. Before, the model went wet at 70 °F on most plants, three to twenty times the hours operators report. Average water
+for pads and hybrids falls five- to tenfold, the peak day about half, and electricity rises slightly.
+
+## Nov 15, 2026: the starting design is pads on hot days
+
+**Decision** (Andrew). Where a proposal publishes no cooling design, and for a place with no proposal, the calculator starts from
+assist (dry coolers with pads on hot days), no longer dry. Most tracked proposals that state a design say closed loop, and closed loop
+describes the building's inside loop, not how heat leaves it: campuses that claim it have dry coolers, pads on the hottest days or towers
+(Northline's cooling review, Nov 15). A claim of closed loop that names no dry equipment and doesn't say it uses no water for cooling
+loads assist on the trackers too; one that does loads dry. With the switch setting of design 0016, assist's average water is small and
+its peak day is where the difference shows. `scenario()` starts the same way.
+
+**Short form** (methods pages): Where the cooling design isn't published, the calculator starts from dry coolers with pads on the
+hottest days, since most proposals say closed loop and closed loop doesn't rule out water in the hottest weather.
+
+## Nov 16, 2026: the ERA5 check judges hybrid and pads against towers' water (model 1.16)
+
+- **Decision.** In the ERA5 check (`waterledger era5 check ST`), the places' hybrid and pads (assist) differences are measured as a
+  share of towers' water at the same place, not of their own water. P2 to P4 are redefined that way, and pads gets its own
+  criteria (P6 average day, P7 peak day), since pads is now the starting design wherever none is published. Towers (P5) and the
+  weather criteria (W1 to W7) are unchanged. Andrew, Nov 16, 2026 ("Change the test is better").
+- **Why.** At model 1.16 a hybrid or pads plant evaporates only above the operator's switch setting (26.5-32 C, design 0016). On an
+  average day that is about 1% of towers' water in Michigan and 7% in Texas (it was about 8% in Michigan at 1.11). A percent of so small
+  a number mostly measures how many of the hottest hours cross the switch, so a small difference in those hours between the
+  cell and the station moves it a lot. Michigan's rebuild check at 1.16 had the same weather results as before, all passing, and towers
+  within 0.3%, but hybrid's average day differed by a median 15.0% of its own water (limit 8%) and the peak day by 7.9% (limit 6%). In
+  water that is about 0.2% of towers' average day, about 0.001 MGD per 100 MW. The mean difference was 1%, so there is no bias.
+- **Considered.** Re-accepting each state's check with a note. That would leave a test that every state fails and that no longer says
+  whether the weather is good enough.
+- **Limits.** Set as before, from the four states the first limits came from (Michigan, Ohio, Virginia, Texas), now at model 1.16 with 12
+  places each, worst result plus a margin about as wide as the first limits':
+
+  | | Test (as % of towers' water at the place) | Limit | Four states at 1.16 |
+  |---|---|---|---|
+  | P2 | hybrid average day, median absolute difference | 1% | 0.10-0.53 (Texas) |
+  | P3 | hybrid average day, absolute mean difference | 0.75% | 0.04-0.29 (Texas) |
+  | P4 | hybrid peak day, median absolute difference | 6% | 1.5-4.0 (Ohio) |
+  | P6 | pads average day, median absolute difference | 1% | 0.17-0.54 (Texas) |
+  | P7 | pads peak day, median absolute difference | 6% | 1.3-3.8 (Texas) |
+
+  On the peak day a hybrid runs wet, about half of towers' water in all four states, so the peak-day limits stay near the first ones.
+  In their own terms the four states' hybrid average days differ by a median 6.2-15.0% (Michigan) and pads by 7.4-17.9%.
+- **Records.** Each place row in check.json now also carries the p50s from the cell and the station (`p50`) and the differences as a share
+  of towers (`of_towers_pct`), so a later change to the criteria can be judged again without running the places.
+- **Open.** Pennsylvania, New York and Arizona were accepted with notes on Nov 13; their weather failures (W2-W5) don't depend on this
+  change, and their notes' hybrid figures are updated after their 1.16 checks.
+

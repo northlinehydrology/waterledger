@@ -2,6 +2,27 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.24.0 (Nov 17, 2026; model 1.16)
+
+waterledger and waterledger-models 3.24.0; waterledger-data stays 3.23.1. Model 1.16. Data center, battery cell plant and supply numbers change; every state's snapshot is rebuilt.
+
+- **Air-cooled chillers respond to the air** (design 0015; `docs/methods/methods-log.md`, Nov 15): `heat_rejection.chiller_cop`
+  with a fixed-loss term, `AIR_CHILLER_LOSS` (0.0767), fitted to ASHRAE 90.1's air-cooled screw chiller curve (PNNL-26917,
+  Table 80). `carnot_air` becomes 0.571-0.761, keeping the rating band. New sampled parameter `air_cop_cap`, 5-7.6, in place of
+  the fixed cap of 5; `CHILLER_COP_CAP` keeps only the water-cooled cap. Water-cooled chillers are unchanged.
+- **The operator's switch setting** (design 0016): new sampled operating parameter `switch_setting`, 26.5-32.0 C, for data
+  centers and battery plants (`heat_rejection.OPERATING`). Assist and hybrid go wet at the later of the setting and the loop's limit
+  plus `switch_margin` (`heat_rejection.switch_point`); through model 1.15 the loop's limit alone, which sat at 21.1 C on the shared
+  and chilled plants. Pads' and hybrids' average water falls five- to tenfold, their peak day about half. The derivation is
+  `docs/methods/switch-setting/`.
+- **Design labels** name how heat leaves the building (`datacenter.cooling.LABELS`, `scenario.DESIGNS`): dry is "Dry coolers or
+  air-cooled chillers (no evaporation)", no longer "Closed loop"; new `cooling.CLOSED_LOOP` says every design has a closed loop
+  inside. Codes are unchanged.
+- **`scenario()` starts from assist** (pads on hot days), not dry, where no cooling is given, as waterledger.org now does: most
+  proposals say closed loop, which doesn't rule out water in the hottest weather. Pass `cool="dry"` for the old start.
+- **Cell runs and snapshots are model 1.16's** (`national.era5.RUN_MODEL`, `MODELS["1.16"]`): this package reads 1.16
+  snapshots once they are published, and the newest earlier ones (model 1.11's) with a note until then.
+
 ## 3.23.1 (Nov 16, 2026; model 1.15)
 
 waterledger and waterledger-data 3.23.1, waterledger-models 3.22.1. No model numbers change.

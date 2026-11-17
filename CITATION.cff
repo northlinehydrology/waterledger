@@ -6,16 +6,13 @@ authors:
   - family-names: Sommerlot
     given-names: Andrew
     affiliation: Northline Hydrology
-version: 3.23.1
-date-released: 2026-11-16
+version: 3.24.0
+date-released: 2026-11-17
 doi: 10.5281/zenodo.23982423
 identifiers:
   - type: doi
     value: 10.5281/zenodo.23982423
     description: "All versions (the concept DOI); cite this one"
-  - type: doi
-    value: 10.5281/zenodo.24269792
-    description: "Version 3.23.1"
 license: BSD-3-Clause
 repository-code: "https://github.com/northlinehydrology/waterledger"
 url: "https://waterledger.org"

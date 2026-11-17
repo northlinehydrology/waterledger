@@ -38,12 +38,16 @@ from waterledger_models.datacenter.physics import (ADIABATIC, DEFAULT_PLANT, DRA
                                                    central_parameters, evaporative_ratio, hourly_heat_power, hourly_rates, for_location, hourly_water_with_air, peak_utilization, sample_parameters, wet_bulb)
 
 DESIGNS = list(_DESIGNS)
+# Named by how heat leaves the building (Nov 15, 2026; through 3.23 dry was "Closed loop (designed to use no water for cooling)"). "Closed loop" says how
+# water moves inside the building: every design here has one (the plants, PLANT_LABELS), and campuses that claim closed loop have each of these outside.
 LABELS = {
-    "dry": "Closed loop (designed to use no water for cooling)",
-    "assist": "Dry coolers with adiabatic pre-cooling in warm weather",
-    "hybrid": "Hybrid: dry most of the year, evaporative in warm weather",
+    "dry": "Dry coolers or air-cooled chillers (no evaporation)",
+    "assist": "Dry with evaporative pads on hot days",
+    "hybrid": "Hybrid (evaporative in warm weather)",
     "towers": "Cooling towers (evaporative all year)",
 }
+CLOSED_LOOP = ("All four can be called closed loop: each has a closed loop of water inside the building. The design names how heat leaves it, which is "
+               "what decides the water.")
 
 
 def hourly(tdb, twb, design, p, rh=None, heat=None):

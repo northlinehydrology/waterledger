@@ -48,9 +48,18 @@ RANGES = {
     # TV tour of its Sterling, Virginia site, not Port Washington, with no capacity given.
     "fill_gal_per_mw": (2000.0, 12000.0),
     # When a dry cooler goes wet is an operator's setting (heat_rejection.OPERATING), not a property of the equipment (EVAPCO 2019, p. 2: a selection and
-    # control output; US 12,426,214 B1: a controller threshold with a range of embodiments). It is tied to the loop (model 1.7): the setting sits at the dry-bulb where the dry coil can no longer hold loop
+    # control output; US 12,426,214 B1: a controller threshold with a range of embodiments). It is tied to the loop (model 1.7): no water below the dry-bulb where the dry coil can no longer hold loop
     # supply, each user model's loop limit (switch_point), give or take this margin in K for operators who go wet early or trim with chillers a while longer [A]. Same for assist and hybrid.
+    # From model 1.16 the operator's setting (switch_setting, below) comes first wherever it is later than this.
     "switch_margin": (-2.0, 2.0),
+    # The operator's setting (model 1.16, design 0016; through model 1.15 the switch was the loop's limit alone, which on the shared and chilled plants sat at
+    # SWITCH_SETTINGS' 21.1 C floor). Below it the plant trades electricity for water, running chillers; above it, the water. Operators who state one use
+    # 85 F (29.4 C; Microsoft's direct-air fleet and Wisconsin) and about 86 F (30 C; Meta El Paso, from its utility). The range is the setting each operator's
+    # stated share of the year on water implies, from ERA5 hourly dry-bulb at the site, 2015-2024 (Northline cooling checks, Nov 15, 2026): Microsoft
+    # Virginia (10% of the year) 26.5 C to AWS New Carlisle (about 7 days a year) 32.0 C; AWS Sidney (3%) 28.2, Falls Township (6%) 28.0, Microsoft Georgia
+    # (55 days) 30.5; Wisconsin's (under 5%) and Phoenix's (up to 40%) are bounds at 25.2 and 27.4. The stated settings sit at its middle. These are fleets of
+    # outside air with pads; dry coolers with pads and hybrids are taken to be run the same way [A].
+    "switch_setting": (26.5, 32.0),
     # Dry coolers with adiabatic pre-cooling (model 1.3): the pads' effectiveness is shared equipment (heat_rejection.EQUIPMENT, from model 1.12).
     "assist_eff": EQUIPMENT["assist_eff"],
     "hybrid_full_offset": EQUIPMENT["hybrid_full_offset"],
@@ -69,7 +78,7 @@ POWER = {
     "crah_pa": (300.0, 700.0), "fan_eff": EQUIPMENT["fan_eff"],
     "tower_fan_pa": EQUIPMENT["tower_fan_pa"], "lg": EQUIPMENT["lg"], "tower_approach": EQUIPMENT["tower_approach"], "hx_approach": EQUIPMENT["hx_approach"],
     "pump_chw_kpa": EQUIPMENT["pump_chw_kpa"], "pump_tower_kpa": EQUIPMENT["pump_tower_kpa"], "pump_econ_kpa": EQUIPMENT["pump_econ_kpa"], "pump_eff": EQUIPMENT["pump_eff"],
-    "carnot_water": EQUIPMENT["carnot_water"], "carnot_air": EQUIPMENT["carnot_air"],
+    "carnot_water": EQUIPMENT["carnot_water"], "carnot_air": EQUIPMENT["carnot_air"], "air_cop_cap": EQUIPMENT["air_cop_cap"],
     "dc_approach": EQUIPMENT["dc_approach"], "dc_fan_pa": EQUIPMENT["dc_fan_pa"],
     "glycol_share": EQUIPMENT["glycol_share"],
     # Liquid-cooled computers: the rest of their heat goes by air: 12.9% (HPE GB200 NVL72), 20% (Schneider WP210), 25-39% (ASME InterPACK2022, not read
@@ -147,6 +156,7 @@ SOURCES = {
     "drift": "EPA WaterSense at Work 2012, section 6.3, p. 6-9; EPA AP-42 13.4, Table 13.4-1",
     "fill_gal_per_mw": "Crusoe 2026; chilled-water loops of 3-10 gal per ton; top 12,000 [A]",
     "switch_margin": "Operator's setting around the loop's limit [A]: US 12,426,214 B1 (a controller threshold, 70-95 F in its embodiments); EVAPCO 2019, p. 2",
+    "switch_setting": "Microsoft (85 F, 2026) and Meta El Paso (about 86 F, El Paso Water, 2025) stated; the range is the setting implied by operators' stated shares of the year on water (Microsoft, AWS) at ERA5 hourly dry-bulb, 2015-2024 [A]",
     "assist_eff": "EVAPCO 2019 (presented at CTI, Feb 2019), p. 2; ASHRAE 2016, ch. 41",
     "hybrid_full_offset": "Around the location's own 0.4% design dry-bulb [A], no published value",
     "topup": "NIH 2023 Technical Bulletin (under 5% a year); 1% floor [A]",
@@ -160,7 +170,8 @@ SOURCES = {
     "hx_approach": f"{_LM}; the dry coolers' glycol exchanger by analogy (model 1.9) [A]",
     "pump_tower_kpa": f"{_LM}; the dry coolers' glycol loop by analogy (model 1.9) [A]",
     "carnot_water": "WAC 51-11C-403323 (replica of ASHRAE 90.1 Table 6.8.1-3); +/-11% from Lei and Masanet; fitted with the temperature offsets [A]",
-    "carnot_air": "EER 10.1; 0.55 [A]; fitted with the temperature offsets [A]",
+    "carnot_air": "With AIR_CHILLER_LOSS fitted to ASHRAE 90.1's air-cooled screw EIR-FT curve (PNNL-26917, Table 80): COP 2.96 at the rating point, EER 10.1 (90.1 Path A); 3.61 [A]",
+    "air_cop_cap": "ASHRAE 90.1's EIR-FT curve, fitted over its whole range (7.6); 5 [A], the value through model 1.15; makers' part-load figures above it (Mitsubishi MECH-iC, Daikin Pathfinder)",
     "dc_approach": "ThermoKey catalogue point (10 K); makers' quotes for larger coils (5 K) [A]",
     "dc_fan_pa": "By analogy with Lei and Masanet's tower fans [A]",
     "glycol_share": "Burst to freeze protection [A]; freezing points, heat capacity and density from Dow's DOWFROST Technical Data Sheet, Form No. 180-01314-1019",
@@ -208,8 +219,8 @@ def loop_limit(p):
 
 
 def switch_point(p):
-    """Dry-bulb at which assist or hybrid goes wet, C: the operator's setting. Set "switch_on" to fix it, for example as a scenario; otherwise the loop's limit plus the
-    run's margin, within SWITCH_SETTINGS (heat_rejection.switch_point)."""
+    """Dry-bulb at which assist or hybrid goes wet, C. Set "switch_on" to fix it, for example as a scenario; otherwise the later of the operator's setting and the
+    loop's limit plus the run's margin, within SWITCH_SETTINGS (heat_rejection.switch_point)."""
     return hr.switch_point(p, loop_limit(p))
 
 
@@ -450,7 +461,7 @@ def blowdown_temperature(twb, design, p):
 LINKED = {
     # a well-built plant: efficient power equipment, low pressure drops, tight approaches and good chillers together
     "plant": {"ups": 1, "dist_loss": -1, "fan_eff": 1, "pump_eff": 1, "crah_pa": -1, "tower_fan_pa": -1, "dc_fan_pa": -1, "pump_chw_kpa": -1, "pump_tower_kpa": -1,
-              "pump_econ_kpa": -1, "coil_eff": 1, "tower_approach": -1, "hx_approach": -1, "dc_approach": -1, "carnot_water": 1, "carnot_air": 1},
+              "pump_econ_kpa": -1, "coil_eff": 1, "tower_approach": -1, "hx_approach": -1, "dc_approach": -1, "carnot_water": 1, "carnot_air": 1, "air_cop_cap": 1},
     # one temperature design: warm supply air goes with wide temperature rises across the coil, the loop and, through the plate exchanger, the tower
     "loop": {"supply_air": 1, "air_rise": 1, "water_rise": 1, "range_f": 1, "chilled_water": 1},
     # AI campuses: higher utilization and steadier load (EPRI's hyperscale pair against its co-location pair), more liquid cooling, warmer liquid loops
