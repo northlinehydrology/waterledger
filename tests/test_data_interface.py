@@ -33,7 +33,7 @@ def test_a_model_version_that_skips_the_snapshots_reads_the_last_rebuilt_ones(ca
     from waterledger.national.data import snapshot_for_model
     assert wm.MODEL_VERSION == "1.17" and wm.snapshot_model() == "1.17" == era5.RUN_MODEL and wm.snapshot_model("1.16") == "1.16" and wm.snapshot_model("1.11") == "1.11"
     assert wm.snapshot_model("1.12") == "1.11"
-    assert snapshot_for_model({"state": "OH", "latest": "a", "by_model": {"1.11": "b", "1.16": "c"}}) == "c" and capsys.readouterr().err == ""
+    assert snapshot_for_model({"state": "OH", "latest": "a", "by_model": {"1.11": "b", "1.16": "d", "1.17": "c"}}) == "c" and capsys.readouterr().err == ""
     monkeypatch.setattr(wm, "snapshot_model", lambda version="1.15", _own=wm.snapshot_model: _own(version))    # a package at model 1.15, which skips them
     assert snapshot_for_model({"state": "OH", "latest": "a", "by_model": {"1.11": "b", "1.12": "c"}}) == "b" and capsys.readouterr().err == ""
     monkeypatch.setitem(wm.MODELS, "9.1", {"types": ("datacenter",), "snapshots": "9.1"})
