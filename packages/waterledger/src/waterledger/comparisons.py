@@ -158,18 +158,47 @@ def thirstiest_power(options, start):
     return max((k for k in offered_power(options, start) if k not in ("renew", start)), key=lambda k: options[k]["gal_mwh"], default=None)
 
 
-def compare_designs(results, options, power, start):
-    """The same campus across cooling designs: `results` is {design: (WaterUse, Electricity)}. The design order breaks a tie for `best`."""
-    rows = {}
-    for k, (water, e) in results.items():
+HOURS_A_YEAR = 8760
+
+
+def _plant_band(mw, o):
+    """Water at power plants on option `o` for an electricity range, each end with the factor's same end."""
+    return Range(p10=plant_water(mw.p10, o["lo"]), p50=plant_water(mw.p50, o["gal_mwh"]), p90=plant_water(mw.p90, o["hi"]))
+
+
+def _against(row, ref):
+    """A design's differences from the reference design, middle estimates (DesignTotal's docstring)."""
+    share = lambda x: 100 * x / ref.evaporated.p50 if ref.evaporated.p50 > 0 else None
+    out = {"reference": ref.design, "more_electricity_pct": 100 * (row.avg_mw.p50 / ref.avg_mw.p50 - 1), "more_peak_mw": row.peak_mw.p50 - ref.peak_mw.p50,
+           "saves_on_site": ref.evaporated.p50 - row.evaporated.p50, "extra_plant_water": row.at_power_plants.p50 - ref.at_power_plants.p50}
+    out["extra_plant_water_share"] = share(out["extra_plant_water"])
+    if row.grid_water and ref.grid_water:
+        out["extra_grid_water"] = row.grid_water.p50 - ref.grid_water.p50
+        out["extra_grid_water_share"] = share(out["extra_grid_water"])
+    return out
+
+
+def compare_designs(results, options, power, start, reference="towers", plant=None):
+    """The same campus across cooling designs: `results` is {design: (WaterUse, Electricity)} or, from 3.25.0, {design: (WaterUse, Electricity, GridWater | None)}.
+    The design order breaks a tie for `best`. Each design is set against `reference` (towers unless asked) where it is among them; `plant` is the cooling plant the results are for."""
+    rows, ba = {}, None
+    for k, (water, e, *g) in results.items():
+        g = g[0] if g else None
         o = options[power]
-        rows[k] = DesignTotal(design=k, evaporated=water.consumed.avg, at_power_plants=Range(p10=plant_water(e.avg_mw.p10, o["lo"]), p50=plant_water(e.avg_mw.p50, o["gal_mwh"]), p90=plant_water(e.avg_mw.p90, o["hi"])),
-                              avg_mw=e.avg_mw, peak_mw=e.peak_mw)
+        peak_day = getattr(water.consumed, "peak_day", None)
+        rows[k] = DesignTotal(design=k, evaporated=water.consumed.avg, at_power_plants=_plant_band(e.avg_mw, o), avg_mw=e.avg_mw, peak_mw=e.peak_mw, plant=plant,
+                              evaporated_peak_day=peak_day, peak_day_mw=e.peak_day_mw, at_power_plants_peak_day=_plant_band(e.peak_day_mw, o) if e.peak_day_mw else None,
+                              annual_mwh=_range(lambda x: x * HOURS_A_YEAR, e.avg_mw), grid_water=g.consumed if g else None, grid_water_peak_day=g.consumed_peak_day if g else None)
+        ba = ba or (g.balancing_authority if g else None)
+    if reference in rows:
+        rows = {k: r.model_copy(update=_against(r, rows[reference])) for k, r in rows.items()}
     best = min(rows, key=lambda k: rows[k].total)
+    hourly = None if any(r.grid_water is None for r in rows.values()) else min(rows, key=lambda k: rows[k].total_hourly_grid)
     dry, tw = rows.get("dry"), rows.get("towers")
     extra = {"closed_loop_more_power_pct": 100 * (dry.avg_mw.p50 / tw.avg_mw.p50 - 1), "closed_loop_more_peak_mw": dry.peak_mw.p50 - tw.peak_mw.p50,
              "closed_loop_saves_on_site": max(tw.evaporated.p50 - dry.evaporated.p50, 0.0)} if dry and tw else {}
-    return DesignComparison(power=power, designs=rows, best=best, thirstiest_power=thirstiest_power(options, start), **extra)
+    return DesignComparison(power=power, designs=rows, best=best, thirstiest_power=thirstiest_power(options, start), reference=reference if reference in rows else None,
+                            balancing_authority=ba, best_hourly_grid=hourly, **extra)
 
 
 WELLS_MIN = 10       # fewer household wells on record than this says little about a place's aquifer [A]
