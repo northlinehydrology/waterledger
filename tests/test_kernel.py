@@ -70,6 +70,6 @@ def test_every_value_physics_uses_reaches_the_kernel():
     """kernel.FIELDS lists what a load carries; the draws' parameters it reads directly must all be in a draw."""
     p = ph.for_location(cooling.central("warm"), TDB)
     derived = {"q", "air", "kg_s", "room", "crah", "air_water", "switch", "hybrid_full", "low", "high", "cp_glycol", "rho_glycol",
-               "design_potential", "design_min", "topup"}
+               "design_potential", "design_min", "topup", "oa_kg_s", "oa_fan", "oa_switch", "oa_coil_water"}
     assert set(kernel.FIELDS) - derived <= set(p)
     assert len(kernel.load_values(p, "hybrid")) == len(kernel.FIELDS)

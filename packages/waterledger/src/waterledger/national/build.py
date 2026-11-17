@@ -69,7 +69,7 @@ def checks(state, d, sample=SAMPLE, seed=1):
         try:
             p = wl.place(geoid=r.geoid)
             p.context()
-            for cool in ("dry", "assist", "hybrid", "towers"):
+            for cool in ("dry", "assist", "hybrid", "towers", "outside_air"):
                 wl.Site(place=p, facility=wl.DataCenter(it_mw=100, cooling=cool)).estimate()
         except Exception as e:                       # noqa: BLE001  any failure is reported, with the place
             errors.append(f"{r.name} ({r.geoid}): {type(e).__name__}: {e}"[:300])

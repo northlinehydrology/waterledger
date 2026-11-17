@@ -13,14 +13,17 @@ Designs differ in when they evaporate:
             coil, in proportion to the wet-bulb depression; no tower drift
   hybrid    dry coolers most of the year, evaporative in warm weather (ramp from the same switch point; the top at the location's own 0.4% design dry-bulb)
   towers    open cooling towers, evaporative all year (upper bound for typical practice)
+  outside_air  outside air straight into the halls, mixed with return air when cold and through evaporative pads above the operator's setting, with
+            air-cooled trim chillers for what the pads can't do (model 1.17, design 0022); its water is the pads' evaporation and bleed
 Outputs per run: withdrawn (makeup), consumed (evaporation + drift + loop top-up + humidifiers), returned to sewer (blowdown + condensate),
 condensate (from the outside air, not withdrawn, so withdrawn + condensate = consumed + returned).
 Monte Carlo over parameter ranges (Latin hypercube, linked parameters grouped: physics.sample_parameters) gives percentiles, per 100 MW of IT capacity.
 
 Staff water (restrooms, kitchens, cleaning) is not per kWh: it follows the people on site, which grow slowly with size, so it
-is a separate term, staff_runs() and staff_q(), added to the per-100 MW results at the campus's size (model 1.2). The designs modeled
+is a separate term, staff_runs() and staff_q(), added to the per-100 MW results at the campus's size (model 1.2). Dry, assist, hybrid and towers
 recirculate indoor air, so outside air comes in only to pressurize and ventilate (model 1.5, physics.OUTSIDE): humidifiers may use a little
-water in dry winters and a coil condenses some in humid summers. A direct outside-air design would use far more air and is not modeled.
+water in dry winters and a coil condenses some in humid summers. The outside air design (model 1.17) takes all the halls' air from outside
+(physics.outside_air_hall).
 
 Parameter ranges and their sources are in RANGES and documented on the Water Ledger methods page
 (docs/research/water-ledger-methods-alignment.md).
@@ -35,19 +38,21 @@ from waterledger_models.daily import daily_stats, groups, summarize  # noqa: F40
 from waterledger_models import runs
 from waterledger_models.datacenter.physics import sample_staff
 from waterledger_models.datacenter.physics import (ADIABATIC, DEFAULT_PLANT, DRAWS, DESIGNS as _DESIGNS, PLANTS, HFG, KWH_BTU, LB_GAL, OUTSIDE, POWER, RANGES, STAFF, TOPUP, _ramp,  # noqa: F401
-                                                   central_parameters, evaporative_ratio, hourly_heat_power, hourly_rates, for_location, hourly_water_with_air, peak_utilization, sample_parameters, wet_bulb)
+                                                   central_parameters, evaporative_ratio, hourly_heat_power, hourly_rates, for_location, hourly_condensate, hourly_water_with_air, peak_utilization, sample_parameters, wet_bulb)
 
 DESIGNS = list(_DESIGNS)
 # Named by how heat leaves the building (Nov 15, 2026; through 3.23 dry was "Closed loop (designed to use no water for cooling)"). "Closed loop" says how
-# water moves inside the building: every design here has one (the plants, PLANT_LABELS), and campuses that claim closed loop have each of these outside.
+# water moves inside the building: every water-loop design here has one (the plants, PLANT_LABELS), and campuses that claim closed loop have each of these outside.
 LABELS = {
     "dry": "Dry coolers or air-cooled chillers (no evaporation)",
     "assist": "Dry with evaporative pads on hot days",
     "hybrid": "Hybrid (evaporative in warm weather)",
     "towers": "Cooling towers (evaporative all year)",
+    "outside_air": "Outside air into the halls, with evaporative pads on hot days",
 }
-CLOSED_LOOP = ("All four can be called closed loop: each has a closed loop of water inside the building. The design names how heat leaves it, which is "
-               "what decides the water.")
+# The four water-loop designs; the outside air design (model 1.17, design 0022) has no water loop for its halls, only for any liquid-cooled racks.
+CLOSED_LOOP = ("Dry, pads, hybrid and towers can all be called closed loop: each has a closed loop of water inside the building. The design names how "
+               "heat leaves it, which is what decides the water.")
 
 
 def hourly(tdb, twb, design, p, rh=None, heat=None):
@@ -143,8 +148,8 @@ def _hourly_run(tdb, twb, rh, design, p, at_peak, block=HOUR_BLOCK):
         t, wb, h = tdb[s], twb[s], rh[s]
         pue, heat = hourly_heat_power(t, wb, design, p, h)      # the slow part: once for the run's water and PUE, once at the peak load
         pue_peak, heat_peak = hourly_heat_power(t, wb, design, at_peak, h)
-        got = (pue, *hourly(t, wb, design, p, h, heat), hourly_water_with_air(t, wb, p, h)[1],
-               *hourly(t, wb, design, at_peak, h, heat_peak), hourly_water_with_air(t, wb, at_peak, h)[1], hourly(t, wb, design, at_capacity, h)[0],
+        got = (pue, *hourly(t, wb, design, p, h, heat), hourly_condensate(t, wb, design, p, h),
+               *hourly(t, wb, design, at_peak, h, heat_peak), hourly_condensate(t, wb, design, at_peak, h), hourly(t, wb, design, at_capacity, h)[0],
                pue_peak)
         for o, v in zip(out, got):
             o[s] = v

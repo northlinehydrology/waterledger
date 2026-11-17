@@ -22,7 +22,7 @@ from waterledger_models.heat_rejection import (CFM_M3S, CP_AIR, CP_WATER, EQUIPM
                                                glycol_properties, latin_hypercube, wet_bulb)
 from waterledger_models.heat_rejection import loop as _loop  # noqa: F401
 
-DESIGNS = ("dry", "assist", "hybrid", "towers")
+DESIGNS = ("dry", "assist", "hybrid", "towers", "outside_air")
 
 # (low, high) ranges sampled in the Monte Carlo (sample_parameters: Latin hypercube, uniform in each range); central values are the midpoints.
 RANGES = {
@@ -229,6 +229,55 @@ def hybrid_full(p):
     return hr.hybrid_full(p, switch_point(p))
 
 
+def outside_air_switch(p):
+    """Dry-bulb above which the outside air design's pads run, C (model 1.17, design 0022): the operator's setting, at least the supply air floor plus the
+    run's margin, within SWITCH_SETTINGS (heat_rejection.switch_point, with the supply air as the limit), and never below the floor itself. Below it the
+    supply floats with the weather."""
+    return np.maximum(hr.switch_point(p, p["supply_air"]), p["supply_air"])
+
+
+def outside_air_hall(tdb, twb, p, rh=None):
+    """The outside air design's halls each hour, per kW of IT (model 1.17, design 0022). Outside air goes straight into the halls: mixed with return air
+    below the supply air floor, on its own up to the operator's setting, and above it through pads (assist's media), throttled to reach the setting and no
+    lower; air-cooled trim chillers carry what the pads can't. Returns a dict:
+      m          kg of air a second through the halls, set by the room's heat and the computers' air rise (as the other designs' air handlers carry)
+      fan        the air handlers' fan power, kW
+      share      outside air's share of the supply, 0 to 1 (below 1 only when mixing with return air)
+      supply     the supply air temperature, C
+      pads       K the pads cool the outside air; trim, the trim chillers' load, kW
+      chiller    the trim chillers' power and pump, kW
+      evap, bleed, humidify   gallons per IT kWh
+    Balances (tests): share x tdb + (1 - share) x return = supply air floor when mixing; m x cp x pads = evaporation x latent heat."""
+    q = 1.0 + (1.0 / p["ups"] - 1.0) + (1.0 / (1.0 - p["dist_loss"]) - 1.0) + p["light"]
+    air = (1.0 - p["liquid_share"]) + p["liquid_share"] * p["liquid_air_share"]
+    room = q - (1.0 - air)
+    m = room / (CP_AIR * p["air_rise"])
+    fan = _fan_kw(m, p["crah_pa"], p["fan_eff"])
+    floor, switch = p["supply_air"], outside_air_switch(p)
+    ret = floor + p["air_rise"]
+    share = np.where(tdb < floor, (ret - floor) / np.maximum(ret - tdb, 1e-9), 1.0)
+    supply = np.maximum(tdb, floor)
+    depr = p["assist_eff"] * np.maximum(tdb - twb, 0.0)
+    hot = tdb > switch
+    pads = np.where(hot, np.minimum(tdb - switch, depr), 0.0)
+    if "wet_frac" in p:            # under a water limit the pads' evaporation is cut in proportion and the trim chillers carry the rest (design 0006)
+        pads = pads * p["wet_frac"]
+    trim_k = np.where(hot, tdb - pads - switch, 0.0)
+    supply = np.where(hot, switch, supply)
+    trim = m * CP_AIR * trim_k
+    # the trim coil's water, from the setting as the air loop's water is from its supply air; an air-cooled chiller on the outside air (design 0015)
+    coil_water = switch + p["air_rise"] - p["air_rise"] / p["coil_eff"]
+    cop = hr.chiller_cop(tdb + 12.0, coil_water - 2.0, p["carnot_air"], hr.AIR_CHILLER_LOSS, p["air_cop_cap"])
+    chiller = trim / cop + _pump_kw(trim / (CP_WATER * p["water_rise"]), p["pump_chw_kpa"], p["pump_eff"])
+    evap = m * CP_AIR * pads / LATENT_KJ * 3600.0 / KG_GAL
+    vapor = _saturation_kpa(tdb) * rh / 100.0 if rh is not None else np.maximum(_saturation_kpa(twb) - 0.0674 * (tdb - twb), 1e-4)
+    low = _humidity_ratio(_saturation_kpa(DEW_LOW))
+    humidify = share * m * p["humidify_share"] * np.maximum(low - _humidity_ratio(vapor), 0.0) * 3600.0 / KG_GAL
+    ones = np.ones(np.broadcast_shapes(np.shape(tdb), np.shape(m)))
+    return {"m": m * ones, "fan": fan * ones, "share": share * ones, "supply": supply * ones, "pads": pads * ones, "trim": trim * ones,
+            "chiller": chiller * ones, "evap": evap * ones, "bleed": evap * p["assist_bleed"] * ones, "humidify": humidify * ones}
+
+
 
 
 
@@ -274,6 +323,13 @@ def hourly_water_with_air(tdb, twb, p, rh=None):
     return kg_s * np.maximum(indoors - outside, 0.0) * 3600.0 / KG_GAL, kg_s * np.maximum(outside - indoors, 0.0) * 3600.0 / KG_GAL
 
 
+def hourly_condensate(tdb, twb, design, p, rh=None):
+    """Gallons per IT kWh of condensate drawn out of the outside air: the dehumidifying coil's on the ventilation air (hourly_water_with_air), none for the
+    outside air design, which has no dehumidifying coil (design 0022). Mass closes with it: withdrawn + condensate = consumed + returned."""
+    c = hourly_water_with_air(tdb, twb, p, rh)[1]
+    return 0.0 * c if design == "outside_air" else c
+
+
 def _wet_share(tdb, design, p):
     """Share of the heat going through evaporation (heat_rejection.wet_share, from this plant's switch point); none for assist, whose pads evaporate ahead of a dry coil."""
     return hr.wet_share(tdb, design, p, switch_point(p))
@@ -292,6 +348,12 @@ def hourly_heat_power(tdb, twb, design, p, rh=None):
     tower's fans slow to the air the hour's heat needs, capped by what air can carry. Dry cooler and liquid cooling designs are added, which their cases do not have. p as in hourly_rates."""
     q = 1.0 + (1.0 / p["ups"] - 1.0) + (1.0 / (1.0 - p["dist_loss"]) - 1.0) + p["light"]
     air = (1.0 - p["liquid_share"]) + p["liquid_share"] * p["liquid_air_share"]
+    if design == "outside_air":
+        # the halls' air leaves in the exhaust with every kW put into it; the liquid racks' heat goes through the dry design's loop (design 0022)
+        h = outside_air_hall(tdb, twb, p, rh)
+        chiller, pumps, fans = _loop(1.0 - air + 0.0 * tdb, p["liquid_water"], tdb, twb, tdb, 0.0, "dry", p)
+        power = q + h["fan"] + h["chiller"] + chiller + pumps + fans
+        return power, power - fans
     kg_s = _outside_air(tdb, twb, p, rh)[0]
     room = q - (1.0 - air)                                    # the heat that reaches the room's air: the air-cooled computers and all the power losses and lighting
     crah = _fan_kw(room / (CP_AIR * p["air_rise"]) + kg_s, p["crah_pa"], p["fan_eff"])
@@ -333,6 +395,10 @@ def _rate_parts(tdb, twb, design, p, rh=None, heat=None):
     # loop top-up, gal/day per MW of capacity, as gal per IT kWh
     topup = p["fill_gal_per_mw"] * p["topup"] / 365.0 / (24 * 1000 * p["utilization"]) * np.ones(np.broadcast_shapes(np.shape(btu), np.shape(tdb), np.shape(p["er_adj"])))
     humidify, condensate = hourly_water_with_air(tdb, twb, p, rh)
+    if design == "outside_air":
+        # the pads' water and the humidifiers' on the outside air taken; no tower, no dehumidifying coil (design 0022)
+        h = outside_air_hall(tdb, twb, p, rh)
+        evap, drift, blow, humidify, condensate = h["evap"], 0.0 * h["evap"], h["bleed"], h["humidify"], 0.0 * h["evap"]
     return {"evap": evap, "drift": drift, "blow": blow, "topup": topup, "humidify": humidify, "condensate": condensate}
 
 

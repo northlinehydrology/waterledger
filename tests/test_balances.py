@@ -23,13 +23,13 @@ def _rates(design):
 def test_water_taken_plus_condensate_is_water_used_up_and_returned(design, plant):
     p = PLANT_DRAWS[plant]
     w, c, r = ph.hourly_rates(T, W, design, p)
-    condensate = ph.hourly_water_with_air(T, W, p)[1]
+    condensate = ph.hourly_condensate(T, W, design, p)
     assert np.allclose(w + condensate, c + r)
     assert (w >= 0).all() and (c >= 0).all() and (r >= -1e-12).all() and (condensate >= 0).all()
 
 
 @pytest.mark.parametrize("plant", ph.PLANTS)
-@pytest.mark.parametrize("design", ph.DESIGNS)
+@pytest.mark.parametrize("design", [d for d in ph.DESIGNS if d != "outside_air"])      # the outside air design's own books: test_outside_air.py
 def test_every_kw_is_accounted_for(design, plant):
     """Facility power + what outside air brings = heat through the water or coil + heat rejection fans, whose heat goes straight to the exhaust air, in every plant."""
     p = PLANT_DRAWS[plant]

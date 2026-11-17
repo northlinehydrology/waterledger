@@ -96,11 +96,18 @@ def grid_water(D, region, cool, mw, ba):
     return {k: {"avg": band(r[f"grid_{ba}_{k}_avg"], mw / 100), "peak_day": band(r[f"grid_{ba}_{k}_peak_1in10"], mw / 100)} for k in GRID_KINDS}
 
 
+def _design(per_100mw, cool):
+    """A region's or cell's results for a design, or a clear error where the results predate it (the outside air design is model 1.17's)."""
+    if cool not in per_100mw:
+        raise ValueError(f"these results have no {cool!r} design (they have {sorted(per_100mw)}); the outside air design needs model 1.17 results or later")
+    return per_100mw[cool]
+
+
 def electricity(D, region, cool, mw):
     """Facility electricity at `mw` MW of IT capacity at a region's weather, lo/mid/hi: {"mw", "peak_mw", "pue", "peak_pue"}, and "peak_day_mw"
     where the results have it (model 1.9; not lake-source cooling), or None for data from before model 1.4. Lake-source cooling has its own heat balance (lake.run_lake), the same at every region. Same as WQ.elec on the page."""
     per_100mw = D["regions"][region]["per_100mw"]
-    r = (D["lake_source"].get("power") or per_100mw["towers"]) if cool == "lake" else per_100mw[cool]      # data from before model 1.5: towers stood in
+    r = (D["lake_source"].get("power") or per_100mw["towers"]) if cool == "lake" else _design(per_100mw, cool)      # data from before model 1.5: towers stood in
     if "power_mw_avg" not in r:
         return None
     out = {"mw": band(r["power_mw_avg"], mw / 100), "peak_mw": band(r["power_mw_peak_1in10"], mw / 100), "pue": band(r["pue_avg"], 1.0), "peak_pue": band(r["pue_peak_1in10"], 1.0)}
@@ -194,7 +201,7 @@ def cooling_estimate(D, region, cool, mw, dest):
     ({"regions": {region: {"per_100mw": ...}}, "staff": {"runs": ...}}): the page's est() for every design but lake-source.
     The national tier uses it with climate divisions as the regions."""
     F = lambda key: flow(D, region, cool, key, mw)
-    per_100mw = D["regions"][region]["per_100mw"][cool]
+    per_100mw = _design(D["regions"][region]["per_100mw"], cool)
     C = lambda key: band(per_100mw[key], mw / 100) if key in per_100mw else {"lo": 0.0, "mid": 0.0, "hi": 0.0}    # data from before model 1.5 has none
     E = {"lake": False, "wAvg": F("withdrawn_avg"), "wPeak": F("withdrawn_peak_1in10"), "wAnn": F("withdrawn_annual_mg"),
          "cAvg": F("consumed_avg"), "cPeak": F("consumed_peak_1in10"), "rAvg": F("returned_avg"),

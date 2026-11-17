@@ -19,13 +19,14 @@ from numba import njit
 from waterledger_models import heat_rejection as hr
 from waterledger_models.datacenter import physics as ph
 
-DESIGN_CODE = {"dry": 0, "assist": 1, "hybrid": 2, "towers": 3}
+DESIGN_CODE = {"dry": 0, "assist": 1, "hybrid": 2, "towers": 3, "outside_air": 4}
 
 # per-load values, worked out in Python from the draw's parameters (the same scalar arithmetic physics.py does), in this order
 FIELDS = ("q", "air", "kg_s", "room", "crah", "air_water", "liquid_water", "switch", "hybrid_full", "low", "high", "humidify_share",
           "supply_air", "water_rise", "tower_approach", "hx_approach", "dc_approach", "range_f", "carnot_water", "carnot_air",
           "pump_econ_kpa", "pump_chw_kpa", "pump_tower_kpa", "pump_eff", "cp_glycol", "rho_glycol", "design_potential", "design_min",
-          "tower_fan_pa", "fan_eff", "dc_fan_pa", "assist_dt_air", "assist_eff", "er_adj", "drift", "coc", "assist_bleed", "topup", "lg", "air_cop_cap")
+          "tower_fan_pa", "fan_eff", "dc_fan_pa", "assist_dt_air", "assist_eff", "er_adj", "drift", "coc", "assist_bleed", "topup", "lg", "air_cop_cap",
+          "air_rise", "oa_kg_s", "oa_fan", "oa_switch", "oa_coil_water", "coil_eff")
 F = {k: i for i, k in enumerate(FIELDS)}
 # physics.py's constants, which Numba takes in as fixed values when it compiles
 RHO_AIR, RHO_WATER, CP_AIR, CP_WATER, LATENT_KJ = ph.RHO_AIR, ph.RHO_WATER, ph.CP_AIR, ph.CP_WATER, ph.LATENT_KJ
@@ -52,7 +53,10 @@ def load_values(p, design):
          "low": ph._humidity_ratio(ph._saturation_kpa(ph.DEW_LOW)), "high": ph._humidity_ratio(ph._saturation_kpa(ph.DEW_HIGH)),
          "cp_glycol": cp_glycol, "rho_glycol": rho_glycol, "design_potential": design_potential,
          "design_min": np.minimum(p["lg"], design_potential / (ph.CP_WATER * tower_range)),
-         "topup": p["fill_gal_per_mw"] * p["topup"] / 365.0 / (24 * 1000 * p["utilization"])}
+         "topup": p["fill_gal_per_mw"] * p["topup"] / 365.0 / (24 * 1000 * p["utilization"]),
+         # the outside air design's halls (physics.outside_air_hall, design 0022)
+         "oa_kg_s": room / (ph.CP_AIR * p["air_rise"]), "oa_fan": ph._fan_kw(room / (ph.CP_AIR * p["air_rise"]), p["crah_pa"], p["fan_eff"]),
+         "oa_switch": ph.outside_air_switch(p), "oa_coil_water": ph.outside_air_switch(p) + p["air_rise"] - p["air_rise"] / p["coil_eff"]}
     return np.array([float(v[k]) if k in v else float(p[k]) for k in FIELDS])
 
 
@@ -136,6 +140,8 @@ def _hour(t, wb, h, er_base, design, outside_w, indoors, coil_air, wet, k1, k2, 
     """One hour at one load: (PUE, withdrawn, consumed, returned, condensate), the PUE as facility power per IT kW and the water in gallons
     per IT kWh, as physics.hourly_heat_power, hourly_rates and hourly_water_with_air give them. k1, k2, k3: the air, liquid and
     dehumidifying loops' _loop_terms."""
+    if design == 4:
+        return _hour_outside_air(t, wb, outside_w, k2, v)
     # outside air (physics._outside_air and hourly_outside_air_heat)
     kg_s = v[2]
     sensible = kg_s * CP_AIR * (t - v[12])
@@ -181,6 +187,31 @@ def _hour(t, wb, h, er_base, design, outside_w, indoors, coil_air, wet, k1, k2, 
 
 
 @njit(cache=True, error_model="numpy")
+def _hour_outside_air(t, wb, outside_w, k2, v):
+    """_hour for the outside air design (physics.outside_air_hall and hourly_heat_power, design 0022): the halls' air, the pads, the trim chillers and
+    the liquid racks' dry loop (k2)."""
+    q, air, m, floor, sw, rise = v[0], v[1], v[41], v[12], v[43], v[40]
+    share = (floor + rise - floor) / max(floor + rise - t, 1e-9) if t < floor else 1.0
+    pads, trim_k = 0.0, 0.0
+    if t > sw:
+        pads = min(t - sw, v[32] * max(t - wb, 0.0))
+        trim_k = t - pads - sw
+    trim = m * CP_AIR * trim_k
+    evaporator = v[44] - 2.0
+    cop = min(1.0 / (AIR_LOSS + max(t + 12.0 - evaporator, 1.0) / (v[19] * (evaporator + 273.15))), v[39])
+    chiller = trim / cop + _pump(trim / (CP_WATER * v[13]), v[21], v[23])
+    c, pu, fa = _loop(1.0 - air, k2, 0.0, False, v)
+    power = q + v[42] + chiller + c + pu + fa
+    evap = m * CP_AIR * pads / LATENT_KJ * 3600.0 / KG_GAL
+    blow = evap * v[36]
+    topup = v[37] * 1.0
+    humidify = share * m * v[11] * max(v[9] - outside_w, 0.0) * 3600.0 / KG_GAL
+    withdrawn = evap + blow + topup + humidify
+    consumed = evap + topup + humidify
+    return power, withdrawn, consumed, blow, 0.0
+
+
+@njit(cache=True, error_model="numpy")
 def _run(tdb, twb, rh, es_t, hsat_wb, er_base, design, v, v_peak, v_capacity, out):
     k3 = (0.0, 0.0, 0.0, 0.0, 0.0)
     for i in range(tdb.shape[0]):
@@ -202,7 +233,7 @@ def _run(tdb, twb, rh, es_t, hsat_wb, er_base, design, v, v_peak, v_capacity, ou
             wet = 0.0
         k1 = _loop_terms(v[5], t, wb, hs, coil_air, wet, v)
         k2 = _loop_terms(v[6], t, wb, hs, coil_air, wet, v)
-        if outside_w - indoors > 0.0:
+        if outside_w - indoors > 0.0 and design != 4:
             k3 = _loop_terms(DEHUMIDIFY_WATER, t, wb, hs, coil_air, wet, v)
         pue, w, c, r, cond = _hour(t, wb, h, er, design, outside_w, indoors, coil_air, wet, k1, k2, k3, v)
         pue_p, wp, cp, rp, condp = _hour(t, wb, h, er, design, outside_w, indoors, coil_air, wet, k1, k2, k3, v_peak)
