@@ -2851,6 +2851,78 @@ Royal Netherlands Academy of Sciences 53. Siler-Evans, K., Azevedo, I. L., and M
 the U.S. electricity system. Environmental Science & Technology 46, 4742-4748. Siddik, M. A. B., et al. (2024), as cited above.
 U.S. EIA: Forms EIA-923 (2024) and EIA-930 (2019-2025).
 
+## Nov 16, 2026: the base overhead against operators' disclosures (decision; no numbers change)
+
+**Finding.** The check of dry cooling's electricity against published evidence (`docs/research/cooling-power-evidence.md`, branch
+`cooling-power-evidence`, sections 5e and 8, P4) found that the base overhead every design carries puts towers at a year-average PUE
+of 1.137 (Grand Rapids) to 1.176 (Dallas) on the shared loop at model 1.16 (p50).
+
+**What the base is.** 1.092 at central parameters, made up of:
+- IT;
+- UPS losses (`ups` efficiency 0.90-0.99: Lei and Masanet 2022, Table 3, case 2; LBNL 2024, Table 4.3, uses the same 90-99% for
+  hyperscale);
+- distribution losses, 0-2%;
+- lighting, 0-0.2%;
+- the air handlers' fans.
+
+**What operators and surveys report.**
+- Disclosed evaporative fleets run lower:
+  - Google about 1.09 fleet-wide, 1.08-1.12 by evaporative campus (2025 Environmental Report; datacenters.google/efficiency);
+  - Meta 1.08 for its fleet in 2024 (2025 Environmental Data Index);
+  - AWS 1.12-1.15 by region (regional fact sheets, 2023-2025);
+  - LBNL 2024, Fig. 4.4 [F]: large evaporative archetypes at about 1.12-1.14.
+- Surveys and new campuses run higher:
+  - Uptime's 2025 Global Data Center Survey (Fig. 2, p. 7; trade survey): 1.54 on average, 1.48 for facilities built since about
+    2020, 1.44 for sites of 20 MW or more;
+  - Crusoe's Abilene design: 1.2-1.4 annualized (company disclosure).
+- The model sits between the two groups.
+
+**Options.**
+- (a) Keep the range and say so on the methods pages.
+- (b) Narrow `ups` to 0.95-0.99 for large campuses [A], citing the fleets. That would take about 0.03 off every PUE, about 3 MW off
+  the average and 4 MW off the hottest hour per 100 MW, and about 3% off the power plant water. The gaps between designs would not
+  change.
+
+**Decision (Andrew, Nov 16, 2026): (a).**
+- Water Ledger estimates a campus whose operator and equipment aren't known.
+- Hyperscale fleet averages are the best of the industry. Published campus designs (Crusoe) and the survey averages (Uptime) sit
+  above the model.
+- The range moves every design's PUE together and leaves the dry-towers gap where it is. In Loudoun County at central parameters,
+  UPS 0.99 gives dry 1.134 and towers 1.093, against 1.188 and 1.145 at the middle: +3.8% either way.
+
+**Where it is stated:**
+- waterledger.org's Michigan methods page, under Parameters;
+- the shared method's "Electricity use" item on every state's methods page;
+- the cooling-systems page, under "What is uncertain".
+
+Northline branch `claude/zealous-mclean-10341d`. No parameter, number or snapshot changes, so there is no changelog entry.
+
+**Short form** (methods pages): The base overhead (UPS 0.90-0.99, Lei and Masanet; LBNL 2024) puts towers at a yearly PUE of about
+1.14-1.18. That is above the hyperscale fleets (Google about 1.09, Meta 1.08) and below Uptime's 2025 survey average for sites of 20 MW
+or more (1.44). It is kept as a planning estimate [A]. It moves every design together and leaves the gap between designs unchanged
+(Andrew, Nov 16, 2026).
+
+## Nov 16, 2026: power plant water is thermoelectric cooling water, said with reservoirs beside it (decision; no numbers change)
+
+**Finding.** The evidence note's section 7 (P5) found that the comparison depends on how reservoirs are counted.
+- Every power plant water factor here is cooling water at thermoelectric plants: EIA-923 for the state table and the hourly grid
+  (design 0008), and Siddik et al. for the grid regions. Evaporation from hydropower reservoirs is left out.
+- On that basis, dry cooling's extra electricity costs 3-14% of the towers' own water at the places checked.
+- With hydro-inclusive factors, a Western grid can reverse the comparison. At Phoenix, WRI's AZNM factor gives 34%, and Torcellini's
+  7.85 gal/kWh gives about twice the towers' own water.
+
+**Decision (Andrew, Nov 16, 2026).**
+- Keep design 0008's basis.
+- Say on every state's methods page that reservoirs are not counted, with that state's balancing authorities both ways (`energy.json`
+  `grid_water`, `consumed_excl_hydro` and `consumed_incl_hydro`).
+- Say on the cooling-systems page that the comparison can reverse in the West.
+
+Northline branch `claude/zealous-mclean-10341d`.
+
+**Short form** (methods pages): Power plant water here is cooling water at thermoelectric plants (EIA-923). Evaporation from
+hydropower reservoirs is not counted; where it is, as in Arizona, the power plant water for dry cooling's extra electricity can exceed
+what towers would use on site. Each state's grid regions are given both ways.
+
 ## Nov 17, 2026: water-cooled chillers on ASHRAE 90.1's curve (design 0021; model 1.17)
 
 **What was wrong.** Through model 1.16 a water-cooled chiller's COP was carnot_water (0.62-0.78) x T_evap / lift, with no loss and a cap of 8
