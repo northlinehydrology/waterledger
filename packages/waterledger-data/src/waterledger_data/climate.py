@@ -26,7 +26,7 @@ def hourly_weather(lat, lon, start, end, name):
     a, b = str(np.datetime64(start) - 1), str(np.datetime64(end) + 1)      # a day either side, so every local date asked for is whole
     url = (f"https://archive-api.open-meteo.com/v1/archive?latitude={lat}&longitude={lon}&start_date={a}&end_date={b}"
            "&hourly=temperature_2m,relative_humidity_2m&temperature_unit=celsius&timezone=GMT")
-    with open(_fetch(url, os.path.join(RAW, f"openmeteo_{name}_utc.json"))) as f:
+    with open(_fetch(url, os.path.join(RAW, f"openmeteo_{name}_utc.json")), encoding="utf-8") as f:
         h = json.load(f)["hourly"]
     t = np.array(h["time"], dtype="datetime64[m]") + np.timedelta64(round(lon / 15) * 60, "m")     # the rule isd_hourly uses
     days = t.astype("datetime64[D]")
@@ -46,7 +46,7 @@ def power_hourly(lat, lon, name, first=2001, last=2024):
         y1 = min(y0 + 7, last)
         url = (f"{POWER_HOURLY}?parameters=T2M,RH2M&community=RE&longitude={lon:.4f}&latitude={lat:.4f}"
                f"&start={y0}0101&end={y1}1231&format=JSON&time-standard=LST")
-        with open(_fetch(url, os.path.join(RAW, "power_hourly", f"{name}_{y0}_{y1}.json"))) as f:
+        with open(_fetch(url, os.path.join(RAW, "power_hourly", f"{name}_{y0}_{y1}.json")), encoding="utf-8") as f:
             p = json.load(f)["properties"]["parameter"]
         for k in p["T2M"]:
             a, b = p["T2M"][k], p["RH2M"].get(k)
@@ -67,7 +67,7 @@ def isd_stations(first=1995, last=2024):
     import csv
     path = _fetch(ISD_HISTORY, os.path.join(RAW, "isd", "isd-history.csv"))
     out = []
-    for r in csv.DictReader(open(path)):
+    for r in csv.DictReader(open(path, encoding="utf-8")):
         if r["CTRY"] != "US" or r["WBAN"] == "99999" or not r["LAT"] or not r["BEGIN"]:
             continue
         if r["BEGIN"] > f"{first}0101" or r["END"] < f"{last}1001":
@@ -110,7 +110,7 @@ def isd_sites(first=1995, last=2024, min_share=0.85):
     missing 2000-2003, which 722420-99999 has). Its id is the station's with "+linked". `min_share` is kept for callers; unused."""
     import csv
     path = _fetch(ISD_HISTORY, os.path.join(RAW, "isd", "isd-history.csv"))
-    rows = [r for r in csv.DictReader(open(path)) if r["CTRY"] == "US" and r["LAT"] and r["BEGIN"] and r["END"] >= f"{first}0101"
+    rows = [r for r in csv.DictReader(open(path, encoding="utf-8")) if r["CTRY"] == "US" and r["LAT"] and r["BEGIN"] and r["END"] >= f"{first}0101"
             and r["BEGIN"] <= f"{last}1231"]
     up = list(range(len(rows)))
 
@@ -384,7 +384,7 @@ def atlas14_depths(lat, lon, name):
     """NOAA Atlas 14 partial-duration precipitation depths (inches) as {duration: {ARI years: depth}}, plus metadata."""
     url = (f"https://hdsc.nws.noaa.gov/cgi-bin/new/cgi_readH5.py?lat={lat:.4f}&lon={lon:.4f}"
            "&type=pf&data=depth&units=english&series=pds")
-    with open(_fetch(url, os.path.join(RAW, f"noaa_pfds_{name}.txt"), check=lambda d: b"quantiles" in d)) as f:
+    with open(_fetch(url, os.path.join(RAW, f"noaa_pfds_{name}.txt"), check=lambda d: b"quantiles" in d), encoding="utf-8") as f:
         txt = f.read()
     q = ast.literal_eval(re.search(r"quantiles = (\[.*?\]);", txt, re.S).group(1))
     meta = dict(re.findall(r"^(volume|version|region) = '([^']*)';", txt, re.M))

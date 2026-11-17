@@ -15,7 +15,7 @@ def test_ohio_snapshot(tmp_path):
         folder = write("OH", str(tmp_path), date="2000-01-01")
     except RunsMissing as ex:
         pytest.skip(f"no cell runs here: {ex}")
-    m = json.load(open(os.path.join(folder, "manifest.json")))
+    m = json.load(open(os.path.join(folder, "manifest.json"), encoding="utf-8"))
     assert m["format"] == 3 and m["state"] == "OH" and m["model_version"]
     assert set(m["files"]) == {"places.json", "places.parquet", "supply.json", "wastewater.json", "receiving.json", "climate.json", "energy.json",
                                "wateruse.json"}
@@ -23,12 +23,12 @@ def test_ohio_snapshot(tmp_path):
     assert set(m["inputs"]) == {"inputs/wateruse/usgs2015_county_OH.csv", "inputs/wateruse/odnr_registration.json"}
     for name, f in {**m["files"], **m["inputs"], **m["cells"]}.items():
         assert hashlib.sha256(open(os.path.join(folder, name), "rb").read()).hexdigest() == f["sha256"]
-    places = json.load(open(os.path.join(folder, "places.json")))["places"]
+    places = json.load(open(os.path.join(folder, "places.json"), encoding="utf-8"))["places"]
     assert len(places) > 2300 and all(p["division"] and f"cells/{p['cell']}.json" in m["cells"] for p in places)
-    rec = json.load(open(os.path.join(folder, "receiving.json")))
+    rec = json.load(open(os.path.join(folder, "receiving.json"), encoding="utf-8"))
     random.seed(5)
     for s in random.sample(sorted(rec["downstream"]), 3):
         assert rec["downstream"][s] == [r["code"] for r in rc.downstream(s, hops=24)]
-    assert len(json.load(open(os.path.join(folder, "climate.json")))["divisions"]) == 10
-    W = json.load(open(os.path.join(folder, "wateruse.json")))
+    assert len(json.load(open(os.path.join(folder, "climate.json"), encoding="utf-8"))["divisions"]) == 10
+    W = json.load(open(os.path.join(folder, "wateruse.json"), encoding="utf-8"))
     assert len(W["national"]["counties"]) == len(W["state"]["counties"]) == 88 and W["state"]["basis"]["source"] == "odnr_wwfr"

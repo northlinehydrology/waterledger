@@ -1,6 +1,6 @@
 # ERA5 check: IN
 
-**PASS** (2026-11-10; model 1.11; design 0005's leave-one-station-out check; 35 stations).
+**PASS** (2026-11-16; model 1.16; design 0005's leave-one-station-out check; 35 stations).
 
 | Criterion | Test | Limit | Value | Pass | Limit set from |
 |---|---|---|---|---|---|
@@ -12,10 +12,12 @@
 | W6 | corrected shore cells (3 or more): median |error| no worse than uncorrected | - | - | not judged | the reason to correct |
 | W7 | corrected cells: |mean error| in the 1-in-10-year peak day's mean wet bulb, C, at most | 0.50 | 0.02 | yes | model 1.10 [A]: qm-2's Michigan peak days ran 0.72 C humid, mapping the dew point brought Michigan and Ohio to 0.23 (methods log, Nov 8, 2026) |
 | P1 | places sampled, at least | 5 | 9 | yes | too few to judge below this |
-| P2 | places: median |difference| in the hybrid average day, %, at most | 8.00 | 3.87 | yes | four states 1.9-4.6 (Virginia); +3.4 |
-| P3 | places: |mean difference| in the hybrid average day, %, at most | 6.00 | 0.60 | yes | four states 0.6-4.9 (Virginia); +1.1 |
-| P4 | places: median |difference| in the hybrid peak day, %, at most | 6.00 | 3.72 | yes | four states 0.5-3.2 (Virginia); +2.8 |
+| P2 | places: median |difference| in the hybrid average day, % of towers' average day, at most | 1.00 | 0.16 | yes | four states at 1.16 0.10-0.53 (Texas); +0.47 |
+| P3 | places: |mean difference| in the hybrid average day, % of towers' average day, at most | 0.75 | 0.01 | yes | four states at 1.16 0.04-0.29 (Texas); +0.46 |
+| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 2.78 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
 | P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.20 | yes | four states 0.03-0.22; +1.8 |
+| P6 | places: median |difference| in the pads average day, % of towers' average day, at most | 1.00 | 0.18 | yes | four states at 1.16 0.17-0.54 (Texas); +0.46 |
+| P7 | places: median |difference| in the pads peak day, % of towers' peak day, at most | 6.00 | 2.44 | yes | four states at 1.16 1.3-3.8 (Texas); +2.2 |
 
 ## Weather at the held-out stations
 
@@ -69,18 +71,30 @@ Median absolute error (mean error), C, against the station on its own hours.
 
 ## Places through the cooling model
 
-The place's cell against the station's own record, p50 per 100 MW, % difference.
+The place's cell against the station's own record, p50 per 100 MW: % difference in each design's own water (towers are judged by this one), then hybrid and pads as % of towers' water at the place (judged from model 1.16).
 
 | Place | Station (km) | Cell land | towers avg | towers peak | hybrid avg | hybrid peak | assist avg | assist peak |
 |---|---|---|---|---|---|---|---|---|
-| Center township | Evansville Regional Airport (2) | 0.99 | -1 | +0 | -5 | +3 | -8 | +2 |
-| Lost Creek township | Ter Hute Intl-Hulman Fd Ap (4) | 1.00 | +0 | +1 | +4 | +6 | +5 | +12 |
-| Van Buren township | Monroe County Airport (2) | 0.99 | +0 | +1 | +3 | +9 | +5 | +13 |
-| Decatur township | Indianapolis International Airport (5) | 1.00 | -0 | -0 | -4 | -2 | -8 | -3 |
-| West Lafayette city | Purdue University Airport (4) | 1.00 | -0 | +0 | -3 | +3 | -12 | -4 |
-| Pleasant township | Fort Wayne International Airport (4) | 1.00 | +0 | +0 | +12 | +2 | +6 | +3 |
-| Bunker Hill town | Grissom Afb Airport (4) | 1.00 | -0 | +1 | +2 | +8 | +12 | +10 |
-| Delaware County | Delaware Co-Johnson Fd Apt (1) | 1.00 | -0 | +0 | -14 | -4 | -18 | -9 |
-| German township | South Bend Regional Airport (2) | 0.99 | -0 | -0 | -0 | +4 | +4 | +6 |
+| Center township | Evansville Regional Airport (2) | 0.99 | -1 | +0 | +1 | +6 | -6 | +1 |
+| Lost Creek township | Ter Hute Intl-Hulman Fd Ap (4) | 1.00 | +0 | +1 | -0 | +8 | +5 | +16 |
+| Van Buren township | Monroe County Airport (2) | 0.99 | +0 | +1 | +12 | +14 | +23 | +22 |
+| Decatur township | Indianapolis International Airport (5) | 1.00 | -0 | -0 | +0 | -3 | -1 | -1 |
+| West Lafayette city | Purdue University Airport (4) | 1.00 | -0 | +0 | -16 | -2 | -20 | -3 |
+| Pleasant township | Fort Wayne International Airport (4) | 1.00 | +0 | +0 | +11 | -1 | +6 | +17 |
+| Bunker Hill town | Grissom Afb Airport (4) | 1.00 | -0 | +1 | +9 | +15 | +17 | +9 |
+| Delaware County | Delaware Co-Johnson Fd Apt (1) | 1.00 | -0 | +0 | -19 | -0 | -18 | -13 |
+| German township | South Bend Regional Airport (2) | 0.99 | -0 | -0 | +1 | +5 | +11 | +6 |
+
+| Place | hybrid avg, % of towers | hybrid peak, % of towers | assist avg, % of towers | assist peak, % of towers |
+|---|---|---|---|---|
+| Center township | +0.04 | +3.11 | -0.18 | +0.39 |
+| Lost Creek township | -0.00 | +3.93 | +0.11 | +4.88 |
+| Van Buren township | +0.25 | +6.92 | +0.41 | +6.63 |
+| Decatur township | +0.00 | -1.62 | -0.02 | -0.29 |
+| West Lafayette city | -0.33 | -0.81 | -0.36 | -1.04 |
+| Pleasant township | +0.17 | -0.37 | +0.08 | +5.17 |
+| Bunker Hill town | +0.16 | +6.93 | +0.23 | +2.44 |
+| Delaware County | -0.38 | -0.21 | -0.28 | -4.17 |
+| German township | +0.02 | +2.78 | +0.13 | +1.83 |
 
 A fail is a method question for Andrew; the command changes nothing. Criteria: `waterledger.national.era5_check.CRITERIA`.

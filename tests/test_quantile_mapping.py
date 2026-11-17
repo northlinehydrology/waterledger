@@ -140,16 +140,16 @@ def test_leave_one_station_out_on_a_synthetic_shore():
 def test_the_recorded_leave_one_out_check_supports_the_rule():
     """The prototype's results (docs/methods/qm-check), held to what design 0005 says of them: on shore cells the decided rule beats
     raw ERA5 on the design dry-bulb at the held-out stations it corrects; no held-out corrected series has Td above T."""
-    rows = json.load(open(os.path.join(QM, "cv_weather.json")))["rows"]
+    rows = json.load(open(os.path.join(QM, "cv_weather.json"), encoding="utf-8"))["rows"]
     shore = [r for r in rows if r["cell_land"] < Q.SHORE_LAND and r["errors"]["lapse_shore"]["corrected"]]
     assert len(shore) >= 10
     med = lambda way: np.median([abs(r["errors"][way]["ddb"]) for r in shore])
     assert med("lapse_shore") < med("none")
-    places = json.load(open(os.path.join(QM, "cv_places.json")))["runs"]
+    places = json.load(open(os.path.join(QM, "cv_places.json"), encoding="utf-8"))["runs"]
     assert all(r["td_over_t"] == 0 for r in places if r["corrected"])
     assert all(r["rh_max"] <= 100 for r in places)
     # the shoreline places under the decided rule, against their stations (percent): no overshoot where a shore station is near
-    rows = {r["name"]: r["err"]["decided"] for r in json.load(open(os.path.join(QM, "cv_places_summary.json")))}
+    rows = {r["name"]: r["err"]["decided"] for r in json.load(open(os.path.join(QM, "cv_places_summary.json"), encoding="utf-8"))}
     for name in ("Lorain city", "Cleveland city", "Virginia Beach city", "Toledo city"):
         assert abs(rows[name]["hybrid.withdrawn_avg"]) < 10 and abs(rows[name]["assist.withdrawn_avg"]) < 10
         assert abs(rows[name]["hybrid.withdrawn_peak_1in10"]) < 6 and abs(rows[name]["towers.withdrawn_avg"]) < 2

@@ -14,7 +14,7 @@ from waterledger_models.battery import plant
 
 HERE = os.path.dirname(__file__)
 N = 10
-LAKE = json.load(open(os.path.join(HERE, "data", "water_ledger_lakes.json")))["Lake Michigan"]["temps"]
+LAKE = json.load(open(os.path.join(HERE, "data", "water_ledger_lakes.json"), encoding="utf-8"))["Lake Michigan"]["temps"]
 
 
 def results():
@@ -25,5 +25,5 @@ def results():
 
 
 if __name__ == "__main__":
-    json.dump(results(), open(os.path.join(HERE, "data", "battery_before_runner.json"), "w"), indent=0)
+    json.dump(results(), open(os.path.join(HERE, "data", "battery_before_runner.json"), "w", encoding="utf-8"), indent=0)
     print("wrote tests/data/battery_before_runner.json")

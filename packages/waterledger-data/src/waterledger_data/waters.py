@@ -84,15 +84,15 @@ def _cached(name, fn):
     path = os.path.join(RAW, name)
     if not os.path.exists(path):
         os.makedirs(RAW, exist_ok=True)
-        json.dump(fn(), open(path, "w"))
-    return json.load(open(path))
+        json.dump(fn(), open(path, "w", encoding="utf-8"))
+    return json.load(open(path, encoding="utf-8"))
 
 
 def attains():
     """Michigan assessment units (names, categories) and their parameters, 2026 cycle."""
     aus = {}
     for p in sorted(glob.glob(os.path.join(RAW, "attains_[012]_*.json"))):
-        for f in json.load(open(p))["features"]:
+        for f in json.load(open(p, encoding="utf-8"))["features"]:
             a = f["attributes"]
             aus[a["assessmentunitidentifier"]] = {"name": a["assessmentunitname"], "cat": a["ircategory"], "cycle": a["reportingcycle"]}
     if not aus:
@@ -211,11 +211,11 @@ def cwns_design_flows():
     for f in ("FLOW", "FACILITY_PERMIT"):
         save(f"{CWNS}/{f}.csv", os.path.join(RAW, f"cwns2022_{f}.csv"))
     total = {}
-    for r in csv.DictReader(open(os.path.join(RAW, "cwns2022_FLOW.csv"))):
+    for r in csv.DictReader(open(os.path.join(RAW, "cwns2022_FLOW.csv"), encoding="utf-8")):
         if r["STATE_CODE"] == "MI" and r["FLOW_TYPE"] == "Total Flow" and r["CURRENT_DESIGN_FLOW"]:
             total[r["CWNS_ID"]] = float(r["CURRENT_DESIGN_FLOW"])
     out = {}
-    for r in csv.DictReader(open(os.path.join(RAW, "cwns2022_FACILITY_PERMIT.csv"))):
+    for r in csv.DictReader(open(os.path.join(RAW, "cwns2022_FACILITY_PERMIT.csv"), encoding="utf-8")):
         if r["STATE_CODE"] == "MI" and r["CWNS_ID"] in total and r["PERMIT_NUMBER"]:
             out[r["PERMIT_NUMBER"]] = total[r["CWNS_ID"]]
     return out

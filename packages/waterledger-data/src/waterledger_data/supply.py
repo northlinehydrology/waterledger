@@ -31,10 +31,10 @@ def water_systems(state):
                 break
             offset += len(feats)
         os.makedirs(RAW, exist_ok=True)
-        json.dump(out, open(path, "w"))
+        json.dump(out, open(path, "w", encoding="utf-8"))
     from waterledger_data.census import _polygon
     rows = [{"pwsid": f["a"]["PWSID"], "name": f["a"]["PWS_Name"], "population": f["a"]["Population_Served_Count"],
-             "connections": f["a"]["Service_Connections_Count"], "geometry": _polygon(f["rings"])} for f in json.load(open(path))]
+             "connections": f["a"]["Service_Connections_Count"], "geometry": _polygon(f["rings"])} for f in json.load(open(path, encoding="utf-8"))]
     g = gpd.GeoDataFrame(rows, geometry="geometry", crs=4326)
     return g[g.geometry.notna() & ~g.geometry.is_empty].reset_index(drop=True)
 
@@ -45,7 +45,7 @@ def systems_by_place(state, places):
     from waterledger_data.census import places_key
     path = os.path.join(RAW, f"{state}_{places_key(places)}_by_place.json")      # keyed by the places, so a changed place list is worked out afresh
     if os.path.exists(path):
-        return json.load(open(path))
+        return json.load(open(path, encoding="utf-8"))
     sy = water_systems(state).to_crs(ALBERS)
     sy["geometry"] = shapely.make_valid(sy.geometry.values)          # reprojection can leave slivers invalid
     pl = places[["geoid", "geometry"]].to_crs(ALBERS)
@@ -59,7 +59,7 @@ def systems_by_place(state, places):
         out.setdefault(r.geoid, []).append({"pwsid": r.pwsid, "name": r.name, "population": int(r.population or 0),
                                             "connections": int(r.connections or 0), "share": round(float(r.share), 3)})
     os.makedirs(RAW, exist_ok=True)
-    json.dump(out, open(path, "w"))
+    json.dump(out, open(path, "w", encoding="utf-8"))
     return out
 
 

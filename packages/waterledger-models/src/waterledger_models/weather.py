@@ -15,7 +15,7 @@ def from_open_meteo_json(payload):
     """An Open-Meteo archive response (dict or path to a saved JSON file) as a Dataset with 'air_temperature' (C)
     and 'relative_humidity' (%) on local hourly time."""
     if isinstance(payload, (str, os.PathLike)):
-        with open(payload) as f:
+        with open(payload, encoding="utf-8") as f:
             payload = json.load(f)
     import xarray as xr
     h = payload["hourly"]
@@ -116,6 +116,6 @@ def fetch_open_meteo(lat, lon, start="1995-01-01", end="2024-12-31", tz=None, ca
             payload = open_meteo_local_standard(json.load(r), lon, start, end)
     if cache:
         os.makedirs(os.path.dirname(os.path.abspath(cache)), exist_ok=True)
-        with open(cache, "w") as f:
+        with open(cache, "w", encoding="utf-8") as f:
             json.dump(payload, f)
     return from_open_meteo_json(payload)

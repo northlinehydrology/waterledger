@@ -58,7 +58,7 @@ def state_places(state, date=None):
             return [{"geoid": r.geoid, "name": r.name, "level": r.level, "lat": float(r.lat), "lon": float(r.lon)} for r in pl.itertuples()]
         if not folder:
             raise RuntimeError(f"no {state} snapshot reachable or cached ({type(e).__name__}: {e})") from e
-    d = json.load(open(os.path.join(folder, "places.json")))
+    d = json.load(open(os.path.join(folder, "places.json"), encoding="utf-8"))
     rows = d["places"] if isinstance(d, dict) and "places" in d else d
     rows = list(rows.values()) if isinstance(rows, dict) else rows
     return [{k: r[k] for k in ("geoid", "name", "level", "lat", "lon")} for r in rows]
@@ -86,7 +86,7 @@ def cell_bas(state, cells, date=None):
         return {c: ["MISO", "PJM"] for c in cells}
     from waterledger.national.data import fetch_snapshot
     try:
-        by_place = json.load(open(os.path.join(fetch_snapshot(state, date), "energy.json")))["by_place"]
+        by_place = json.load(open(os.path.join(fetch_snapshot(state, date), "energy.json"), encoding="utf-8"))["by_place"]
     except Exception as e:                                  # noqa: BLE001  a new state: its local build, as its snapshot will carry it
         from waterledger_data import energy
         from waterledger.national.data import LiveData
@@ -171,7 +171,7 @@ def _elevations():
     from waterledger_data import climate
     path = climate._fetch(climate.ISD_HISTORY, os.path.join(climate.RAW, "isd", "isd-history.csv"))
     bad = ("", "-999", "-999.0", "-0999.0", "+9999.0")
-    return {f"{r['USAF']}-{r['WBAN']}": float(r["ELEV(M)"]) for r in csv.DictReader(open(path)) if r["ELEV(M)"] not in bad}
+    return {f"{r['USAF']}-{r['WBAN']}": float(r["ELEV(M)"]) for r in csv.DictReader(open(path, encoding="utf-8")) if r["ELEV(M)"] not in bad}
 
 
 def candidates(cells):
@@ -216,7 +216,7 @@ def anchor(site, store=None):
     if not os.path.exists(q_path) and store:
         store.get(f"anchors/{q_name}", q_path)
     if os.path.exists(meta_path):
-        meta = json.load(open(meta_path))
+        meta = json.load(open(meta_path, encoding="utf-8"))
         if not meta["qualifies"]:
             return None
         if os.path.exists(q_path):
@@ -231,7 +231,7 @@ def anchor(site, store=None):
         td = era5.MAGNUS[1] * g / (era5.MAGNUS[0] - g)
         np.save(q_path, Q.fit(times, t, td))
         meta |= {"share_observed": share, "screen": screen}
-    json.dump(meta, open(meta_path, "w"), indent=1, default=str)
+    json.dump(meta, open(meta_path, "w", encoding="utf-8"), indent=1, default=str)
     if store:
         store.put(f"anchors/{site['id']}.json", meta_path)
         if got:
@@ -286,7 +286,7 @@ def weather(cid, stations):
 def _record(cid, cells, times, temps, note, res, draws):
     from waterledger_models.datacenter.physics import design_dry_bulb
     raw = era5.raw_path(cid)
-    meta = json.load(open(raw[:-4] + ".json"))
+    meta = json.load(open(raw[:-4] + ".json", encoding="utf-8"))
     c = cells[cid]["cell"]
     return {"cell": cid, "lat": c["lat"], "lon": c["lon"], "land": c["land"], "elev_m": era5.elevation(cid), "model_version": RUN_MODEL,
             "draws": draws, "seed": SEED, "mw": MW, "period": f"{era5.FIRST}-{era5.LAST}", "hours": len(times), "time": "local standard",
@@ -331,7 +331,7 @@ def pull(store, ids):
             d = os.path.join(era5.RAW, cid)
             latest = os.path.join(d, ".r2-latest.json")
             if store.get(f"era5/{cid}/latest.json", latest):
-                date = json.load(open(latest))["fetched"]
+                date = json.load(open(latest, encoding="utf-8"))["fetched"]
                 raw = store.get(f"era5/{cid}/{date}.json", os.path.join(d, f"{date}.json")) and store.get(f"era5/{cid}/{date}.npz", os.path.join(d, f"{date}.npz"))
                 os.remove(latest)
         return bool(res), bool(raw)
@@ -405,7 +405,7 @@ def run_part(state, k=1, n=1, workers=6, draws=None, store=None, cells=None, run
 
     def finish(cid, times, temps, note, res):
         path = result_path(cid)
-        json.dump(_record(cid, cells, times, temps, note, res, draws), open(path + ".part", "w"))
+        json.dump(_record(cid, cells, times, temps, note, res, draws), open(path + ".part", "w", encoding="utf-8"))
         os.replace(path + ".part", path)
         out[cid] = path
         if store:

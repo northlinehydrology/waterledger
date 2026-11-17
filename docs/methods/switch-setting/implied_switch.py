@@ -32,7 +32,7 @@ def temperatures(lat, lon, cache):
                "&hourly=temperature_2m,relative_humidity_2m&timezone=UTC")
         with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "waterledger"}), timeout=120) as r:
             open(path, "wb").write(r.read())
-    h = json.load(open(path))["hourly"]
+    h = json.load(open(path, encoding="utf-8"))["hourly"]
     keep = [(x, v) for x, v in zip(h["time"], h["temperature_2m"]) if v is not None]
     return [x for x, _ in keep], np.array([v for _, v in keep], float)
 
@@ -61,7 +61,7 @@ def main():
         lines.append(f"| {site} | {op} | {stated} | {'at least ' if bound == '<' else ''}{s:.1f} ({s * 1.8 + 32:.1f}) | {src} |")
     lines += ["", "Stated settings: Microsoft 85 F (29.4 C), June 24, 2026; Meta El Paso about 86 F (30 C), El Paso Water's chief executive (El Paso Matters,",
               "Oct 24, 2025). The model samples 26.5-32.0 C (`switch_setting`), the lowest and highest of the figures above.", ""]
-    open(os.path.join(HERE, "implied.md"), "w").write("\n".join(lines))
+    open(os.path.join(HERE, "implied.md"), "w", encoding="utf-8").write("\n".join(lines))
     print("\n".join(lines))
 
 

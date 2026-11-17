@@ -184,7 +184,7 @@ def write_raw(cid, series, date, request, root=None):
     os.replace(path + ".part.npz", path)
     meta = {"cell": cid, "fetched": date, "request": request, "sha256": sha256(path), "hours": int(len(next(iter(series.values())))),
             "missing": {k: int(np.isnan(v).sum()) for k, v in series.items()}, "licence": "CC-BY-4.0", "attribution": ATTRIBUTION, "citation": CITATION}
-    json.dump(meta, open(os.path.join(d, f"{date}.json"), "w"), indent=1)
+    json.dump(meta, open(os.path.join(d, f"{date}.json"), "w", encoding="utf-8"), indent=1)
     return path
 
 

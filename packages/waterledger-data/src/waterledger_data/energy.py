@@ -46,7 +46,7 @@ BALANCING_AUTHORITIES = {
 def grid_water():
     """{balancing authority: {"consumed_excl_hydro", "consumed_incl_hydro", "withdrawn_excl_hydro"} in L/kWh, 2022}."""
     return {r["ba"]: {"consumed_excl_hydro": float(r["consumed_l_per_kwh_excl_hydro"]), "consumed_incl_hydro": float(r["consumed_l_per_kwh_incl_hydro"]),
-                      "withdrawn_excl_hydro": float(r["withdrawn_l_per_kwh_excl_hydro"])} for r in csv.DictReader(open(TABLE))}
+                      "withdrawn_excl_hydro": float(r["withdrawn_l_per_kwh_excl_hydro"])} for r in csv.DictReader(open(TABLE, encoding="utf-8"))}
 
 
 L_KWH_TO_GAL_MWH = 1000 / 3.785411784
@@ -58,7 +58,7 @@ NEW_GAS = {"label": "Gas plants", "gal_mwh": 205, "lo": 130, "hi": 300, "wd_gal_
 def pv_share(state=None):
     """PV's share of wind and solar generation in 2024: a state's own, from EIA, for any state in the table with either. A state with neither has no mix of
     its own, and takes the U.S. share, the only figure that favors no state (None asks for it directly)."""
-    rows = list(csv.DictReader(open(STATE_TABLE)))
+    rows = list(csv.DictReader(open(STATE_TABLE, encoding="utf-8")))
     for r in rows:
         if r["state"] == state and r["pv_share_of_wind_solar"]:
             return float(r["pv_share_of_wind_solar"])
@@ -88,7 +88,7 @@ def fuel_options(state, name):
     """A state's coal and nuclear plants as power options, for each it has: Macknick et al. 2012 factors for how they are cooled (EIA-860, by water body), weighted by
     their 2024 generation (docs/methods/power_water/fuels.py). {"coal": factors, "nuclear": factors}, without a fuel the state did not generate with in 2024."""
     out = {}
-    for r in csv.DictReader(open(FUEL_TABLE)):
+    for r in csv.DictReader(open(FUEL_TABLE, encoding="utf-8")):
         if r["state"] != state:
             continue
         g, fuel = lambda k: round(float(r[k])), r["fuel"]
@@ -112,7 +112,7 @@ def ba_fuel_water(ba):
     factor. Hydro, wind and storage are zero, and solar is zero except where the BA has a concentrating solar plant
     reporting water. None for a BA not in the table (Alaska and Hawaii have none in EIA-930)."""
     import numpy as np
-    rows = list(csv.DictReader(open(BA_FUEL_TABLE)))
+    rows = list(csv.DictReader(open(BA_FUEL_TABLE, encoding="utf-8")))
     us = {r["fuel"]: r for r in rows if r["ba"] == "US"}
     mine = [r for r in rows if r["ba"] == ba]
     if not mine:
@@ -132,7 +132,7 @@ def state_power_water(state):
     net import share, then updated with the 2022 plant reports and Siddik et al. 2024 on the same basis; docs/methods/power_water): {"consumed", "consumed_lo", "consumed_hi", "withdrawn", "withdrawn_lo",
     "withdrawn_hi" (L/kWh), "withdrawn_fresh", "withdrawn_saline" (L/kWh, adding to "withdrawn"; saline includes brackish), "main_ba", "import_share", "wind_share", "solar_share", "pv_share_of_wind_solar", "year"}, or None."""
     num = lambda v: float(v) if v not in ("", None) else None
-    for r in csv.DictReader(open(STATE_TABLE)):
+    for r in csv.DictReader(open(STATE_TABLE, encoding="utf-8")):
         if r["state"] == state and r["consumed_l_per_kwh"]:
             return {"consumed": num(r["consumed_l_per_kwh"]), "consumed_lo": num(r["consumed_lo"]), "consumed_hi": num(r["consumed_hi"]),
                     "withdrawn": num(r["withdrawn_l_per_kwh"]), "withdrawn_lo": num(r["withdrawn_lo"]), "withdrawn_hi": num(r["withdrawn_hi"]),
@@ -160,7 +160,7 @@ def territories(state, bounds):
                 break
             offset += len(feats)
         os.makedirs(RAW, exist_ok=True)
-        json.dump(out, open(path, "w"))
+        json.dump(out, open(path, "w", encoding="utf-8"))
     from waterledger_data.census import _polygon
     from waterledger_data.power import utility_rtos
     rto = utility_rtos()
@@ -172,7 +172,7 @@ def territories(state, bounds):
         return BALANCING_AUTHORITIES.get(a["cntrl_area"]) or rto.get(uid)
 
     rows = [{"eia_id": int(f["a"]["id"]) if str(f["a"]["id"]).isdigit() else None, "name": f["a"]["name"], "type": f["a"]["type"],
-             "balancing_authority": ba(f["a"]), "geometry": _polygon(f["rings"])} for f in json.load(open(path))]
+             "balancing_authority": ba(f["a"]), "geometry": _polygon(f["rings"])} for f in json.load(open(path, encoding="utf-8"))]
     g = gpd.GeoDataFrame(rows, geometry="geometry", crs=4326)
     return g[g.geometry.notna() & ~g.geometry.is_empty].reset_index(drop=True)
 
@@ -204,7 +204,7 @@ def utilities_by_place(state, places):
     from waterledger_data.census import places_key
     path = os.path.join(RAW, f"{state}_{places_key(places)}_by_place.json")      # keyed by the places, so a changed place list is worked out afresh
     if os.path.exists(path):
-        out = json.load(open(path))
+        out = json.load(open(path, encoding="utf-8"))
         missing = [u for us in out.values() for u in us if not u["balancing_authority"]]
         if missing:                         # caches written before the EIA-861 fallback (territories) have none for these
             from waterledger_data.power import utility_rtos
@@ -227,7 +227,7 @@ def utilities_by_place(state, places):
                                             "balancing_authority": ba, "share": round(float(r.share), 3)})
     out = {g: in_order(us) for g, us in _wapa(state, out).items()}
     os.makedirs(RAW, exist_ok=True)
-    json.dump(out, open(path, "w"))
+    json.dump(out, open(path, "w", encoding="utf-8"))
     return out
 
 

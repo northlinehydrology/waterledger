@@ -16,7 +16,7 @@ HERE = os.path.dirname(__file__)
 TIMES, T, RH = weather()
 T, RH = np.asarray(T, float), np.asarray(RH, float)
 TWB = hr.wet_bulb(T, RH)
-LAKE = json.load(open(os.path.join(HERE, "data", "water_ledger_lakes.json")))["Lake Michigan"]["temps"]
+LAKE = json.load(open(os.path.join(HERE, "data", "water_ledger_lakes.json"), encoding="utf-8"))["Lake Michigan"]["temps"]
 WATER_T = lake_hours(TIMES, LAKE)
 CASES = [(tech, d) for tech in gp.TECHNOLOGIES for d in gp.DESIGNS[tech]]
 

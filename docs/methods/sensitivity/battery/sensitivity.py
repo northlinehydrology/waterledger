@@ -147,7 +147,7 @@ def run(quick=False):
                     warnings.append(f"{design}/{o}: ST < S1 for " + ", ".join(np.array([s[0] for s in sp])[ST < S1 - tol]))
 
     def write(name, data):
-        with open(HERE / name, "w", newline="") as f:
+        with open(HERE / name, "w", encoding="utf-8", newline="") as f:
             wr = csv.DictWriter(f, fieldnames=list(data[0]))
             wr.writeheader()
             for d in data:

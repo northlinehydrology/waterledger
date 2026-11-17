@@ -9,7 +9,7 @@ import pytest
 from waterledger_models.datacenter import cooling, kernel, physics as ph
 
 HERE = os.path.dirname(__file__)
-_W = json.load(open(os.path.join(HERE, "data", "west_michigan_2023_2024.json")))
+_W = json.load(open(os.path.join(HERE, "data", "west_michigan_2023_2024.json"), encoding="utf-8"))
 TDB = np.array(_W["temperature_2m"], dtype=float)
 RH = np.array(_W["relative_humidity_2m"], dtype=float)
 TWB = ph.wet_bulb(TDB, RH)

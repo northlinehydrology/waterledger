@@ -36,7 +36,7 @@ def data(name):
                 req = urllib.request.Request(PUBLISHED.format(name=name), headers={"User-Agent": "waterledger (python package)"})
                 with urllib.request.urlopen(req, timeout=120) as r, open(path, "wb") as f:
                     f.write(r.read())
-        _cache[name] = json.load(open(path))
+        _cache[name] = json.load(open(path, encoding="utf-8"))
     return _cache[name]
 
 

@@ -13,7 +13,7 @@ def pages(name,url):
         off+=5000
         if off>=int(d['total']): break
         time.sleep(1)
-    json.dump(rows,open(path,'w')); print(name,len(rows))
+    json.dump(rows,open(path,'w', encoding='utf-8')); print(name,len(rows))
 B='https://api.eia.gov/v2/electricity'
 pages('facility_gen_2024',B+'/facility-fuel/data/?frequency=annual&data[0]=generation&facets[fuel2002][]=ALL&facets[primeMover][]=ALL&start=2024&end=2024')
 pages('state_gen_2024',B+'/electric-power-operational-data/data/?frequency=annual&data[0]=generation&facets[sectorid][]=99&start=2024&end=2024')

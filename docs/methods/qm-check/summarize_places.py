@@ -7,9 +7,9 @@ import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 E = os.path.join(HERE, "..", "era5-check")
-sc = json.load(open(os.path.join(E, "station_check_results.json")))["rows"]
-lr = {r["geoid"]: r for r in json.load(open(os.path.join(E, "land_rule_results.json")))["rows"]}
-runs = {(x["geoid"], x["way"]): x for x in json.load(open(os.path.join(HERE, "cv_places.json")))["runs"]}
+sc = json.load(open(os.path.join(E, "station_check_results.json"), encoding="utf-8"))["rows"]
+lr = {r["geoid"]: r for r in json.load(open(os.path.join(E, "land_rule_results.json"), encoding="utf-8"))["rows"]}
+runs = {(x["geoid"], x["way"]): x for x in json.load(open(os.path.join(HERE, "cv_places.json"), encoding="utf-8"))["runs"]}
 SHORE = ["3944856", "5182000", "3916000", "2614765820", "3977000"]
 STATS = [(d, s) for d in ("towers", "hybrid", "assist") for s in ("withdrawn_avg", "withdrawn_peak_1in10")]
 WAYS = ["none", "bias", "lapse", "shore", "shore_isd", "shore_linked", "decided"]
@@ -30,7 +30,7 @@ for r in sc:
                  "corrected": runs[(r["geoid"], "lapse")]["corrected"], "anchors": runs[(r["geoid"], "lapse")]["anchors"],
                  "decided_corrected": land < 0.9 and v["decided"]["corrected"], "decided_anchors": v["decided"].get("anchors", []) if land < 0.9 else [],
                  "station": r["nearest_station"]["name"], "station_km": r["nearest_station"]["km"]})
-json.dump(rows, open(os.path.join(HERE, "cv_places_summary.json"), "w"), indent=1)
+json.dump(rows, open(os.path.join(HERE, "cv_places_summary.json"), "w", encoding="utf-8"), indent=1)
 
 label = {"withdrawn_avg": "avg", "withdrawn_peak_1in10": "peak"}
 print("| Place | Cell land | Anchors used (km) | " + " | ".join(f"{d} {label[s]}" for d, s in STATS) + " | Design dry-bulb (C) |")

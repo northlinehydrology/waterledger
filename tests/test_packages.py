@@ -47,7 +47,7 @@ def test_state_power_water_every_state():
     """Every state with a main balancing authority has its own plant-based power-plant water, inside its range (model 1.3)."""
     import csv
     from waterledger_data import energy
-    rows = list(csv.DictReader(open(energy.STATE_TABLE)))
+    rows = list(csv.DictReader(open(energy.STATE_TABLE, encoding="utf-8")))
     assert len(rows) == 52
     for r in rows:
         w = energy.state_power_water(r["state"])

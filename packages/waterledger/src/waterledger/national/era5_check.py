@@ -93,7 +93,7 @@ def record(site):
     os.makedirs(d, exist_ok=True)
     meta_p, data_p = os.path.join(d, site["id"] + ".json"), os.path.join(d, site["id"] + ".npz")
     if os.path.exists(meta_p):
-        meta = json.load(open(meta_p))
+        meta = json.load(open(meta_p, encoding="utf-8"))
         if not meta["qualifies"]:
             return None
         if os.path.exists(data_p):
@@ -102,7 +102,7 @@ def record(site):
     got = (climate.eccc_hourly if site["source"] == "eccc" else climate.isd_hourly)(site)
     meta = {"qualifies": bool(got)}
     if not got:
-        json.dump(meta, open(meta_p, "w"))
+        json.dump(meta, open(meta_p, "w", encoding="utf-8"))
         return None
     times, t, rh, share, screen = got
     t = np.asarray(t, float)
@@ -110,7 +110,7 @@ def record(site):
     td = era5.MAGNUS[1] * g / (era5.MAGNUS[0] - g)
     np.savez_compressed(data_p, times=np.array(times), t=t, td=td)
     meta |= {"share_observed": share, "screen": screen}
-    json.dump(meta, open(meta_p, "w"), default=str)
+    json.dump(meta, open(meta_p, "w", encoding="utf-8"), default=str)
     return {**site, **meta, "times": list(times), "t": t, "td": td}
 
 
@@ -324,7 +324,7 @@ def run_check(state, out=None, n=12, workers=6, draws=None, weather_only=False, 
            "criteria": criteria, "stations": len(stations), "weather": weather, "places": pl}
     out = out or os.path.join(CHECK, state)
     os.makedirs(out, exist_ok=True)
-    json.dump(rep, open(os.path.join(out, "check.json"), "w"), indent=1, default=float)
-    open(os.path.join(out, "check.md"), "w").write(markdown(rep))
+    json.dump(rep, open(os.path.join(out, "check.json"), "w", encoding="utf-8"), indent=1, default=float)
+    open(os.path.join(out, "check.md"), "w", encoding="utf-8").write(markdown(rep))
     _say(f"{state}: {rep['verdict']}; {os.path.join(out, 'check.md')}")
     return rep

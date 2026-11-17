@@ -31,14 +31,14 @@ def division_stations(state):
     from waterledger_data.config import CACHE
     path = os.path.join(CACHE, "climate", f"{state}_division_station_records.json")
     if os.path.exists(path):
-        return json.load(open(path))
+        return json.load(open(path, encoding="utf-8"))
     fips = next(f for f, s in states.FIPS.items() if s == state)
     stations = divisions.division_stations(fips, counties(state))
     got = {d: climate.isd_hourly(s, divisions.FIRST, divisions.LAST) for d, s in stations.items()}
     out = {d: {"name": f"{state} climate division {int(d[2:])}", "station": s["name"], "station_id": s["id"], "lat": s["lat"], "lon": s["lon"],
                "share_observed": s["share_observed"], "screen": got[d][4]} for d, s in stations.items()}
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    json.dump(out, open(path, "w"))
+    json.dump(out, open(path, "w", encoding="utf-8"))
     return out
 
 
@@ -50,7 +50,7 @@ def division_runs(state, n=DRAWS):
     from waterledger_models.datacenter import cooling as cw
     path = os.path.join(CACHE, "climate", f"{state}_runs_model{snapshot_model()}_n{n}.json")
     if os.path.exists(path):
-        return json.load(open(path))
+        return json.load(open(path, encoding="utf-8"))
     fips = next(f for f, s in states.FIPS.items() if s == state)
     stations = divisions.division_stations(fips, counties(state))
     got = {d: climate.isd_hourly(s, divisions.FIRST, divisions.LAST) for d, s in stations.items()}
@@ -58,7 +58,7 @@ def division_runs(state, n=DRAWS):
     out = {d: {"name": f"{state} climate division {int(d[2:])}", "station": s["name"], "station_id": s["id"], "lat": s["lat"], "lon": s["lon"],
                "share_observed": s["share_observed"], "screen": got[d][4], "per_100mw": runs[d]} for d, s in stations.items()}
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    json.dump(out, open(path, "w"))
+    json.dump(out, open(path, "w", encoding="utf-8"))
     return out
 
 

@@ -3,7 +3,7 @@ import json, os, pandas as pd
 D=os.environ.get('WL_POWER_WORK', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'work'))
 pl=pd.read_excel(os.path.join(D,'dl/eia860/x/2___Plant_Y2024.xlsx'),header=1)
 ba=pl.set_index('Plant Code')['Balancing Authority Code']
-fac=pd.DataFrame(json.load(open(os.path.join(D,'dl/api/facility_gen_2024.json'))))
+fac=pd.DataFrame(json.load(open(os.path.join(D,'dl/api/facility_gen_2024.json'), encoding='utf-8')))
 fac['generation']=pd.to_numeric(fac.generation,errors='coerce'); fac['plantCode']=fac.plantCode.astype(int)
 fg=fac.groupby('plantCode').generation.sum()
 gen_ba=fg.groupby(fg.index.map(ba)).sum()

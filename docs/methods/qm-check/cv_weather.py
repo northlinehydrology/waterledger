@@ -69,5 +69,5 @@ if __name__ == "__main__":
     n = len(A.load_anchors(out))
     with ProcessPoolExecutor(int(sys.argv[2]) if len(sys.argv) > 2 else 8, initializer=init, initargs=(out,)) as pool:
         rows = list(pool.map(one, range(n)))
-    json.dump({"ways": list(WAYS), "rows": rows}, open(os.path.join(HERE, "cv_weather.json"), "w"), indent=1, default=float)
+    json.dump({"ways": list(WAYS), "rows": rows}, open(os.path.join(HERE, "cv_weather.json"), "w", encoding="utf-8"), indent=1, default=float)
     print("wrote cv_weather.json,", len(rows), "stations")

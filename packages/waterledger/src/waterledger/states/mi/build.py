@@ -311,9 +311,9 @@ def nearest_region(lat, lon):
 
 
 def build_map(counties):
-    adm = json.load(open(os.path.join(RAW_PLACES, "adm50.json")))
+    adm = json.load(open(os.path.join(RAW_PLACES, "adm50.json"), encoding="utf-8"))
     mi = [f["geometry"] for f in adm["features"] if f["properties"].get("name") == "Michigan" and f["properties"].get("admin") == "United States of America"][0]
-    lakes = json.load(open(os.path.join(RAW_PLACES, "lakes50.json")))
+    lakes = json.load(open(os.path.join(RAW_PLACES, "lakes50.json"), encoding="utf-8"))
     lk = [f["geometry"] for f in lakes["features"] if f["properties"].get("name") in ("Lake Superior", "Lake Michigan", "Lake Huron", "Lake Erie", "Lake Saint Clair")]
     W, H = proj(LON1, LAT0)
     out = {"viewBox": f"0 0 {W} {H}", "land": _geom_path(mi, 0.25), "lakes": "".join(_geom_path(g, 0.35, 6) for g in lk),
@@ -427,7 +427,7 @@ def build_waters():
         if k in trout:
             v["tr"] = [trout[k]["n"], trout[k]["names"]]
     # past the state line, as every other state's paths go (a reach the tracer adds is marked "o"), from each place's main watershed
-    h12 = rc.past_the_line(h12, sorted({p["h12"][0]["code"] for p in json.load(open(OUT_PLACES))["places"] if p["h12"]}))
+    h12 = rc.past_the_line(h12, sorted({p["h12"][0]["code"] for p in json.load(open(OUT_PLACES, encoding="utf-8"))["places"] if p["h12"]}))
     plants = []
     for p in wi.potws():
         x, y = proj(p["lon"], p["lat"])
@@ -438,14 +438,14 @@ def build_waters():
                        "lagoon": p["lagoon"], "flow": p["flow_mgd"], "design": p["design_mgd"], "recv": (p["receiving"] or "").title(), "h12": p["huc12"]})
     # household wells by place: [drift wells, drift depth ft, drift water level ft, rock wells, rock depth, rock water level] (EGLE Wellogic)
     wells, HW = {}, wi.household_wells()
-    for p in json.load(open(OUT_PLACES))["places"]:
+    for p in json.load(open(OUT_PLACES, encoding="utf-8"))["places"]:
         w = HW.get((p["c"], wi.place_stem(p["n"])))
         if w:
             d, r = w.get("drift", {}), w.get("rock", {})
             wells[p["g"]] = [d.get("n", 0), d.get("depth"), d.get("swl"), r.get("n", 0), r.get("depth"), r.get("swl")]
     data = {"generated": datetime.date.today().isoformat(), "cycle": 2026, "groups": wi.LABELS, "wells": wells, "h12": h12, "plants": plants, "rain_in": wi.county_precip(), "rain_median_in": rq.rain_median(wi.county_precip()), "plant_rule": {"own_km": OWN_KM}, "runoff": {**rq.PARAMS, "salt": {**rq.PARAMS["salt"], "events_by_region": {k: rq.salt_events(d) for k, d in SALT_DAYS.items()}}},
             "sources": {k: {"citation": c, "url": u, "short": SHORT.get(k, k)} for k, (c, u) in SOURCES.items() if k in WATER_SOURCES}}
-    with open(OUT_WATERS, "w") as f:
+    with open(OUT_WATERS, "w", encoding="utf-8") as f:
         json.dump(round_tree(data, 3), f, separators=(",", ":"))
     print("wrote", OUT_WATERS, os.path.getsize(OUT_WATERS), "bytes;", sum(1 for v in h12.values() if "i" in v), "HUC12s with listings;", len(plants), "plants")
 
@@ -462,9 +462,9 @@ def build_power():
         e = L[pw.EIA_ID[q["name"]]]
         utils.append({"n": q["name"], "type": q["type"], "cust": e["customers"], "avg_mw": round(e["mwh"] / 8760, 1),
                       "summer_mw": e["summer_mw"], "winter_mw": e["winter_mw"]})
-    bounds = json.load(open(os.path.join(RAW_PLACES, "boundaries.json")))
+    bounds = json.load(open(os.path.join(RAW_PLACES, "boundaries.json"), encoding="utf-8"))
     by_place = {}
-    for p in json.load(open(OUT_PLACES))["places"]:
+    for p in json.load(open(OUT_PLACES, encoding="utf-8"))["places"]:
         rings = bounds.get(p["g"])
         if rings:
             by_place[p["g"]] = [[idx[n], sh] for sh, n in pw.place_utilities(rings, T)]
@@ -472,7 +472,7 @@ def build_power():
     data = {"generated": datetime.date.today().isoformat(), "eia_year": year, "michigan": {"mwh": round(mi), "avg_mw": round(mi / 8760)},
             "utilities": utils, "places": by_place,
             "sources": {k: {"citation": c, "url": u, "short": SHORT.get(k, k)} for k, (c, u) in SOURCES.items() if k in ("mpsc_territory", "eia861")}}
-    with open(OUT_POWER, "w") as f:
+    with open(OUT_POWER, "w", encoding="utf-8") as f:
         json.dump(data, f, separators=(",", ":"))
     print("wrote", OUT_POWER, os.path.getsize(OUT_POWER), "bytes;", len(utils), "utilities;", sum(1 for v in by_place.values() if v), "places with a utility")
 
@@ -593,9 +593,9 @@ def main(n=DRAWS):
     for tid, (name, county) in TRACKER_MUNI.items():
         hit = [p["g"] for p in places if p["n"].lower() == name.lower() and p["c"] == county]
         tracker_muni[tid] = hit[0] if hit else None
-    with open(OUT_PLACES, "w") as f:
+    with open(OUT_PLACES, "w", encoding="utf-8") as f:
         json.dump({"source": "Municipalities: U.S. Census TIGERweb county subdivisions; water systems: EPA Community Water System Service Area Boundaries (reported or modeled); watersheds: USGS Watershed Boundary Dataset", "places": places}, f, separators=(",", ":"))
-    with open(OUT_MAP, "w") as f:
+    with open(OUT_MAP, "w", encoding="utf-8") as f:
         json.dump(cmap, f, separators=(",", ":"))
     print("places", len(places), os.path.getsize(OUT_PLACES), "map", os.path.getsize(OUT_MAP), "tracker", tracker_muni)
 
@@ -633,7 +633,7 @@ def main(n=DRAWS):
         "validation": validation,
         "sources": {k: {"citation": c, "url": u, "short": SHORT.get(k, k)} for k, (c, u) in SOURCES.items()},
     }
-    with open(OUT, "w") as f:
+    with open(OUT, "w", encoding="utf-8") as f:
         json.dump(round_tree(data), f, separators=(",", ":"))
     print("wrote", OUT, os.path.getsize(OUT), "bytes")
 

@@ -8,7 +8,7 @@ import yaml
 from waterledger_models.datacenter import lake
 from waterledger_models.datacenter.bmi import LakeCoolingBmi
 
-REF = json.load(open(os.path.join(os.path.dirname(__file__), "data", "water_ledger_lakes.json")))
+REF = json.load(open(os.path.join(os.path.dirname(__file__), "data", "water_ledger_lakes.json"), encoding="utf-8"))
 WITHDRAWN = "data_center_cooling_water__withdrawal_volume_flux"
 RETURNED = "data_center_cooling_water__return_volume_flux"
 EVAP = "lake_water__forced_evaporation_volume_flux"

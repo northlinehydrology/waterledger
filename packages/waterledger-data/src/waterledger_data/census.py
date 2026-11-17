@@ -49,7 +49,7 @@ def _features(kind, state_fips):
     key = hashlib.sha256(json.dumps([LAYERS[kind], params], sort_keys=True).encode()).hexdigest()[:10]
     path = os.path.join(RAW, f"{state_fips}_{kind}_{key}.json")
     if os.path.exists(path):
-        return json.load(open(path))
+        return json.load(open(path, encoding="utf-8"))
     out, offset = [], 0
     while True:
         d = _get(LAYERS[kind], {**params, "resultOffset": offset, "resultRecordCount": 500}, post=True)
@@ -59,7 +59,7 @@ def _features(kind, state_fips):
             break
         offset += len(feats)
     os.makedirs(RAW, exist_ok=True)
-    json.dump(out, open(path, "w"))
+    json.dump(out, open(path, "w", encoding="utf-8"))
     return out
 
 

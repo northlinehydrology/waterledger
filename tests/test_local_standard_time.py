@@ -28,7 +28,7 @@ def test_hourly_weather_is_local_standard_for_any_place(tmp_path, monkeypatch):
 
     def fake_fetch(url, path):
         seen["url"] = url
-        json.dump({"hourly": {"time": times, "temperature_2m": list(range(len(times))), "relative_humidity_2m": list(range(len(times)))}}, open(tmp_path / "f.json", "w"))
+        json.dump({"hourly": {"time": times, "temperature_2m": list(range(len(times))), "relative_humidity_2m": list(range(len(times)))}}, open(tmp_path / "f.json", "w", encoding="utf-8"))
         return tmp_path / "f.json"
     monkeypatch.setattr(climate, "_fetch", fake_fetch)
     t, T, RH = climate.hourly_weather(30.27, -97.74, "2000-01-01", "2000-01-01", "austin")     # -97.74 / 15 = -6.5, rounds to -7

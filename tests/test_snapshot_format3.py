@@ -42,19 +42,19 @@ def _snapshot(tmp_path, runs):
 
 def test_cells_index_places_and_manifest(tmp_path, runs):
     folder = _snapshot(tmp_path, runs)
-    idx = json.load(open(folder / "cells" / "index.json"))["cells"]
+    idx = json.load(open(folder / "cells" / "index.json", encoding="utf-8"))["cells"]
     assert sorted(idx) == CELLS
     assert idx["43.50_-83.50"]["moved"] == ["2615700720"] and idx["41.75_-83.50"]["corrected"] and not idx["42.00_-85.00"]["corrected"]
-    places = {p["geoid"]: p for p in json.load(open(folder / "places.json"))["places"]}
+    places = {p["geoid"]: p for p in json.load(open(folder / "places.json", encoding="utf-8"))["places"]}
     akron = places["2615700720"]
     assert akron["cell"] == "43.50_-83.50" and akron["cell_moved"] and akron["nearest_cell"] == "43.75_-83.50" and akron["nearest_land"] < 0.5
     assert places["2600001"]["weather_corrected"] and not places["2600002"]["weather_corrected"]
-    rec = json.load(open(folder / "cells" / "41.75_-83.50.json"))
-    run = json.load(open(os.path.join(runs, "41.75_-83.50.json")))
+    rec = json.load(open(folder / "cells" / "41.75_-83.50.json", encoding="utf-8"))
+    run = json.load(open(os.path.join(runs, "41.75_-83.50.json"), encoding="utf-8"))
     assert rec["per_100mw"] == run["per_100mw"] and rec["design_dry_bulb_c"] == run["design_dry_bulb_c"] and rec["period"] == "1995-2024"
     assert rec["correction"]["method"] == "qm-1" and [s["name"] for s in rec["correction"]["stations"]] == ["Detroit Metro Wayne County Airport", "Windsor A", "Detroit City Airport"]
     assert "Copernicus" in rec["attribution"] and rec["source"]["licence"] == "CC-BY-4.0"
-    m = json.load(open(folder / "manifest.json"))
+    m = json.load(open(folder / "manifest.json", encoding="utf-8"))
     assert m["weather"]["doi"] == "10.24381/cds.adbb2d47" and m["weather"]["cells"] == 3 and m["correction"]["cells_corrected"] == 1
     anchors = {a["id"]: a for a in m["correction"]["anchors"]}
     assert anchors["eccc-6139530"]["source"] == "eccc" and "Environment and Climate Change Canada" in m["correction"]["eccc"]["attribution"]
@@ -78,7 +78,7 @@ def test_an_estimate_from_a_format_3_snapshot_is_the_cells_run(tmp_path, runs, m
                                                                         "supply": type("S", (), {"systems": [], "nearest_system_km": None})(),
                                                                         "wastewater": type("W", (), {"plants": []})()})())
     place = wl.Place(geoid="2600001", name="A shore place", kind="city", level="place", state="MI", county="X", county_fips="26000", lat=41.76, lon=-83.52)
-    run = json.load(open(os.path.join(runs, "41.75_-83.50.json")))
+    run = json.load(open(os.path.join(runs, "41.75_-83.50.json"), encoding="utf-8"))
     D = {"regions": {"41.75_-83.50": {"per_100mw": run["per_100mw"]}}, "staff": {"runs": sd.staff_runs()}, "lake_source": {}}
     for cool in ("dry", "assist", "hybrid", "towers"):
         site = wl.Site(place=place, facility=wl.DataCenter(it_mw=250, cooling=cool), source="muni", wastewater="sewer")
@@ -93,7 +93,7 @@ def test_check_snapshot_finds_a_cell_that_does_not_close_or_names_no_stations(tm
     sd = data.SnapshotData("MI", str(folder))
     got = cells.check(sd, [p["geoid"] for p in PLACES])
     assert got == {"cells": 3, "places_with_cell": 1.0, "cells_missing": [], "unclosed": [], "corrected_without_stations": []}
-    rec = json.load(open(folder / "cells" / "41.75_-83.50.json"))
+    rec = json.load(open(folder / "cells" / "41.75_-83.50.json", encoding="utf-8"))
     rec["per_100mw"]["towers"]["withdrawn_avg"]["central"] *= 1.01
     rec["correction"]["stations"] = []
     sd._j["cells/41.75_-83.50.json"] = rec

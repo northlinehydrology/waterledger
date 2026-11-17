@@ -30,7 +30,7 @@ if __name__ == "__main__":
                      "ddb_change_station": half(yr_s, s["t"], 2010, 2024) - half(yr_s, s["t"], 1995, 2009),
                      "ddb_change_cell": half(yr_e, ee[on], 2010, 2024) - half(yr_e, ee[on], 1995, 2009)})
         A._series.pop(s["cell"], None)
-    json.dump(rows, open(os.path.join(HERE, "trends.json"), "w"), indent=1)
+    json.dump(rows, open(os.path.join(HERE, "trends.json"), "w", encoding="utf-8"), indent=1)
     d = lambda k: np.array([r[k] for r in rows])
     for v in ("t", "td"):
         diff = d(f"{v}_cell") - d(f"{v}_station")

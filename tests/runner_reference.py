@@ -32,5 +32,5 @@ def results():
 
 
 if __name__ == "__main__":
-    json.dump(results(), open(os.path.join(HERE, "data", "datacenter_before_runner.json"), "w"), indent=0)
+    json.dump(results(), open(os.path.join(HERE, "data", "datacenter_before_runner.json"), "w", encoding="utf-8"), indent=0)
     print("wrote tests/data/datacenter_before_runner.json")

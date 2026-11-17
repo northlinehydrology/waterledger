@@ -74,7 +74,7 @@ def runs(ids, runs_dir=None):
     if missing:
         raise RunsMissing(f"{len(missing)} of {len(ids)} cells have no model {E.RUN_MODEL} run in {runs_dir} (first: {', '.join(missing[:5])}); "
                                 "run `waterledger era5 run ST` first, or pull them from R2")
-    return {c: json.load(open(os.path.join(runs_dir, f"{c}.json"))) for c in ids}
+    return {c: json.load(open(os.path.join(runs_dir, f"{c}.json"), encoding="utf-8")) for c in ids}
 
 
 def _fetched(site):
@@ -128,7 +128,7 @@ def write(folder, places, runs_dir=None):
     sites = {}
     for p in os.listdir(E.ANCHORS) if os.path.isdir(E.ANCHORS) else []:
         if p.endswith(".json") and p[:-5] in anchors:
-            sites[p[:-5]] = json.load(open(os.path.join(E.ANCHORS, p)))
+            sites[p[:-5]] = json.load(open(os.path.join(E.ANCHORS, p), encoding="utf-8"))
     used = []
     for sid, a in sorted(anchors.items()):
         meta = sites.get(sid, {})
