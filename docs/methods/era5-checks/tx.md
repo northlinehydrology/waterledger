@@ -1,6 +1,6 @@
 # ERA5 check: TX
 
-**PASS** (2026-11-09; model 1.11; design 0005's leave-one-station-out check; 67 stations).
+**PASS** (2026-11-16; model 1.16; design 0005's leave-one-station-out check; 67 stations).
 
 | Criterion | Test | Limit | Value | Pass | Limit set from |
 |---|---|---|---|---|---|
@@ -12,10 +12,12 @@
 | W6 | corrected shore cells (3 or more): median |error| no worse than uncorrected | - | - | not judged | the reason to correct |
 | W7 | corrected cells: |mean error| in the 1-in-10-year peak day's mean wet bulb, C, at most | 0.50 | 0.06 | yes | model 1.10 [A]: qm-2's Michigan peak days ran 0.72 C humid, mapping the dew point brought Michigan and Ohio to 0.23 (methods log, Nov 8, 2026) |
 | P1 | places sampled, at least | 5 | 12 | yes | too few to judge below this |
-| P2 | places: median |difference| in the hybrid average day, %, at most | 8.00 | 4.47 | yes | four states 1.9-4.6 (Virginia); +3.4 |
-| P3 | places: |mean difference| in the hybrid average day, %, at most | 6.00 | 1.26 | yes | four states 0.6-4.9 (Virginia); +1.1 |
-| P4 | places: median |difference| in the hybrid peak day, %, at most | 6.00 | 3.76 | yes | four states 0.5-3.2 (Virginia); +2.8 |
+| P2 | places: median |difference| in the hybrid average day, % of towers' average day, at most | 1.00 | 0.53 | yes | four states at 1.16 0.10-0.53 (Texas); +0.47 |
+| P3 | places: |mean difference| in the hybrid average day, % of towers' average day, at most | 0.75 | 0.29 | yes | four states at 1.16 0.04-0.29 (Texas); +0.46 |
+| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 2.83 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
 | P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.31 | yes | four states 0.03-0.22; +1.8 |
+| P6 | places: median |difference| in the pads average day, % of towers' average day, at most | 1.00 | 0.54 | yes | four states at 1.16 0.17-0.54 (Texas); +0.46 |
+| P7 | places: median |difference| in the pads peak day, % of towers' peak day, at most | 6.00 | 3.77 | yes | four states at 1.16 1.3-3.8 (Texas); +2.2 |
 
 ## Weather at the held-out stations
 
@@ -102,21 +104,36 @@ Median absolute error (mean error), C, against the station on its own hours.
 
 ## Places through the cooling model
 
-The place's cell against the station's own record, p50 per 100 MW, % difference.
+The place's cell against the station's own record, p50 per 100 MW: % difference in each design's own water (towers are judged by this one), then hybrid and pads as % of towers' water at the place (judged from model 1.16).
 
 | Place | Station (km) | Cell land | towers avg | towers peak | hybrid avg | hybrid peak | assist avg | assist peak |
 |---|---|---|---|---|---|---|---|---|
-| Nederland city | Southeast Texas Regional Airport (3) | 0.89 | +0 | +0 | +9 | +9 | -5 | +3 |
-| Galveston County | Scholes Intl At Glston Apt (4) | 0.67 | -1 | -1 | -14 | -11 | -14 | -17 |
-| Corpus Christi city | Corpus Christi Nas (14) | 0.74 | -1 | -0 | -0 | +2 | +1 | +0 |
-| Fulton town | Aransas County Airport (2) | 0.77 | +0 | +1 | -3 | +5 | -5 | +6 |
-| Palacios city | Palacios Municipal Airport (3) | 0.77 | -0 | -1 | -3 | -6 | -4 | -11 |
-| Tye city | Dyess Air Force Base (3) | 1.00 | -0 | -0 | -4 | +0 | -8 | -2 |
-| Tomball city | Hooks Memorial Airpt (7) | 1.00 | +0 | -0 | +5 | +3 | +0 | +6 |
-| Humble city | G Bush Intercontinental Ap/Houston Ap (9) | 0.98 | +0 | -0 | -1 | -0 | -1 | +2 |
-| South Houston city | William P. Hobby Airport (5) | 0.99 | -1 | +1 | -6 | -0 | -0 | -0 |
-| Burke city | Angelina County Airport (1) | 1.00 | +0 | +1 | +4 | +5 | +8 | +9 |
-| Chandler city | Tyler Pounds Regional Arpt (9) | 0.96 | -0 | -0 | -7 | +1 | -12 | -5 |
-| Lakeport city | East Texas Regional Arpt (2) | 0.98 | +0 | +1 | +7 | +5 | +6 | +7 |
+| Nederland city | Southeast Texas Regional Airport (3) | 0.89 | +0 | +0 | -9 | +7 | -21 | -7 |
+| Galveston County | Scholes Intl At Glston Apt (4) | 0.67 | -1 | -1 | -16 | -9 | -8 | +14 |
+| Corpus Christi city | Corpus Christi Nas (14) | 0.74 | -1 | -0 | +9 | +9 | +2 | +13 |
+| Fulton town | Aransas County Airport (2) | 0.77 | +0 | +1 | -11 | +11 | -7 | +20 |
+| Palacios city | Palacios Municipal Airport (3) | 0.77 | -0 | -1 | -17 | -11 | -10 | +5 |
+| Tye city | Dyess Air Force Base (3) | 1.00 | -0 | -0 | -12 | -3 | -14 | -4 |
+| Tomball city | Hooks Memorial Airpt (7) | 1.00 | +0 | -0 | +3 | -4 | -1 | -7 |
+| Humble city | G Bush Intercontinental Ap/Houston Ap (9) | 0.98 | +0 | -0 | -6 | +2 | -4 | +3 |
+| South Houston city | William P. Hobby Airport (5) | 0.99 | -1 | +1 | +5 | +4 | +11 | +11 |
+| Burke city | Angelina County Airport (1) | 1.00 | +0 | +1 | +6 | +3 | +12 | +8 |
+| Chandler city | Tyler Pounds Regional Arpt (9) | 0.96 | -0 | -0 | -9 | +3 | -12 | -3 |
+| Lakeport city | East Texas Regional Arpt (2) | 0.98 | +0 | +1 | +7 | +11 | +7 | +9 |
+
+| Place | hybrid avg, % of towers | hybrid peak, % of towers | assist avg, % of towers | assist peak, % of towers |
+|---|---|---|---|---|
+| Nederland city | -0.49 | +3.27 | -1.13 | -2.77 |
+| Galveston County | -1.04 | -5.41 | -0.38 | +5.05 |
+| Corpus Christi city | +0.63 | +4.43 | +0.14 | +4.69 |
+| Fulton town | -0.86 | +5.46 | -0.40 | +7.71 |
+| Palacios city | -1.20 | -6.36 | -0.59 | +2.05 |
+| Tye city | -0.94 | -1.76 | -1.65 | -2.53 |
+| Tomball city | +0.22 | -2.38 | -0.09 | -3.67 |
+| Humble city | -0.41 | +0.93 | -0.30 | +1.67 |
+| South Houston city | +0.34 | +1.90 | +0.77 | +5.07 |
+| Burke city | +0.37 | +1.65 | +0.91 | +3.88 |
+| Chandler city | -0.57 | +1.76 | -0.94 | -1.83 |
+| Lakeport city | +0.42 | +5.53 | +0.50 | +4.65 |
 
 A fail is a method question for Andrew; the command changes nothing. Criteria: `waterledger.national.era5_check.CRITERIA`.
