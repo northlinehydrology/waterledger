@@ -1,7 +1,8 @@
 """Write tests/data/supply_before_aorc.json: the ERA5 supply path's results as they were before the path for a study's own forcing was added
 (design 0018): PV (tracking and fixed, central parameters and three draws at once), wind, and supply scenarios with PV, wind and gas on the
 shared runner, on the stored two years of West Michigan weather with test_scenarios.py's synthetic radiation and 100 m wind.
-test_supply_identity.py holds the ERA5 path to it to the bit. Written once from main at f370fcc (Nov 16, 2026), before pv.py changed; not rerun.
+test_supply_identity.py holds the ERA5 path to it (to the bit on macOS arm64, within 1e-12 elsewhere). Written once from main at f370fcc
+(Nov 16, 2026) on macOS arm64, before pv.py changed; not rerun.
 
     uv run python tests/supply_reference.py
 """
