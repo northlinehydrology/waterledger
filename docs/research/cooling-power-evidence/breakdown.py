@@ -9,7 +9,7 @@ cid, ids = sys.argv[1], sys.argv[2].split(",")
 A = os.path.join(E.CACHE, "era5", "anchors")
 st = []
 for i in ids:
-    m = json.load(open(os.path.join(A, i + ".json")))
+    m = json.load(open(os.path.join(A, i + ".json"), encoding="utf-8"))
     st.append({**m, "shore_land": m.get("shore_land", m["cell_land"]), "qt": np.load(os.path.join(A, f"{i}.t-td.npy"))})
 times, t, rh, note = E.weather(cid, st)
 tdb, rh = np.array(t), np.array(rh)
@@ -45,7 +45,7 @@ for plant in P.PLANTS:
         out["rows"][f"{plant}/{d}"] = {"avg": {k: float(v.mean()) for k, v in r.items()}, "peak": {k: float(v[pk]) for k, v in r.items()},
                                      "peak_tdb": float(tdb[pk]), "peak_twb": float(twb[pk]), "chiller_hours_share": float((r["chiller"] > 1e-4).mean()),
                                      "switch": float(P.switch_point(p)), "loop_water": float(P.air_loop_water(p))}
-json.dump(out, open(sys.argv[3], "w"), indent=1)
+json.dump(out, open(sys.argv[3], "w", encoding="utf-8"), indent=1)
 print(cid, "corrected", note["applied"], "design_db %.1f" % out["design_db"])
 for k, v in out["rows"].items():
     a, b = v["avg"], v["peak"]

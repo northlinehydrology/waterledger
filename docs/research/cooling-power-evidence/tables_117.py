@@ -1,5 +1,5 @@
 """Place-by-place tables from model 1.17 runs (in memory on branch model-1.17, saved under runs/model1.17/). p50 per 100 MW of IT. As tables.py, with the outside air design."""
-import json, os, sys
+import json, os
 S = os.path.dirname(os.path.abspath(__file__))
 R = f"{S}/runs/model1.17"
 places = [("Grand Rapids, MI", f"{R}/43.00_-85.75.json", "MISO"), ("Loudoun County, VA", f"{R}/39.00_-77.50.json", "PJM"),
@@ -10,7 +10,7 @@ print("| Place | Plant | Dry PUE avg | Assist | Hybrid | Towers | Outside air | 
 print("|---|---|---|---|---|---|---|---|---|---|")
 for name, f, ba in places:
     if not os.path.exists(f): continue
-    d = json.load(open(f))
+    d = json.load(open(f, encoding="utf-8"))
     for plant in ("shared", "warm", "chilled"):
         s = P(d, plant); g = lambda des, k: s[des][k]["p50"]
         pa = [g(x, "pue_avg") for x in ("dry", "assist", "hybrid", "towers", "outside_air")]
@@ -21,7 +21,7 @@ print("| Place | Plant | Avg MW dry / towers | Extra GWh a year, dry | Hottest h
 print("|---|---|---|---|---|---|---|---|")
 for name, f, ba in places:
     if not os.path.exists(f): continue
-    d = json.load(open(f))
+    d = json.load(open(f, encoding="utf-8"))
     for plant in ("shared", "warm", "chilled"):
         s = P(d, plant); g = lambda des, k, q="p50": s[des][k][q] * 10
         dm = g("dry", "power_mw_avg") - g("towers", "power_mw_avg")
@@ -31,7 +31,7 @@ print("| Place | BA | Plant | Towers consumed on site | Grid consumed, dry / tow
 print("|---|---|---|---|---|---|---|---|---|")
 for name, f, ba0 in places:
     if not os.path.exists(f): continue
-    d = json.load(open(f))
+    d = json.load(open(f, encoding="utf-8"))
     for ba in d["grid"]["bas"]:
         for plant in ("shared", "chilled"):
             s = P(d, plant); g = lambda des, k: s[des][k]["p50"]

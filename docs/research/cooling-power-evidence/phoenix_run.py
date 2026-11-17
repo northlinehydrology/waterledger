@@ -8,7 +8,7 @@ cid, ids, bas, out = sys.argv[1], sys.argv[2].split(","), sys.argv[3].split(",")
 A = os.path.join(E.CACHE, "era5", "anchors")
 stations = []
 for i in ids:
-    meta = json.load(open(os.path.join(A, i + ".json")))
+    meta = json.load(open(os.path.join(A, i + ".json"), encoding="utf-8"))
     assert meta["qualifies"], i
     stations.append({**meta, "shore_land": meta.get("shore_land", meta["cell_land"]), "qt": np.load(os.path.join(A, f"{i}.t-td.npy"))})
 t0 = time.time()
@@ -18,5 +18,5 @@ print("weather", note["applied"], note.get("change"), "grid", list(grid), flush=
 res = cooling.run_plants(times, temps, rhs, n=DRAWS, seed=E.SEED, mw=E.MW, grid=grid)
 rec = {"cell": cid, "model_version": E.RUN_MODEL, "draws": DRAWS, "seed": E.SEED, "correction": {k: v for k, v in note.items() if k != "stations"},
        "grid": {"bas": bas}, "design_dry_bulb_c": float(cooling.design_dry_bulb(np.array(temps))) if hasattr(cooling, "design_dry_bulb") else None, **E.by_plant(res)}
-json.dump(rec, open(out, "w"), default=float)
+json.dump(rec, open(out, "w", encoding="utf-8"), default=float)
 print("done", round(time.time() - t0), "s")

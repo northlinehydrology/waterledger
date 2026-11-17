@@ -7,7 +7,7 @@ from waterledger_models.datacenter import physics as P
 cid, ids = sys.argv[1], sys.argv[2].split(",")
 A = os.path.join(E.CACHE, "era5", "anchors")
 st = [{**m, "shore_land": m.get("shore_land", m["cell_land"]), "qt": np.load(os.path.join(A, f"{i}.t-td.npy"))}
-      for i in ids for m in [json.load(open(os.path.join(A, i + ".json")))]]
+      for i in ids for m in [json.load(open(os.path.join(A, i + ".json"), encoding="utf-8"))]]
 times, t, rh, note = E.weather(cid, st)
 tdb, rh = np.array(t), np.array(rh); twb = hr.wet_bulb(tdb, rh)
 years = np.array([x[:4] for x in times]); yi = [np.flatnonzero(years == y) for y in np.unique(years)]
