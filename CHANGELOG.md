@@ -2,7 +2,7 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## 3.24.0 (Nov 16, 2026; model 1.16)
+## 3.24.0 (Nov 17, 2026; model 1.16)
 
 waterledger and waterledger-models 3.24.0; waterledger-data stays 3.23.1. Model 1.16. Data center, battery cell plant and supply numbers change; every state's snapshot is rebuilt.
 
