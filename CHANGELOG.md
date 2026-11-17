@@ -2,6 +2,16 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## Unreleased
+
+- **Reuse never takes less than staff water** (`scenario.reuse_taken`, used by `cooling_estimate`; `docs/methods/methods-log.md`, Nov 17):
+  under full treatment and reuse, water withdrawn on the average and peak day is the larger of what the cooling has to make up
+  (evaporated less condensate) and staff (drinking and sanitary) water at the campus's size, `staff_q(..., part="staff")`. Through
+  3.24.0 it was floored at zero, so a dry campus, whose condensate can cover what it evaporates, withdrew nothing. Where the floor
+  holds, the surplus is returned (a site drain or stormwater [A], not the sewer: `to_sewer` stays zero), so withdrawn + condensate =
+  consumed + returned on both days; through 3.24.0 returned was zero under reuse and a dry campus's books did not close. Only dry
+  designs under reuse change at Michigan's sizes; the highest month and annual totals follow the average day.
+
 ## 3.24.0 (Nov 17, 2026; model 1.16)
 
 waterledger and waterledger-models 3.24.0; waterledger-data stays 3.23.1. Model 1.16. Data center, battery cell plant and supply numbers change; every state's snapshot is rebuilt.
