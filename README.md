@@ -83,6 +83,9 @@ est.supply["own_gas"].local_consumed     # water the campus's own gas plant evap
 est.supply["pv_wind"].share_grid         # the share of the year's MWh the grid still serves, hour by hour; also unserved_hours_annual, land
 est.household_wells              # the aquifer most household wells draw from, how deep, the water level, where a state has well records
 site.by_design().best            # the cooling design that evaporates least in total, campus and power plants; also .designs and the dry-against-towers figures (`closed_loop_*`)
+t = site.by_design(plants=("shared", "warm", "chilled")).plants["warm"]["dry"]   # 3.25.0: dry, pads, hybrid and towers by default, for each cooling plant asked for
+t.evaporated_peak_day, t.grid_water, t.annual_mwh, t.peak_mw   # campus water, the balancing authority's hourly-mix plant water (average and peak day), MWh a year, hottest hour
+t.more_electricity_pct, t.more_peak_mw, t.extra_grid_water_share   # against towers: % more electricity a year, hottest-hour MW, the extra electricity's plant water as % of towers' own water
 est.equivalents.homes            # the water as homes at the state's own water for a home (.home_gpd: USGS 2015 over ACS 2015 households); also .golf_courses, .evaporated_share, .electricity_homes, .share_of_home_customers
 est.power_plants["state_mix"].consumed   # water at power plants for one power option, MGD; also .withdrawn, .returned; est.site.power names the one in use
 est.grid_water.consumed_peak_day         # the place's balancing authority, hour by hour (model 1.11): average day and peak day, average and marginal mix

@@ -115,4 +115,4 @@ def test_battery_designs_order_and_lake():
 @pytest.mark.live
 def test_battery_by_design():
     c = wl.Site(place=wl.place("Gaines charter township, MI"), facility=BatteryCellPlant(capacity_gwh=40)).by_design()
-    assert set(c.designs) == {"dry", "hybrid", "towers"} and c.designs["dry"].evaporated.p50 < c.designs["towers"].evaporated.p50
+    assert set(c.designs) == {"dry", "assist", "hybrid", "towers"} and c.plants == {} and c.designs["dry"].evaporated.p50 < c.designs["towers"].evaporated.p50
