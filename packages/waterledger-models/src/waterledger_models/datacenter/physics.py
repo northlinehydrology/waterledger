@@ -60,6 +60,12 @@ RANGES = {
     # (55 days) 30.5; Wisconsin's (under 5%) and Phoenix's (up to 40%) are bounds at 25.2 and 27.4. The stated settings sit at its middle. These are fleets of
     # outside air with pads; dry coolers with pads and hybrids are taken to be run the same way [A].
     "switch_setting": (26.5, 32.0),
+    # The outside air design (model 1.17, design 0022): how far its pads run past the operator's setting once they are on, from 0 (throttled to reach the
+    # setting and no lower) to 1 (the media's full effect, down to the supply air floor at most). Both are built: staged or modulated media hold a
+    # setting; on-off media cool as far as the wet-bulb allows. No operator publishes which, so all of 0-1 is sampled [A]. At Phoenix's cell, all
+    # air-cooled halls at central parameters, the ends give 0.18 and 0.37 L evaporated per IT kWh; LBNL 2024 (Fig. 4.4) models about 0.4 with
+    # water-cooled backup, and hyperscale operators report 0.1-0.3.
+    "pad_full": (0.0, 1.0),
     # Dry coolers with adiabatic pre-cooling (model 1.3): the pads' effectiveness is shared equipment (heat_rejection.EQUIPMENT, from model 1.12).
     "assist_eff": EQUIPMENT["assist_eff"],
     "hybrid_full_offset": EQUIPMENT["hybrid_full_offset"],
@@ -156,6 +162,7 @@ SOURCES = {
     "drift": "EPA WaterSense at Work 2012, section 6.3, p. 6-9; EPA AP-42 13.4, Table 13.4-1",
     "fill_gal_per_mw": "Crusoe 2026; chilled-water loops of 3-10 gal per ton; top 12,000 [A]",
     "switch_margin": "Operator's setting around the loop's limit [A]: US 12,426,214 B1 (a controller threshold, 70-95 F in its embodiments); EVAPCO 2019, p. 2",
+    "pad_full": "Not published for any operator: throttled media (0) to on-off media at full effect (1) [A]; checked against LBNL 2024 Fig. 4.4 and operators' WUE (design 0022)",
     "switch_setting": "Microsoft (85 F, 2026) and Meta El Paso (about 86 F, El Paso Water, 2025) stated; the range is the setting implied by operators' stated shares of the year on water (Microsoft, AWS) at ERA5 hourly dry-bulb, 2015-2024 [A]",
     "assist_eff": "EVAPCO 2019 (presented at CTI, Feb 2019), p. 2; ASHRAE 2016, ch. 41",
     "hybrid_full_offset": "Around the location's own 0.4% design dry-bulb [A], no published value",
@@ -259,11 +266,12 @@ def outside_air_hall(tdb, twb, p, rh=None):
     supply = np.maximum(tdb, floor)
     depr = p["assist_eff"] * np.maximum(tdb - twb, 0.0)
     hot = tdb > switch
-    pads = np.where(hot, np.minimum(tdb - switch, depr), 0.0)
+    held = np.minimum(tdb - switch, depr)                                # throttled to the setting
+    pads = np.where(hot, held + p["pad_full"] * (np.minimum(tdb - floor, depr) - held), 0.0)     # or further, toward the floor (pad_full)
     if "wet_frac" in p:            # under a water limit the pads' evaporation is cut in proportion and the trim chillers carry the rest (design 0006)
         pads = pads * p["wet_frac"]
-    trim_k = np.where(hot, tdb - pads - switch, 0.0)
-    supply = np.where(hot, switch, supply)
+    trim_k = np.where(hot, np.maximum(tdb - pads - switch, 0.0), 0.0)
+    supply = np.where(hot, tdb - pads - trim_k, supply)
     trim = m * CP_AIR * trim_k
     # the trim coil's water, from the setting as the air loop's water is from its supply air; an air-cooled chiller on the outside air (design 0015)
     coil_water = switch + p["air_rise"] - p["air_rise"] / p["coil_eff"]

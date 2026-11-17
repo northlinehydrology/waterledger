@@ -26,7 +26,7 @@ FIELDS = ("q", "air", "kg_s", "room", "crah", "air_water", "liquid_water", "swit
           "supply_air", "water_rise", "tower_approach", "hx_approach", "dc_approach", "range_f", "carnot_water", "carnot_air",
           "pump_econ_kpa", "pump_chw_kpa", "pump_tower_kpa", "pump_eff", "cp_glycol", "rho_glycol", "design_potential", "design_min",
           "tower_fan_pa", "fan_eff", "dc_fan_pa", "assist_dt_air", "assist_eff", "er_adj", "drift", "coc", "assist_bleed", "topup", "lg", "air_cop_cap",
-          "air_rise", "oa_kg_s", "oa_fan", "oa_switch", "oa_coil_water", "coil_eff")
+          "air_rise", "oa_kg_s", "oa_fan", "oa_switch", "oa_coil_water", "coil_eff", "pad_full")
 F = {k: i for i, k in enumerate(FIELDS)}
 # physics.py's constants, which Numba takes in as fixed values when it compiles
 RHO_AIR, RHO_WATER, CP_AIR, CP_WATER, LATENT_KJ = ph.RHO_AIR, ph.RHO_WATER, ph.CP_AIR, ph.CP_WATER, ph.LATENT_KJ
@@ -194,8 +194,10 @@ def _hour_outside_air(t, wb, outside_w, k2, v):
     share = (floor + rise - floor) / max(floor + rise - t, 1e-9) if t < floor else 1.0
     pads, trim_k = 0.0, 0.0
     if t > sw:
-        pads = min(t - sw, v[32] * max(t - wb, 0.0))
-        trim_k = t - pads - sw
+        depr = v[32] * max(t - wb, 0.0)
+        held = min(t - sw, depr)
+        pads = held + v[46] * (min(t - floor, depr) - held)
+        trim_k = max(t - pads - sw, 0.0)
     trim = m * CP_AIR * trim_k
     evaporator = v[44] - 2.0
     cop = min(1.0 / (AIR_LOSS + max(t + 12.0 - evaporator, 1.0) / (v[19] * (evaporator + 273.15))), v[39])

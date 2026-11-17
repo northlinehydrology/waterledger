@@ -30,10 +30,11 @@ def test_the_halls_air_closes(plant, rh):
     np.testing.assert_allclose(h["m"] * ph.CP_AIR * h["pads"], h["evap"] / 3600.0 * ph.KG_GAL * ph.LATENT_KJ, rtol=1e-12, atol=1e-15)
     assert (h["pads"] <= np.maximum(T - W, 0.0) + 1e-12).all()
     assert (np.where(T <= switch, h["evap"], 0.0) == 0).all()
-    # the air leaves the pads and trim at the setting in every hot hour: outside - pads - trim = setting
+    # in every hot hour the air leaves the pads and trim at the supply: outside - pads - trim = supply, at or below the setting; trim only to reach it
     hot = T > switch
     trim_k = h["trim"] / (h["m"] * ph.CP_AIR)
-    np.testing.assert_allclose(np.where(hot, T - h["pads"] - trim_k, switch) * np.ones_like(trim_k), switch * np.ones_like(trim_k), rtol=1e-12)
+    np.testing.assert_allclose(np.where(hot, T - h["pads"] - trim_k, h["supply"]), h["supply"], rtol=1e-12)
+    assert (np.where(trim_k > 0, np.abs(h["supply"] - switch) < 1e-9, True)).all()
     assert (np.where(h["trim"] > 0, h["pads"] >= p["assist_eff"] * np.maximum(T - W, 0.0) - 1e-12, True)).all()
 
 
@@ -54,11 +55,11 @@ def test_every_kw_is_accounted_for(plant):
 
 @pytest.mark.parametrize("plant", ph.PLANTS)
 def test_no_more_water_than_towers_unless_hotter_than_the_return_air(plant):
-    """The pads cool all the halls' air, towers only the heat. In an hour hotter than the halls' return air (the setting + the air rise) cooling the
-    outside air to the setting takes more than the heat itself, so there, in very dry air, the design can evaporate more than towers would: physics, kept
-    (design 0022). In every other hour it takes less."""
+    """The pads cool all the halls' air, towers only the heat. In an hour hotter than the halls' return air at the supply floor (floor + air rise),
+    pads that run toward the floor (pad_full) can take more than the heat itself, so there, in very dry air, the design can evaporate more than towers
+    would: physics, kept (design 0022). In every other hour it takes less."""
     p = PLANT_DRAWS[plant]
-    hotter = T > ph.outside_air_switch(p) + p["air_rise"]
+    hotter = T > p["supply_air"] + p["air_rise"]
     for rh in (5.0, 40.0, 90.0):
         W, R = _weather(rh)
         oa = ph.hourly_rates(T, W, "outside_air", p, R)[1]
@@ -76,11 +77,14 @@ def test_a_hot_hour_by_hand():
     air = (1 - p["liquid_share"]) + p["liquid_share"] * p["liquid_air_share"]
     m = (q - (1 - air)) / (1.01 * p["air_rise"])                           # kg/s per IT kW
     switch = max(p["switch_setting"], p["supply_air"] + p["switch_margin"], p["supply_air"])
-    pads = min(35.0 - switch, p["assist_eff"] * (35.0 - wb[0]))             # the pads reach the setting: 35 C on a wet-bulb near 19 C
-    assert pads == pytest.approx(35.0 - switch) and h["trim"][0] == 0.0
+    depr = p["assist_eff"] * (35.0 - wb[0])                                  # 35 C on a wet-bulb near 19 C: the media could cool it about 12 K
+    held = min(35.0 - switch, depr)                                         # throttled, the pads reach the setting
+    pads = held + p["pad_full"] * (min(35.0 - p["supply_air"], depr) - held)     # halfway (central pad_full) toward the supply air floor
+    assert held == pytest.approx(35.0 - switch) and h["trim"][0] == 0.0
+    assert h["supply"][0] == pytest.approx(35.0 - pads) and p["supply_air"] <= h["supply"][0] <= switch
     gal = m * 1.01 * pads / 2450.0 * 3600.0 / 3.78541
     assert h["evap"][0] == pytest.approx(gal, rel=1e-12)
-    assert gal == pytest.approx(0.090, abs=0.005)                          # about 0.34 L per IT kWh in that hour
+    assert gal == pytest.approx(0.107, abs=0.005)                          # about 0.41 L per IT kWh in that hour
 
 
 def test_a_water_limit_moves_the_pads_duty_to_the_trim_chillers():

@@ -213,7 +213,7 @@ PARAM_SOURCES = {
     "staff_core": ["jlarc2024", "gilroy2022"], "staff_per_mw": ["meta_richland", "meta_elpaso", "oracle_saline2026", "gilroy2022"],
     "staff_gpcd": ["epa_onsite2002", "mi_septic", "gilroy2022"], "staff_used": ["usgs_cu2007"],
     "staff_maint_base": ["crusoe2026"], "staff_maint_per_mw": ["crusoe2026"], "staff_maint_used": ["usgs_cu2007"],
-    "switch_margin": ["evapco2018", "us12426214"], "switch_setting": ["msft2026", "elpasomatters2025", "msft_georgia", "sidney_faq", "levittownnow2026", "statehousefile_aws"], "hybrid_full_offset": [], "assist_eff": ["evapco2018", "ashrae2016_41"], "assist_dt_air": ["thermokey_sheet"], "assist_bleed": ["sce2015", "ashrae2016_41"],
+    "switch_margin": ["evapco2018", "us12426214"], "pad_full": ["lbnl2024"], "switch_setting": ["msft2026", "elpasomatters2025", "msft_georgia", "sidney_faq", "levittownnow2026", "statehousefile_aws"], "hybrid_full_offset": [], "assist_eff": ["evapco2018", "ashrae2016_41"], "assist_dt_air": ["thermokey_sheet"], "assist_bleed": ["sce2015", "ashrae2016_41"],
     "oa_cfm_per_mw": [], "humidify_share": [],
 }
 
