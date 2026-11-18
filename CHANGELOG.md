@@ -6,13 +6,6 @@ Package changes (code). Changes to the numbers are listed by model version on th
 
 waterledger, waterledger-models and waterledger-data 3.25.0. Model 1.17. Data center, battery cell plant and supply numbers change; every state's snapshot is rebuilt.
 
-- **Reuse never takes less than staff water** (`scenario.reuse_taken`, used by `cooling_estimate`; `docs/methods/methods-log.md`, Nov 17):
-  under full treatment and reuse, water withdrawn on the average and peak day is the larger of what the cooling has to make up
-  (evaporated less condensate) and staff (drinking and sanitary) water at the campus's size, `staff_q(..., part="staff")`. Through
-  3.24.0 it was floored at zero, so a dry campus, whose condensate can cover what it evaporates, withdrew nothing. Where the floor
-  holds, the surplus is returned (a site drain or stormwater [A], not the sewer: `to_sewer` stays zero), so withdrawn + condensate =
-  consumed + returned on both days; through 3.24.0 returned was zero under reuse and a dry campus's books did not close. Only dry
-  designs under reuse change at Michigan's sizes; the highest month and annual totals follow the average day.
 - **Water-cooled chillers on ASHRAE 90.1's curve** (design 0021; `docs/methods/methods-log.md`, Nov 17): `heat_rejection.chiller_cop`
   takes `min_lift`; water-cooled chillers use `WATER_CHILLER_LOSS` (0.0471, fitted to 90.1's water-cooled centrifugal EIR-FT curve,
   PNNL-26917 Table 81, RMS 0.8%) and `WATER_MIN_LIFT` (12.89 K, the smallest lift the curve covers). `CHILLER_COP_CAP` is gone.
@@ -38,6 +31,18 @@ waterledger, waterledger-models and waterledger-data 3.25.0. Model 1.17. Data ce
   hottest-hour MW, the grid water of the extra electricity and its share of the reference's own water). `DesignComparison` gains
   `reference`, `balancing_authority`, `best_hourly_grid` and `plants`. Pads join the default list. Every addition has a default.
 - **Cell runs and snapshots are model 1.17's** (`national.era5.RUN_MODEL`, `MODELS["1.17"]`).
+
+## 3.24.1 (Nov 17, 2026; model 1.16)
+
+waterledger 3.24.1; waterledger-models and waterledger-data unchanged. Released from v3.24.0 with this change alone; 3.25.0 carries it too.
+
+- **Reuse never takes less than staff water** (`scenario.reuse_taken`, used by `cooling_estimate`; `docs/methods/methods-log.md`, Nov 17):
+  under full treatment and reuse, water withdrawn on the average and peak day is the larger of what the cooling has to make up
+  (evaporated less condensate) and staff (drinking and sanitary) water at the campus's size, `staff_q(..., part="staff")`. Through
+  3.24.0 it was floored at zero, so a dry campus, whose condensate can cover what it evaporates, withdrew nothing. Where the floor
+  holds, the surplus is returned (a site drain or stormwater [A], not the sewer: `to_sewer` stays zero), so withdrawn + condensate =
+  consumed + returned on both days; through 3.24.0 returned was zero under reuse and a dry campus's books did not close. Only dry
+  designs under reuse change at Michigan's sizes; the highest month and annual totals follow the average day.
 
 ## 3.24.0 (Nov 17, 2026; model 1.16)
 
