@@ -130,9 +130,10 @@ They are validated, round-trip through JSON, and are described in
   evaporative pads above the operator's setting and air-cooled trim chillers, as most hyperscale fleets run: `outside_air`, in
   the cell runs and `DataCenter(cooling="outside_air")` (not in `scenario.DESIGNS` or on waterledger.org yet). New sampled
   parameter `pad_full`.
-- **The grid's plant water without EIA-930 spikes or missing fuel rows** (design 0008): screened hours, a Theil-Sen marginal
-  slope, named plants' factors for fuel rows EIA-923 lacks (Palo Verde for Arizona Public Service), concentrating solar's water as
-  solar. Arizona Public Service's grid withdrawal falls from about 3,700 to 520 gal/MWh.
+- **The grid's plant water without EIA-930 spikes, missing fuel rows or double counts** (design 0008): screened hours, a Theil-Sen
+  marginal slope, named plants' factors for fuel rows EIA-923 lacks (Four Corners for PNM), concentrating solar's water as solar,
+  and no plant's generation in two balancing authorities (EIA-930 counted Palo Verde in both Arizona Public Service and Salt River
+  Project until December 2019). Arizona Public Service's grid withdrawal falls from about 3,700 to 470 gal/MWh.
 - **Design totals** (`Site.by_design`, design 0020): the peak day, the cooling plant, the balancing authority's hourly grid water
   and the differences against towers; pads join the default list.
 

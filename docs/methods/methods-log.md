@@ -2843,7 +2843,11 @@ The average-day factor is the average-day MGD x 10^6 / 2,400 MWh. The peak day i
 **Short form (methods pages):** From model 1.17 the grid's plant water leaves out EIA-930 hours with single-hour spikes, dropouts or
 gaps (0.5% of hours), fits the marginal slope as a median (Theil-Sen) rather than by least squares, puts a fuel EIA-923 has no
 row for at the plant EIA-930 counts (Palo Verde for Arizona Public Service) or its region, and counts concentrating solar plants'
-water as solar: Arizona Public Service's grid water falls from about 3,700 to 520 gal/MWh withdrawn.
+water as solar: Arizona Public Service's grid water falls from about 3,700 to 520 gal/MWh withdrawn. (Nov 17: Palo Verde, St. Lucie
+and Colstrip turned out to be counted twice in AZPS, FMPP and PSEI and are now out of those BAs' hours; see that entry. The pages'
+line becomes: "... puts a fuel EIA-923 has no row for at the plant EIA-930 moves there (Four Corners for PNM) or its region, and
+counts concentrating solar plants' water as solar: Arizona Public Service's grid water falls from about 3,700 to 470 gal/MWh
+withdrawn.")
 
 **References.** Sen, P. K. (1968). Estimates of the regression coefficient based on Kendall's tau. Journal of the American Statistical
 Association 63, 1379-1389. Theil, H. (1950). A rank-invariant method of linear and polynomial regression analysis. Proceedings of the
@@ -3013,3 +3017,94 @@ withdraws 0.01-0.25 L per IT kWh, close to what those operators report.
   about 1,060, 2,410 and 8,350 gpd. Pads, hybrid and towers evaporate more than their staff water at every size, so they are unchanged. The highest month
   follows the average day by the share reuse saves, and the annual total is the average day times 365.25, as before.
 
+
+## Nov 17, 2026: no plant's generation in two balancing authorities (design 0008; model 1.17)
+
+**What was wrong.** EIA-930 reported Palo Verde (plant 6008, about 4 GW) in both AZPS and SRP, hour for hour, until Dec 4, 2019, when
+it moved the plant to SRP alone. The copy was 29.2 TWh of the 50.3 TWh EIA-930 put in AZPS in 2019, and it lifted AZPS's 2019 peak
+hour from 8.2 to 12.2 GW. Summed over BAs, the lower 48's 2019 nuclear was 840.2 TWh against EIA-923's 809.4 (3.8% over). The Nov 16
+entry gave AZPS's nuclear Palo Verde's own factor, so the copy no longer inflated AZPS's water, but it still made AZPS's 2019 hours
+nuclear-heavy (Andrew, Nov 17: nothing double counted).
+
+**How every BA was checked** (all 67 BAs, 2019-2025; EIA-923 2019-2024, final releases):
+- **Copies.** For every pair of BAs and every class, the hours in which both report over 50 MW, agree within 0.5%, and step by
+  the same MW (within 1) from a step over 5 MW. AZPS and SRP nuclear do that in 13% of their shared hours. The next pair is ISNE
+  and NYIS nuclear, two fleets of about 3.3 GW, in 0.15%, scattered across the years: chance.
+- **Steps.** For every pair and each of coal, gas, nuclear and oil, the share of one BA's largest hourly steps (its top 0.5%)
+  that the other repeats in the same hour, in the same direction and at least 0.8 times as large, against the same share a week
+  apart (chance). Three pairs stand out: AZPS nuclear in SRP (84%, chance 0), PSEI coal in NWMT (91%, chance 16%) and PACW coal
+  in PACE (70%, chance 34%).
+- **Balances.** Each BA's EIA-930 generation by class, month and year against EIA-923's plants filed under that BA. Where a BA
+  reports more than EIA-923 gives it, the plant filed elsewhere whose monthly generation best explains the excess (correlation
+  of month-to-month changes) was found, and the host BA's own residual was regressed on the same plant. A host whose residual
+  falls with the plant has given the plant (or the share) up: a move. A host whose residual doesn't move has kept the whole
+  plant: a double count. The step test alone can't tell the two apart (PacifiCorp dispatches PACE and PACW together); the balance
+  decides.
+
+**What was found.**
+- **Three double counts.**
+  - **Palo Verde in AZPS** until 2019-12-04T07 (SRP holds the plant; EIA-923 files it under SRP).
+  - **St. Lucie in FMPP**, every year: FMPP reports the Florida Municipal Power Agency's and Orlando Utilities' shares of unit 2,
+    about 1 TWh a year. FPL's EIA-930 nuclear equals EIA-923's whole FPL fleet, St. Lucie included, within 0.7% in 2019-2021,
+    2023 and 2024, and within 17 GWh in 33 of the 34 months from Mar 2022 to Dec 2024. FMPP's monthly excess follows St. Lucie
+    (r = 0.99) and FPL's residual doesn't move with it (slope 0.01). Florida's nuclear summed over BAs ran 3.4% above EIA-923's
+    in 2023 and 2024.
+  - **Colstrip in PSEI**, 2019 and 2020: PSEI reported Puget Sound Energy's share (4.5 TWh in 2019, 2.2 in 2020, none from
+    Jan 1, 2021) while NWMT's EIA-930 coal ran 2.7-3.3% above EIA-923's, Colstrip included. 92-94% of PSEI's largest coal
+    steps are repeated in NWMT at least as large (9-14% a week apart).
+- **Moves, not double counts** (the host gives the plant up): Four Corners shares in PNM and SRP (AZPS's coal falls short of
+  EIA-923's by about what PNM and SRP report); Centralia in GRID (BPAT's EIA-930 coal is 0, GRID's equals the plant's within
+  1%); Comanche (filed under WACM) in PSCO; Jim Bridger in PACW (PACE gives up more than PACW reports); Asheville in CPLW (CPLW
+  equals the plant month by month; CPLE's residual falls with it, slope -1.06, and CPLE takes in a Duke Energy Carolinas plant
+  DUK gives up, slope -0.98; DUK, CPLE and CPLW together are 2.3% under EIA-923, the usual shortfall); FPC and TEC plants in FMPP
+  and SEC gas; SRP gas plants in AZPS; NEVP plants in LDWP. JEA's EIA-930 coal above EIA-923's is a class difference (Northside
+  burns petroleum coke, which EIA-923 calls petroleum), not Scherer. Other excesses by class are dual-fuel plants EIA-930 files
+  under another fuel (Duke's coal units burning gas: DUK coal +13 TWh and gas -19 TWh a year); the BA's thermal total shows no
+  excess.
+- **Weak matches** (correlation 0.5-0.6 of monthly changes with a plant in another region: ERCO coal with an Oklahoma plant, CISO
+  gas with a Florida plant, PNM coal with a PJM plant) are chance among the thousands of plants tried, and were not acted on.
+
+**Decision** [A]. Generation EIA-930 counts in two BAs is left out of the BA that holds the copy or the share, and stays in the BA
+holding the whole plant, the one EIA-923 files it under, so each MWh is counted once (`waterledger_data.grid930.DOUBLE_COUNTED`,
+applied by `grid930.hourly`; `raw=True` gives EIA's values). The class is NaN in those hours, which `intensity` reads as not
+reported (0 MW). Why the holder and not the share: the holder's EIA-930 series is the whole plant, as EIA-923 has it, and the
+plant's water goes with it; splitting by ownership would need each plant's share and each BA's series rebuilt, and EIA-930 doesn't
+do that elsewhere either (a share EIA-930 moves to another BA stays there). The BA fuel table (`ba_fuel_water_2024.csv`) loses the
+fallback rows these three classes had (36 rows); nothing else in it changes. With the three out, the lower 48's nuclear summed over
+BAs is within 0.7% of EIA-923's every year 2019-2024 (809.4, 789.9, 779.6, 771.5, 774.9 and 781.9 TWh).
+
+**What changes**, one cell each, a flat 100 MW, ERA5 2019-2024 uncorrected at the cell, in memory, gal/MWh. Before is model 1.17's
+grid as of the Nov 16 entry (EIA-930 as reported); the Orlando and Seattle cells are outside the published states:
+
+| BA (cell) | kind | basis | average day, before | after | peak day, before | after |
+|---|---|---|---|---|---|---|
+| AZPS (33.50, -112.00) | consumed | average | 505 | 453 | 723 | 699 |
+| | | marginal | 313 | 313 | 397 | 397 |
+| | withdrawn | average | 517 | 468 | 742 | 725 |
+| | | marginal | 316 | 316 | 400 | 400 |
+| FMPP (28.50, -81.50) | consumed | average | 273 | 273 | 290 | 287 |
+| | | marginal | 276 | 276 | 293 | 293 |
+| | withdrawn | average | 2,385 | 315 | 3,046 | 340 |
+| | | marginal | 314 | 317 | 331 | 334 |
+| PSEI (47.50, -122.25) | consumed | average | 90 | 36 | 136 | 59 |
+| | | marginal | 17 | 14 | 47 | 43 |
+| | withdrawn | average | 103 | 51 | 153 | 81 |
+| | | marginal | 24 | 19 | 64 | 59 |
+
+AZPS's marginal doesn't change: Palo Verde ran flat, so it adds little to the hour-to-hour changes the median slope is fit on. Its
+average falls about 10%: its 2019 hours lose a fleet at about 704 gal/MWh consumed (Palo Verde's towers), above the mix of
+AZPS's own coal (about 736), gas (about 293) and solar. FMPP's
+withdrawal falls by 87%: St. Lucie is cooled once-through by seawater (33,515 gal/MWh withdrawn), and that water belongs to FPL's
+hours, which hold the plant. No other BA changes: SRP, FPL and NWMT keep their series, and the other BAs' series and table rows are
+as they were.
+
+**Which states.** Of the 12 published states, only Arizona has places served by these BAs: 57 of its 83 cells list AZPS (always
+with another BA). No published state has places in FMPP or PSEI. Arizona's cells must run on this change.
+
+**Short form (methods pages):** From model 1.17 no plant's generation is counted in two balancing authorities: EIA-930 reported Palo
+Verde in both Arizona Public Service and Salt River Project until December 2019, and two utilities' shares of St. Lucie and
+Colstrip as well as the whole plants, so those copies are left out and each plant counts once, in the area that holds it. Arizona
+Public Service's average grid water falls about 10%.
+
+**References.** U.S. EIA: Form EIA-930 (2019-2025), Hourly Electric Grid Monitor six-month balance files; Form EIA-923 (2019-2023
+final revisions, 2024 final), Schedules 2-5, Page 1, https://www.eia.gov/electricity/data/eia923/.
