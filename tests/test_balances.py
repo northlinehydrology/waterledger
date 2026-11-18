@@ -23,13 +23,13 @@ def _rates(design):
 def test_water_taken_plus_condensate_is_water_used_up_and_returned(design, plant):
     p = PLANT_DRAWS[plant]
     w, c, r = ph.hourly_rates(T, W, design, p)
-    condensate = ph.hourly_water_with_air(T, W, p)[1]
+    condensate = ph.hourly_condensate(T, W, design, p)
     assert np.allclose(w + condensate, c + r)
     assert (w >= 0).all() and (c >= 0).all() and (r >= -1e-12).all() and (condensate >= 0).all()
 
 
 @pytest.mark.parametrize("plant", ph.PLANTS)
-@pytest.mark.parametrize("design", ph.DESIGNS)
+@pytest.mark.parametrize("design", [d for d in ph.DESIGNS if d != "outside_air"])      # the outside air design's own books: test_outside_air.py
 def test_every_kw_is_accounted_for(design, plant):
     """Facility power + what outside air brings = heat through the water or coil + heat rejection fans, whose heat goes straight to the exhaust air, in every plant."""
     p = PLANT_DRAWS[plant]
@@ -241,6 +241,29 @@ def test_reuse_never_takes_less_than_nothing_and_its_range_stays_in_order():
     R = cooling_estimate(D, "r", "dry", 100, "reuse")
     for k in ("wAvg", "wPeak", "wAnn"):
         assert 0 <= R[k]["lo"] <= R[k]["mid"] <= R[k]["hi"], (k, R[k])
+
+
+def test_a_dry_campus_under_reuse_still_takes_its_staff_water_and_the_books_close():
+    """Under reuse, what is taken falls to what evaporates less the condensate, but never below staff (drinking and sanitary) water at the campus's size; where the
+    condensate covers more than evaporates, the surplus leaves the site, so on both days taken + condensate = evaporated + left over."""
+    from waterledger.scenario import cooling_estimate
+    per = {k: {"p10": 0.01, "p50": 0.02, "p90": 0.03} for k in ("withdrawn_avg", "withdrawn_peak_1in10", "withdrawn_annual_mg", "consumed_avg", "consumed_peak_1in10", "returned_avg", "returned_peak_1in10")}
+    per = {**per, "consumed_avg": {"p10": 0.0, "p50": 0.001, "p90": 0.002}, "condensate_avg": {"p10": 0.0, "p50": 0.05, "p90": 0.08}, "condensate_peak_1in10": {"p10": 0.0, "p50": 0.1, "p90": 0.2}}
+    D = {"regions": {"r": {"per_100mw": {"dry": per}}}, "staff": {"runs": cooling.staff_runs(50)}}
+    for mw in (50, 300, 1400):
+        staff = cooling.staff_q(D["staff"]["runs"], mw, part="staff")["withdrawn"]
+        R = cooling_estimate(D, "r", "dry", mw, "reuse")
+        assert R["reuse"] and staff["p50"] > 0
+        for k in ("wAvg", "wPeak"):
+            assert R[k]["mid"] >= staff["p50"] - 1e-15 and R[k]["lo"] >= staff["p10"] - 1e-15 and R[k]["hi"] >= staff["p90"] - 1e-15, (mw, k, R[k], staff)
+            assert R[k]["lo"] <= R[k]["mid"] <= R[k]["hi"]
+        assert R["wAvg"]["mid"] == pytest.approx(staff["p50"])        # the condensate covers the cooling here, so staff water is what is taken
+        assert R["wAnn"]["mid"] == pytest.approx(R["wAvg"]["mid"] * 365.25)
+        assert R["wAvg"]["mid"] + R["condAvg"]["mid"] == pytest.approx(R["cAvg"]["mid"] + R["rAvg"]["mid"])
+        assert R["wPeak"]["mid"] + R["condPeak"]["mid"] == pytest.approx(R["cPeak"]["mid"] + R["rPeak"]["mid"])
+        assert R["rAvg"]["mid"] > 0 and R["sewer"]["mid"] == 0      # the surplus leaves by a site drain, not the sewer
+    T = cooling_estimate({**D, "regions": {"r": {"per_100mw": {"towers": {**per, "withdrawn_avg": {"p10": 0.3, "p50": 0.4, "p90": 0.5}}}}}}, "r", "towers", 300, "reuse")
+    assert T["wAvg"]["mid"] > 0.1 and T["wAvg"]["mid"] == pytest.approx(T["cAvg"]["mid"] - T["condAvg"]["mid"])     # where evaporation is more than staff water, the floor changes nothing
 
 
 def test_a_septic_system_does_not_take_condensate():

@@ -2,18 +2,55 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## Unreleased (branch supply-on-aorc)
+## 3.25.0 (not released; model 1.17)
 
-waterledger-models and waterledger-data. Fuel cells' numbers change (a model version step at release); no other number changes, and the
-ERA5 supply path matches its record from before to the bit (`tests/test_supply_identity.py`).
+waterledger, waterledger-models and waterledger-data 3.25.0. Model 1.17. Data center, battery cell plant, gas and supply numbers change;
+every state's snapshot is rebuilt. Gas numbers change for fuel cells only (design 0019); design 0018's additions leave the ERA5 supply path
+as it was (`tests/test_supply_identity.py`).
 
+- **Water-cooled chillers on ASHRAE 90.1's curve** (design 0021; `docs/methods/methods-log.md`, Nov 17): `heat_rejection.chiller_cop`
+  takes `min_lift`; water-cooled chillers use `WATER_CHILLER_LOSS` (0.0471, fitted to 90.1's water-cooled centrifugal EIR-FT curve,
+  PNNL-26917 Table 81, RMS 0.8%) and `WATER_MIN_LIFT` (12.89 K, the smallest lift the curve covers). `CHILLER_COP_CAP` is gone.
+  `carnot_water` becomes 0.828-1.140 (the same rating band), and `carnot_air`'s low end 0.584 (COP 2.96 at the rating point, as design
+  0015 meant). The fit is `docs/methods/chillers/fit_chillers.py`, for both chiller types.
+- **A fifth data center design, `outside_air`** (design 0022): outside air into the halls, evaporative pads above the operator's
+  setting, air-cooled trim chillers. `datacenter.physics.outside_air_hall`, `outside_air_switch`, `hourly_condensate` (none for this
+  design); new sampled parameter `pad_full` (0-1); compiled kernel design code 4. `DataCenter(cooling="outside_air")` reads model 1.17
+  results and says so on older ones. Not in `scenario.DESIGNS` or `Site.by_design`'s defaults. Cell runs take about 25% longer.
+- **The grid's plant water without EIA-930 spikes or missing fuel rows** (design 0008; methods log, Nov 16): `grid930.screen` leaves
+  out hours where a fuel class spikes beyond both neighbours (more than 4 times its own 99th-percentile hourly change, for 1-3 hours), a
+  thermal fleet drops out for 1-3 hours, or a class has a gap; a class that stops being reported is 0 MW and not differenced across.
+  `grid930.intensity` returns `pair_ok`, `screened` and `bounds`. `grid.fit` takes `pair_ok=` and `bounds=`, fits the marginal slope by
+  Theil-Sen (`grid.theil_sen`) instead of least squares, and lists any factor outside the BA's fuel-factor range in `meta["outside"]`
+  with a warning (never changed). The BA fuel table (`ba_fuel_water_2024.csv`) puts concentrating solar plants' water in solar, and
+  gives a class EIA-930 reports but EIA-923 has no generation for the named plants' factor (Four Corners for PNM, Asheville for CPLW),
+  else the BA's EIA-930 region, else the U.S.; new `basis` values `plant` and `region` and column `basis_from`. AZPS's grid withdrawal
+  falls from about 3,700 to 470 gal/MWh; PJM's marginal withdrawal on the peak day about halves.
+- **No plant's generation in two balancing authorities** (design 0008; methods log, Nov 17): `grid930.DOUBLE_COUNTED` lists the
+  classes EIA-930 also counts in the BA holding the whole plant (Palo Verde in AZPS until Dec 4, 2019; St. Lucie's municipal shares in
+  FMPP; Puget Sound Energy's Colstrip share in PSEI), and `grid930.hourly(ba, raw=False)` leaves them out of those hours (`raw=True`
+  gives EIA's values; new `grid930.double_counted`). The BA fuel table loses those three classes' rows. AZPS's average grid water falls
+  about 10%, FMPP's withdrawal from about 2,400 to 315 gal/MWh and PSEI's consumption from 90 to 36; no other BA changes. Arizona's
+  cells (57 of 83 list AZPS) run on it; no other published state has places in these BAs.
+- **Design totals** (design 0020, proposal 1): `Site.by_design(designs=("dry", "assist", "hybrid", "towers"), plants=None,
+  reference="towers")`. `DesignTotal` gains the cooling plant, the peak day's campus water, the balancing authority's hourly grid water
+  (average and peak day; the main grid number), annual MWh and peak-day MW, and the differences against the reference (% electricity,
+  hottest-hour MW, the grid water of the extra electricity and its share of the reference's own water). `DesignComparison` gains
+  `reference`, `balancing_authority`, `best_hourly_grid` and `plants`. Pads join the default list. Every addition has a default.
+- **Cell runs and snapshots are model 1.17's** (`national.era5.RUN_MODEL`, `MODELS["1.17"]`).
+- **Nothing counted twice** (methods log, Nov 17):
+  - `runoff.natural_below` adds only the below-ground part of the natural yield under a developed site's pervious share, with a new parameter
+    `PARAMS["nutrient_yield"]["natural_surface_mg_l"]` (Clark et al. 2000's flow-weighted medians). Site runoff phosphorus and nitrogen fall under 1%.
+  - `WaterUse.blowdown`, new: blowdown and pad bleed without staff water or condensate. `DataCenter.cooling_blowdown` uses it for towers and
+    hybrid, so cooling phosphorus is no longer worked on staff wastewater and condensate.
+  - The PV and wind fleet checks add curtailment back (`docs/methods/power_supply/curtailment.py`). Their ranges don't change.
 - **Solar and wind on a study's own forcing** ([design 0018](docs/design/0018-supply-on-a-study-forcing.md)), so a coupled study keeps one
   weather forcing. For a forcing that gives only global horizontal radiation and the 10 m wind (AORC):
   - `supply.pv.hourly_from_ghi` / `output_from_ghi`: the global split into beam and diffuse by `pv.decompose` (Erbs, PVsyst's default, on
     AORC; DIRINT and DISC as options; each held to pvlib's hour by hour, closing on the global every hour), the sun placed by the forcing's
     own time stamp (`geometry(shift_s=)`; AORC's radiation stands at the middle of its hour, `pv.AORC_SHIFT_S = 0`), the 10 m wind as it is.
-  - `pv.RANGES_AORC`: `pv.RANGES` with the resource factor from EIA's 2024 tracking fleet on AORC (944 plants): 0.87 overall, 0.73-1.02
-    across the states with ten or more plants (ERA5's 0.84, 0.75-0.93).
+  - `pv.RANGES_AORC`: `pv.RANGES` with the resource factor from EIA's 2024 tracking fleet on AORC (944 plants, curtailment added
+    back): 0.89 overall, 0.73-1.03 across the states with ten or more plants (ERA5's 0.86, 0.75-0.94).
   - `supply.wind.hourly_from_10m`: the 10 m wind to the hub by an exponent for each month and local solar hour, `wind.shear_table`, set
     from ERA5's own 10 m and 100 m wind at the place (`waterledger_data.era5.fetch_shear`, `era5.shear`); the hours stay the forcing's.
     Not for AORC: AORC's 10 m wind steps down on January 1, 2018 at most places (confirmed by the Cadillac airport anemometer), so a
@@ -28,6 +65,39 @@ ERA5 supply path matches its record from before to the bit (`tests/test_supply_i
   (in `gas.plant`, `supply.scenario.Gas` and `GasPlantBmi`); start-up and restart water, 0.01-0.69 gal/MWh, consumed; the 325 kW server as
   the unit (`gas.physics.UNIT_MW`), 24-hour outages, and a reserve share from the servers' availability instead of N + k
   (`gas.physics.units_for`). Check F1 (`fuel_cell_check.py`).
+
+## 3.24.1 (Nov 17, 2026; model 1.16)
+
+waterledger 3.24.1; waterledger-models and waterledger-data unchanged. Released from v3.24.0 with this change alone; 3.25.0 carries it too.
+
+- **Reuse never takes less than staff water** (`scenario.reuse_taken`, used by `cooling_estimate`; `docs/methods/methods-log.md`, Nov 17):
+  under full treatment and reuse, water withdrawn on the average and peak day is the larger of what the cooling has to make up
+  (evaporated less condensate) and staff (drinking and sanitary) water at the campus's size, `staff_q(..., part="staff")`. Through
+  3.24.0 it was floored at zero, so a dry campus, whose condensate can cover what it evaporates, withdrew nothing. Where the floor
+  holds, the surplus is returned (a site drain or stormwater [A], not the sewer: `to_sewer` stays zero), so withdrawn + condensate =
+  consumed + returned on both days; through 3.24.0 returned was zero under reuse and a dry campus's books did not close. Only dry
+  designs under reuse change at Michigan's sizes; the highest month and annual totals follow the average day.
+
+## 3.24.0 (Nov 17, 2026; model 1.16)
+
+waterledger and waterledger-models 3.24.0; waterledger-data stays 3.23.1. Model 1.16. Data center, battery cell plant and supply numbers change; every state's snapshot is rebuilt.
+
+- **Air-cooled chillers respond to the air** (design 0015; `docs/methods/methods-log.md`, Nov 15): `heat_rejection.chiller_cop`
+  with a fixed-loss term, `AIR_CHILLER_LOSS` (0.0767), fitted to ASHRAE 90.1's air-cooled screw chiller curve (PNNL-26917,
+  Table 80). `carnot_air` becomes 0.571-0.761, keeping the rating band. New sampled parameter `air_cop_cap`, 5-7.6, in place of
+  the fixed cap of 5; `CHILLER_COP_CAP` keeps only the water-cooled cap. Water-cooled chillers are unchanged.
+- **The operator's switch setting** (design 0016): new sampled operating parameter `switch_setting`, 26.5-32.0 C, for data
+  centers and battery plants (`heat_rejection.OPERATING`). Assist and hybrid go wet at the later of the setting and the loop's limit
+  plus `switch_margin` (`heat_rejection.switch_point`); through model 1.15 the loop's limit alone, which sat at 21.1 C on the shared
+  and chilled plants. Pads' and hybrids' average water falls five- to tenfold, their peak day about half. The derivation is
+  `docs/methods/switch-setting/`.
+- **Design labels** name how heat leaves the building (`datacenter.cooling.LABELS`, `scenario.DESIGNS`): dry is "Dry coolers or
+  air-cooled chillers (no evaporation)", no longer "Closed loop"; new `cooling.CLOSED_LOOP` says every design has a closed loop
+  inside. Codes are unchanged.
+- **`scenario()` starts from assist** (pads on hot days), not dry, where no cooling is given, as waterledger.org now does: most
+  proposals say closed loop, which doesn't rule out water in the hottest weather. Pass `cool="dry"` for the old start.
+- **Cell runs and snapshots are model 1.16's** (`national.era5.RUN_MODEL`, `MODELS["1.16"]`): this package reads 1.16
+  snapshots once they are published, and the newest earlier ones (model 1.11's) with a note until then.
 
 ## 3.23.1 (Nov 16, 2026; model 1.15)
 

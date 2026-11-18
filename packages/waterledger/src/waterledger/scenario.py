@@ -10,7 +10,7 @@ from waterledger_data.config import CACHE, SITE
 
 DATA = os.path.join(SITE, "mi", "data")
 PUBLISHED = "https://waterledger.org/mi/data/{name}.json"     # the same files, as published
-DESIGNS = {"dry": "Closed loop (designed to use no water for cooling)", "hybrid": "Hybrid", "towers": "Cooling towers", "lake": "Lake-source (once-through)"}
+DESIGNS = {"dry": "Dry coolers or air-cooled chillers (no evaporation)", "assist": "Dry with evaporative pads on hot days", "hybrid": "Hybrid (evaporative in warm weather)", "towers": "Cooling towers (evaporative all year)", "lake": "Lake-source (once-through)"}
 SOURCE_LABEL = {"muni": "a public water system", "wells": "new wells in the aquifer", "lake": "lake surface water"}
 DEST_LABEL = {"sewer": "the public sewer", "septic": "a septic system on site", "water": "a river or lake (its own discharge)", "reuse": "treatment and reuse on site"}
 SYS_POP = 3300    # [A] a "sizable" public water system serves more than this many people (EPA's medium size and up; as waterledger_data.supply)
@@ -96,11 +96,18 @@ def grid_water(D, region, cool, mw, ba):
     return {k: {"avg": band(r[f"grid_{ba}_{k}_avg"], mw / 100), "peak_day": band(r[f"grid_{ba}_{k}_peak_1in10"], mw / 100)} for k in GRID_KINDS}
 
 
+def _design(per_100mw, cool):
+    """A region's or cell's results for a design, or a clear error where the results predate it (the outside air design is model 1.17's)."""
+    if cool not in per_100mw:
+        raise ValueError(f"these results have no {cool!r} design (they have {sorted(per_100mw)}); the outside air design needs model 1.17 results or later")
+    return per_100mw[cool]
+
+
 def electricity(D, region, cool, mw):
     """Facility electricity at `mw` MW of IT capacity at a region's weather, lo/mid/hi: {"mw", "peak_mw", "pue", "peak_pue"}, and "peak_day_mw"
     where the results have it (model 1.9; not lake-source cooling), or None for data from before model 1.4. Lake-source cooling has its own heat balance (lake.run_lake), the same at every region. Same as WQ.elec on the page."""
     per_100mw = D["regions"][region]["per_100mw"]
-    r = (D["lake_source"].get("power") or per_100mw["towers"]) if cool == "lake" else per_100mw[cool]      # data from before model 1.5: towers stood in
+    r = (D["lake_source"].get("power") or per_100mw["towers"]) if cool == "lake" else _design(per_100mw, cool)      # data from before model 1.5: towers stood in
     if "power_mw_avg" not in r:
         return None
     out = {"mw": band(r["power_mw_avg"], mw / 100), "peak_mw": band(r["power_mw_peak_1in10"], mw / 100), "pue": band(r["pue_avg"], 1.0), "peak_pue": band(r["pue_peak_1in10"], 1.0)}
@@ -189,12 +196,28 @@ def check_lake(place_name, great_lake, cool, src):
         raise ValueError("Lake-source cooling needs lake surface water as the source")
 
 
+def reuse_taken(a, b, D, mw):
+    """Water taken and water left over under full treatment and reuse (lo/mid/hi MGD): `a` less `b` is what the campus has to make up (evaporated less the condensate
+    on an average day; withdrawn less wastewater on the peak day, the same by the balance), and never less than staff water at the campus's size, which is drinking
+    and sanitary water from a supply (Andrew, Nov 2026). Where the condensate covers more than the cooling evaporates, as with dry designs, the campus still takes its
+    staff water and the surplus leaves the site, to a site drain or stormwater [A] as a septic site's condensate does, so taken + condensate = evaporated + left over.
+    Each end is worked from separate model outputs, so each range is put back in order."""
+    from waterledger_models.datacenter.cooling import staff_q
+    s = staff_q(D["staff"]["runs"], mw, part="staff")["withdrawn"]
+    floor = {"lo": s["p10"], "mid": s["p50"], "hi": s["p90"]}
+    need = {k: a[k] - b[k] for k in ("lo", "mid", "hi")}
+    w = {k: max(need[k], floor[k]) for k in need}
+    r = {k: w[k] - need[k] for k in need}
+    order = lambda v: {"lo": min(v.values()), "mid": v["mid"], "hi": max(v.values())}
+    return order(w), order(r)
+
+
 def cooling_estimate(D, region, cool, mw, dest):
     """Water taken, evaporated or lost, and sent out for an air- or water-cooled campus (MGD, lo/mid/hi), from model results in D
     ({"regions": {region: {"per_100mw": ...}}, "staff": {"runs": ...}}): the page's est() for every design but lake-source.
     The national tier uses it with climate divisions as the regions."""
     F = lambda key: flow(D, region, cool, key, mw)
-    per_100mw = D["regions"][region]["per_100mw"][cool]
+    per_100mw = _design(D["regions"][region]["per_100mw"], cool)
     C = lambda key: band(per_100mw[key], mw / 100) if key in per_100mw else {"lo": 0.0, "mid": 0.0, "hi": 0.0}    # data from before model 1.5 has none
     E = {"lake": False, "wAvg": F("withdrawn_avg"), "wPeak": F("withdrawn_peak_1in10"), "wAnn": F("withdrawn_annual_mg"),
          "cAvg": F("consumed_avg"), "cPeak": F("consumed_peak_1in10"), "rAvg": F("returned_avg"),
@@ -204,6 +227,8 @@ def cooling_estimate(D, region, cool, mw, dest):
     for k_c, k_w, k_r, k_n in (("cAvg", "wAvg", "rAvg", "condAvg"), ("cPeak", "wPeak", "rPeak", "condPeak")):
         m = max(0.0, E[k_w]["mid"] + E[k_n]["mid"] - E[k_r]["mid"])
         E[k_c] = {"lo": min(E[k_c]["lo"], m), "mid": m, "hi": max(E[k_c]["hi"], m)}
+    # cooling blowdown and pad bleed alone: the model's returned water less its condensate, with no staff water (for blowdown phosphorus, which neither carries)
+    E["blowAvg"] = {k: max(C("returned_avg")[k] - C("condensate_avg")[k], 0.0) for k in ("lo", "mid", "hi")}
     if "withdrawn_max_month" in per_100mw:           # the rules' own periods: Part 327's 30 days and the Compact's 90 (data from before model 1.7 has no 90-day figure)
         E["wMonth"] = F("withdrawn_max_month")
     if "consumed_max_90day" in per_100mw:
@@ -216,15 +241,12 @@ def cooling_estimate(D, region, cool, mw, dest):
         E["wPeakFull"] = F("withdrawn_peak_full_capacity")
     if dest == "reuse":
         E["full"] = {"wAvg": E["wAvg"], "rAvg": E["rAvg"]}
-        # the condensate is reused too; where it covers everything, nothing is taken. Each end is worked from separate model outputs, so the range is put back in order
-        def taken(a, b):
-            v = {k: max(a[k] - b[k], 0.0) for k in ("lo", "mid", "hi")}
-            return {"lo": min(v.values()), "mid": v["mid"], "hi": max(v.values())}
-        E["wAvg"], E["wPeak"] = taken(E["cAvg"], E["condAvg"]), taken(E["wPeak"], E["rPeak"])
+        E["wAvg"], E["rAvg"] = reuse_taken(E["cAvg"], E["condAvg"], D, mw)
+        E["wPeak"], E["rPeak"] = reuse_taken(E["wPeak"], E["rPeak"], D, mw)
         if "wMonth" in E:          # the share reuse saves on an average day, in the highest month too [A]
             E["wMonth"] = {k: E["wMonth"][k] * E["wAvg"][k] / max(E["full"]["wAvg"][k], 1e-12) for k in ("lo", "mid", "hi")}
         E["wAnn"] = {k: v * 365.25 for k, v in E["wAvg"].items()}
-        E["rAvg"] = E["rPeak"] = E["sewer"] = {"lo": 0, "mid": 0, "hi": 0}
+        E["sewer"] = {"lo": 0.0, "mid": 0.0, "hi": 0.0}
         E["reuse"] = True
     return E
 
@@ -275,7 +297,7 @@ def near_system(p):
 
 def src_for(p, cool):
     """Where a campus's water most likely comes from [A], as on the page (WQ.srcFor). A system EPA maps in the place. With none
-    mapped: closed loop from a sizable system within SEWER_KM (it extends its pipes); towers and hybrid from new wells, which avoid a
+    mapped: dry or pads from a sizable system within SEWER_KM (it extends its pipes); towers and hybrid from new wells, which avoid a
     utility's peak-day limits; nothing within reach, new wells."""
     if p["w"]:
         return {"src": "muni", "near": None, "reach": False}
@@ -287,7 +309,7 @@ def src_for(p, cool):
 def dest_for(p, cool, sew_mgd):
     """Where a campus's wastewater most likely goes [A], as on the page (WQ.destFor). The sewer when EPA maps a public water system in the place (its plant within 40 km),
     or a plant is within SEWER_KM;
-    evaporative blowdown only if it fits in the plant's spare design flow. Otherwise closed loop's mostly sanitary flow goes to a
+    evaporative blowdown only if it fits in the plant's spare design flow. Otherwise a dry or pads campus's mostly sanitary flow goes to a
     septic system on site, and blowdown to the campus's own treatment plant and a stream. The plant is in the page's form (n, design, flow, km)."""
     pls = _plants_near(p)
     q = pls[0] if pls else None
@@ -303,9 +325,11 @@ def land_default(incorporated):
     return (50, "built") if incorporated else (200, "farm")
 
 
-def scenario(gid, mw=None, cool="dry", src=None, dest=None, acres=None, before=None, imp=0.5, power="state_mix", h12=0, name=None, plant=DEFAULT_PLANT):
+def scenario(gid, mw=None, cool="assist", src=None, dest=None, acres=None, before=None, imp=0.5, power="state_mix", h12=0, name=None, plant=DEFAULT_PLANT):
     p = place(gid)
     # the page's starting settings for a place [A]: cities a smaller campus on a smaller, built-up site; townships 300 MW on farmland
+    # and pads on hot days (assist) where no design is published (Andrew, Nov 15, 2026; dry until then): most proposals say closed loop, which
+    # doesn't rule out water in the hottest weather
     city = p["k"] == "city"
     mw = mw or (100 if city else 300)
     src = src or src_for(p, cool)["src"]   # the page's starting water source for the place and cooling design

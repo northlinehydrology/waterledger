@@ -88,7 +88,13 @@ PARAMS = {
     # Farmland and natural land, lb an acre a year, [lo, mid, hi]. Farm: CEAP by region; a state takes the region holding most of its cropland [A], from Fig. 2; CEAP publishes no boundaries, so not by place. A state without one takes the national row.
     # Natural: Clark, Mueller and Mast 2000, Table 1, 63 undeveloped basins, medians of basin means with quartiles (kg/km2 converted). One national value: it is small against every other land cover, and regional readings only exist off a chart. Dry places run lower.
     "nutrient_yield": {"farm": {k: _ceap(k) for k in _CEAP}, "farm_region": {"MI": "north_central", "OH": "north_central", "VA": "east_central", "TX": "southern_central_plains"},
-                       "natural": {"tp": [0.043, 0.076, 0.107], "tn": [0.40, 0.77, 1.96]}, "sources": ["ceap2022", "clark2000", "manage"]},
+                       "natural": {"tp": [0.043, 0.076, 0.107], "tn": [0.40, 0.77, 1.96]},
+                       # The natural yields are whole-basin yields, surface runoff included. Below a developed site's pervious share only the part that doesn't leave in
+                       # surface runoff is added, since the whole site's runoff x concentration already carries its pervious surface (Nov 17, 2026: nothing counted twice).
+                       # That surface part: natural land's own runoff (rv woods) x the same basins' median flow-weighted concentrations, Clark, Mueller and Mast 2000 (abstract:
+                       # TP 0.022, TN 0.26 mg/L) [A: the surface runoff carries the basin's flow-weighted concentration]. About 6-7% of the yield at 32 in of rain.
+                       "natural_surface_mg_l": {"tp": 0.022, "tn": 0.26},
+                       "sources": ["ceap2022", "clark2000", "manage"]},
     # Yields today, a screening estimate: gross erosion x delivery. Delivery [A]: about a third leaves a site of a few hundred acres, the rest settling at field edges and in swales, as in published
     # area relations (0.33 at half a square mile, Stewart et al. 1978, read only in excerpt); an agricultural figure of 25% +/-15% is reported there too. Woods: EPA MM8 Table 8.1's natural range, 0.01-1.0, its geometric middle 0.1 [A].
     "sediment_yield": {"delivery": [0.2, 0.33, 0.5], "farm_gross": {"national": CROPLAND_EROSION_US, "by_state": CROPLAND_EROSION}, "woods_gross": [0.01, 0.1, 1.0], "sources": ["nri2022", "epa_mm8"]},
@@ -139,6 +145,15 @@ def _rv_pervious(cover):
     return PARAMS["rv"]["turf" if cover == "built" else cover]
 
 
+def natural_below(k, rain_in):
+    """The part of natural land's phosphorus ("tp") or nitrogen ("tn") yield that doesn't leave in surface runoff, lb an acre a year, [lo, mid, hi]: the whole-basin
+    yield less natural land's own surface runoff x the basins' flow-weighted concentration (PARAMS nutrient_yield natural_surface_mg_l), at least 0. What a developed
+    site's pervious share adds below the whole site's runoff, which already carries the pervious surface."""
+    Y = PARAMS["nutrient_yield"]
+    surface = LB * runoff_in(rain_in, 0.0, "woods") * Y["natural_surface_mg_l"][k]
+    return [max(x - surface, 0.0) for x in Y["natural"][k]]
+
+
 def runoff_in(rain_in, imp, cover="turf"):
     """Annual runoff depth (in) from the whole site, with `cover` ("turf", "farm", "woods" or "built") on what isn't impervious."""
     return rain_in * PJ * (PARAMS["rv"]["imp"] * imp + _rv_pervious(cover) * (1 - imp))
@@ -157,14 +172,14 @@ def loads(acres, rain_in, before="farm", imp=None, state=None):
     Also: "tn_lb" "now_surface", the part of farmland's nitrogen in surface runoff, and "to_ground", the nitrogen infiltration sends to groundwater."""
     P = PARAMS
     imp = P["after"]["imp"] if imp is None else imp
-    i0, C, cap, nat = P["before_imp"][before], P["controls"], P["controls"]["captured"], P["nutrient_yield"]["natural"]
+    i0, C, cap = P["before_imp"][before], P["controls"], P["controls"]["captured"]
     depth = lambda share: runoff_in(rain_in, share)     # inches over the whole site, developed
     out = {"runoff_gal": {}, "tss_t": {}, "tp_lb": {}, "tn_lb": {}}
     out["runoff_gal"]["now"] = [acres * runoff_in(rain_in, i0, before) * GAL_PER_AC_IN] * 3
     out["runoff_gal"]["after"] = [acres * depth(imp) * GAL_PER_AC_IN] * 3
     for k, unit in (("tss", "tss_t"), ("tp", "tp_lb"), ("tn", "tn_lb")):
         div = 2000 if k == "tss" else 1
-        emc, below = P["emc"]["developed"][k], [0, 0, 0] if k == "tss" else nat[k]
+        emc, below = P["emc"]["developed"][k], [0, 0, 0] if k == "tss" else natural_below(k, rain_in)     # below the pervious share only (natural_below)
         surface = lambda share: [LB * acres * depth(share) * emc[i] / div for i in range(3)]
         if before == "built":
             s0 = surface(i0)

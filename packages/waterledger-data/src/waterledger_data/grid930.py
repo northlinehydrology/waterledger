@@ -83,21 +83,149 @@ def build(years=None):
     return written
 
 
-def hourly(ba):
+def hourly(ba, raw=False):
     """{"hour", "demand", "net_generation", "interchange", <fuel>...} for one balancing authority, as numpy arrays,
-    from the cache (build() first)."""
+    from the cache (build() first). A fuel class EIA-930 also counts in another balancing authority (DOUBLE_COUNTED) is NaN
+    (not this BA's) in the hours it is counted twice, unless raw=True, which gives EIA's own values. Demand, net generation
+    and interchange are EIA's either way."""
     path = os.path.join(RAW, "ba", f"{ba}.npz")
     if not os.path.exists(path):
         raise FileNotFoundError(f"no EIA-930 file for {ba!r}: run waterledger_data.grid930.build()")
     with np.load(path) as z:
-        return {k: z[k] for k in z.files}
+        d = {k: z[k] for k in z.files}
+    if not raw:
+        for cls, twice in double_counted(ba, d["hour"]).items():
+            d[cls] = np.where(twice, np.nan, d[cls]).astype(d[cls].dtype)
+    return d
+
+
+# Generation EIA-930 counts in two balancing authorities (model 1.17) [A]. Where one BA reports a whole plant and another reports
+# that plant again, or its owners' share of it, the class is left out of the second BA's hours: each MWh is counted once, in the BA
+# that holds the whole plant (the one EIA-923 files it under). Found by checking every pair of the 67 BAs, 2019-2025: hour-for-hour
+# copies of a class; large hourly steps in one BA's class repeated in another's; and each BA's EIA-930 generation by class and
+# month against EIA-923's plants (2019-2024), where a BA that gives up a plant (or a share) another BA reports is a move, and one
+# that keeps the whole plant while another reports a share is a double count. Every plant found counted twice is listed; the
+# rest are moves, which EIA-930 puts in one BA only (Four Corners shares in PNM and SRP, Centralia in GRID, Comanche in PSCO,
+# Jim Bridger in PACW, Asheville in CPLW and others), and they stay where EIA-930 puts them. With these out, the lower 48's
+# nuclear summed over BAs is within 0.7% of EIA-923's in every year 2019-2024 (it was 3.8% over in 2019). Each entry: (BA,
+# class, first hour, last hour (UTC, end of hour; None: open), BA holding the whole plant, why).
+DOUBLE_COUNTED = (
+    ("AZPS", "nuclear", None, "2019-12-04T07", "SRP",
+     "Palo Verde (plant 6008): EIA-930 reported the whole plant, about 4 GW, in both AZPS and SRP, hour for hour, until it "
+     "moved it to SRP alone on Dec 4, 2019 (29.2 TWh in 2019; the lower 48's nuclear summed over BAs was 840.2 TWh against "
+     "EIA-923's 809.4). EIA-923 files the plant under SRP."),
+    ("FMPP", "nuclear", None, None, "FPL",
+     "St. Lucie (plant 6045): FMPP reports the Florida Municipal Power Agency's and Orlando Utilities' shares of unit 2 (about "
+     "1 TWh a year) while FPL reports the whole plant: FPL's EIA-930 nuclear equals EIA-923's whole FPL fleet, St. Lucie "
+     "included, within 17 GWh in 33 of the 34 months from Mar 2022 to Dec 2024 and within 0.7% in 2019-2021, 2023 and 2024; "
+     "FMPP's monthly excess over EIA-923 follows St. Lucie (r = 0.99) and FPL's doesn't move with it."),
+    ("PSEI", "coal", None, None, "NWMT",
+     "Colstrip (plant 6076): PSEI reported Puget Sound Energy's share (4.5 TWh in 2019, 2.2 in 2020, none after Jan 1, 2021) "
+     "while NWMT reported the whole plant: NWMT's EIA-930 coal is 2.7-3.3% above EIA-923's (Colstrip included) in 2019 and "
+     "2020, and 92-94% of PSEI's largest hourly coal steps are repeated in NWMT at least as large (9-14% by chance)."),
+)
+
+
+def double_counted(ba, hours):
+    """{class: bool array over `hours`}: the hours in which EIA-930 counts the class of `ba` in another BA too (DOUBLE_COUNTED)."""
+    out = {}
+    for b, cls, first, last, _, _ in DOUBLE_COUNTED:
+        if b != ba:
+            continue
+        lo = -np.inf if first is None else np.datetime64(first, "h").astype(np.int64)
+        hi = np.inf if last is None else np.datetime64(last, "h").astype(np.int64)
+        out[cls] = out.get(cls, np.zeros(len(hours), bool)) | ((hours >= lo) & (hours <= hi))
+    return out
+
+
+# Screening the hours (model 1.17). EIA's adjusted columns still carry single-hour spikes and dropouts (AZPS "other" at 6.1 GW for
+# one hour against a usual 31 MW; PJM gas at 21 MW for one hour against about 25 GW) and gaps (AZPS nuclear NaN). An hour is screened,
+# and left out of the averages and of every hour-to-hour pair it touches, where one fuel class
+#   spikes: for 1 to SPIKE_HOURS hours it runs above (or below) both neighbouring hours by more than SPIKE_K times the class's own
+#           99th-percentile hourly change in the BA (its 1-in-100-hour ramp), and by more than FLOOR of the BA's median generation.
+#           SPIKE_K is set from all 67 BAs, 2019-2025: in the large fleets (MISO, SWPP, ERCO, PJM, SOCO, TVA coal, gas, wind, solar)
+#           the largest such reversal is 0.9-3.4 ramps, and the pooled tail of reversals falls steeply to about 8 ramps and flattens
+#           beyond (the artifacts); artifacts confirmed by eye sit at 4.9 (PJM gas to 21 MW) and 6.4 (AZPS gas to 5,905 MW from
+#           1,093), so k = 4 sits above every large fleet's natural hours and below the artifacts.
+#   drops out: a coal, gas, nuclear, oil or geothermal fleet falls to DROPOUT or less of both neighbours for 1 to SPIKE_HOURS hours,
+#           the neighbours above FLOOR; whole fleets can't stop and restart that fast (minimum run times). Not applied to "other",
+#           which held batteries before July 2024, nor to hydro, solar, wind or storage.
+#   has a gap: a class is NaN in a run of hours with the class generating (above FLOOR) on both sides. A NaN run without that (a
+#           class not reported, as AZPS nuclear after EIA moved Palo Verde to SRP in December 2019) is read as 0 MW, but the hour
+#           where a class starts or stops being reported is not paired with the hour before (its change is a reporting change).
+SPIKE_K = 4.0
+SPIKE_HOURS = 3
+DROPOUT = 0.1
+FLOOR = 0.01
+DROPOUT_CLASSES = ("coal", "gas", "nuclear", "oil", "geothermal")
+
+
+def _reversals(x, length):
+    """For runs of `length` hours starting at each hour: how far the run sits beyond both neighbouring hours (above both or below
+    both; 0 otherwise), and whether it falls to DROPOUT of both. NaN neighbours give 0."""
+    n = len(x)
+    r, low = np.zeros(n), np.zeros(n, dtype=bool)
+    if n < length + 2:
+        return r, low
+    before, after = x[:n - length - 1], x[length + 1:]
+    run = np.vstack([x[1 + i:n - length + i] for i in range(length)])
+    near = np.minimum(before, after)
+    with np.errstate(invalid="ignore"):
+        beyond = np.maximum(run.min(axis=0) - np.maximum(before, after), near - run.max(axis=0))
+        drop = run.max(axis=0) <= DROPOUT * near
+    r[1:n - length] = np.where(np.isfinite(beyond), np.maximum(beyond, 0), 0)
+    low[1:n - length] = drop & np.isfinite(near)
+    return r, low
+
+
+def screen(d):
+    """Hours to leave out of a BA's fit (see SPIKE_K above): {"hour_ok": bool per hour, False for a screened hour; "pair_ok": bool
+    per hour, False where the hour is not to be differenced with the hour before; "screened": {class: hours screened}; "floor_mw"}.
+    `d` as hourly() gives it."""
+    n = len(d["hour"])
+    gen = np.nansum(np.vstack([d[k] for k in FUELS]), axis=0)
+    floor = FLOOR * float(np.median(gen[gen > 0])) if (gen > 0).any() else 0.0
+    hour_ok, pair_ok, screened = np.ones(n, dtype=bool), np.ones(n, dtype=bool), {}
+    contiguous = np.r_[False, np.diff(d["hour"]) == 1]
+    for cls in FUELS:
+        x = np.asarray(d[cls], dtype=float)
+        if not np.isfinite(x).any():
+            continue
+        bad = np.zeros(n, dtype=bool)
+        # gaps, and the hours where a class starts or stops being reported
+        nan = np.isnan(x)
+        change = np.flatnonzero(np.diff(nan.astype(int))) + 1
+        pair_ok[change] = False
+        starts = change[nan[change]]
+        for a in np.r_[[0] if nan[0] else [], starts].astype(int):
+            b = a + int(np.argmin(nan[a:])) if not nan[a:].all() else n
+            if 0 < a and b < n and abs(x[a - 1]) > floor and abs(x[b]) > floor:
+                bad[a:b] = True
+        # spikes and dropouts
+        step = np.abs(np.diff(x))
+        step = step[np.isfinite(step)]
+        ramp = max(float(np.quantile(step, 0.99)) if step.size else 0.0, floor)
+        for length in range(1, SPIKE_HOURS + 1):
+            r, low = _reversals(x, length)
+            hit = (r > floor) & ((r > SPIKE_K * ramp) | (low & (cls in DROPOUT_CLASSES)))
+            for i in range(length):
+                bad[np.flatnonzero(hit) + i] = True
+        if bad.any():
+            screened[cls] = int(bad.sum())
+        hour_ok &= ~bad
+    pair_ok &= contiguous & hour_ok & np.r_[False, hour_ok[:-1]]
+    return {"hour_ok": hour_ok, "pair_ok": pair_ok, "screened": screened, "floor_mw": floor}
 
 
 def intensity(ba, factors=None):
     """Water at power plants per MWh of a balancing authority's own generation, hour by hour (design 0008, part 1, step 3):
-    {"hour", "consumed", "withdrawn", "withdrawn_saline" (gal/MWh), "generation" (MW)}. Each hour is the sum over fuel
-    classes of generation x the class's factor for the month (energy.ba_fuel_water), over net generation. Imports are
-    not counted: the hour is the BA's own plants. An hour with no net generation, or under 1% of the BA's median, is NaN."""
+    {"hour", "consumed", "withdrawn", "withdrawn_saline" (gal/MWh), "generation" (MW), "pair_ok", "screened", "bounds"}. Each hour is the sum
+    over fuel classes of generation x the class's factor for the month (energy.ba_fuel_water), over net generation. Imports are
+    not counted: the hour is the BA's own plants. An hour with no net generation, or under 1% of the BA's median, is NaN, and so
+    is an hour screen() leaves out (a spike, a dropout or a gap); a class not reported in an hour is 0 MW. "pair_ok" marks the
+    hours that may be differenced with the hour before (model 1.17), "screened" counts the screened hours by class, and "bounds"
+    gives {"consumed": (lo, hi), "withdrawn": (lo, hi)}, 12 monthly values each: the lowest and highest factor among the classes
+    with generation in the BA in that month, which the BA's average and marginal factors are checked against."""
     from waterledger_data import energy
     f = factors or energy.ba_fuel_water(ba)
     if f is None:
@@ -106,9 +234,16 @@ def intensity(ba, factors=None):
     month = (d["hour"].astype("datetime64[h]").astype("datetime64[M]").astype(int) % 12)
     gen = np.nansum(np.vstack([d[k] for k in FUELS]), axis=0)
     have = ~np.all(np.isnan(np.vstack([d[k] for k in FUELS])), axis=0)
-    out = {"hour": d["hour"], "generation": np.where(have, gen, np.nan)}
-    ok = have & (gen > 0.01 * np.nanmedian(np.where(have, gen, np.nan)))
+    sc = screen(d)
+    ok = have & sc["hour_ok"] & (gen > 0.01 * np.nanmedian(np.where(have, gen, np.nan)))
+    out = {"hour": d["hour"], "generation": np.where(ok, gen, np.nan), "pair_ok": sc["pair_ok"] & ok & np.r_[False, ok[:-1]],
+           "screened": sc["screened"]}
     for k in ("consumed", "withdrawn", "withdrawn_saline"):
         water = sum(np.nan_to_num(d[fuel]) * f[fuel][k][month] for fuel in FUELS)
         out[k] = np.where(ok, water / np.where(ok, gen, 1.0), np.nan)
+    runs = [[fuel for fuel in FUELS if np.any(np.nan_to_num(d[fuel][ok & (month == m)]) > 0)] for m in range(12)]
+    out["bounds"] = {}
+    for k in ("consumed", "withdrawn"):
+        v = [[f[fuel][k][m] for fuel in runs[m]] or [np.nan] for m in range(12)]
+        out["bounds"][k] = (np.array([min(x) for x in v]), np.array([max(x) for x in v]))
     return out

@@ -1,6 +1,6 @@
 # ERA5 check: GA
 
-**PASS** (2026-11-11; model 1.11; design 0005's leave-one-station-out check; 37 stations).
+**PASS** (2026-11-16; model 1.16; design 0005's leave-one-station-out check; 37 stations).
 
 | Criterion | Test | Limit | Value | Pass | Limit set from |
 |---|---|---|---|---|---|
@@ -12,10 +12,12 @@
 | W6 | corrected shore cells (3 or more): median |error| no worse than uncorrected | - | 0.43 vs 1.55 | yes | the reason to correct |
 | W7 | corrected cells: |mean error| in the 1-in-10-year peak day's mean wet bulb, C, at most | 0.50 | 0.04 | yes | model 1.10 [A]: qm-2's Michigan peak days ran 0.72 C humid, mapping the dew point brought Michigan and Ohio to 0.23 (methods log, Nov 8, 2026) |
 | P1 | places sampled, at least | 5 | 12 | yes | too few to judge below this |
-| P2 | places: median |difference| in the hybrid average day, %, at most | 8.00 | 4.77 | yes | four states 1.9-4.6 (Virginia); +3.4 |
-| P3 | places: |mean difference| in the hybrid average day, %, at most | 6.00 | 3.99 | yes | four states 0.6-4.9 (Virginia); +1.1 |
-| P4 | places: median |difference| in the hybrid peak day, %, at most | 6.00 | 5.89 | yes | four states 0.5-3.2 (Virginia); +2.8 |
+| P2 | places: median |difference| in the hybrid average day, % of towers' average day, at most | 1.00 | 0.18 | yes | four states at 1.16 0.10-0.53 (Texas); +0.47 |
+| P3 | places: |mean difference| in the hybrid average day, % of towers' average day, at most | 0.75 | 0.06 | yes | four states at 1.16 0.04-0.29 (Texas); +0.46 |
+| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 4.01 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
 | P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.51 | yes | four states 0.03-0.22; +1.8 |
+| P6 | places: median |difference| in the pads average day, % of towers' average day, at most | 1.00 | 0.14 | yes | four states at 1.16 0.17-0.54 (Texas); +0.46 |
+| P7 | places: median |difference| in the pads peak day, % of towers' peak day, at most | 6.00 | 4.40 | yes | four states at 1.16 1.3-3.8 (Texas); +2.2 |
 
 ## Weather at the held-out stations
 
@@ -72,21 +74,36 @@ Median absolute error (mean error), C, against the station on its own hours.
 
 ## Places through the cooling model
 
-The place's cell against the station's own record, p50 per 100 MW, % difference.
+The place's cell against the station's own record, p50 per 100 MW: % difference in each design's own water (towers are judged by this one), then hybrid and pads as % of towers' water at the place (judged from model 1.16).
 
 | Place | Station (km) | Cell land | towers avg | towers peak | hybrid avg | hybrid peak | assist avg | assist peak |
 |---|---|---|---|---|---|---|---|---|
-| Brunswick city | Malcolm Mc Kinnon Airport (8) | 0.77 | +1 | +1 | +8 | +9 | +12 | +13 |
-| Garden City city | Savannah/Hilton Head Intl Airport (5) | 0.94 | +1 | +1 | +3 | +4 | -2 | +7 |
-| Dougherty County | Sw Georgia Regional Arpt (1) | 1.00 | -0 | +1 | -1 | +8 | -1 | +8 |
-| Dasher town | Valdosta Regional Airport (6) | 0.99 | -0 | +0 | -0 | +5 | -1 | +11 |
-| Centerville city | Middle Georgia Regional Airport (6) | 0.99 | +0 | +1 | -1 | +6 | -7 | +5 |
-| Warner Robins city | Robins Afb Airport (6) | 1.00 | -1 | -1 | -4 | -6 | -2 | -3 |
-| Augusta-Richmond County consolidated government (balance) | Augusta Regional At Bush Field Ap (10) | 0.99 | +1 | +0 | +16 | +5 | +23 | +13 |
-| Gainesville city | Lee Gilmer Memorial Arpt (2) | 0.97 | +0 | +0 | +2 | -6 | +5 | -2 |
-| College Park city | Hartsfield-Jackson Atlanta Intl Ap (2) | 1.00 | -1 | -1 | -6 | -3 | -11 | -6 |
-| Chamblee city | Dekalb-Peachtree Airport (0) | 0.98 | +0 | -0 | +5 | +3 | +1 | +3 |
-| Peachtree City city | Pchtre Cty-Falcon Fld Arpt (4) | 1.00 | +1 | +2 | +14 | +22 | +19 | +26 |
-| Chattahoochee County | Lawson Aaf Airport (19) | 0.99 | +0 | +1 | +13 | +13 | +17 | +20 |
+| Brunswick city | Malcolm Mc Kinnon Airport (8) | 0.77 | +1 | +1 | +12 | +19 | +17 | +25 |
+| Garden City city | Savannah/Hilton Head Intl Airport (5) | 0.94 | +1 | +1 | -5 | +5 | -3 | +3 |
+| Dougherty County | Sw Georgia Regional Arpt (1) | 1.00 | -0 | +1 | -3 | +10 | +0 | +16 |
+| Dasher town | Valdosta Regional Airport (6) | 0.99 | -0 | +0 | -2 | +3 | -1 | +1 |
+| Centerville city | Middle Georgia Regional Airport (6) | 0.99 | +0 | +1 | -5 | +9 | -8 | +0 |
+| Warner Robins city | Robins Afb Airport (6) | 1.00 | -1 | -1 | -4 | -9 | -2 | -12 |
+| Augusta-Richmond County consolidated government (balance) | Augusta Regional At Bush Field Ap (10) | 0.99 | +1 | +0 | +8 | +1 | +15 | +4 |
+| Gainesville city | Lee Gilmer Memorial Arpt (2) | 0.97 | +0 | +0 | +17 | +1 | +32 | +11 |
+| College Park city | Hartsfield-Jackson Atlanta Intl Ap (2) | 1.00 | -1 | -1 | +3 | -5 | -2 | -12 |
+| Chamblee city | Dekalb-Peachtree Airport (0) | 0.98 | +0 | -0 | -1 | +8 | -4 | -7 |
+| Peachtree City city | Pchtre Cty-Falcon Fld Arpt (4) | 1.00 | +1 | +2 | +4 | +26 | +11 | +25 |
+| Chattahoochee County | Lawson Aaf Airport (19) | 0.99 | +0 | +1 | -0 | +21 | +3 | +15 |
+
+| Place | hybrid avg, % of towers | hybrid peak, % of towers | assist avg, % of towers | assist peak, % of towers |
+|---|---|---|---|---|
+| Brunswick city | +0.44 | +9.15 | +0.55 | +8.16 |
+| Garden City city | -0.22 | +2.32 | -0.13 | +1.08 |
+| Dougherty County | -0.16 | +5.00 | +0.02 | +6.49 |
+| Dasher town | -0.10 | +1.39 | -0.04 | +0.59 |
+| Centerville city | -0.25 | +4.21 | -0.43 | +0.04 |
+| Warner Robins city | -0.20 | -5.06 | -0.10 | -5.72 |
+| Augusta-Richmond County consolidated government (balance) | +0.43 | +0.29 | +0.85 | +1.70 |
+| Gainesville city | +0.52 | +0.59 | +0.88 | +3.62 |
+| College Park city | +0.11 | -2.63 | -0.06 | -5.19 |
+| Chamblee city | -0.02 | +3.80 | -0.14 | -2.92 |
+| Peachtree City city | +0.13 | +11.74 | +0.41 | +8.92 |
+| Chattahoochee County | -0.01 | +9.18 | +0.14 | +5.88 |
 
 A fail is a method question for Andrew; the command changes nothing. Criteria: `waterledger.national.era5_check.CRITERIA`.

@@ -7,7 +7,7 @@ from pydantic import Field
 
 from waterledger.facilities.base import Facility, register
 
-COOLING = Literal["dry", "assist", "hybrid", "towers", "lake"]
+COOLING = Literal["dry", "assist", "hybrid", "towers", "outside_air", "lake"]
 
 
 def local_weather(est):
@@ -30,7 +30,8 @@ class DataCenter(Facility):
     """A data center campus: computing capacity and cooling design.
 
     cooling: dry (closed loop, no water for cooling), assist (dry coolers with adiabatic pre-cooling in warm weather),
-    hybrid (dry most of the year, evaporative in warm weather), towers (cooling towers all year) or lake (lake-source,
+    hybrid (dry most of the year, evaporative in warm weather), towers (cooling towers all year), outside_air (outside air straight
+    into the halls, with evaporative pads above the operator's setting; model 1.17 results only) or lake (lake-source,
     once through; only within about 5 km of a Great Lake). plant: the cooling plant inside the building, which sets the loops' water
     temperatures (model 1.10): shared (one facility water loop for air and liquid cooling, the default), warm (a separate warm-water
     loop for liquid-cooled computers) or chilled (a conventional chilled-water plant); data from before model 1.10 has only its own."""
@@ -41,8 +42,8 @@ class DataCenter(Facility):
                                                                                  "air and liquid cooling (shared, the default), a separate warm-water loop for "
                                                                                  "liquid cooling (warm), or a conventional chilled-water plant (chilled)")
 
-    DESIGNS = ("dry", "assist", "hybrid", "towers", "lake")
-    EVAPORATIVE = ("towers", "hybrid")
+    DESIGNS = ("dry", "assist", "hybrid", "towers", "outside_air", "lake")
+    EVAPORATIVE = ("towers", "hybrid")      # outside_air's water is pads' evaporation and bleed, as assist's (design 0022)
     DESIGN_FIELD = "cooling"
 
     @property
@@ -74,5 +75,6 @@ class DataCenter(Facility):
         return self.it_mw * PARAMS["fuel"]["gen_mw_per_it_mw"]
 
     def cooling_blowdown(self, est):
-        """Towers: what goes back is nearly all blowdown, so the returned water on the middle estimate."""
-        return est.water.returned.avg.p50 if self.cooling == "towers" else None
+        """Towers and hybrid, which dose their recirculating water: the blowdown on the middle estimate (est.water.blowdown), without the staff water and
+        condensate that also go back (3.25.0; through 3.24 towers took all returned water, which put inhibitor phosphorus on sanitary water and condensate)."""
+        return est.water.blowdown.p50 if self.cooling in self.EVAPORATIVE and est.water.blowdown is not None else None

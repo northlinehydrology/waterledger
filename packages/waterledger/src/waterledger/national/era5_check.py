@@ -6,7 +6,10 @@ Two parts, as docs/methods/qm-check's cv_weather and cv_places did for the first
   stations left, and from model 1.9 land cells from the land stations left within 100 km. The cell is compared with the station on the station's own hours: the 0.4% design
   dry-bulb, the 0.4% wet bulb, the mean summer afternoon, the mean dew point and, from model 1.10, the 1-in-10-year peak day's mean wet bulb.
 - Places. For up to `n` stations in the state, the nearest place within PLACE_KM, through the cooling model: the place's cell
-  (corrected without that station) against the station's own record (cooling.run_location, 400 draws, seed 7, per 100 MW).
+  (corrected without that station) against the station's own record (cooling.run_location, 400 draws, seed 7, per 100 MW). Towers are
+  judged by their own water. From model 1.16 hybrid and pads (assist) are judged as a share of towers' water at the same place: they
+  evaporate only above the operator's switch setting, about 1% of towers' water in Michigan, so a percent of their own small
+  water mostly measures how many of the hottest hours cross the switch (Nov 16, 2026).
 
 The criteria (CRITERIA) are the worst of the four states accepted so far (Michigan, Ohio, Virginia, Texas; Nov 4, 2026) plus a
 margin: a new state passes when ERA5 and the correction do about as well there as in a state already published. A fail is a method
@@ -23,6 +26,13 @@ CHECK = os.path.join(CACHE, "era5", "check")
 R_KM, HOLD_KM, PLACE_KM = 100.0, 5.0, 30.0
 STATS = [(d, s) for d in ("towers", "hybrid", "assist") for s in ("withdrawn_avg", "withdrawn_peak_1in10")]
 
+# P2-P4, P6 and P7 from model 1.16, as a share of towers' water (module docstring); set from the four states at 1.16 (Nov 16, 2026), each 12 places.
+P2_LIMIT, P2_BASIS = 1.0, "four states at 1.16 0.10-0.53 (Texas); +0.47"
+P3_LIMIT, P3_BASIS = 0.75, "four states at 1.16 0.04-0.29 (Texas); +0.46"
+P4_LIMIT, P4_BASIS = 6.0, "four states at 1.16 1.5-4.0 (Ohio); +2.0"
+P6_LIMIT, P6_BASIS = 1.0, "four states at 1.16 0.17-0.54 (Texas); +0.46"
+P7_LIMIT, P7_BASIS = 6.0, "four states at 1.16 1.3-3.8 (Texas); +2.2"
+
 # (id, what it tests, limit, how the limit was set). The four states: docs/methods/qm-check/cv_weather.json and cv_places_summary.json,
 # each state's stations being those in it or within 100 km of its places, its places those of the station check within 30 km of a station.
 CRITERIA = [
@@ -35,10 +45,12 @@ CRITERIA = [
     ("W7", "corrected cells: |mean error| in the 1-in-10-year peak day's mean wet bulb, C, at most", 0.5,
      "model 1.10 [A]: qm-2's Michigan peak days ran 0.72 C humid, mapping the dew point brought Michigan and Ohio to 0.23 (methods log, Nov 8, 2026)"),
     ("P1", "places sampled, at least", 5, "too few to judge below this"),
-    ("P2", "places: median |difference| in the hybrid average day, %, at most", 8.0, "four states 1.9-4.6 (Virginia); +3.4"),
-    ("P3", "places: |mean difference| in the hybrid average day, %, at most", 6.0, "four states 0.6-4.9 (Virginia); +1.1"),
-    ("P4", "places: median |difference| in the hybrid peak day, %, at most", 6.0, "four states 0.5-3.2 (Virginia); +2.8"),
+    ("P2", "places: median |difference| in the hybrid average day, % of towers' average day, at most", P2_LIMIT, P2_BASIS),
+    ("P3", "places: |mean difference| in the hybrid average day, % of towers' average day, at most", P3_LIMIT, P3_BASIS),
+    ("P4", "places: median |difference| in the hybrid peak day, % of towers' peak day, at most", P4_LIMIT, P4_BASIS),
     ("P5", "places: median |difference| in towers' average day, %, at most", 2.0, "four states 0.03-0.22; +1.8"),
+    ("P6", "places: median |difference| in the pads average day, % of towers' average day, at most", P6_LIMIT, P6_BASIS),
+    ("P7", "places: median |difference| in the pads peak day, % of towers' peak day, at most", P7_LIMIT, P7_BASIS),
 ]
 
 
@@ -199,9 +211,11 @@ def places_check(pairs, stations, workers=6, draws=None, run=None):
     for i, ((s, p), note) in enumerate(zip(pairs, notes)):
         ref, got = res[2 * i], res[2 * i + 1]
         diff = {f"{d}.{x}": 100 * (got[d][x]["p50"] / ref[d][x]["p50"] - 1) for d, x in STATS}
+        of_towers = {f"{d}.{x}": 100 * (got[d][x]["p50"] - ref[d][x]["p50"]) / ref["towers"][x]["p50"] for d, x in STATS if d != "towers"}
         rows.append({"place": p["name"], "geoid": p["geoid"], "cell": p["cell"], "cell_land": era5.land(p["cell"]), "station": s["name"],
                      "station_id": s["id"], "km": p["km"], "corrected": note["applied"], "reason": note["reason"], "anchors": note["stations"],
-                     "difference_pct": diff})
+                     "difference_pct": diff, "of_towers_pct": of_towers,
+                     "p50": {"station": {f"{d}.{x}": ref[d][x]["p50"] for d, x in STATS}, "cell": {f"{d}.{x}": got[d][x]["p50"] for d, x in STATS}}})
     return rows
 
 
@@ -223,10 +237,11 @@ def judge(weather, places):
         v["W5"] = med(e(shore, "decided", "ddb"))
         v["W6"] = [v["W5"], med(e(shore, "uncorrected", "ddb"))]
     if places is not None:
-        h = np.array([r["difference_pct"]["hybrid.withdrawn_avg"] for r in places])
-        v |= {"P1": len(places), "P2": med(h), "P3": abs(float(h.mean())) if len(h) else None,
-              "P4": med([r["difference_pct"]["hybrid.withdrawn_peak_1in10"] for r in places]),
-              "P5": med([r["difference_pct"]["towers.withdrawn_avg"] for r in places])}
+        t = lambda k: np.array([r["of_towers_pct"][k] for r in places])
+        h = t("hybrid.withdrawn_avg")
+        v |= {"P1": len(places), "P2": med(h), "P3": abs(float(h.mean())) if len(h) else None, "P4": med(t("hybrid.withdrawn_peak_1in10")),
+              "P5": med([r["difference_pct"]["towers.withdrawn_avg"] for r in places]),
+              "P6": med(t("assist.withdrawn_avg")), "P7": med(t("assist.withdrawn_peak_1in10"))}
     out = []
     for cid, test, limit, basis in CRITERIA:
         x = v.get(cid)
@@ -266,12 +281,17 @@ def markdown(rep):
         L.append(f"| {r['name']}, {r['state']} | {r['source']} | {r['cell_land']:.2f} | {r['decided']['ddb']:+.2f} | "
                  + (", ".join(f"{a[1]} {a[2]:.0f} km" for a in r["anchors"]) or r["reason"]) + " |")
     if rep["places"] is not None:
-        L += ["", "## Places through the cooling model", "", "The place's cell against the station's own record, p50 per 100 MW, % difference.", "",
+        L += ["", "## Places through the cooling model", "", "The place's cell against the station's own record, p50 per 100 MW: % difference in "
+              "each design's own water (towers are judged by this one), then hybrid and pads as % of towers' water at the place (judged from model 1.16).", "",
               "| Place | Station (km) | Cell land | " + " | ".join(f"{d} {'avg' if s.endswith('avg') else 'peak'}" for d, s in STATS) + " |",
               "|---|---|---|" + "---|" * len(STATS)]
         for r in rep["places"]:
             L.append(f"| {r['place']} | {r['station']} ({r['km']:.0f}) | {r['cell_land']:.2f} | "
                      + " | ".join(f"{r['difference_pct'][f'{d}.{s}']:+.0f}" for d, s in STATS) + " |")
+        L += ["", "| Place | " + " | ".join(f"{d} {'avg' if s.endswith('avg') else 'peak'}, % of towers" for d, s in STATS if d != "towers") + " |",
+              "|---|" + "---|" * (len(STATS) - 2)]
+        for r in rep["places"]:
+            L.append(f"| {r['place']} | " + " | ".join(f"{r['of_towers_pct'][f'{d}.{s}']:+.2f}" for d, s in STATS if d != "towers") + " |")
     else:
         L += ["", "Places were not run (--weather-only), so the check can't pass."]
     L += ["", "A fail is a method question for Andrew; the command changes nothing. Criteria: `waterledger.national.era5_check.CRITERIA`."]

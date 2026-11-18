@@ -1,6 +1,6 @@
 # ERA5 check: NY
 
-**FAIL** (2026-11-12; model 1.11; design 0005's leave-one-station-out check; 68 stations).
+**FAIL** (2026-11-16; model 1.16; design 0005's leave-one-station-out check; 68 stations).
 
 | Criterion | Test | Limit | Value | Pass | Limit set from |
 |---|---|---|---|---|---|
@@ -12,10 +12,12 @@
 | W6 | corrected shore cells (3 or more): median |error| no worse than uncorrected | - | 0.81 vs 1.00 | yes | the reason to correct |
 | W7 | corrected cells: |mean error| in the 1-in-10-year peak day's mean wet bulb, C, at most | 0.50 | 0.01 | yes | model 1.10 [A]: qm-2's Michigan peak days ran 0.72 C humid, mapping the dew point brought Michigan and Ohio to 0.23 (methods log, Nov 8, 2026) |
 | P1 | places sampled, at least | 5 | 12 | yes | too few to judge below this |
-| P2 | places: median |difference| in the hybrid average day, %, at most | 8.00 | 13.32 | **no** | four states 1.9-4.6 (Virginia); +3.4 |
-| P3 | places: |mean difference| in the hybrid average day, %, at most | 6.00 | 9.06 | **no** | four states 0.6-4.9 (Virginia); +1.1 |
-| P4 | places: median |difference| in the hybrid peak day, %, at most | 6.00 | 7.55 | **no** | four states 0.5-3.2 (Virginia); +2.8 |
+| P2 | places: median |difference| in the hybrid average day, % of towers' average day, at most | 1.00 | 0.37 | yes | four states at 1.16 0.10-0.53 (Texas); +0.47 |
+| P3 | places: |mean difference| in the hybrid average day, % of towers' average day, at most | 0.75 | 0.28 | yes | four states at 1.16 0.04-0.29 (Texas); +0.46 |
+| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 5.74 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
 | P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.52 | yes | four states 0.03-0.22; +1.8 |
+| P6 | places: median |difference| in the pads average day, % of towers' average day, at most | 1.00 | 0.42 | yes | four states at 1.16 0.17-0.54 (Texas); +0.46 |
+| P7 | places: median |difference| in the pads peak day, % of towers' peak day, at most | 6.00 | 6.07 | **no** | four states at 1.16 1.3-3.8 (Texas); +2.2 |
 
 ## Weather at the held-out stations
 
@@ -103,21 +105,36 @@ Median absolute error (mean error), C, against the station on its own hours.
 
 ## Places through the cooling model
 
-The place's cell against the station's own record, p50 per 100 MW, % difference.
+The place's cell against the station's own record, p50 per 100 MW: % difference in each design's own water (towers are judged by this one), then hybrid and pads as % of towers' water at the place (judged from model 1.16).
 
 | Place | Station (km) | Cell land | towers avg | towers peak | hybrid avg | hybrid peak | assist avg | assist peak |
 |---|---|---|---|---|---|---|---|---|
-| New York County | La Guardia Airport (8) | 0.71 | -0 | -1 | -7 | -3 | -15 | -6 |
-| Rye Brook village | Westchester County Airport (4) | 0.76 | +1 | +2 | +22 | +9 | +31 | +21 |
-| Islandia village | Long Island Mac Arthur Airport (6) | 0.55 | +0 | +0 | +4 | +7 | +8 | +9 |
-| North Syracuse village | Syracuse Hancock International Ap (3) | 0.84 | -2 | -4 | -31 | -10 | -54 | -32 |
-| Niagara town | Niagara Falls Intl Airport (4) | 0.81 | -1 | -1 | -33 | +4 | -51 | -22 |
-| Gates town | Greater Rochester International Ap (5) | 0.67 | -1 | -2 | -28 | +13 | -55 | -22 |
-| Wappingers Falls village | Dutchess County Airport (4) | 0.97 | +0 | +1 | +1 | +8 | -2 | +7 |
-| Maine town | Greater Binghamton/E A Link Field Ap (3) | 0.99 | +0 | +1 | +10 | -3 | +9 | -3 |
-| Lansing village | Ithaca Tompkins Regional Airport (2) | 0.94 | -0 | +0 | +1 | +4 | +0 | +0 |
-| Big Flats town | Elmira/Corning Rgnl Arpt (2) | 0.99 | -1 | -0 | -22 | +9 | -32 | -3 |
-| Colonie town | Albany International Airport (1) | 0.98 | -1 | -2 | -13 | -9 | -18 | -10 |
-| Williamsville village | Buffalo Niagara International Airpor (2) | 0.95 | -0 | +1 | -13 | -7 | -10 | -6 |
+| New York County | La Guardia Airport (8) | 0.71 | -0 | -1 | -13 | -7 | -26 | -19 |
+| Rye Brook village | Westchester County Airport (4) | 0.76 | +1 | +2 | +28 | +23 | +58 | +35 |
+| Islandia village | Long Island Mac Arthur Airport (6) | 0.55 | +0 | +0 | +10 | +1 | +3 | +0 |
+| North Syracuse village | Syracuse Hancock International Ap (3) | 0.84 | -2 | -4 | -90 | -41 | -91 | -56 |
+| Niagara town | Niagara Falls Intl Airport (4) | 0.81 | -1 | -1 | -72 | -14 | -78 | -34 |
+| Gates town | Greater Rochester International Ap (5) | 0.67 | -1 | -2 | -93 | -36 | -93 | -51 |
+| Wappingers Falls village | Dutchess County Airport (4) | 0.97 | +0 | +1 | -7 | +9 | -1 | +6 |
+| Maine town | Greater Binghamton/E A Link Field Ap (3) | 0.99 | +0 | +1 | +91 | +19 | +112 | +27 |
+| Lansing village | Ithaca Tompkins Regional Airport (2) | 0.94 | -0 | +0 | -7 | -5 | -3 | +0 |
+| Big Flats town | Elmira/Corning Rgnl Arpt (2) | 0.99 | -1 | -0 | -54 | -4 | -59 | -15 |
+| Colonie town | Albany International Airport (1) | 0.98 | -1 | -2 | -29 | -14 | -28 | -22 |
+| Williamsville village | Buffalo Niagara International Airpor (2) | 0.95 | -0 | +1 | +39 | +9 | +39 | +3 |
+
+| Place | hybrid avg, % of towers | hybrid peak, % of towers | assist avg, % of towers | assist peak, % of towers |
+|---|---|---|---|---|
+| New York County | -0.27 | -5.05 | -0.54 | -10.43 |
+| Rye Brook village | +0.36 | +12.65 | +0.56 | +11.09 |
+| Islandia village | +0.10 | +0.32 | +0.02 | +0.06 |
+| North Syracuse village | -1.23 | -21.29 | -0.92 | -17.72 |
+| Niagara town | -0.71 | -6.44 | -0.56 | -8.89 |
+| Gates town | -1.01 | -15.57 | -0.74 | -12.99 |
+| Wappingers Falls village | -0.13 | +4.78 | -0.01 | +2.27 |
+| Maine town | +0.38 | +6.67 | +0.30 | +5.35 |
+| Lansing village | -0.07 | -2.25 | -0.02 | +0.05 |
+| Big Flats town | -0.72 | -1.66 | -0.61 | -4.25 |
+| Colonie town | -0.37 | -7.12 | -0.27 | -6.80 |
+| Williamsville village | +0.26 | +3.82 | +0.18 | +0.75 |
 
 A fail is a method question for Andrew; the command changes nothing. Criteria: `waterledger.national.era5_check.CRITERIA`.

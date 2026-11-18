@@ -1,6 +1,6 @@
 # ERA5 check: IL
 
-**PASS** (2026-11-12; model 1.11; design 0005's leave-one-station-out check; 34 stations).
+**PASS** (2026-11-16; model 1.16; design 0005's leave-one-station-out check; 34 stations).
 
 | Criterion | Test | Limit | Value | Pass | Limit set from |
 |---|---|---|---|---|---|
@@ -12,10 +12,12 @@
 | W6 | corrected shore cells (3 or more): median |error| no worse than uncorrected | - | 0.30 vs 2.03 | yes | the reason to correct |
 | W7 | corrected cells: |mean error| in the 1-in-10-year peak day's mean wet bulb, C, at most | 0.50 | 0.13 | yes | model 1.10 [A]: qm-2's Michigan peak days ran 0.72 C humid, mapping the dew point brought Michigan and Ohio to 0.23 (methods log, Nov 8, 2026) |
 | P1 | places sampled, at least | 5 | 12 | yes | too few to judge below this |
-| P2 | places: median |difference| in the hybrid average day, %, at most | 8.00 | 4.30 | yes | four states 1.9-4.6 (Virginia); +3.4 |
-| P3 | places: |mean difference| in the hybrid average day, %, at most | 6.00 | 1.84 | yes | four states 0.6-4.9 (Virginia); +1.1 |
-| P4 | places: median |difference| in the hybrid peak day, %, at most | 6.00 | 3.24 | yes | four states 0.5-3.2 (Virginia); +2.8 |
+| P2 | places: median |difference| in the hybrid average day, % of towers' average day, at most | 1.00 | 0.15 | yes | four states at 1.16 0.10-0.53 (Texas); +0.47 |
+| P3 | places: |mean difference| in the hybrid average day, % of towers' average day, at most | 0.75 | 0.08 | yes | four states at 1.16 0.04-0.29 (Texas); +0.46 |
+| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 4.48 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
 | P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.17 | yes | four states 0.03-0.22; +1.8 |
+| P6 | places: median |difference| in the pads average day, % of towers' average day, at most | 1.00 | 0.25 | yes | four states at 1.16 0.17-0.54 (Texas); +0.46 |
+| P7 | places: median |difference| in the pads peak day, % of towers' peak day, at most | 6.00 | 4.21 | yes | four states at 1.16 1.3-3.8 (Texas); +2.2 |
 
 ## Weather at the held-out stations
 
@@ -68,21 +70,36 @@ Median absolute error (mean error), C, against the station on its own hours.
 
 ## Places through the cooling model
 
-The place's cell against the station's own record, p50 per 100 MW, % difference.
+The place's cell against the station's own record, p50 per 100 MW: % difference in each design's own water (towers are judged by this one), then hybrid and pads as % of towers' water at the place (judged from model 1.16).
 
 | Place | Station (km) | Cell land | towers avg | towers peak | hybrid avg | hybrid peak | assist avg | assist peak |
 |---|---|---|---|---|---|---|---|---|
-| Stickney township | Chicago Midway Intl Arpt (2) | 0.82 | -2 | -1 | -32 | -8 | -38 | -13 |
-| Benton township | Waukegan Regional Airport (1) | 0.73 | +0 | +2 | +9 | +9 | +8 | +7 |
-| De Soto village | Southern Illinois Airport (4) | 0.98 | +0 | -0 | +2 | -3 | +3 | +1 |
-| Shiloh Valley township | Scott Air Force Base/Midamerica Airport (3) | 1.00 | +0 | +1 | +6 | +8 | +12 | +18 |
-| Springfield township | Abraham Lincoln Capital Airport (2) | 0.98 | -0 | +1 | -0 | +3 | -2 | +2 |
-| Burton township | Quincy Rgnl-Bldwn Fld Arpt (5) | 0.98 | -0 | +0 | +0 | +3 | -5 | +1 |
-| Bensenville village | Chicago O'Hare International Airport (1) | 0.98 | -0 | -2 | -5 | -8 | -13 | -11 |
-| West Chicago city | Dupage Airport (2) | 0.99 | -0 | +1 | -4 | -0 | -2 | -0 |
-| Cahokia Heights city | St Louis Downtown Airport (1) | 0.98 | +0 | +1 | +1 | +2 | +2 | +4 |
-| Tolono township | Universi Of Il Willard Apt (2) | 1.00 | +1 | +2 | +6 | +15 | +7 | +7 |
-| Long Creek township | Decatur Airport (3) | 0.99 | -0 | -1 | -4 | -2 | -5 | -1 |
-| Lafayette township | Coles County Memo Airport (2) | 1.00 | -0 | +1 | -0 | +2 | +2 | +6 |
+| Stickney township | Chicago Midway Intl Arpt (2) | 0.82 | -2 | -1 | -42 | -15 | -52 | -22 |
+| Benton township | Waukegan Regional Airport (1) | 0.73 | +0 | +2 | +23 | +12 | +25 | +13 |
+| De Soto village | Southern Illinois Airport (4) | 0.98 | +0 | -0 | -0 | -0 | +5 | +3 |
+| Shiloh Valley township | Scott Air Force Base/Midamerica Airport (3) | 1.00 | +0 | +1 | +8 | +11 | +9 | +15 |
+| Springfield township | Abraham Lincoln Capital Airport (2) | 0.98 | -0 | +1 | +1 | +10 | -1 | +7 |
+| Burton township | Quincy Rgnl-Bldwn Fld Arpt (5) | 0.98 | -0 | +0 | -5 | +6 | -14 | -11 |
+| Bensenville village | Chicago O'Hare International Airport (1) | 0.98 | -0 | -2 | -9 | -10 | -18 | -18 |
+| West Chicago city | Dupage Airport (2) | 0.99 | -0 | +1 | -6 | +8 | +3 | +12 |
+| Cahokia Heights city | St Louis Downtown Airport (1) | 0.98 | +0 | +1 | -2 | +7 | +2 | +11 |
+| Tolono township | Universi Of Il Willard Apt (2) | 1.00 | +1 | +2 | +5 | +22 | +12 | +13 |
+| Long Creek township | Decatur Airport (3) | 0.99 | -0 | -1 | -16 | +0 | -13 | -5 |
+| Lafayette township | Coles County Memo Airport (2) | 1.00 | -0 | +1 | +10 | +8 | +17 | +12 |
+
+| Place | hybrid avg, % of towers | hybrid peak, % of towers | assist avg, % of towers | assist peak, % of towers |
+|---|---|---|---|---|
+| Stickney township | -0.89 | -10.66 | -1.03 | -10.72 |
+| Benton township | +0.26 | +6.73 | +0.20 | +4.46 |
+| De Soto village | -0.01 | -0.21 | +0.15 | +0.92 |
+| Shiloh Valley township | +0.25 | +5.43 | +0.28 | +5.72 |
+| Springfield township | +0.04 | +4.96 | -0.03 | +2.25 |
+| Burton township | -0.11 | +3.11 | -0.31 | -4.44 |
+| Bensenville village | -0.18 | -5.95 | -0.29 | -6.81 |
+| West Chicago city | -0.11 | +4.00 | +0.04 | +3.87 |
+| Cahokia Heights city | -0.08 | +3.46 | +0.07 | +4.55 |
+| Tolono township | +0.11 | +9.97 | +0.22 | +3.99 |
+| Long Creek township | -0.43 | +0.14 | -0.28 | -1.51 |
+| Lafayette township | +0.22 | +3.99 | +0.30 | +3.59 |
 
 A fail is a method question for Andrew; the command changes nothing. Criteria: `waterledger.national.era5_check.CRITERIA`.

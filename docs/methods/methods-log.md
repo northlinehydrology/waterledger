@@ -2572,6 +2572,619 @@ Andrew accepted it on Nov 13, 2026 ("Except weather with a methods note", agreei
 `weather_check` in states.toml and on Arizona's methods page. The station correction for land cells decided on Nov 6 is the method
 change that would address it; elevation is the part a station correction alone may not fix.
 
+## Nov 15, 2026: air-cooled chillers that respond to the air (design 0015; model 1.16)
+
+**What was wrong.** Through model 1.15 an air-cooled chiller's COP was carnot_air (0.45-0.55) x T_evap / (T_coil + 12 - T_evap),
+capped at 5 [A]. On the shared and warm loops the chilled water is warm, so the lift is small and the Carnot term runs well above 5:
+the cap held at every air temperature a Great Lakes summer has. A dry plant drew the same chiller power at 25 C as at 33 C, and pads,
+which cool the air ahead of the coil, bought back nothing. Found in the Clam River study's closed-loop set (Nov 15): dry and pads
+both 85.9 MW on the 1-in-10-year peak day, and unchanged at the low end of carnot_air. On the stored West Michigan weather (shared
+loop, 100 MW, 40 draws) the two differed by 0.1 MW on the peak day and not at all in the hottest hour.
+
+**Evidence.** ASHRAE 90.1's default performance curves for air-cooled chillers (COMNET 2017, as given in Rosenberg et al. 2017,
+PNNL-26917, the Standard 90.1-2016 Performance Rating Method Reference Manual, Table 80: EIR-FT, a biquadratic in chilled water
+supply and outdoor dry-bulb, F, valid 40-54 F water and 40-115 F air) give COP falling 2.0-2.7% per K of air at the rating point
+(scroll 2.7, screw 2.5, reciprocating 2.0; 1.8-2.1% at 25 C). The Carnot term gives 2.4% there, so the form was sound and the cap was
+what removed the response. Within their range the curves flatten in cool air: at 15 C and 6.7 C water, EIR is 0.66 of rated, COP 1.5
+times rated. EnergyPlus's Chillers.idf has no air-cooled chillers (all 162 are water-cooled), so it was not used.
+
+**Method.** 1/COP = loss + lift / (carnot_air x T_evap), lift = T_coil + 12 - T_evap, T_evap = supply - 2, then capped. Fitted by least
+squares on relative error to the screw curve over its water range (4.4-12.2 C) and the air in which chillers run (15-46 C), normalized
+to the rating point (6.7 C water, 35 C air) at COP 2.96, EER 10.1, 90.1's Path A full-load minimum: loss 0.0767, carnot 0.571, RMS
+error 4.6%, largest 14% (scroll: 0.068, 0.550, 5.3%, 18%; reciprocating: 0.089, 0.605, 2.1%, 7.5%). Screw is used because large
+air-cooled plants are screw or centrifugal and the manual gives no air-cooled centrifugal curve. carnot_air becomes 0.571-0.761,
+which keeps the rating band of model 1.15 (COP 2.96-3.61 at the rating point). The form is extrapolated above 12.2 C water through the
+lift, which is the physical part; the biquadratics are not used directly, since they are not valid on warm water [A].
+
+**The cap.** Sampled 5-7.6 (`air_cop_cap`, with the well-built-plant group), Andrew's choice on Nov 15 after a search of makers' data
+found no single value:
+- fitted over the curve's whole range (air 4.4-46 C) the loss is 0.132 and carnot 0.761, a ceiling of 7.6 (screw; scroll 7.2,
+  reciprocating 9.1), for minimum-efficiency machines on cold water;
+- Mitsubishi Electric's MECH-iC page: COP 3.95 and 3.88 at full load, 42 C air, 18.9/27.8 C water (capacity AHRI 550/590 certified);
+  for the 500 ton model, 0.559 kW/ton at 75% load and 30 C air (COP 6.3), 0.407 at 50% and 20 C (COP 8.6), 0.426 at 25% and 12.8 C
+  (COP 8.3), NPLV 0.46, stated as illustrative and with no water temperature given for the part-load points;
+- Daikin Applied's Pathfinder (catalogue 640): IPLV over 22 EER (COP 6.4), on 6.7 C water;
+- Trane's TCA sheet (TCA-SLB001-EN, May 2026): 60-85 F leaving water, -20 to 130 F air, no efficiency;
+- 5, the value through model 1.15 [A].
+The makers' figures above 7.6 are part-load values, which the model has no term for.
+
+**Check.** Mitsubishi's full-load point (42 C air, 18.9 C water): the new form gives 3.33-4.08 over carnot_air's range, against 3.88-3.95
+published. Model 1.15 gave 3.5-4.3 there, below its cap, so the hot end barely moves.
+
+**Effect** (stored West Michigan weather 2023-2024, 100 MW of IT, 40 draws, medians, 1.15 to 1.16). Shared loop: dry peak day 94.75 to
+93.66 MW, hottest hour 133.4 to 134.4, annual PUE 1.192 to 1.186; pads 94.65 to 92.74, 133.4 to 131.7, 1.189 to 1.179; hybrid 93.64 to
+92.25, 132.2 to 129.4. What pads buy back over dry: 0.1 to 0.9 MW on the peak day, 0 to 2.7 MW in the hottest hour. Warm loop: dry 88.22
+to 87.35 on the peak day, 127.8 to 125.3 in the hottest hour. Chilled-water plant: its cold water keeps the chillers below 5 on hot
+days, so dry rises 99.85 to 101.18 on the peak day and 144.4 to 145.6 in the hottest hour. Towers are unchanged. Pad and hybrid water
+fall 1-3% on average (less chiller power, less heat to reject). Battery cell plants share the equipment, so their dry and assist numbers
+move too.
+
+**Not changed.** Water-cooled chillers keep no loss and the cap of 8. The same fit to 90.1's water-cooled curves (Table 81, 60-85 F
+condenser water) gives a Carnot fraction above 1 with this model's offsets: the curves are flatter than a Carnot fraction, about
+1.3-1.5% per K. That needs its own form and is open. The 12 K condenser offset stays an assumption [A].
+
+**Short form** (methods pages): Air-cooled chillers now lose efficiency as the air warms, following ASHRAE 90.1's reference curve,
+up to a highest COP of 5-7.6. Before, they ran at a COP of 5 whenever the loop water was warm, whatever the weather, so a dry plant's
+hot hours cost no more than its mild ones and adiabatic pads saved no electricity. Pads now save about 1 MW per 100 MW on the peak
+day and up to about 3 MW in the hottest hour; a dry plant's annual PUE falls slightly. (With the switch setting of the same
+release, below, pads run fewer hours and save about 0.25 MW over the peak day; the hottest hour is unchanged.)
+
+## Nov 15, 2026: the operator's switch setting (design 0016; model 1.16)
+
+**What was wrong.** Assist and hybrid go wet at a switch point. Through model 1.15 it was the loop's limit (the dry-bulb where a dry
+coil can no longer hold the loop's supply) plus -2 to 2 K, within 21.1-35.1 C (70-95 F, US 12,426,214 B1). On the shared and chilled
+plants the limit is about 13 C and below 0 C, so every draw sat at 21.1 C. Northline's checks against operators' stated time on water
+(Nov 15) found the model's hours on water 3 to 20 times theirs: Wisconsin 16% of hours against under 5%, Sidney 22% against 3%,
+Virginia 28% against about 10%.
+
+**Evidence.** Stated settings: Microsoft's direct-air fleet and its Wisconsin campus, water above 85 F (29.4 C) (Microsoft, Jun 24,
+2026; Microsoft Wisconsin materials); Meta El Paso, no cooling water below about 86 F (30 C) (El Paso Water's chief executive, El Paso
+Matters, Oct 24, 2025). Stated time on water: Microsoft, Northern Virginia about 10% of the year and Phoenix up to 40% (Jun 24, 2026),
+Wisconsin under 5%, metro Atlanta the hottest ~55 days (Microsoft local, about Jan 2026); AWS, Sidney about 3% of the year (city FAQ),
+Falls Township outside air about 94% of the year (LevittownNow, Jul 28, 2026), New Carlisle about 7 days a year (TheStatehouseFile,
+AWS statement). These are fleets of outside air with pads; no operator states a setting for dry coolers with pads or for hybrid
+fluid coolers.
+
+**Method.** The setting each statement implies: the dry-bulb exceeded for the stated share of the year's hours, or for a number of
+days the daily maximum exceeded on that many days, from Open-Meteo's archive (ERA5-based) hourly 2 m temperature at the site's point,
+2015-2024 (`docs/methods/switch-setting/implied_switch.py`, `implied.md`): Virginia 26.5 C, Falls Township 28.0, Sidney 28.2, Atlanta
+30.5, New Carlisle 32.0; Phoenix at least 27.4 and Wisconsin at least 25.2 (upper bounds on the share). `switch_setting` is sampled
+26.5-32.0 C, uniform, the lowest and highest point figures; the stated 29.4 and 30 C sit at its middle (29.25). The switch is the later
+of the setting and the loop's limit plus the margin, still within 21.1-35.1 C: below the limit the dry coil holds the loop, between the
+limit and the setting chillers carry the rest, above both the plant uses water. Assist and hybrid are taken to be run as the operators'
+outside-air fleets are [A]. The battery plant takes the same range [A] (no battery plant states one); the gas plant's `switch_on`
+(20-30 C), a condenser setting with no chillers behind it, is unchanged. Reading a share of the year as a share of hours, and ERA5's
+grid cell for the site's own air, are part of the spread [A].
+
+**Effect** (stored West Michigan weather 2023-2024, 100 MW of IT, 40 draws, medians, with design 0015 in both). Shared loop: pads average
+0.070 to 0.0066 MGD, 1-in-10 peak day 0.57 to 0.23, peak-day power 92.74 to 93.41 MW; hybrid 0.059 to 0.0085, 0.58 to 0.33, 92.25 to
+93.26. Warm loop: pads 0.053 to 0.0060, 0.45 to 0.21; hybrid 0.039 to 0.0080, 0.42 to 0.31. Chilled-water plant: pads 0.077 to 0.0072,
+0.62 to 0.25; hybrid 0.062 to 0.0090, 0.62 to 0.36. Annual PUE rises about 0.004-0.006. What pads buy back over dry on the peak day
+falls from 0.9 to about 0.25 MW (shared); in the hottest hour it stays about 2.7 MW. Dry and towers are unchanged.
+
+**Check.** Pads' peak day over average day is now about 35 (shared loop), against about 31 (Mount Pleasant: about 468,000 gpd on the
+hottest days against about 15,000 average, WPR from Wisconsin DNR, May 2026) and 30 (Racine Water Utility records, phase 1, Wisconsin
+Examiner, Sep 2025), both with domestic water in the average; model 1.15 gave 8.
+
+**Short form** (methods pages): Pads and hybrids now use water only above the operator's switch setting, sampled 26.5-32 °C (80-90 °F),
+around the 85-86 °F that Microsoft and Meta state and what AWS's and Microsoft's stated time on water implies at their sites. Below it,
+chillers do the work. Before, the model went wet at 70 °F on most plants, three to twenty times the hours operators report. Average water
+for pads and hybrids falls five- to tenfold, the peak day about half, and electricity rises slightly.
+
+## Nov 15, 2026: the starting design is pads on hot days
+
+**Decision** (Andrew). Where a proposal publishes no cooling design, and for a place with no proposal, the calculator starts from
+assist (dry coolers with pads on hot days), no longer dry. Most tracked proposals that state a design say closed loop, and closed loop
+describes the building's inside loop, not how heat leaves it: campuses that claim it have dry coolers, pads on the hottest days or towers
+(Northline's cooling review, Nov 15). A claim of closed loop that names no dry equipment and doesn't say it uses no water for cooling
+loads assist on the trackers too; one that does loads dry. With the switch setting of design 0016, assist's average water is small and
+its peak day is where the difference shows. `scenario()` starts the same way.
+
+**Short form** (methods pages): Where the cooling design isn't published, the calculator starts from dry coolers with pads on the
+hottest days, since most proposals say closed loop and closed loop doesn't rule out water in the hottest weather.
+
+## Nov 16, 2026: the ERA5 check judges hybrid and pads against towers' water (model 1.16)
+
+- **Decision.** In the ERA5 check (`waterledger era5 check ST`), the places' hybrid and pads (assist) differences are measured as a
+  share of towers' water at the same place, not of their own water. P2 to P4 are redefined that way, and pads gets its own
+  criteria (P6 average day, P7 peak day), since pads is now the starting design wherever none is published. Towers (P5) and the
+  weather criteria (W1 to W7) are unchanged. Andrew, Nov 16, 2026 ("Change the test is better").
+- **Why.** At model 1.16 a hybrid or pads plant evaporates only above the operator's switch setting (26.5-32 C, design 0016). On an
+  average day that is about 1% of towers' water in Michigan and 7% in Texas (it was about 8% in Michigan at 1.11). A percent of so small
+  a number mostly measures how many of the hottest hours cross the switch, so a small difference in those hours between the
+  cell and the station moves it a lot. Michigan's rebuild check at 1.16 had the same weather results as before, all passing, and towers
+  within 0.3%, but hybrid's average day differed by a median 15.0% of its own water (limit 8%) and the peak day by 7.9% (limit 6%). In
+  water that is about 0.2% of towers' average day, about 0.001 MGD per 100 MW. The mean difference was 1%, so there is no bias.
+- **Considered.** Re-accepting each state's check with a note. That would leave a test that every state fails and that no longer says
+  whether the weather is good enough.
+- **Limits.** Set as before, from the four states the first limits came from (Michigan, Ohio, Virginia, Texas), now at model 1.16 with 12
+  places each, worst result plus a margin about as wide as the first limits':
+
+  | | Test (as % of towers' water at the place) | Limit | Four states at 1.16 |
+  |---|---|---|---|
+  | P2 | hybrid average day, median absolute difference | 1% | 0.10-0.53 (Texas) |
+  | P3 | hybrid average day, absolute mean difference | 0.75% | 0.04-0.29 (Texas) |
+  | P4 | hybrid peak day, median absolute difference | 6% | 1.5-4.0 (Ohio) |
+  | P6 | pads average day, median absolute difference | 1% | 0.17-0.54 (Texas) |
+  | P7 | pads peak day, median absolute difference | 6% | 1.3-3.8 (Texas) |
+
+  On the peak day a hybrid runs wet, about half of towers' water in all four states, so the peak-day limits stay near the first ones.
+  In their own terms the four states' hybrid average days differ by a median 6.2-15.0% (Michigan) and pads by 7.4-17.9%.
+- **Records.** Each place row in check.json now also carries the p50s from the cell and the station (`p50`) and the differences as a share
+  of towers (`of_towers_pct`), so a later change to the criteria can be judged again without running the places.
+- **Open.** Pennsylvania, New York and Arizona were accepted with notes on Nov 13; their weather failures (W2-W5) don't depend on this
+  change, and their notes' hybrid figures are updated after their 1.16 checks.
+
+
+## Nov 16, 2026: the grid's plant water without EIA-930 spikes or missing fuel rows (design 0008; model 1.17)
+
+**What was wrong.** Found in Arizona: on the 1-in-10-year peak day, AZPS's marginal plant water was 5.6-7.4 MGD per 100 MW of a
+campus's electricity, about 2,500-3,000 gal/MWh. The fuel factors it is built from run 0-1,143. AZPS's average withdrawal was about
+3,700 gal/MWh. Four causes, each checked in every BA:
+
+1. **Single-hour spikes and gaps in EIA-930's adjusted columns** (EIA's own anomaly screening misses some). Examples in AZPS:
+   - "other" at 6,137 MW on 2019-05-30T23 and 5,652 MW on 2024-03-07T16-17, against a usual 31;
+   - gas at 5,905 MW on 2021-09-01T18 (1,093 the hour before);
+   - coal at 7,044 MW on 2025-02-13T23;
+   - nuclear NaN from 2019-12-04T08, which `intensity()` read as 0 MW.
+
+   The marginal slope was an ordinary least-squares fit of the hour-to-hour change in plant water against the change in
+   generation, by month and temperature bin. One such hour among about 900 pairs moved it by thousands of gal/MWh, and the
+   peak-day statistic takes each field's worst day. Removing four hours brought AZPS's March and May back to 360-525.
+2. **A fuel class EIA-923 has no row for.** EIA-930 counted Palo Verde (about 4 GW) in AZPS until Dec 4, 2019. EIA-923 files it
+   under SRP (operator Arizona Public Service). AZPS's nuclear took the U.S. factor, 17,236 gal/MWh withdrawn, which reflects the
+   once-through fleet. Palo Verde's own factor is about 700: cooling towers on reclaimed water. Nineteen other BA classes had the
+   same gap (`ba_fuels.py` prints them).
+3. **Concentrating solar in "other".** Solana (AZPS) reported 806.6 MG of brackish water in 2024 on 828 GWh, which is 974 gal/MWh
+   of its own output. It has no thermal generation in EIA-923 (fuel SUN), so its water fell to the "other" class and was
+   divided by AZPS's other generation, 184 GWh of biomass and landfill gas: 1,600-5,700 gal/MWh against 50 for the U.S. "other".
+   Mojave Solar (CISO, 474 MG) and Crescent Dunes (NEVP, 28 MG) did the same.
+4. **The least-squares slope itself** is carried by heavy tails even after the spikes are gone (PJM below).
+
+**Decisions.**
+
+- **Screen the hours** (`waterledger_data.grid930.screen`). An hour is left out of the averages and of every pair it touches in
+  three cases:
+  - a class runs beyond both neighbouring hours, for 1-3 hours, by more than k times its own 99th-percentile hourly change in
+    the BA (its 1-in-100-hour ramp) and by more than 1% of the BA's median generation;
+  - a coal, gas, nuclear, oil or geothermal fleet falls to a tenth of both neighbours. Whole fleets can't stop and restart that
+    fast. The rule is not applied to "other", which held batteries before July 2024, nor to hydro, solar, wind or storage,
+    whose dawn and pumping swings are real;
+  - a class is NaN in a run with the class generating (over 1% of median) on both sides, a gap.
+
+  A NaN run without generation on both sides is a class not reported (AZPS nuclear after Dec 2019) and is 0 MW. The hour where
+  a class starts or stops being reported is not paired with the hour before, since its change is a reporting change.
+- **k = 4, from the data.** Every series in all 67 BAs, 2019-2025, was scored by its reversals (how far 1-3 hours sit beyond
+  both neighbours) in units of its own ramp, keeping those above the 1% floor. The pooled tail falls as about k^-3.5 to 8-9
+  ramps and as about k^-1.5 beyond, which is the artifact population. There is no clean gap. In the large fleets (MISO, SWPP,
+  ERCOT, PJM, SOCO, TVA coal, gas, wind and solar), the largest natural reversal is 0.9-3.4 ramps. Artifacts confirmed by eye
+  sit at 4.9 (PJM gas at 21 MW for an hour, against about 25 GW) and 6.4 (AZPS gas, above). k = 4 sits above the first group
+  and below the second. At k = 8, the tail break alone, the AZPS gas hour is kept.
+- **What the screen leaves out:** 18,411 of 3.85 million BA-hours (0.48%). MISO and SWPP lose none; AZPS 35, PJM 11, ERCOT 36.
+  Most are gaps: CISO 7,918 (hydro missing Oct 2019-Aug 2020, 1.3-1.9 GW on both sides; read as 0 MW it raised CISO's
+  intensity for 11 months), IPCO 1,344 (geothermal, Nov-Dec 2024), TEPC 1,145 (coal and wind, Feb-Mar 2021). NYIS loses 727,
+  mostly oil dropping to 0 for an hour.
+- **Theil-Sen slope** (Theil 1950; Sen 1968): the median of the pairwise slopes of the change in water against the change in
+  generation, by month and bin, on pairs that both pass the screen. Its breakdown point is 29%. Above 500,000 pairs it uses a
+  fixed random sample (not reached with five bins). On screened data, Theil-Sen and a least-squares fit trimmed at 4 MADs
+  (iterated 3 times) agree within about 5% in PJM. Plain least squares runs typically 10-25% and up to 70% above both. The
+  cause is that 3-11% of PJM's pairs fall beyond 4 MADs: nuclear and once-through coal steps that don't follow load, and
+  EIA-930's day-boundary hours at 04-05 UTC. Theil-Sen was preferred to trimming because it needs no cut-off.
+- **Missing fuel rows** (`docs/methods/power_water/ba_fuels.py`) [A]. A class that EIA-930 reports in a BA (2019-2025, over
+  0.1% of its generation) with no EIA-923 generation there takes the first of these that has a factor:
+  1. **The named plants** EIA-930 counts in the BA but EIA-923 files elsewhere, from their own water and generation by month,
+     checked against EIA-923 2024's operator and BA code:
+     - Palo Verde (6008) for AZPS nuclear;
+     - Four Corners (2442, filed under AZPS) for PNM coal, PNM's share (San Juan closed in 2022);
+     - Colstrip (6076, NWMT) for PSEI coal;
+     - St. Lucie (6045, FPL) for FMPP nuclear (unit 2 shares of FMPA and Orlando);
+     - Asheville (2706, CPLE) for CPLW gas and oil.
+  2. **The BA's EIA-930 region**, all its BAs' water over their generation: CPLW coal and other (CAR), FPL coal and HST
+     gas and oil (FLA), GRID, IPCO and PACW coal (NW), IID coal (CAL), SPA other (CENT), SRP other (SW).
+  3. **The U.S.** NYIS coal: New York's region is NYIS alone, with no coal since 2020.
+
+  A test holds that no class EIA-930 reports falls to the U.S. where a plant or region exists. HST gas and oil take Florida's
+  region, which includes FPL's once-through steam plants: 12,855 and 60,258 gal/MWh withdrawn. That may be high for Homestead's
+  small plant, but there is no better source in the data.
+- **CSP water in solar.** A plant with no thermal generation has its water split by its own EIA-923 generation, so a CSP plant's
+  water goes to solar, where EIA-930 counts its output. AZPS solar becomes 168-380 gal/MWh (Solana's water over all of AZPS's
+  solar), CISO 3-12 and NEVP 0-1. AZPS "other" becomes 0 (its biomass and landfill gas report no water). The U.S. "other"
+  falls from 69 to 50.
+- **Range check, reported, never clipped.** Every average and marginal factor is checked against the range of the fuel factors
+  the BA generates with that month. A factor outside it is listed in the table's `meta["outside"]` with a warning and left as
+  fit. Over the 61 BAs with a table and a year of hours (fit on a fixed synthetic temperature for the check), 26 of 7,320
+  marginal factors fall outside, by at most 1.24% of the month's range, and no average does:
+  - BPAT in July-September and AVRN in February run slightly under 0, as hydro rises with load and gas falls;
+  - AECI in August runs 1.3 gal/MWh over its top factor.
+
+  A test holds every BA within 2% of its range. Making it impossible would need a constrained estimator (the marginal as a
+  non-negative mix of the fuels' factors). That changes what the marginal means, from the BA's water response to the fuels
+  that respond, and was not done.
+
+**Before and after**, one cell each, a flat 100 MW, ERA5 2019-2024 uncorrected at the cell (in memory, nothing written), gal/MWh:
+
+| BA (cell) | kind | basis | average day, before | after | peak day, before | after |
+|---|---|---|---|---|---|---|
+| AZPS (33.50, -112.00) | consumed | average | 491 | 505 | 699 | 723 |
+| | | marginal | 553 | 313 | 3,333 | 397 |
+| | withdrawn | average | 3,702 | 517 | 8,912 | 742 |
+| | | marginal | 666 | 316 | 7,526 | 400 |
+| SRP (33.50, -112.00) | consumed | average | 508 | 507 | 593 | 593 |
+| | | marginal | 285 | 278 | 354 | 338 |
+| | withdrawn | average | 521 | 519 | 609 | 607 |
+| | | marginal | 361 | 304 | 531 | 361 |
+| MISO (42.75, -85.50) | consumed | average | 312 | 312 | 352 | 352 |
+| | | marginal | 277 | 278 | 343 | 336 |
+| | withdrawn | average | 12,338 | 12,338 | 14,326 | 14,326 |
+| | | marginal | 12,604 | 12,618 | 16,516 | 16,430 |
+| PJM (39.00, -77.50) | consumed | average | 282 | 282 | 318 | 318 |
+| | | marginal | 176 | 162 | 214 | 201 |
+| | withdrawn | average | 9,962 | 9,962 | 10,819 | 10,819 |
+| | | marginal | 4,160 | 3,452 | 9,188 | 4,673 |
+| ERCO (30.25, -97.75) | consumed | average | 238 | 238 | 284 | 284 |
+| | | marginal | 238 | 239 | 321 | 295 |
+| | withdrawn | average | 3,612 | 3,612 | 4,316 | 4,316 |
+| | | marginal | 3,973 | 3,939 | 5,650 | 5,129 |
+
+The average-day factor is the average-day MGD x 10^6 / 2,400 MWh. The peak day is RunWater's 1-in-10-year day.
+
+**The state table and `grid_water`, checked for the same mismatch.**
+- **The state mix** (`energy.state_power_water`) has none. Its own-plants part is bounded by the state, not a BA. Its main-BA part
+  is EIA-923 water over EIA-923 generation, both under EIA-923's attribution, so Palo Verde is SRP's on both sides. Arizona and New
+  Mexico import nothing, so their main BA isn't blended in.
+- **The per-BA `grid_water`** in each snapshot's `energy.json` is Siddik et al. (2024) for 2022, and it doesn't carry the AZPS fault:
+  EIA-930 shows no AZPS nuclear after May 2021. The other classes EIA-923 had no row for in 2022 (FMPP nuclear, CPLW gas) get no
+  water in our reconstruction of their method (`reconcile.py`), which matches their published values within the residuals in
+  `reconciliation.md`. FMPP's published value runs below ours (r_w 0.75), so if anything those BAs are understated there, not
+  inflated.
+- Nothing is changed in either. The published values stay as cited. Moving the "<BA> grid average" power options from the 2022
+  table to this hourly table is a separate decision (hand-over note).
+
+**Short form (methods pages):** From model 1.17 the grid's plant water leaves out EIA-930 hours with single-hour spikes, dropouts or
+gaps (0.5% of hours), fits the marginal slope as a median (Theil-Sen) rather than by least squares, puts a fuel EIA-923 has no
+row for at the plant EIA-930 counts (Palo Verde for Arizona Public Service) or its region, and counts concentrating solar plants'
+water as solar: Arizona Public Service's grid water falls from about 3,700 to 520 gal/MWh withdrawn. (Nov 17: Palo Verde, St. Lucie
+and Colstrip turned out to be counted twice in AZPS, FMPP and PSEI and are now out of those BAs' hours; see that entry. The pages'
+line becomes: "... puts a fuel EIA-923 has no row for at the plant EIA-930 moves there (Four Corners for PNM) or its region, and
+counts concentrating solar plants' water as solar: Arizona Public Service's grid water falls from about 3,700 to 470 gal/MWh
+withdrawn.")
+
+**References.** Sen, P. K. (1968). Estimates of the regression coefficient based on Kendall's tau. Journal of the American Statistical
+Association 63, 1379-1389. Theil, H. (1950). A rank-invariant method of linear and polynomial regression analysis. Proceedings of the
+Royal Netherlands Academy of Sciences 53. Siler-Evans, K., Azevedo, I. L., and Morgan, M. G. (2012). Marginal emissions factors for
+the U.S. electricity system. Environmental Science & Technology 46, 4742-4748. Siddik, M. A. B., et al. (2024), as cited above.
+U.S. EIA: Forms EIA-923 (2024) and EIA-930 (2019-2025).
+
+## Nov 16, 2026: the base overhead against operators' disclosures (decision; no numbers change)
+
+**Finding.** The check of dry cooling's electricity against published evidence (`docs/research/cooling-power-evidence.md`, branch
+`cooling-power-evidence`, sections 5e and 8, P4) found that the base overhead every design carries puts towers at a year-average PUE
+of 1.137 (Grand Rapids) to 1.176 (Dallas) on the shared loop at model 1.16 (p50).
+
+**What the base is.** 1.092 at central parameters, made up of:
+- IT;
+- UPS losses (`ups` efficiency 0.90-0.99: Lei and Masanet 2022, Table 3, case 2; LBNL 2024, Table 4.3, uses the same 90-99% for
+  hyperscale);
+- distribution losses, 0-2%;
+- lighting, 0-0.2%;
+- the air handlers' fans.
+
+**What operators and surveys report.**
+- Disclosed evaporative fleets run lower:
+  - Google about 1.09 fleet-wide, 1.08-1.12 by evaporative campus (2025 Environmental Report; datacenters.google/efficiency);
+  - Meta 1.08 for its fleet in 2024 (2025 Environmental Data Index);
+  - AWS 1.12-1.15 by region (regional fact sheets, 2023-2025);
+  - LBNL 2024, Fig. 4.4 [F]: large evaporative archetypes at about 1.12-1.14.
+- Surveys and new campuses run higher:
+  - Uptime's 2025 Global Data Center Survey (Fig. 2, p. 7; trade survey): 1.54 on average, 1.48 for facilities built since about
+    2020, 1.44 for sites of 20 MW or more;
+  - Crusoe's Abilene design: 1.2-1.4 annualized (company disclosure).
+- The model sits between the two groups.
+
+**Options.**
+- (a) Keep the range and say so on the methods pages.
+- (b) Narrow `ups` to 0.95-0.99 for large campuses [A], citing the fleets. That would take about 0.03 off every PUE, about 3 MW off
+  the average and 4 MW off the hottest hour per 100 MW, and about 3% off the power plant water. The gaps between designs would not
+  change.
+
+**Decision (Andrew, Nov 16, 2026): (a).**
+- Water Ledger estimates a campus whose operator and equipment aren't known.
+- Hyperscale fleet averages are the best of the industry. Published campus designs (Crusoe) and the survey averages (Uptime) sit
+  above the model.
+- The range moves every design's PUE together and leaves the dry-towers gap where it is. In Loudoun County at central parameters,
+  UPS 0.99 gives dry 1.134 and towers 1.093, against 1.188 and 1.145 at the middle: +3.8% either way.
+
+**Where it is stated:**
+- waterledger.org's Michigan methods page, under Parameters;
+- the shared method's "Electricity use" item on every state's methods page;
+- the cooling-systems page, under "What is uncertain".
+
+Northline branch `claude/zealous-mclean-10341d`. No parameter, number or snapshot changes, so there is no changelog entry.
+
+**Short form** (methods pages): The base overhead (UPS 0.90-0.99, Lei and Masanet; LBNL 2024) puts towers at a yearly PUE of about
+1.14-1.18. That is above the hyperscale fleets (Google about 1.09, Meta 1.08) and below Uptime's 2025 survey average for sites of 20 MW
+or more (1.44). It is kept as a planning estimate [A]. It moves every design together and leaves the gap between designs unchanged
+(Andrew, Nov 16, 2026).
+
+## Nov 16, 2026: power plant water is thermoelectric cooling water, said with reservoirs beside it (decision; no numbers change)
+
+**Finding.** The evidence note's section 7 (P5) found that the comparison depends on how reservoirs are counted.
+- Every power plant water factor here is cooling water at thermoelectric plants: EIA-923 for the state table and the hourly grid
+  (design 0008), and Siddik et al. for the grid regions. Evaporation from hydropower reservoirs is left out.
+- On that basis, dry cooling's extra electricity costs 3-14% of the towers' own water at the places checked.
+- With hydro-inclusive factors, a Western grid can reverse the comparison. At Phoenix, WRI's AZNM factor gives 34%, and Torcellini's
+  7.85 gal/kWh gives about twice the towers' own water.
+
+**Decision (Andrew, Nov 16, 2026).**
+- Keep design 0008's basis.
+- Say on every state's methods page that reservoirs are not counted, with that state's balancing authorities both ways (`energy.json`
+  `grid_water`, `consumed_excl_hydro` and `consumed_incl_hydro`).
+- Say on the cooling-systems page that the comparison can reverse in the West.
+
+Northline branch `claude/zealous-mclean-10341d`.
+
+**Short form** (methods pages): Power plant water here is cooling water at thermoelectric plants (EIA-923). Evaporation from
+hydropower reservoirs is not counted; where it is, as in Arizona, the power plant water for dry cooling's extra electricity can exceed
+what towers would use on site. Each state's grid regions are given both ways.
+
+## Nov 17, 2026: water-cooled chillers on ASHRAE 90.1's curve (design 0021; model 1.17)
+
+**What was wrong.** Through model 1.16 a water-cooled chiller's COP was carnot_water (0.62-0.78) x T_evap / lift, with no loss and a cap of 8
+(FEMP's 5-8 [A]). On the shared and warm loops the lift is small (about 15 K in the hottest hours) and the Carnot term runs well above 8, so the
+cap held in nearly every hour a towers or hybrid plant's chillers ran. A towers plant's hottest-hour PUE was then the same at every place
+(the evidence note `docs/research/cooling-power-evidence.md`, branch `cooling-power-evidence`, P2), and 90.1's own code-minimum
+machine runs above 8 (10.8) at the smallest lift its curve covers.
+
+**Evidence.** ASHRAE 90.1-2016's default EIR-FT curve for water-cooled centrifugal chillers (COMNET 2017, as given in Goel, Rosenberg and
+Eley 2017, PNNL-26917, Table 81), a biquadratic in leaving chilled water (40-54 F) and entering condenser water (60-85 F); at full
+available load COP = rated COP / EIR-FT. It gains about 1.3% of COP per K of lift, where Carnot gains about 3%: the reason design 0015 found
+"a Carnot fraction above 1" when it fitted the old form.
+
+**Method.** The air-cooled form of design 0015: 1/COP = WATER_CHILLER_LOSS + lift / (carnot_water x T_evap), lift = entering condenser
+water + range + 2 - T_evap, T_evap = supply - 2. Fitted by least squares on relative error over the curve's whole range with AHRI's 10 F
+range: loss 0.0471, RMS error 0.8%, largest 2.6% (screw 0.065, scroll 0.068, reciprocating 0.054; the centrifugal is the large-plant
+machine). carnot_water becomes 0.828-1.140, which keeps the rating band of every model before (COP 5.33-6.70 at AHRI's 44 F / 85 F,
+code minimum 6.28 +/-11%, Lei and Masanet). The coefficient now passes 1, and with the loss the COP stays below Carnot's at every lift
+(largest ratio 0.92; test). Below 90.1's smallest lift (12.89 K: 54 F water, 60 F condenser water) the COP holds at its value there
+(WATER_MIN_LIFT [A], replacing the cap): no published full-load curve goes lower, makers' figures below it are part-load values the
+model has no term for, and field measurements run under catalogue ones (GSA GPG-031, 2017). The fit is `docs/methods/chillers/fit_chillers.py`
+(both chiller types, 0015's included, which was never committed), tested in `tests/test_chillers.py`.
+
+**Correction.** Design 0015's carnot_air low end, 0.571, was the joint fit's own value and gives COP 2.91 at the air-cooled rating
+point, not the 2.96 (EER 10.1) 0015 set the band to; 0.584 gives 2.96. The range becomes 0.584-0.761.
+
+**Effect** (model 1.16 cell records against the chiller change alone, in memory, same draws and station correction, 100 MW of IT, p50;
+`docs/methods/chillers/effect.md`). Towers' annual PUE falls 0.003-0.013 (most in Dallas) and their hottest hour about 1.2 MW on the
+shared and warm plants; the chilled plant's hottest hour doesn't move (its lift stays above 90.1's range). Dry and pads move by 0.001-0.004
+through the carnot_air correction. Dry's annual gap over towers on the shared plant: Grand Rapids 3.3 to 3.6%, Loudoun County 3.7 to 4.4%,
+Dallas 4.9 to 6.0%, Phoenix 9.2 to 9.9%. Towers' hottest-hour PUE is still about 1.256 at all four places: the four 1-in-10-year
+hottest-hour wet-bulbs are within about 2 K and the curve is flat, so it is now physics, not the cap, that keeps it close.
+
+**Short form** (methods pages): Water-cooled chillers now follow ASHRAE 90.1's reference curve (fitted within 3%), gaining efficiency as
+the condenser water cools down to the smallest lift the curve covers. Before, they ran at a COP of 8 almost every hour on the warmer loops.
+Towers' electricity falls slightly (0.3-1.3% a year); dry cooling's yearly gap over towers is 3.6-9.9% at the places checked.
+
+## Nov 17, 2026: outside air into the halls, a fifth design (design 0022; model 1.17)
+
+**What was missing.** Every design ran its halls through a facility water loop. The design Meta, Amazon and Microsoft describe for most of
+their fleets is outside air straight into the halls, cooled by wetted media on hot days, and most public dry-against-evaporative comparisons
+are against it (evidence note, P3).
+
+**Method.** The halls' air flow is the room's heat over the computers' air rise; fans at the air handlers' pressure [A]. Below the supply air
+floor outside air is mixed with return air (outside share = rise / (return - outside)); up to the operator's setting (switch_setting,
+design 0016) the supply floats with the weather; above it the pads (assist's media) cool the air, by the adiabatic balance (sensible
+cooling = evaporation x latent heat), from just reaching the setting to the media's full effect down to the floor (pad_full, 0-1 [A]: no
+operator publishes which); air-cooled trim chillers carry what the pads can't. Humidifiers make up their sampled share of the outside air's
+shortfall below the low dew point. No dehumidification [A] (the fleets accept humid supply air). Liquid racks reject through the dry
+design's loop on the plant's water. Water limits cut the pads' evaporation and move it to the trim chillers. Mixing, the adiabatic balance,
+the setting and floor, the books and a hot hour by hand are tested (`tests/test_outside_air.py`); the compiled kernel agrees with physics.py
+to 1e-12.
+
+**Physics kept.** In hours hotter than the halls' return air at the supply floor, pads cooling all the outside air can take more water than
+towers would for the heat (in the test grid: above about 43 C at 5% humidity on the shared plant, 33 C on the chilled plant, whose floor is
+18-22 C). Liquid racks cost this design power in warm hours, where they save it in every other design.
+
+**Check** (four cells, 400 draws, shared plant, all air-cooled halls, p50; `docs/methods/outside-air-check/check.md`). Hours on the pads:
+Grand Rapids 1%, Loudoun County 4%, Dallas 15%, Phoenix 32% (26-39%), against Microsoft's Arizona "less than 40% of the year" and Amazon's
+"about 90% of the time" without water. PUE 1.107 everywhere (hottest hour 1.11-1.12), between Meta's fleet 1.08 and AWS's regions 1.12-1.18.
+Water withdrawn per IT kWh: Phoenix 0.25 L (0.17-0.38), between AWS's fleet 0.12 and Northern California 0.39 and near LBNL 2024's modeled
+0.4; the other three near zero, as AWS's Ohio and Virginia 0.06. Microsoft's unverified Arizona WUE (1.63 and 2.24, from snippets and
+sheets now gone) is six to nine times the model's: not resolved.
+
+**Not on the site.** The design is in the packages and cell runs; waterledger.org's buttons wait for Andrew's local check (Nov 16).
+
+**Short form** (methods pages): A fifth design, outside air into the halls with evaporative pads on hot days, as Meta, Amazon and Microsoft
+run most of their fleets. With air-cooled halls it uses about 1.11 PUE in every climate checked, takes water 1-32% of the hours, and
+withdraws 0.01-0.25 L per IT kWh, close to what those operators report.
+
+## Nov 17, 2026: reuse never takes less than staff water (model 1.17)
+
+- **Decision.** Under full treatment and reuse, water withdrawn is the larger of (evaporated less condensate) and staff water at the
+  campus's size, on the average day and the peak day, at each end of the range. Andrew, Nov 2026: staff (drinking and sanitary) water
+  still has to come from a supply, so the page never shows 0 gallons withdrawn.
+- **Why.** Through 3.24.0, withdrawn under reuse was evaporated less condensate, floored at zero. A dry campus evaporates only its staff
+  and maintenance losses, and the condensate from outside air can cover that. At Gaines Charter Township (model 1.16 cell, middle
+  estimate) a 300 MW dry campus evaporates about 840 gpd and collects about 1,390 gpd of condensate, so it withdrew 0. Its staff
+  water is about 2,410 gpd. On the peak day the gap is wider (humid summer air), and withdrawn was 0 there too.
+- **Balance.** Where the floor holds, the campus takes more than the cooling needs. The surplus, withdrawn + condensate - evaporated,
+  is returned: it leaves by a site drain or stormwater [A], as a septic site's condensate does, not by the sewer (to_sewer stays 0).
+  At Gaines, 300 MW dry: 2,410 + 1,390 = 840 + 2,960 gpd. Through 3.24.0 returned was 0 under reuse, so a dry campus's books did
+  not close; the existing test checked towers only. `tests/test_balances.py` now checks both days for a dry campus at 50, 300 and
+  1,400 MW.
+- **Which staff water.** Staff water only (`staff_q(..., part="staff")`, people times gallons a person a day), not the loop
+  top-ups counted with it as non-cooling water since model 1.3: top-ups can be made from the treated water [A].
+- **What changes.** Dry designs under reuse: at Gaines, withdrawn goes from about 70 gpd at 50 MW and 0 at 300 and 1,400 MW to
+  about 1,060, 2,410 and 8,350 gpd. Pads, hybrid and towers evaporate more than their staff water at every size, so they are unchanged. The highest month
+  follows the average day by the share reuse saves, and the annual total is the average day times 365.25, as before.
+
+## Nov 17, 2026: model 1.17's open choices, accepted as built (decision; no numbers change)
+
+The design notes and the grid fix left four choices that would change model 1.17's numbers. Andrew accepted the first three as
+built ("Accept all four as built"). For the fourth he then said "I don't want anything double counted":
+
+1. **`carnot_water` keeps its name** (design 0021). It now runs 0.828-1.140, the lift term's coefficient with a fitted loss, and
+   the COP stays below Carnot's (test). A rename would reseed its draws and move every towers and hybrid number.
+2. **`pad_full` stays sampled, 0-1** (design 0022). No operator publishes how far the pads run past the setting, and either end
+   halves or doubles the outside air design's water.
+3. **The outside air design's trim chillers stay air-cooled** (design 0022). Heat leaves by air, and there is no tower water in
+   the hottest hours.
+4. **Palo Verde's double count in EIA-930's 2019 hours is taken out** (design 0008). Those hours count Palo Verde in both AZPS and
+   SRP. Every balancing authority is checked for the same fault. The fix goes into model 1.17 before Arizona's cells are rerun, and
+   any other state whose balancing authorities change is rerun for it.
+
+The design notes' other choices (the outside air label, the floating supply, humid supply air accepted) are accepted with them.
+
+**Short form:** none for the first three; no number or method on the pages changes. The double count's fix records its own.
+
+## Nov 17, 2026: nothing counted twice (model 1.17)
+
+Andrew, Nov 17, 2026: "I don't want anything double counted." The packages were searched for any flow, MWh or load added twice into one total.
+
+**What was searched.** Water, the cooling energy balance, grid water, supply scenarios, battery plants, site loads and range middles. Each was found to
+close: withdrawn + condensate = consumed + returned with each flow once; staff water added once at the campus's size; condensate in returned only; one
+balancing authority per campus; each supply MWh in one bucket; the state mix an average, not a sum. Two cases counted something twice, and a third put
+a load on too much water.
+
+**1. Curtailment in the PV and wind resource factors (design 0014, check 5).**
+- *The fault.* The factors were fitted to EIA-923's delivered output, which has the grid's curtailment taken out. A supply scenario's dispatch then
+  takes curtailment out again: PV and wind serve the campus first, and their surplus is exported with no credit. The Nov 11 entry already noted that
+  "a behind-the-meter scenario partly double counts curtailment".
+- *The fix.* The checks add each plant's balancing authority's 2024 curtailment back before fitting (`docs/methods/power_supply/curtailment.py`).
+  - Solar, from Berkeley Lab's U.S. Utility-Scale Solar 2025 Data Update: ERCOT 7.1%, CAISO 3.7%, SPP 2.8% [V]. Other ISOs report none, so 0 [A].
+  - Wind, from Berkeley Lab's Land-Based Wind Energy Technology Update 2025, figure file p. 47: SPP 10.5% [V]; ERCOT 4.6%, MISO 3.4%, NYISO 1.1%,
+    CAISO 0.7%, ISO-NE 0.65% [F]; PJM 0 [A].
+  - This adds 2.85% to the PV fleet's output and 4.91% to wind's.
+- *The result.* The fleet factors rise: PV 0.84 to 0.86, wind at 110 m 0.99 to 1.01.
+  - The sampled ranges stand, PV 0.76-0.92 and wind 0.93-1.05, because their ends are states that report no curtailment: PV Ohio, Wisconsin, Nevada
+    and Georgia; wind Minnesota, Wyoming and Illinois.
+  - Wind's low end had been explained by curtailed Texas and Oklahoma. Added back, they are 0.95 and 0.99.
+  - No supply number changes.
+- *Also fixed.* The checks had read the range midpoint where they meant 1.0. They now pin 1.0.
+
+**2. The natural yield below a developed site's pervious share (runoff.loads).**
+- *The fault.* Developed land is the whole site's Simple Method runoff x one concentration, which already carries the pervious share's surface runoff.
+  The natural yield added below that share (Clark, Mueller and Mast 2000) is a whole-basin yield, surface runoff included. That surface part was
+  counted twice, about 0.5-1% of a site's phosphorus and nitrogen.
+- *The fix.* Below the pervious share only `runoff.natural_below` is added: the yield less natural land's own surface runoff (woods Rv) x the same
+  basins' median flow-weighted concentrations, TP 0.022 and TN 0.26 mg/L [A: surface runoff carries the basin's flow-weighted concentration]. At 32 in
+  of rain that is 6-7% less of the natural yield. The same applies to built land today.
+- The site's runoff loads move by under 1%.
+
+**3. Cooling phosphorus on blowdown alone (not a double count, a load on too much water).**
+- *The fault.* A towers campus's inhibitor phosphorus was worked on all its returned water, which includes staff and maintenance wastewater and
+  condensate, none of which is dosed.
+- *The fix.* `WaterUse.blowdown` (3.25.0) is the model's returned water less condensate, with no staff water. `DataCenter.cooling_blowdown` uses it
+  for towers and hybrid, both of which dose their recirculating water; through 3.24 only towers had a figure. Battery plants already used their own
+  blowdown.
+
+**Tests.** `tests/test_double_count.py`:
+- the natural yield is split, not added;
+- a developed site adds only the below-ground part;
+- returned = blowdown + condensate + staff, each once;
+- cooling phosphorus uses blowdown only;
+- the fleet checks' ranges sit inside the curtailment-free fits.
+
+**Other findings, not double counts.**
+- Hourly grid water has no line-loss gross-up while the power options' factors do: an undercount of about 5%.
+- Lake-source estimates leave staff water and condensate out of withdrawn and consumed: an omission.
+- Both are left for their own fixes.
+
+**Short form** (methods pages): Nothing is counted twice. Wind and solar output was fitted to what plants delivered after curtailment, and the
+scenarios then curtailed again; curtailment is now added back first (the ranges don't change). Natural land's yield below a built site no longer
+repeats the surface runoff the site's runoff already counts (under 1% of its phosphorus and nitrogen). Cooling-water phosphorus is worked on
+blowdown alone, not on staff wastewater and condensate.
+
+## Nov 17, 2026: no plant's generation in two balancing authorities (design 0008; model 1.17)
+
+**What was wrong.** EIA-930 reported Palo Verde (plant 6008, about 4 GW) in both AZPS and SRP, hour for hour, until Dec 4, 2019, when
+it moved the plant to SRP alone. The copy was 29.2 TWh of the 50.3 TWh EIA-930 put in AZPS in 2019, and it lifted AZPS's 2019 peak
+hour from 8.2 to 12.2 GW. Summed over BAs, the lower 48's 2019 nuclear was 840.2 TWh against EIA-923's 809.4 (3.8% over). The Nov 16
+entry gave AZPS's nuclear Palo Verde's own factor, so the copy no longer inflated AZPS's water, but it still made AZPS's 2019 hours
+nuclear-heavy (Andrew, Nov 17: nothing double counted).
+
+**How every BA was checked** (all 67 BAs, 2019-2025; EIA-923 2019-2024, final releases):
+- **Copies.** For every pair of BAs and every class, the hours in which both report over 50 MW, agree within 0.5%, and step by
+  the same MW (within 1) from a step over 5 MW. AZPS and SRP nuclear do that in 13% of their shared hours. The next pair is ISNE
+  and NYIS nuclear, two fleets of about 3.3 GW, in 0.15%, scattered across the years: chance.
+- **Steps.** For every pair and each of coal, gas, nuclear and oil, the share of one BA's largest hourly steps (its top 0.5%)
+  that the other repeats in the same hour, in the same direction and at least 0.8 times as large, against the same share a week
+  apart (chance). Three pairs stand out: AZPS nuclear in SRP (84%, chance 0), PSEI coal in NWMT (91%, chance 16%) and PACW coal
+  in PACE (70%, chance 34%).
+- **Balances.** Each BA's EIA-930 generation by class, month and year against EIA-923's plants filed under that BA. Where a BA
+  reports more than EIA-923 gives it, the plant filed elsewhere whose monthly generation best explains the excess (correlation
+  of month-to-month changes) was found, and the host BA's own residual was regressed on the same plant. A host whose residual
+  falls with the plant has given the plant (or the share) up: a move. A host whose residual doesn't move has kept the whole
+  plant: a double count. The step test alone can't tell the two apart (PacifiCorp dispatches PACE and PACW together); the balance
+  decides.
+
+**What was found.**
+- **Three double counts.**
+  - **Palo Verde in AZPS** until 2019-12-04T07 (SRP holds the plant; EIA-923 files it under SRP).
+  - **St. Lucie in FMPP**, every year: FMPP reports the Florida Municipal Power Agency's and Orlando Utilities' shares of unit 2,
+    about 1 TWh a year. FPL's EIA-930 nuclear equals EIA-923's whole FPL fleet, St. Lucie included, within 0.7% in 2019-2021,
+    2023 and 2024, and within 17 GWh in 33 of the 34 months from Mar 2022 to Dec 2024. FMPP's monthly excess follows St. Lucie
+    (r = 0.99) and FPL's residual doesn't move with it (slope 0.01). Florida's nuclear summed over BAs ran 3.4% above EIA-923's
+    in 2023 and 2024.
+  - **Colstrip in PSEI**, 2019 and 2020: PSEI reported Puget Sound Energy's share (4.5 TWh in 2019, 2.2 in 2020, none from
+    Jan 1, 2021) while NWMT's EIA-930 coal ran 2.7-3.3% above EIA-923's, Colstrip included. 92-94% of PSEI's largest coal
+    steps are repeated in NWMT at least as large (9-14% a week apart).
+- **Moves, not double counts** (the host gives the plant up): Four Corners shares in PNM and SRP (AZPS's coal falls short of
+  EIA-923's by about what PNM and SRP report); Centralia in GRID (BPAT's EIA-930 coal is 0, GRID's equals the plant's within
+  1%); Comanche (filed under WACM) in PSCO; Jim Bridger in PACW (PACE gives up more than PACW reports); Asheville in CPLW (CPLW
+  equals the plant month by month; CPLE's residual falls with it, slope -1.06, and CPLE takes in a Duke Energy Carolinas plant
+  DUK gives up, slope -0.98; DUK, CPLE and CPLW together are 2.3% under EIA-923, the usual shortfall); FPC and TEC plants in FMPP
+  and SEC gas; SRP gas plants in AZPS; NEVP plants in LDWP. JEA's EIA-930 coal above EIA-923's is a class difference (Northside
+  burns petroleum coke, which EIA-923 calls petroleum), not Scherer. Other excesses by class are dual-fuel plants EIA-930 files
+  under another fuel (Duke's coal units burning gas: DUK coal +13 TWh and gas -19 TWh a year); the BA's thermal total shows no
+  excess.
+- **Weak matches** (correlation 0.5-0.6 of monthly changes with a plant in another region: ERCO coal with an Oklahoma plant, CISO
+  gas with a Florida plant, PNM coal with a PJM plant) are chance among the thousands of plants tried, and were not acted on.
+
+**Decision** [A]. Generation EIA-930 counts in two BAs is left out of the BA that holds the copy or the share, and stays in the BA
+holding the whole plant, the one EIA-923 files it under, so each MWh is counted once (`waterledger_data.grid930.DOUBLE_COUNTED`,
+applied by `grid930.hourly`; `raw=True` gives EIA's values). The class is NaN in those hours, which `intensity` reads as not
+reported (0 MW). Why the holder and not the share: the holder's EIA-930 series is the whole plant, as EIA-923 has it, and the
+plant's water goes with it; splitting by ownership would need each plant's share and each BA's series rebuilt, and EIA-930 doesn't
+do that elsewhere either (a share EIA-930 moves to another BA stays there). The BA fuel table (`ba_fuel_water_2024.csv`) loses the
+fallback rows these three classes had (36 rows); nothing else in it changes. With the three out, the lower 48's nuclear summed over
+BAs is within 0.7% of EIA-923's every year 2019-2024 (809.4, 789.9, 779.6, 771.5, 774.9 and 781.9 TWh).
+
+**What changes**, one cell each, a flat 100 MW, ERA5 2019-2024 uncorrected at the cell, in memory, gal/MWh. Before is model 1.17's
+grid as of the Nov 16 entry (EIA-930 as reported); the Orlando and Seattle cells are outside the published states:
+
+| BA (cell) | kind | basis | average day, before | after | peak day, before | after |
+|---|---|---|---|---|---|---|
+| AZPS (33.50, -112.00) | consumed | average | 505 | 453 | 723 | 699 |
+| | | marginal | 313 | 313 | 397 | 397 |
+| | withdrawn | average | 517 | 468 | 742 | 725 |
+| | | marginal | 316 | 316 | 400 | 400 |
+| FMPP (28.50, -81.50) | consumed | average | 273 | 273 | 290 | 287 |
+| | | marginal | 276 | 276 | 293 | 293 |
+| | withdrawn | average | 2,385 | 315 | 3,046 | 340 |
+| | | marginal | 314 | 317 | 331 | 334 |
+| PSEI (47.50, -122.25) | consumed | average | 90 | 36 | 136 | 59 |
+| | | marginal | 17 | 14 | 47 | 43 |
+| | withdrawn | average | 103 | 51 | 153 | 81 |
+| | | marginal | 24 | 19 | 64 | 59 |
+
+AZPS's marginal doesn't change: Palo Verde ran flat, so it adds little to the hour-to-hour changes the median slope is fit on. Its
+average falls about 10%: its 2019 hours lose a fleet at about 704 gal/MWh consumed (Palo Verde's towers), above the mix of
+AZPS's own coal (about 736), gas (about 293) and solar. FMPP's
+withdrawal falls by 87%: St. Lucie is cooled once-through by seawater (33,515 gal/MWh withdrawn), and that water belongs to FPL's
+hours, which hold the plant. No other BA changes: SRP, FPL and NWMT keep their series, and the other BAs' series and table rows are
+as they were.
+
+**Which states.** Of the 12 published states, only Arizona has places served by these BAs: 57 of its 83 cells list AZPS (always
+with another BA). No published state has places in FMPP or PSEI. Arizona's cells must run on this change.
+
+**Short form (methods pages):** From model 1.17 no plant's generation is counted in two balancing authorities: EIA-930 reported Palo
+Verde in both Arizona Public Service and Salt River Project until December 2019, and two utilities' shares of St. Lucie and
+Colstrip as well as the whole plants, so those copies are left out and each plant counts once, in the area that holds it. Arizona
+Public Service's average grid water falls about 10%.
+
+**References.** U.S. EIA: Form EIA-930 (2019-2025), Hourly Electric Grid Monitor six-month balance files; Form EIA-923 (2019-2023
+final revisions, 2024 final), Schedules 2-5, Page 1, https://www.eia.gov/electricity/data/eia923/.
+
 ## Nov 16, 2026: solar and wind on a study's own forcing, and solid oxide fuel cells (designs 0018 and 0019; branch `supply-on-aorc`)
 
 **Why.** In a coupled study every model runs on the study's one weather forcing (Andrew, Nov 14-15); the Clam River study runs on AORC,
@@ -2581,8 +3194,9 @@ which gives global horizontal radiation and the 10 m wind, not ERA5's beam and 1
 **PV.** `pv.hourly_from_ghi` splits the global into beam and diffuse and runs the same PVWatts chain. The split is Erbs's (PVsyst's
 default): on AORC's global at three SURFRAD stations it scattered least of Erbs, DISC and DIRINT (DIRINT was best on the stations' own
 measured global; Andrew chose the industry norm, Nov 16). AORC's radiation is centred on its stamp (check A1). Against EIA's 2024 tracking
-fleet (944 plants), the chain on AORC needs 0.87 overall and 0.73-1.02 across the 15 states with ten or more plants, wider than ERA5's
-0.75-0.93 because AORC's own radiation scatters more against stations (A2: daily 26-31% against 20-22%). `pv.RANGES_AORC` carries it.
+fleet (944 plants), the chain on AORC needs 0.89 overall and 0.73-1.03 across the 15 states with ten or more plants, with curtailment added
+back as for ERA5 (Nov 17), wider than ERA5's 0.75-0.94 because AORC's own radiation scatters more against stations (A2: daily 26-31% against
+20-22%). `pv.RANGES_AORC` carries it.
 
 **Wind.** AORC's 10 m wind steps down against ERA5's on January 1, 2018 at five of six points tested (20-60%; not on the Texas plains),
 and the Clam River study's Cadillac airport anemometer dates the step to the day while its own wind holds. No factor fixes a step that

@@ -1,10 +1,10 @@
 """Design 0018's identity test: the ERA5 supply path (pv.hourly, pv.output, wind.hourly, and supply scenarios on the shared runner) gives what it
 gave before the path for a study's own forcing was added (tests/data/supply_before_aorc.json, written by tests/supply_reference.py from main at
-f370fcc on macOS arm64).
+561740f on macOS arm64, never from this branch).
 
 To the last bit on macOS arm64, where the fixture was written. Elsewhere the platform's own sin, cos and exp differ from macOS's in the last
 bits, so the fixture can't be met exactly: within 1e-12, relative or absolute. Measured on Linux (Python 3.12, Nov 16, 2026): this branch
-equals f370fcc run on Linux to the bit, and both differ from the macOS fixture by at most 3.1e-15 relative (7.2e-16 absolute), so 1e-12
+equalled f370fcc run on Linux to the bit, and both differ from the macOS fixture by at most 3.1e-15 relative (7.2e-16 absolute), so 1e-12
 leaves a margin of about a thousand and still catches any change to the method."""
 import json
 import math

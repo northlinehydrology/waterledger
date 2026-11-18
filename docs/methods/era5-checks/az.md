@@ -1,6 +1,6 @@
 # ERA5 check: AZ
 
-**FAIL** (2026-11-12; model 1.11; design 0005's leave-one-station-out check; 17 stations).
+**FAIL** (2026-11-16; model 1.16; design 0005's leave-one-station-out check; 17 stations).
 
 | Criterion | Test | Limit | Value | Pass | Limit set from |
 |---|---|---|---|---|---|
@@ -12,10 +12,12 @@
 | W6 | corrected shore cells (3 or more): median |error| no worse than uncorrected | - | - | not judged | the reason to correct |
 | W7 | corrected cells: |mean error| in the 1-in-10-year peak day's mean wet bulb, C, at most | 0.50 | 0.05 | yes | model 1.10 [A]: qm-2's Michigan peak days ran 0.72 C humid, mapping the dew point brought Michigan and Ohio to 0.23 (methods log, Nov 8, 2026) |
 | P1 | places sampled, at least | 5 | 12 | yes | too few to judge below this |
-| P2 | places: median |difference| in the hybrid average day, %, at most | 8.00 | 11.59 | **no** | four states 1.9-4.6 (Virginia); +3.4 |
-| P3 | places: |mean difference| in the hybrid average day, %, at most | 6.00 | 4.35 | yes | four states 0.6-4.9 (Virginia); +1.1 |
-| P4 | places: median |difference| in the hybrid peak day, %, at most | 6.00 | 5.67 | yes | four states 0.5-3.2 (Virginia); +2.8 |
+| P2 | places: median |difference| in the hybrid average day, % of towers' average day, at most | 1.00 | 1.54 | **no** | four states at 1.16 0.10-0.53 (Texas); +0.47 |
+| P3 | places: |mean difference| in the hybrid average day, % of towers' average day, at most | 0.75 | 0.37 | yes | four states at 1.16 0.04-0.29 (Texas); +0.46 |
+| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 4.94 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
 | P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 1.45 | yes | four states 0.03-0.22; +1.8 |
+| P6 | places: median |difference| in the pads average day, % of towers' average day, at most | 1.00 | 2.88 | **no** | four states at 1.16 0.17-0.54 (Texas); +0.46 |
+| P7 | places: median |difference| in the pads peak day, % of towers' peak day, at most | 6.00 | 8.45 | **no** | four states at 1.16 1.3-3.8 (Texas); +2.2 |
 
 ## Weather at the held-out stations
 
@@ -49,21 +51,36 @@ Median absolute error (mean error), C, against the station on its own hours.
 
 ## Places through the cooling model
 
-The place's cell against the station's own record, p50 per 100 MW, % difference.
+The place's cell against the station's own record, p50 per 100 MW: % difference in each design's own water (towers are judged by this one), then hybrid and pads as % of towers' water at the place (judged from model 1.16).
 
 | Place | Station (km) | Cell land | towers avg | towers peak | hybrid avg | hybrid peak | assist avg | assist peak |
 |---|---|---|---|---|---|---|---|---|
-| South Tucson city | Tucson International Airport (7) | 1.00 | -1 | -1 | -6 | -3 | -7 | -3 |
-| Tucson city | Davis-Monthan Afb Airport (2) | 1.00 | -2 | -3 | -17 | -8 | -19 | -8 |
-| Safford city | Safford Regional Airport (6) | 1.00 | -2 | -4 | -17 | -5 | -21 | -9 |
-| Guadalupe town | Phoenix Sky Harbor Intl Airport (8) | 1.00 | -1 | -2 | -10 | -4 | -10 | -0 |
-| Phoenix city | Phoenix Deer Valley Arpt (13) | 1.00 | +1 | +1 | +9 | +1 | +8 | +0 |
-| Litchfield Park city | Luke Afb Airport (5) | 1.00 | +1 | +0 | +6 | +2 | +6 | -0 |
-| Kingman city | Kingman Airport (8) | 1.00 | +1 | +3 | +14 | +8 | +12 | +4 |
-| Page city | Page Municipal Airport (6) | 0.94 | -1 | -1 | -5 | -7 | -8 | -7 |
-| Prescott city | Ernest A. Love Field Arpt (7) | 1.00 | +3 | +4 | +35 | +16 | +27 | +12 |
-| Winslow city | Winslow-Lindbergh Regional Airport (1) | 1.00 | +1 | +0 | +13 | +8 | +9 | +3 |
-| Tusayan town | Grand Canyon Natl Park Apt (3) | 1.00 | +3 | +5 | +40 | +20 | +52 | +36 |
-| Somerton city | Yuma Mcas (9) | 1.00 | -2 | -1 | -11 | -3 | -11 | -1 |
+| South Tucson city | Tucson International Airport (7) | 1.00 | -1 | -1 | -9 | -6 | -11 | -9 |
+| Tucson city | Davis-Monthan Afb Airport (2) | 1.00 | -2 | -3 | -27 | -13 | -32 | -19 |
+| Safford city | Safford Regional Airport (6) | 1.00 | -2 | -4 | -31 | -9 | -37 | -19 |
+| Guadalupe town | Phoenix Sky Harbor Intl Airport (8) | 1.00 | -1 | -2 | -13 | -6 | -14 | -5 |
+| Phoenix city | Phoenix Deer Valley Arpt (13) | 1.00 | +1 | +1 | +15 | +2 | +14 | +1 |
+| Litchfield Park city | Luke Afb Airport (5) | 1.00 | +1 | +0 | +4 | +2 | +4 | -0 |
+| Kingman city | Kingman Airport (8) | 1.00 | +1 | +3 | +19 | +12 | +23 | +13 |
+| Page city | Page Municipal Airport (6) | 0.94 | -1 | -1 | -6 | -6 | -10 | -14 |
+| Prescott city | Ernest A. Love Field Arpt (7) | 1.00 | +3 | +4 | +38 | +18 | +44 | +20 |
+| Winslow city | Winslow-Lindbergh Regional Airport (1) | 1.00 | +1 | +0 | -2 | +10 | +2 | +4 |
+| Tusayan town | Grand Canyon Natl Park Apt (3) | 1.00 | +3 | +5 | +85 | +13 | +134 | +29 |
+| Somerton city | Yuma Mcas (9) | 1.00 | -2 | -1 | -11 | -5 | -12 | -1 |
+
+| Place | hybrid avg, % of towers | hybrid peak, % of towers | assist avg, % of towers | assist peak, % of towers |
+|---|---|---|---|---|
+| South Tucson city | -1.07 | -3.87 | -2.03 | -7.04 |
+| Tucson city | -2.98 | -8.21 | -5.93 | -15.85 |
+| Safford city | -3.00 | -5.44 | -6.08 | -15.06 |
+| Guadalupe town | -2.38 | -4.82 | -4.22 | -4.49 |
+| Phoenix city | +2.22 | +1.30 | +3.75 | +1.34 |
+| Litchfield Park city | +0.69 | +1.21 | +1.22 | -0.13 |
+| Kingman city | +1.62 | +7.46 | +3.18 | +9.87 |
+| Page city | -0.45 | -3.44 | -1.12 | -10.28 |
+| Prescott city | +1.35 | +9.24 | +2.19 | +10.35 |
+| Winslow city | -0.10 | +5.07 | +0.13 | +2.26 |
+| Tusayan town | +1.47 | +6.37 | +2.58 | +11.56 |
+| Somerton city | -1.80 | -3.49 | -3.48 | -0.55 |
 
 A fail is a method question for Andrew; the command changes nothing. Criteria: `waterledger.national.era5_check.CRITERIA`.

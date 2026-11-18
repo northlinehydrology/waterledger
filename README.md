@@ -9,7 +9,7 @@ Open Python tools for estimating the water and electricity that large new users 
 centers and battery cell plants, and for assembling the public U.S. water data around any place: water systems, watersheds, impaired waters,
 sewer plants, weather and design storms.
 
-- **Weather-driven cooling water model** for cooling towers, hybrid, closed loop, and dry coolers with adiabatic pre-cooling,
+- **Weather-driven cooling water model** for cooling towers, hybrid, dry coolers or air-cooled chillers, and dry coolers with evaporative pads on hot days,
   hour by hour over decades of weather, with Monte Carlo uncertainty over published parameter ranges; plus lake-source
   (once-through) cooling and staff water.
 - **Battery cell plant model**: the plant's heat, electricity, fuel and water hour by hour per GWh/yr of cells, on the same
@@ -83,7 +83,10 @@ est = site.estimate(supply={"own_gas": Scenario(residual="none", gas=Gas("cc", "
 est.supply["own_gas"].local_consumed     # water the campus's own gas plant evaporates, MGD, on the campus's source or system
 est.supply["pv_wind"].share_grid         # the share of the year's MWh the grid still serves, hour by hour; also unserved_hours_annual, land
 est.household_wells              # the aquifer most household wells draw from, how deep, the water level, where a state has well records
-site.by_design().best            # the cooling design that evaporates least in total, campus and power plants; also .designs and the closed loop figures
+site.by_design().best            # the cooling design that evaporates least in total, campus and power plants; also .designs and the dry-against-towers figures (`closed_loop_*`)
+t = site.by_design(plants=("shared", "warm", "chilled")).plants["warm"]["dry"]   # 3.25.0: dry, pads, hybrid and towers by default, for each cooling plant asked for
+t.evaporated_peak_day, t.grid_water, t.annual_mwh, t.peak_mw   # campus water, the balancing authority's hourly-mix plant water (average and peak day), MWh a year, hottest hour
+t.more_electricity_pct, t.more_peak_mw, t.extra_grid_water_share   # against towers: % more electricity a year, hottest-hour MW, the extra electricity's plant water as % of towers' own water
 est.equivalents.homes            # the water as homes at the state's own water for a home (.home_gpd: USGS 2015 over ACS 2015 households); also .golf_courses, .evaporated_share, .electricity_homes, .share_of_home_customers
 est.power_plants["state_mix"].consumed   # water at power plants for one power option, MGD; also .withdrawn, .returned; est.site.power names the one in use
 est.grid_water.consumed_peak_day         # the place's balancing authority, hour by hour (model 1.11): average day and peak day, average and marginal mix
@@ -118,6 +121,36 @@ They are validated, round-trip through JSON, and are described in
 | New York | 1,584 cities and villages, towns and counties | ERA5, each place's own cell (250 cells) | [waterledger.org/methods/ny](https://waterledger.org/methods/ny/), [brief](docs/methods/ny.pdf) |
 | Arizona | 107 cities, towns and counties | ERA5, each place's own cell (83 cells) | [waterledger.org/methods/az](https://waterledger.org/methods/az/), [brief](docs/methods/az.pdf) |
 
+**Model 1.17** changes the data center, battery cell plant and supply numbers, and every state's snapshot is rebuilt for it:
+- **Water-cooled chillers follow ASHRAE 90.1's curve** ([design 0021](docs/design/0021-water-cooled-chillers.md)): the
+  fixed-loss form of design 0015, fitted to 90.1's water-cooled centrifugal curve within 3%, with no gain below the smallest lift
+  the curve covers, in place of a cap of 8 that held in nearly every hour. Towers' electricity falls 0.3-1.3% a year and about
+  1 MW per 100 MW in the hottest hour; `carnot_air`'s low end is corrected to 0.584 (COP 2.96 at the rating point).
+- **A fifth design, outside air into the halls** ([design 0022](docs/design/0022-outside-air-evaporative.md)), with
+  evaporative pads above the operator's setting and air-cooled trim chillers, as most hyperscale fleets run: `outside_air`, in
+  the cell runs and `DataCenter(cooling="outside_air")` (not in `scenario.DESIGNS` or on waterledger.org yet). New sampled
+  parameter `pad_full`.
+- **The grid's plant water without EIA-930 spikes, missing fuel rows or double counts** (design 0008): screened hours, a Theil-Sen
+  marginal slope, named plants' factors for fuel rows EIA-923 lacks (Four Corners for PNM), concentrating solar's water as solar,
+  and no plant's generation in two balancing authorities (EIA-930 counted Palo Verde in both Arizona Public Service and Salt River
+  Project until December 2019). Arizona Public Service's grid withdrawal falls from about 3,700 to 470 gal/MWh.
+- **Design totals** (`Site.by_design`, design 0020): the peak day, the cooling plant, the balancing authority's hourly grid water
+  and the differences against towers; pads join the default list.
+
+**Model 1.16** changes the data center and battery cell plant numbers, and every state's snapshot is rebuilt for it:
+- **Air-cooled chillers respond to the air** ([design 0015](docs/design/0015-air-cooled-chillers.md)): their COP has a
+  fixed-loss term fitted to ASHRAE 90.1's reference curve, so it varies with the air below its cap, and the cap is sampled
+  (`air_cop_cap`, 5-7.6) from the same curve and makers' part-load figures. In West Michigan (shared loop, 100 MW) a dry plant's
+  peak day falls about 1 MW and its hottest hour rises about 1 MW; towers are unchanged.
+- **The operator's switch setting** ([design 0016](docs/design/0016-operator-switch-setting.md)): pads and hybrid go wet at
+  the later of a sampled setting (`switch_setting`, 26.5-32.0 C, from what operators state and what their stated time on
+  water implies at their sites, `docs/methods/switch-setting/`) and the loop's limit plus its margin. Through model 1.15 they
+  went wet at the loop's limit alone, 21.1 C on the shared and chilled plants. Pads' average water falls about tenfold and
+  hybrid's five- to sevenfold; their peak day falls about half, since the hottest days are above any setting.
+- **Design names say how heat leaves the building**: dry is "Dry coolers or air-cooled chillers (no evaporation)", and every
+  design has a closed loop inside (`cooling.CLOSED_LOOP`). Codes are unchanged.
+- **`scenario()` starts from pads on hot days** (`assist`) where no cooling is given, as waterledger.org does.
+
 **Model 1.13** adds power supply scenarios ([design 0014](docs/design/0014-power-supply-scenarios.md)) and the shared Monte
 Carlo runner, and changes no data center or place number, so it reads model 1.11's snapshots too:
 - **The shared runner** (`waterledger_models.runs`): one Monte Carlo loop for every water user type: the draws, the standard
@@ -145,7 +178,7 @@ Carlo runner, and changes no data center or place number, so it reads model 1.11
   Land, runoff and one-time construction water and sediment by project size (`supply.land`).
   - **On a study's own forcing** (branch `supply-on-aorc`; [design 0018](docs/design/0018-supply-on-a-study-forcing.md)): PV from
     global horizontal radiation alone (`pv.hourly_from_ghi`; Erbs's split, PVsyst's default, AORC's time stamp checked), scaled by
-    `pv.RANGES_AORC` to EIA's 2024 tracking fleet on AORC (0.87 overall, 0.73-1.02 by state). Wind stays on ERA5's 100 m wind, a stated
+    `pv.RANGES_AORC` to EIA's 2024 tracking fleet on AORC (0.89 overall, 0.73-1.03 by state, curtailment added back). Wind stays on ERA5's 100 m wind, a stated
     exception: AORC's 10 m wind steps down on January 1, 2018. Scenarios run on it through `supply.scenario.ForcingWeather`. The ERA5
     path's numbers are unchanged to the bit.
 - **Scenarios** (`supply.scenario`): resources and a residual rule (the grid by default, or islanded), dispatched hour by
@@ -332,13 +365,15 @@ with a leading underscore may change in a minor release. The numbers are version
 Three version numbers, each with one meaning:
 
 - **Package versions** (semver) change with the code: a major version for breaking changes.
-- **`waterledger_models.MODEL_VERSION`** (now 1.15) changes when the numbers change; the golden test fails until that is
+- **`waterledger_models.MODEL_VERSION`** (now 1.17) changes when the numbers change; the golden test fails until that is
   done deliberately. Every published estimate names the model version that produced it. One version covers every water
   user type. `waterledger_models.MODELS` records, from 1.12, which types a version changes and the model of the snapshots it
   reads: a version that leaves the snapshots' numbers alone (data centers, the places' water and power) skips them and reads
   the last rebuilt ones. Model 1.12 adds battery cell plants and reads model 1.11's snapshots and cell runs, so a data center
   estimate still names model 1.11. Model 1.13 adds gas plants and supply scenarios the same way, and model 1.14 changes them
-  (outages that last days, PV against the 2024 fleet), and model 1.15 wind against its fleet.
+  (outages that last days, PV against the 2024 fleet), and model 1.15 wind against its fleet. Model 1.16 changes the data
+  center and battery numbers (air-cooled chillers, the operator's switch setting), and every state's snapshot is rebuilt for it;
+  model 1.17 changes them again (water-cooled chillers, the outside air design, the grid's water) and rebuilds them.
 - **The snapshot format version** (now 3, in each snapshot's manifest) changes when the structure of a state's data
   files does. Format 3 (from model 1.8) carries cooling by ERA5 cell (`cells/`). The package still reads format 2, which the
   published model 1.7 snapshots are.

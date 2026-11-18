@@ -43,6 +43,7 @@ class WaterUse(BaseModel):
     condensate: Flow | None = None       # also in returned and to_sewer; none for lake-source's lake water or data from before model 1.5
     withdrawn_max_month: Range | None = None    # the highest month's average day: the period of Part 327's 30-day test. Lake-source: constant, as the withdrawal
     consumed_max_90day: Range | None = None     # the highest 90 straight days' average: the Compact's period. None for data from before model 1.7. Lake-source: its highest month, which is no lower
+    blowdown: Range | None = None        # cooling blowdown and pad bleed on an average day, also in returned: the model's returned water less condensate, no staff water (3.25.0). None for lake-source
 
 
 def water_use(E):
@@ -53,7 +54,8 @@ def water_use(E):
                     to_sewer=R(E["sewer"]), lake_source=E["lake"], reuse=E["reuse"],
                     condensate=Flow(avg=R(E["condAvg"]), peak_day=R(E["condPeak"])) if "condAvg" in E else None,
                     withdrawn_peak_full_capacity=R(E["wPeakFull"]) if "wPeakFull" in E else None,
-                    withdrawn_max_month=R(E["wMonth"]) if "wMonth" in E else None, consumed_max_90day=R(E["c90"]) if "c90" in E else None)
+                    withdrawn_max_month=R(E["wMonth"]) if "wMonth" in E else None, consumed_max_90day=R(E["c90"]) if "c90" in E else None,
+                    blowdown=R(E["blowAvg"]) if "blowAvg" in E else None)
 
 
 def electricity(e):
@@ -209,23 +211,56 @@ class SupplyScenarioEstimate(BaseModel):
 
 
 class DesignTotal(BaseModel):
-    """One cooling design at a site: water evaporated at the campus and at power plants, MGD, and its electricity, MW."""
+    """One cooling design at a site: water evaporated at the campus and at power plants, MGD, and its electricity, MW. Full values.
+
+    evaporated and evaporated_peak_day: the campus's evaporated or lost water (est.water.consumed, staff water included), average and 1-in-10 peak day.
+    at_power_plants and at_power_plants_peak_day: power-plant water on the site's power option (the state's annual mix unless the site picks another),
+    for the average and peak-day MW. grid_water and grid_water_peak_day: power-plant water at the place's balancing authority on its hourly average mix
+    (est.grid_water.consumed, design 0008), the main grid number from 3.25.0 (design 0020, decision 1a); None for lake-source cooling and older data.
+    avg_mw, peak_day_mw and peak_mw: average, 1-in-10 peak-day and 1-in-10 hottest-hour electricity; annual_mwh is avg_mw x 8,760 h.
+
+    Against the reference design (towers unless asked otherwise; 3.25.0), on the middle estimates, None where the reference isn't among the designs:
+    more_electricity_pct, the percent more electricity a year; more_peak_mw, the hottest hour's added MW; saves_on_site, the reference's campus
+    water less this design's, MGD; extra_grid_water and extra_plant_water, the power-plant water of the added electricity (hourly BA mix, power
+    option), MGD; and each as a percent of the reference's own campus water (extra_grid_water_share, extra_plant_water_share), None where that is zero."""
     model_config = ConfigDict(frozen=True)
     design: str
     evaporated: Range
     at_power_plants: Range
     avg_mw: Range
     peak_mw: Range
+    plant: str | None = None                        # the cooling plant inside the building (a data center's); None for types without one
+    evaporated_peak_day: Range | None = None
+    at_power_plants_peak_day: Range | None = None   # None where the data has no peak-day MW (lake-source cooling, before model 1.9)
+    grid_water: Range | None = None
+    grid_water_peak_day: Range | None = None
+    annual_mwh: Range | None = None
+    peak_day_mw: Range | None = None
+    reference: str | None = None
+    more_electricity_pct: float | None = None
+    more_peak_mw: float | None = None
+    saves_on_site: float | None = None
+    extra_grid_water: float | None = None
+    extra_grid_water_share: float | None = None
+    extra_plant_water: float | None = None
+    extra_plant_water_share: float | None = None
 
     @property
     def total(self):
         """Evaporated at the campus and at power plants, middle estimates."""
         return self.evaporated.p50 + self.at_power_plants.p50
 
+    @property
+    def total_hourly_grid(self):
+        """Evaporated at the campus and at the balancing authority's power plants on its hourly mix, middle estimates; None without grid water."""
+        return self.evaporated.p50 + self.grid_water.p50 if self.grid_water else None
+
 
 class DesignComparison(BaseModel):
-    """The same campus with each cooling design, on one power option. `best` evaporates least in total. `thirstiest_power` is the option other than wind and solar and the state's
-    starting mix that uses the most water. The closed_loop figures compare closed loop with cooling towers; None unless both designs are among them."""
+    """The same campus with each cooling design, on one power option. `best` evaporates least in total on the power option; `best_hourly_grid` on the
+    balancing authority's hourly mix (3.25.0; None where a design has no grid water). `thirstiest_power` is the option other than wind and solar and the state's
+    starting mix that uses the most water. The closed_loop figures compare a dry plant (no evaporation) with cooling towers; None unless both designs are among them.
+    `designs` is the site's own cooling plant; `plants` (3.25.0) holds every plant asked for, {plant: {design: DesignTotal}}, empty for types without one."""
     model_config = ConfigDict(frozen=True)
     power: str
     designs: dict[str, DesignTotal]
@@ -234,6 +269,10 @@ class DesignComparison(BaseModel):
     closed_loop_more_power_pct: float | None = None
     closed_loop_more_peak_mw: float | None = None
     closed_loop_saves_on_site: float | None = None
+    reference: str | None = None
+    balancing_authority: str | None = None
+    best_hourly_grid: str | None = None
+    plants: dict[str, dict[str, DesignTotal]] = {}
 
 
 class WellsSummary(BaseModel):

@@ -19,7 +19,12 @@ Order: `fetch_eia.py`, `states.py` (state totals, plant flags, Macknick-filled a
 `combine.py` writes the package's state table, and `fuels.py` the coal and nuclear table (`tables/state_fuel_water_2024.csv`).
 `verify_table.py` checks `grid_water_2022.csv` against the Siddik et al. dataset. `ba_fuels.py`, after `states.py`,
 writes `tables/ba_fuel_water_2024.csv`: the same plant water by balancing authority, EIA-930 fuel class and month, for
-the hourly grid water of design 0008.
+the hourly grid water of design 0008. It reads the EIA-930 cache (`waterledger_data.grid930.build()`) for the classes each
+BA reports and their regions. From model 1.17, a concentrating solar plant's water is in solar. A class EIA-930 reports
+in a BA, with no EIA-923 generation there, takes the plants that can be named (`ATTRIBUTED`), then the BA's EIA-930
+region, then the U.S. [A]. Column `basis` says which (`plant`, `region`, `us`), and `basis_from` gives the plant ids or the
+region. Generation EIA-930 counts in two BAs (`grid930.DOUBLE_COUNTED`: Palo Verde in AZPS until Dec 4, 2019, St. Lucie's
+shares in FMPP, Colstrip's share in PSEI) is out of the copy's hours, so it has no row there.
 
 Rules, the same for every state:
 - A fresh-water plant that draws from and returns to a built reservoir is pond class, whatever its EIA code, unless it sits on a river main stem the plant is small against.

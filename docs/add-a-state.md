@@ -130,14 +130,21 @@ The criteria (`waterledger.national.era5_check.CRITERIA`) are the four accepted 
 | W5 | corrected shore cells (3 or more), median absolute error in the design dry-bulb | 0.5 C | 0.19-0.32 |
 | W6 | corrected shore cells: no worse than uncorrected | | always better |
 | P1 | places sampled | at least 5 | |
-| P2 | places, median absolute difference in the hybrid average day | 8% | 1.9-4.6% (Virginia) |
-| P3 | places, absolute mean difference in the hybrid average day | 6% | 0.6-4.9% (Virginia) |
-| P4 | places, median absolute difference in the hybrid peak day | 6% | 0.5-3.2% (Virginia) |
+| P2 | places, median absolute difference in the hybrid average day, as % of towers' average day | 1% | 0.10-0.53% (Texas) |
+| P3 | places, absolute mean difference in the hybrid average day, as % of towers' average day | 0.75% | 0.04-0.29% (Texas) |
+| P4 | places, median absolute difference in the hybrid peak day, as % of towers' peak day | 6% | 1.5-4.0% (Ohio) |
 | P5 | places, median absolute difference in towers' average day | 2% | 0.03-0.22% |
+| P6 | places, median absolute difference in the pads average day, as % of towers' average day | 1% | 0.17-0.54% (Texas) |
+| P7 | places, median absolute difference in the pads peak day, as % of towers' peak day | 6% | 1.3-3.8% (Texas) |
 
 The four states' figures are from `docs/methods/qm-check/` (Nov 4, 2026). Each state's stations are those in it or within 100 km of
 its places, held out under the decided rule; its places are the station check's within 30 km of their station (Michigan 1, Ohio 5,
 Virginia 4, Texas 6). These are the first limits, set from four states; Andrew may change them, in `CRITERIA` and here.
+
+From model 1.16 (Nov 16, 2026) hybrid and pads are judged as a share of towers' water at the same place, not of their own. They
+evaporate only above the operator's switch setting, 1-7% of towers' water on an average day in the four states, so a percent of
+their own water measured how many of the hottest hours cross the switch more than the weather. P2-P4, P6 and P7 were set then from
+the four states at 1.16, 12 places each (methods log, Nov 16, 2026); P5 and the weather criteria are unchanged.
 
 - **Writes:** `CACHE/era5/check/ST/check.json` (every station's and place's errors, the criteria and the verdict) and `check.md` (the
   same tables as design 0005). `--out DIR` writes them elsewhere.

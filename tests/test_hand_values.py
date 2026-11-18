@@ -94,10 +94,13 @@ def test_switch_point_by_hand():
     # Air loop water = supply air + air rise - air rise / coil effectiveness = 31 + 16.65 - 16.65 / 0.8 = 26.8375 C. Half the computers liquid-cooled, with 20% of their
     # heat still going to air: the air share is 0.5 + 0.5 x 0.2 = 0.6. Weighted supply 0.6 x 26.8375 + 0.4 x 38.5 = 31.5025 C; less the 7.5 K approach and the glycol exchanger's 2.25 K (model 1.9), 21.7525 C.
     mid = {**C, "supply_air": 31.0, "air_rise": 16.65, "coil_eff": 0.8, "liquid_share": 0.5, "liquid_air_share": 0.2, "liquid_water": 38.5, "dc_approach": 7.5, "hx_approach": 2.25,
-           "switch_margin": 0.0}
+           "switch_margin": 0.0, "switch_setting": 20.0}
     assert ph.loop_limit(mid) == pytest.approx(21.7525)
-    assert ph.switch_point(mid) == pytest.approx(21.7525)
+    assert ph.switch_point(mid) == pytest.approx(21.7525)          # the setting (20 C) is earlier, so the loop's limit decides
     assert ph.switch_point({**mid, "switch_margin": 2.0}) == pytest.approx(23.7525)
+    # The operator's setting (model 1.16): at 29.25 C, the middle of its range, it is later than the loop's limit, so chillers carry 21.75-29.25 C and water starts at 29.25
+    assert ph.switch_point({**mid, "switch_setting": 29.25}) == pytest.approx(29.25)
+    assert ph.switch_point(C) == pytest.approx(max(29.25, ph.loop_limit(C) + C["switch_margin"]))
     # All air, 27 C supply: 27 + 19.4 - 19.4 / 0.7 = 18.686 C, less 10 K and 2.25 K = 6.436 C, below any published setting, so 70 F (21.1 C)
     cold = {**mid, "supply_air": 27.0, "air_rise": 19.4, "coil_eff": 0.7, "liquid_share": 0.0, "dc_approach": 10.0}
     assert ph.loop_limit(cold) == pytest.approx(6.436, abs=1e-3)

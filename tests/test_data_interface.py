@@ -27,12 +27,14 @@ def test_a_package_reads_the_snapshot_for_its_own_model():
 
 def test_a_model_version_that_skips_the_snapshots_reads_the_last_rebuilt_ones(capsys, monkeypatch):
     """Model 1.12 adds battery cell plants and leaves every number the snapshots carry alone, so it reads model 1.11's snapshots and
-    cell runs, without the note for another model's data; a version not in MODELS reads its own."""
+    cell runs, without the note for another model's data; models 1.16 and 1.17 rebuild them; a version not in MODELS reads its own."""
     import waterledger_models as wm
     from waterledger.national import era5
     from waterledger.national.data import snapshot_for_model
-    assert wm.MODEL_VERSION == "1.15" and wm.snapshot_model() == "1.11" == era5.RUN_MODEL and wm.snapshot_model("1.11") == "1.11"
+    assert wm.MODEL_VERSION == "1.17" and wm.snapshot_model() == "1.17" == era5.RUN_MODEL and wm.snapshot_model("1.16") == "1.16" and wm.snapshot_model("1.11") == "1.11"
     assert wm.snapshot_model("1.12") == "1.11"
+    assert snapshot_for_model({"state": "OH", "latest": "a", "by_model": {"1.11": "b", "1.16": "d", "1.17": "c"}}) == "c" and capsys.readouterr().err == ""
+    monkeypatch.setattr(wm, "snapshot_model", lambda version="1.15", _own=wm.snapshot_model: _own(version))    # a package at model 1.15, which skips them
     assert snapshot_for_model({"state": "OH", "latest": "a", "by_model": {"1.11": "b", "1.12": "c"}}) == "b" and capsys.readouterr().err == ""
     monkeypatch.setitem(wm.MODELS, "9.1", {"types": ("datacenter",), "snapshots": "9.1"})
     assert wm.snapshot_model("9.1") == "9.1" and wm.snapshot_model("9.2") == "9.2"
