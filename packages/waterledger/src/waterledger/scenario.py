@@ -196,6 +196,22 @@ def check_lake(place_name, great_lake, cool, src):
         raise ValueError("Lake-source cooling needs lake surface water as the source")
 
 
+def reuse_taken(a, b, D, mw):
+    """Water taken and water left over under full treatment and reuse (lo/mid/hi MGD): `a` less `b` is what the campus has to make up (evaporated less the condensate
+    on an average day; withdrawn less wastewater on the peak day, the same by the balance), and never less than staff water at the campus's size, which is drinking
+    and sanitary water from a supply (Andrew, Nov 2026). Where the condensate covers more than the cooling evaporates, as with dry designs, the campus still takes its
+    staff water and the surplus leaves the site, to a site drain or stormwater [A] as a septic site's condensate does, so taken + condensate = evaporated + left over.
+    Each end is worked from separate model outputs, so each range is put back in order."""
+    from waterledger_models.datacenter.cooling import staff_q
+    s = staff_q(D["staff"]["runs"], mw, part="staff")["withdrawn"]
+    floor = {"lo": s["p10"], "mid": s["p50"], "hi": s["p90"]}
+    need = {k: a[k] - b[k] for k in ("lo", "mid", "hi")}
+    w = {k: max(need[k], floor[k]) for k in need}
+    r = {k: w[k] - need[k] for k in need}
+    order = lambda v: {"lo": min(v.values()), "mid": v["mid"], "hi": max(v.values())}
+    return order(w), order(r)
+
+
 def cooling_estimate(D, region, cool, mw, dest):
     """Water taken, evaporated or lost, and sent out for an air- or water-cooled campus (MGD, lo/mid/hi), from model results in D
     ({"regions": {region: {"per_100mw": ...}}, "staff": {"runs": ...}}): the page's est() for every design but lake-source.
@@ -223,15 +239,12 @@ def cooling_estimate(D, region, cool, mw, dest):
         E["wPeakFull"] = F("withdrawn_peak_full_capacity")
     if dest == "reuse":
         E["full"] = {"wAvg": E["wAvg"], "rAvg": E["rAvg"]}
-        # the condensate is reused too; where it covers everything, nothing is taken. Each end is worked from separate model outputs, so the range is put back in order
-        def taken(a, b):
-            v = {k: max(a[k] - b[k], 0.0) for k in ("lo", "mid", "hi")}
-            return {"lo": min(v.values()), "mid": v["mid"], "hi": max(v.values())}
-        E["wAvg"], E["wPeak"] = taken(E["cAvg"], E["condAvg"]), taken(E["wPeak"], E["rPeak"])
+        E["wAvg"], E["rAvg"] = reuse_taken(E["cAvg"], E["condAvg"], D, mw)
+        E["wPeak"], E["rPeak"] = reuse_taken(E["wPeak"], E["rPeak"], D, mw)
         if "wMonth" in E:          # the share reuse saves on an average day, in the highest month too [A]
             E["wMonth"] = {k: E["wMonth"][k] * E["wAvg"][k] / max(E["full"]["wAvg"][k], 1e-12) for k in ("lo", "mid", "hi")}
         E["wAnn"] = {k: v * 365.25 for k, v in E["wAvg"].items()}
-        E["rAvg"] = E["rPeak"] = E["sewer"] = {"lo": 0, "mid": 0, "hi": 0}
+        E["sewer"] = {"lo": 0.0, "mid": 0.0, "hi": 0.0}
         E["reuse"] = True
     return E
 

@@ -2992,3 +2992,24 @@ sheets now gone) is six to nine times the model's: not resolved.
 **Short form** (methods pages): A fifth design, outside air into the halls with evaporative pads on hot days, as Meta, Amazon and Microsoft
 run most of their fleets. With air-cooled halls it uses about 1.11 PUE in every climate checked, takes water 1-32% of the hours, and
 withdraws 0.01-0.25 L per IT kWh, close to what those operators report.
+
+## Nov 17, 2026: reuse never takes less than staff water (model 1.17)
+
+- **Decision.** Under full treatment and reuse, water withdrawn is the larger of (evaporated less condensate) and staff water at the
+  campus's size, on the average day and the peak day, at each end of the range. Andrew, Nov 2026: staff (drinking and sanitary) water
+  still has to come from a supply, so the page never shows 0 gallons withdrawn.
+- **Why.** Through 3.24.0, withdrawn under reuse was evaporated less condensate, floored at zero. A dry campus evaporates only its staff
+  and maintenance losses, and the condensate from outside air can cover that. At Gaines Charter Township (model 1.16 cell, middle
+  estimate) a 300 MW dry campus evaporates about 840 gpd and collects about 1,390 gpd of condensate, so it withdrew 0. Its staff
+  water is about 2,410 gpd. On the peak day the gap is wider (humid summer air), and withdrawn was 0 there too.
+- **Balance.** Where the floor holds, the campus takes more than the cooling needs. The surplus, withdrawn + condensate - evaporated,
+  is returned: it leaves by a site drain or stormwater [A], as a septic site's condensate does, not by the sewer (to_sewer stays 0).
+  At Gaines, 300 MW dry: 2,410 + 1,390 = 840 + 2,960 gpd. Through 3.24.0 returned was 0 under reuse, so a dry campus's books did
+  not close; the existing test checked towers only. `tests/test_balances.py` now checks both days for a dry campus at 50, 300 and
+  1,400 MW.
+- **Which staff water.** Staff water only (`staff_q(..., part="staff")`, people times gallons a person a day), not the loop
+  top-ups counted with it as non-cooling water since model 1.3: top-ups can be made from the treated water [A].
+- **What changes.** Dry designs under reuse: at Gaines, withdrawn goes from about 70 gpd at 50 MW and 0 at 300 and 1,400 MW to
+  about 1,060, 2,410 and 8,350 gpd. Pads, hybrid and towers evaporate more than their staff water at every size, so they are unchanged. The highest month
+  follows the average day by the share reuse saves, and the annual total is the average day times 365.25, as before.
+
