@@ -59,21 +59,22 @@ def test_farmland_phosphorus_and_nitrogen_are_ceaps_loss_per_acre():
 
 def test_wet_ponds_treat_the_captured_surface_runoff_down_to_a_floor():
     L = runoff.loads(200, 36)
-    # surface at 50% impervious: 0.226 x 200 x 18.63 in x C; below ground the natural yield on 100 pervious acres
-    sp, bp = 0.226 * 200 * 18.63 * 0.31, 100 * 0.076
+    # surface at 50% impervious: 0.226 x 200 x 18.63 in x C; below ground, on 100 pervious acres, the natural yield less natural land's own surface
+    # runoff (36 in x 0.9 x 0.03 = 0.972 in) at the basins' flow-weighted concentration, which the site's surface already carries (Nov 17, 2026)
+    sp, bp = 0.226 * 200 * 18.63 * 0.31, 100 * (0.076 - 0.226 * 0.972 * 0.022)
     assert L["tp_lb"]["after"][1] == pytest.approx(sp + bp, abs=0.1)
     assert L["tp_lb"]["pond"][1] == pytest.approx(bp + sp * (1 - 0.85 * 0.52), abs=0.1)      # 0.149 mg/L treated, above the 0.13 floor
-    sn, bn = 0.226 * 200 * 18.63 * 2.7, 100 * 0.77
+    sn, bn = 0.226 * 200 * 18.63 * 2.7, 100 * (0.77 - 0.226 * 0.972 * 0.26)
     assert L["tn_lb"]["pond"][1] == pytest.approx(bn + sn * (1 - 0.85 * 0.31), abs=0.5)
     assert L["tss_t"]["pond"][1] == pytest.approx(L["tss_t"]["after"][1] * (1 - 0.85 * 0.80))
     # at the low end the floor holds: 0.20 x (1 - 0.76) = 0.048 mg/L would be below 0.13
-    s0, b0 = 0.226 * 200 * 18.63 * 0.20, 100 * 0.043
+    s0, b0 = 0.226 * 200 * 18.63 * 0.20, 100 * (0.043 - 0.226 * 0.972 * 0.022)
     assert L["tp_lb"]["pond"][0] == pytest.approx(b0 + s0 * (1 - 0.95 + 0.95 * 0.13 / 0.20), abs=0.1)
 
 
 def test_infiltration_keeps_runoff_reduction_and_removal_apart_and_its_nitrogen_goes_somewhere():
     L = runoff.loads(200, 36)
-    s, b = 0.226 * 200 * 18.63 * 2.7, 100 * 0.77
+    s, b = 0.226 * 200 * 18.63 * 2.7, 100 * (0.77 - 0.226 * 0.972 * 0.26)
     # middle: 85% captured, 70% of that soaks in, 15% off the rest
     assert L["tn_lb"]["infiltration"][1] == pytest.approx(b + s * (0.15 + 0.85 * 0.30 * 0.85), abs=0.5)
     assert L["tn_lb"]["to_ground"][1] == pytest.approx(s * 0.85 * 0.70, abs=0.5)

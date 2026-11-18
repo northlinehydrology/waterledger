@@ -227,6 +227,8 @@ def cooling_estimate(D, region, cool, mw, dest):
     for k_c, k_w, k_r, k_n in (("cAvg", "wAvg", "rAvg", "condAvg"), ("cPeak", "wPeak", "rPeak", "condPeak")):
         m = max(0.0, E[k_w]["mid"] + E[k_n]["mid"] - E[k_r]["mid"])
         E[k_c] = {"lo": min(E[k_c]["lo"], m), "mid": m, "hi": max(E[k_c]["hi"], m)}
+    # cooling blowdown and pad bleed alone: the model's returned water less its condensate, with no staff water (for blowdown phosphorus, which neither carries)
+    E["blowAvg"] = {k: max(C("returned_avg")[k] - C("condensate_avg")[k], 0.0) for k in ("lo", "mid", "hi")}
     if "withdrawn_max_month" in per_100mw:           # the rules' own periods: Part 327's 30 days and the Compact's 90 (data from before model 1.7 has no 90-day figure)
         E["wMonth"] = F("withdrawn_max_month")
     if "consumed_max_90day" in per_100mw:

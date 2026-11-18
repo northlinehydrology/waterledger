@@ -28,6 +28,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+import curtailment
+
 from waterledger_data import era5
 from waterledger_models.supply import pv
 
@@ -48,7 +50,7 @@ TRIM = (0.5, 1.2)                                # observed over modeled outside
 REGIONS = {"Great Lakes states": GREAT_LAKES, "Southeast (VA, NC, GA, FL)": ("VA", "NC", "GA", "FL"), "Texas": ("TX",),
            "Southwest (CA, AZ, NV, CO)": ("CA", "AZ", "NV", "CO")}
 MONTHS = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
-CENTRAL = {k: (a + b) / 2 for k, (a, b) in pv.RANGES.items()}
+CENTRAL = {**{k: (a + b) / 2 for k, (a, b) in pv.RANGES.items()}, "resource": 1.0}     # the check runs the chain at a factor of 1.0, whatever RANGES now holds
 
 
 def _yes(s):
@@ -186,6 +188,8 @@ def main():
     n0 = len(pl)
     pl = pl.join(gen, how="inner")
     pl = pl[pl.gen > 0]
+    pl = curtailment.gross(pl, "solar", E860 / "2___Plant_Y2024.xlsx")   # curtailment added back, so a scenario counts it once (curtailment.py)
+    print(f"curtailment added back: {(pl.gen.sum() / pl.gen_net.sum() - 1) * 100:.2f}% of the fleet's delivered output")
     print(f"plants: {n0} by EIA-860, {len(pl)} with 2024 PV net generation in EIA-923")
     pl["cell"] = [era5.cell(a, b)["id"] for a, b in zip(pl.lat, pl.lon)]
     wx = weather(pl.cell)
