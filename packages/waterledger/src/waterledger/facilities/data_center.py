@@ -75,5 +75,6 @@ class DataCenter(Facility):
         return self.it_mw * PARAMS["fuel"]["gen_mw_per_it_mw"]
 
     def cooling_blowdown(self, est):
-        """Towers: what goes back is nearly all blowdown, so the returned water on the middle estimate."""
-        return est.water.returned.avg.p50 if self.cooling == "towers" else None
+        """Towers and hybrid, which dose their recirculating water: the blowdown on the middle estimate (est.water.blowdown), without the staff water and
+        condensate that also go back (3.25.0; through 3.24 towers took all returned water, which put inhibitor phosphorus on sanitary water and condensate)."""
+        return est.water.blowdown.p50 if self.cooling in self.EVAPORATIVE and est.water.blowdown is not None else None

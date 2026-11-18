@@ -23,10 +23,11 @@ RANGES = {
     "gamma": (-0.0040, -0.0034),   # power temperature coefficient, 1/K; PVWatts' standard module -0.0037 [A: the range]
     "ilr": (1.2, 1.4),             # inverter loading ratio, DC over AC [A]
     "albedo": (0.15, 0.25),        # ground reflectance [A]
-    "resource": (0.76, 0.92),      # delivered over modeled: EIA's 2024 tracking fleet (944 plants, 24.1%) against this chain on ERA5 at
-                                   # their cells (28.5%), 0.84 overall and 0.76-0.92 across the states with ten or more plants. It holds ERA5's
-                                   # radiation bias with snow, curtailment, outages and age, which the check can't separate (0014, check 5;
-                                   # docs/methods/power_supply/pv_check.py)
+    "resource": (0.76, 0.92),      # output over modeled: EIA's 2024 tracking fleet (944 plants) against this chain on ERA5 at their cells, with each
+                                   # plant's curtailment added back (Berkeley Lab's 2024 rates: ERCOT 7.1%, CAISO 3.7%, SPP 2.8%; curtailment.py), since a
+                                   # scenario's dispatch counts its own surplus and the factor mustn't count it again (Nov 17, 2026). 0.86 overall; the range spans
+                                   # the states with ten or more plants, Ohio and Wisconsin 0.76 to Nevada 0.94 and Georgia 0.91, none of which report
+                                   # curtailment, so it stands. It holds ERA5's radiation bias with snow, outages and age (0014, check 5; pv_check.py)
 }
 GCR = 0.35                         # ground coverage ratio of a tracking array [A]
 MAX_ANGLE = 60.0                   # tracker rotation limit, degrees [A]

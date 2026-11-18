@@ -1,6 +1,6 @@
 # 0021: Water-cooled chillers on ASHRAE 90.1's curve (model 1.17)
 
-Status: **built Nov 17, 2026 on branch `model-1.17`, for Andrew's review; not released.** Proposal P2 of the dry-cooling evidence
+Status: **decided Nov 17, 2026 (Andrew: accepted as built, the name `carnot_water` kept). Merged in model 1.17 (#28); not released.** Proposal P2 of the dry-cooling evidence
 note (`docs/research/cooling-power-evidence.md`, branch `cooling-power-evidence`), and the item design 0015 left open.
 
 ## What was wrong
@@ -52,8 +52,8 @@ its curve covers, so the cap of 8 sat below the standard's minimum there.
    - The coefficient now passes 1 at the top. With the loss, the COP stays below Carnot's: the largest ratio is 0.92 at any lift
      from 0.5 to 60 K and any evaporator temperature from 0 to 30 C (test).
    - The name is kept so the draws keep their ranks (each parameter's stream is seeded on its name). The comment says what it is now.
-   - **For Andrew:** rename it (for example `chiller_lift_water`) if "carnot" above 1 would mislead a reader. That changes this
-     parameter's draws only.
+   - Renaming it (for example `chiller_lift_water`) was offered, since "carnot" above 1 could mislead a reader. That would change
+     this parameter's draws and so every towers and hybrid number. Andrew kept the name (Nov 17).
 3. **No gain below 90.1's smallest lift** (WATER_MIN_LIFT, 12.89 K, which replaces the cap of 8).
    - That lift is 54 F leaving water and 60 F entering condenser water, with AHRI's 10 F range.
    - Below it the chiller's COP holds at its value there: 9.8-11.5 across the band, 10.7 at the middle, against 90.1's code-minimum

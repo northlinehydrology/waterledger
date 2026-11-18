@@ -147,6 +147,9 @@ fuel factors of 0-1,143. Four things carried it. Each is fixed for every BA, not
      Asheville for CPLW;
   2. the BA's EIA-930 region;
   3. the U.S.
+  EIA-930's 2019 hours count Palo Verde in both AZPS and SRP. With Palo Verde's own factor this no longer inflates AZPS's
+  water, but its 2019 mix is nuclear-heavy. Andrew (Nov 17, 2026): nothing double counted. The double count is taken out, and every
+  balancing authority is checked for the same fault, in a fix to model 1.17 before Arizona's cells are rerun.
 - **Concentrating solar.** Solana's water (807 MG in 2024) had no thermal generation to follow. It fell to "other" and was
   divided by AZPS's biomass and landfill gas, giving 1,600-5,700 gal/MWh. Now a plant with no thermal generation has its
   water split by its own generation. CSP water (Solana, Mojave Solar, Crescent Dunes) is therefore in solar, where

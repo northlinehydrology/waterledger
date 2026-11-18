@@ -1,7 +1,7 @@
 # 0022: Outside air with evaporative pads, a fifth design (model 1.17)
 
-Status: **proposed and built Nov 17, 2026 on branch `model-1.17`, for Andrew's review; not released, and not on waterledger.org's
-design buttons until Andrew has checked it locally (his choice, Nov 16).** Proposal P3 of the dry-cooling evidence note
+Status: **decided Nov 17, 2026 (Andrew: the four choices below accepted as built). Merged in model 1.17 (#28); not released, and
+not on waterledger.org's design buttons until Andrew has checked it locally (his choice, Nov 16).** Proposal P3 of the dry-cooling evidence note
 (`docs/research/cooling-power-evidence.md`, branch `cooling-power-evidence`, sections 5f and 8).
 
 ## Why
@@ -171,7 +171,7 @@ liquid share:
   - battery plants: a cell plant's dry rooms aren't hall air;
   - `scenario.DESIGNS`' default list, and waterledger.org's buttons.
 
-## For Andrew
+## Decided (Andrew, Nov 17, 2026: all four as built)
 
 1. The label and code name.
 2. Air-cooled trim chillers, not water-cooled (LBNL models both; Meta runs none). Water-cooled would add tower water in the hottest

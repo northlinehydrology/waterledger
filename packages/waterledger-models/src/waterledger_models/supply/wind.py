@@ -32,8 +32,10 @@ CUT_OUT = 25.0
 RANGES = {
     "alpha": (0.10, 0.20),       # shear exponent, 100 m to hub [A]
     "losses": (0.10, 0.20),      # wakes, availability, electrical [A]
-    "resource": (0.93, 1.05),    # delivered over modeled at EIA's 2024 fleet: 0.99 overall; Texas, Oklahoma and Wyoming 0.93 (spring
-                                 # curtailment), Illinois and the newest interior plants 1.05 (0014, check 5)
+    "resource": (0.93, 1.05),    # output over modeled at EIA's 2024 fleet at 110 m, each plant's curtailment added back (Berkeley Lab's 2024 rates by ISO;
+                                 # docs/methods/power_supply/curtailment.py), since a scenario's dispatch counts its own surplus (Nov 17, 2026): 1.01
+                                 # overall; Minnesota and Wyoming 0.93 to Illinois and the newest interior plants 1.05-1.06. Through Nov 16 the low end
+                                 # was Texas and Oklahoma's curtailed 0.93; added back, they are 0.95 and 0.99, and the range stands (0014, check 5)
 }
 LOW_WIND_MS = 5.5                # a cell's mean 100 m speed below which the chain runs far low against the fleet (check 5): a flag, not a factor
 
