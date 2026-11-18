@@ -99,14 +99,16 @@ def test_every_factor_within_the_bas_fuel_factors(cache, ba):
 
 def test_azps_regression(cache):
     """AZPS before model 1.17: marginal 2,500-3,000 gal/MWh (single-hour spikes in "other" and nuclear read as 0 MW), "other" at
-    1,600-5,700 (Solana's water over the BA's biomass) and nuclear at the U.S. 17,236 withdrawn (Palo Verde, filed under SRP)."""
+    1,600-5,700 (Solana's water over the BA's biomass) and nuclear at the U.S. 17,236 withdrawn (Palo Verde, filed under SRP). Palo Verde
+    is SRP's alone: until Dec 4, 2019 EIA-930 counted it in both (tests/test_grid_double_count.py)."""
     h = lambda s: np.datetime64(s, "h")
     x, tab = _table("AZPS")
     hour = x["hour"].astype("datetime64[h]")
     for spike in ("2019-05-30T23", "2024-03-07T16", "2024-03-07T17", "2021-09-01T18", "2025-02-13T23"):
         i = np.searchsorted(hour, h(spike))
         assert np.isnan(x["consumed"][i]) and not x["pair_ok"][i] and not x["pair_ok"][i + 1], spike
-    assert not x["pair_ok"][np.searchsorted(hour, h("2019-12-04T08"))]          # nuclear stops being reported
+    i = np.searchsorted(hour, h("2019-12-04T08"))           # Palo Verde, SRP's, is out of AZPS's hours on both sides (model 1.17)
+    assert x["pair_ok"][i] and abs(x["generation"][i] - x["generation"][i - 1]) < 1000
     f = en.ba_fuel_water("AZPS")
     assert (f["nuclear"]["withdrawn"] < 1000).all() and (f["other"]["withdrawn"] < 100).all()
     assert (tab.marginal_withdrawn < 1200).all() and (tab.marginal_withdrawn > 150).all()

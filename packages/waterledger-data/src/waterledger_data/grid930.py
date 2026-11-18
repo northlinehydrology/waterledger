@@ -83,14 +83,59 @@ def build(years=None):
     return written
 
 
-def hourly(ba):
+def hourly(ba, raw=False):
     """{"hour", "demand", "net_generation", "interchange", <fuel>...} for one balancing authority, as numpy arrays,
-    from the cache (build() first)."""
+    from the cache (build() first). A fuel class EIA-930 also counts in another balancing authority (DOUBLE_COUNTED) is NaN
+    (not this BA's) in the hours it is counted twice, unless raw=True, which gives EIA's own values. Demand, net generation
+    and interchange are EIA's either way."""
     path = os.path.join(RAW, "ba", f"{ba}.npz")
     if not os.path.exists(path):
         raise FileNotFoundError(f"no EIA-930 file for {ba!r}: run waterledger_data.grid930.build()")
     with np.load(path) as z:
-        return {k: z[k] for k in z.files}
+        d = {k: z[k] for k in z.files}
+    if not raw:
+        for cls, twice in double_counted(ba, d["hour"]).items():
+            d[cls] = np.where(twice, np.nan, d[cls]).astype(d[cls].dtype)
+    return d
+
+
+# Generation EIA-930 counts in two balancing authorities (model 1.17) [A]. Where one BA reports a whole plant and another reports
+# that plant again, or its owners' share of it, the class is left out of the second BA's hours: each MWh is counted once, in the BA
+# that holds the whole plant (the one EIA-923 files it under). Found by checking every pair of the 67 BAs, 2019-2025: hour-for-hour
+# copies of a class; large hourly steps in one BA's class repeated in another's; and each BA's EIA-930 generation by class and
+# month against EIA-923's plants (2019-2024), where a BA that gives up a plant (or a share) another BA reports is a move, and one
+# that keeps the whole plant while another reports a share is a double count. Every plant found counted twice is listed; the
+# rest are moves, which EIA-930 puts in one BA only (Four Corners shares in PNM and SRP, Centralia in GRID, Comanche in PSCO,
+# Jim Bridger in PACW, Asheville in CPLW and others), and they stay where EIA-930 puts them. With these out, the lower 48's
+# nuclear summed over BAs is within 0.7% of EIA-923's in every year 2019-2024 (it was 3.8% over in 2019). Each entry: (BA,
+# class, first hour, last hour (UTC, end of hour; None: open), BA holding the whole plant, why).
+DOUBLE_COUNTED = (
+    ("AZPS", "nuclear", None, "2019-12-04T07", "SRP",
+     "Palo Verde (plant 6008): EIA-930 reported the whole plant, about 4 GW, in both AZPS and SRP, hour for hour, until it "
+     "moved it to SRP alone on Dec 4, 2019 (29.2 TWh in 2019; the lower 48's nuclear summed over BAs was 840.2 TWh against "
+     "EIA-923's 809.4). EIA-923 files the plant under SRP."),
+    ("FMPP", "nuclear", None, None, "FPL",
+     "St. Lucie (plant 6045): FMPP reports the Florida Municipal Power Agency's and Orlando Utilities' shares of unit 2 (about "
+     "1 TWh a year) while FPL reports the whole plant: FPL's EIA-930 nuclear equals EIA-923's whole FPL fleet, St. Lucie "
+     "included, within 17 GWh in 33 of the 34 months from Mar 2022 to Dec 2024 and within 0.7% in 2019-2021, 2023 and 2024; "
+     "FMPP's monthly excess over EIA-923 follows St. Lucie (r = 0.99) and FPL's doesn't move with it."),
+    ("PSEI", "coal", None, None, "NWMT",
+     "Colstrip (plant 6076): PSEI reported Puget Sound Energy's share (4.5 TWh in 2019, 2.2 in 2020, none after Jan 1, 2021) "
+     "while NWMT reported the whole plant: NWMT's EIA-930 coal is 2.7-3.3% above EIA-923's (Colstrip included) in 2019 and "
+     "2020, and 92-94% of PSEI's largest hourly coal steps are repeated in NWMT at least as large (9-14% by chance)."),
+)
+
+
+def double_counted(ba, hours):
+    """{class: bool array over `hours`}: the hours in which EIA-930 counts the class of `ba` in another BA too (DOUBLE_COUNTED)."""
+    out = {}
+    for b, cls, first, last, _, _ in DOUBLE_COUNTED:
+        if b != ba:
+            continue
+        lo = -np.inf if first is None else np.datetime64(first, "h").astype(np.int64)
+        hi = np.inf if last is None else np.datetime64(last, "h").astype(np.int64)
+        out[cls] = out.get(cls, np.zeros(len(hours), bool)) | ((hours >= lo) & (hours <= hi))
+    return out
 
 
 # Screening the hours (model 1.17). EIA's adjusted columns still carry single-hour spikes and dropouts (AZPS "other" at 6.1 GW for
