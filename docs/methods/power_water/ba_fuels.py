@@ -24,12 +24,14 @@ Method
   a class EIA-930 reports in the BA (2019-2025, over 0.1% of its generation) that has no EIA-923 generation there
                            (model 1.17) [A], in this order:
                              basis "plant": the plants EIA-930 counts in the BA but EIA-923 files elsewhere, where they can
-                               be named (ATTRIBUTED: Palo Verde in AZPS, and jointly owned plants), their own water and
+                               be named (ATTRIBUTED: Four Corners in PNM, Asheville in CPLW), their own water and
                                generation by month as above;
                              basis "region": the class in the BA's EIA-930 region (all its BAs' water over their generation);
                              basis "us": the U.S. factor for the class (ba "US").
                            Before, every such class took the U.S. factor: AZPS nuclear was 17,236 gal/MWh withdrawn, the U.S.
-                           fleet's once-through share, against Palo Verde's 700, cooled by towers on reclaimed water
+                           fleet's once-through share, against Palo Verde's 700, cooled by towers on reclaimed water.
+                           Generation EIA-930 counts in two BAs is out of the copy's hours (grid930.DOUBLE_COUNTED: AZPS
+                           nuclear until Dec 4, 2019, FMPP nuclear, PSEI coal), so those classes are not reported there
   hydro, wind, storage: 0, and solar without CSP (reservoir evaporation is not counted, as in the state table)
   withdrawal at least consumption, plant by plant [A]: three plants report consumption with no withdrawal (Stanton,
                            FL; Kings Mountain, NC; Ingleside Cogeneration, TX), most likely reclaimed or utility water that
@@ -101,14 +103,12 @@ def plant_months():
     return pd.DataFrame(rows, columns=['plant', 'month', 'cons', 'wd', 'wd_saline', 'tech'])
 
 
-# (BA, class) -> plants EIA-930 counts in the BA that EIA-923 files under another BA [A]; checked against EIA-923 2024's
-# operator and BA code
+# (BA, class) -> plants EIA-930 counts in the BA that EIA-923 files under another BA, which gives them up (moved, not counted twice)
+# [A]; checked against EIA-923's operator and BA code and against the host's EIA-930 generation, 2019-2024. A class EIA-930 counts in
+# two BAs (Palo Verde in AZPS until Dec 4, 2019; St. Lucie's shares in FMPP; Colstrip's share in PSEI) is out of the copy's hours
+# (waterledger_data.grid930.DOUBLE_COUNTED), so it is not reported there and needs no row
 ATTRIBUTED = {
-    ('AZPS', 'nuclear'): ([6008], 'Palo Verde, operated by Arizona Public Service and filed under SRP; EIA-930 counted its '
-                                  'whole output (about 4 GW) in AZPS until Dec 4, 2019'),
     ('PNM', 'coal'): ([2442], 'Four Corners, filed under AZPS, of which PNM owned a share (San Juan closed in 2022)'),
-    ('PSEI', 'coal'): ([6076], 'Colstrip, filed under NWMT, of which Puget Sound Energy owns a share'),
-    ('FMPP', 'nuclear'): ([6045], "St. Lucie, filed under FPL, unit 2 of which the pool's members (FMPA, Orlando) own shares"),
     ('CPLW', 'gas'): ([2706], "Asheville, Duke Energy Progress's plant in its western area, filed under CPLE"),
     ('CPLW', 'oil'): ([2706], "Asheville, Duke Energy Progress's plant in its western area, filed under CPLE"),
 }

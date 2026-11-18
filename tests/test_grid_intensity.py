@@ -110,7 +110,7 @@ def test_azps_regression(cache):
     i = np.searchsorted(hour, h("2019-12-04T08"))           # Palo Verde, SRP's, is out of AZPS's hours on both sides (model 1.17)
     assert x["pair_ok"][i] and abs(x["generation"][i] - x["generation"][i - 1]) < 1000
     f = en.ba_fuel_water("AZPS")
-    assert (f["nuclear"]["withdrawn"] < 1000).all() and (f["other"]["withdrawn"] < 100).all()
+    assert (f["other"]["withdrawn"] < 100).all() and np.nansum(np.abs(g.hourly("AZPS")["nuclear"])) == 0
     assert (tab.marginal_withdrawn < 1200).all() and (tab.marginal_withdrawn > 150).all()
     assert (tab.withdrawn < 1200).all()
     gen = np.nan_to_num(x["generation"])

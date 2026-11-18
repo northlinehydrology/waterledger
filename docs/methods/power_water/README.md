@@ -23,7 +23,8 @@ the hourly grid water of design 0008. It reads the EIA-930 cache (`waterledger_d
 BA reports and their regions. From model 1.17, a concentrating solar plant's water is in solar. A class EIA-930 reports
 in a BA, with no EIA-923 generation there, takes the plants that can be named (`ATTRIBUTED`), then the BA's EIA-930
 region, then the U.S. [A]. Column `basis` says which (`plant`, `region`, `us`), and `basis_from` gives the plant ids or the
-region.
+region. Generation EIA-930 counts in two BAs (`grid930.DOUBLE_COUNTED`: Palo Verde in AZPS until Dec 4, 2019, St. Lucie's
+shares in FMPP, Colstrip's share in PSEI) is out of the copy's hours, so it has no row there.
 
 Rules, the same for every state:
 - A fresh-water plant that draws from and returns to a built reservoir is pond class, whatever its EIA code, unless it sits on a river main stem the plant is small against.
