@@ -95,3 +95,39 @@ def test_a_gap_is_screened_and_a_class_that_stops_reporting_is_zero():
 def test_the_screen_is_set_from_the_data():
     """k = 4 ramps: above every large fleet's natural reversals (0.9-3.4), below the artifacts seen (4.9 and 6.4)."""
     assert g.SPIKE_K == 4.0 and g.SPIKE_HOURS == 3 and g.FLOOR == 0.01
+
+
+# --- generation counted in two BAs (model 1.17) -------------------------------------------------------------------------
+def _cache(tmp_path, monkeypatch, ba, d):
+    monkeypatch.setattr(g, "RAW", str(tmp_path))
+    (tmp_path / "ba").mkdir(exist_ok=True)
+    np.savez_compressed(tmp_path / "ba" / f"{ba}.npz", **d)
+
+
+def test_a_class_counted_in_two_bas_is_left_out_of_the_copy(tmp_path, monkeypatch):
+    """AZPS reported Palo Verde, about 4 GW, as SRP did, until 2019-12-04T07: those hours' nuclear is not AZPS's."""
+    d = _ba()
+    d["hour"] = np.datetime64("2019-12-01T00", "h").astype(np.int64) + np.arange(len(d["hour"]))
+    cut = int(np.flatnonzero(d["hour"] == np.datetime64("2019-12-04T07", "h").astype(np.int64))[0])
+    d["nuclear"] = np.full(len(d["hour"]), np.nan, dtype="float32")
+    d["nuclear"][:cut + 1] = 3990
+    _cache(tmp_path, monkeypatch, "AZPS", d)
+    x = g.hourly("AZPS")
+    assert np.isnan(x["nuclear"]).all() and x["nuclear"].dtype == d["nuclear"].dtype
+    assert np.array_equal(x["coal"], d["coal"])                                        # the other classes are untouched
+    assert np.nansum(g.hourly("AZPS", raw=True)["nuclear"]) == 3990 * (cut + 1)        # raw: EIA's own values
+
+
+def test_only_the_listed_hours_are_left_out(tmp_path, monkeypatch):
+    monkeypatch.setattr(g, "DOUBLE_COUNTED", (("XX", "coal", "1970-01-01T05", "1970-01-01T07", "YY", "test"),))
+    d = {"hour": np.arange(10), **{k: np.ones(10, dtype="float32") for k in g.FUELS}}
+    _cache(tmp_path, monkeypatch, "XX", d)
+    assert list(np.flatnonzero(np.isnan(g.hourly("XX")["coal"]))) == [5, 6, 7]
+    assert not np.isnan(g.hourly("XX")["gas"]).any()
+
+
+def test_every_double_count_names_the_ba_holding_the_whole_plant():
+    for ba, cls, first, last, holder, why in g.DOUBLE_COUNTED:
+        assert cls in g.FUELS and holder != ba and len(why) > 50
+        for t in (first, last):
+            assert t is None or np.datetime64(t, "h")

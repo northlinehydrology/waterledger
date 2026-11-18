@@ -37,11 +37,14 @@ def test_csp_water_is_not_in_other():
         assert (en.ba_fuel_water(ba)["other"]["withdrawn"] < 100).all(), ba
 
 
-def test_palo_verde_for_azps_nuclear():
-    """EIA-930 counted Palo Verde in AZPS until Dec 4, 2019; EIA-923 files it under SRP. AZPS's nuclear is the plant's own factor
-    (cooling towers on reclaimed water, about 700 gal/MWh), not the U.S. fleet's 17,236 withdrawn."""
-    az, srp = en.ba_fuel_water("AZPS")["nuclear"], en.ba_fuel_water("SRP")["nuclear"]
-    assert np.allclose(az["withdrawn"], srp["withdrawn"], rtol=0.01) and (az["withdrawn"] < 1000).all()
+def test_no_row_for_a_class_counted_in_two_bas():
+    """Palo Verde is SRP's (EIA-930 counted it in AZPS too until Dec 4, 2019), St. Lucie FPL's, Colstrip NWMT's: the copies are out of
+    the BAs' hours (grid930.DOUBLE_COUNTED), so AZPS nuclear, FMPP nuclear and PSEI coal have no row and no generation to carry one.
+    SRP's nuclear is Palo Verde's own factor (cooling towers on reclaimed water, about 700 gal/MWh)."""
+    t = pd.read_csv(en.BA_FUEL_TABLE)
+    rows = set(map(tuple, t[["ba", "fuel"]].drop_duplicates().values))
+    assert not {("AZPS", "nuclear"), ("FMPP", "nuclear"), ("PSEI", "coal")} & rows
+    assert (en.ba_fuel_water("SRP")["nuclear"]["withdrawn"] < 1000).all()
 
 
 def test_fallbacks_are_labeled():
@@ -50,7 +53,7 @@ def test_fallbacks_are_labeled():
     fb = t[t.basis.isin(["plant", "region"])]
     assert len(fb) and (fb.basis_from != "").all()
     assert (fb.groupby(["ba", "fuel"]).gen_mwh.sum() <= 0).all()        # no net EIA-923 generation in the BA that year
-    assert set(t[t.basis == "plant"].basis_from) == {"6008", "2442", "6076", "6045", "2706"}
+    assert set(t[t.basis == "plant"].basis_from) == {"2442", "2706"}
 
 
 @pytest.mark.parametrize("ba", ["MISO", "PJM", "ERCO", "SWPP", "TVA", "SOCO"])

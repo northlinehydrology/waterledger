@@ -143,13 +143,30 @@ fuel factors of 0-1,143. Four things carried it. Each is fixed for every BA, not
   had no row and took the U.S. factor, 17,236 gal/MWh withdrawn, which reflects the once-through fleet. Now a class that
   EIA-930 reports in a BA, but that EIA-923 has no generation for there, takes the first of these that has a factor
   [A]:
-  1. the plants that can be named: Palo Verde for AZPS, Four Corners for PNM, Colstrip for PSEI, St. Lucie for FMPP,
-     Asheville for CPLW;
+  1. the plants that can be named, which EIA-930 moves to the BA: Four Corners for PNM, Asheville for CPLW;
   2. the BA's EIA-930 region;
   3. the U.S.
-  EIA-930's 2019 hours count Palo Verde in both AZPS and SRP. With Palo Verde's own factor this no longer inflates AZPS's
-  water, but its 2019 mix is nuclear-heavy. Andrew (Nov 17, 2026): nothing double counted. The double count is taken out, and every
-  balancing authority is checked for the same fault, in a fix to model 1.17 before Arizona's cells are rerun.
+
+  Palo Verde in AZPS, St. Lucie in FMPP and Colstrip in PSEI were first given their plants' factors this way. They turned out
+  to be counted twice, and are now out of those BAs' hours (next).
+- **Generation counted in two BAs** (Nov 17). EIA-930 reported Palo Verde's whole 4 GW in both AZPS and SRP, hour for hour,
+  until Dec 4, 2019: 29.2 TWh in 2019, more than half of what it put in AZPS that year. Summed over BAs, the lower 48's 2019
+  nuclear was 3.8% above EIA-923's. Every pair of the 67 BAs was checked, 2019-2025, three ways: class series copied hour for
+  hour; large hourly steps in one BA's class repeated in another's; and each BA's generation by class and month against
+  EIA-923's plants, 2019-2024. A BA reporting a plant, or a share of one, that EIA-923 files elsewhere is a move where the
+  host's EIA-930 generation drops by as much, and a double count where the host keeps the whole plant. Three double counts:
+  - Palo Verde in AZPS until Dec 4, 2019 (SRP holds the plant);
+  - the FMPA and Orlando shares of St. Lucie 2 in FMPP, about 1 TWh a year, every year (FPL holds the plant);
+  - Puget Sound Energy's Colstrip share in PSEI, 4.5 TWh in 2019 and 2.2 in 2020 (NWMT holds the plant).
+
+  Each is left out of the copy's hours (`grid930.DOUBLE_COUNTED`, applied by `grid930.hourly`; `raw=True` gives EIA's values)
+  [A]: each MWh is counted once, in the BA holding the whole plant, the one EIA-923 files it under. Every other plant found
+  outside its EIA-923 BA is a move and stays where EIA-930 puts it: Four Corners shares in PNM and SRP, Centralia in GRID,
+  Comanche in PSCO, Jim Bridger in PACW, Asheville in CPLW, and others. With the three out, the BAs' nuclear is within 0.7% of
+  EIA-923's every year 2019-2024. Tests hold that no class is copied into another BA, that the BAs' nuclear adds up to
+  EIA-923's within 1% every year, and that each double count is out of the copy and in the holder. AZPS's average grid
+  consumption falls about 10% (its 2019 hours are its own plants); FMPP's average withdrawal falls from about 2,400 to 315
+  gal/MWh (St. Lucie is cooled once-through by seawater); PSEI's average consumption falls from 90 to 36.
 - **Concentrating solar.** Solana's water (807 MG in 2024) had no thermal generation to follow. It fell to "other" and was
   divided by AZPS's biomass and landfill gas, giving 1,600-5,700 gal/MWh. Now a plant with no thermal generation has its
   water split by its own generation. CSP water (Solana, Mojave Solar, Crescent Dunes) is therefore in solar, where

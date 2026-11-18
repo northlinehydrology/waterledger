@@ -21,10 +21,15 @@ waterledger, waterledger-models and waterledger-data 3.25.0. Model 1.17. Data ce
   `grid930.intensity` returns `pair_ok`, `screened` and `bounds`. `grid.fit` takes `pair_ok=` and `bounds=`, fits the marginal slope by
   Theil-Sen (`grid.theil_sen`) instead of least squares, and lists any factor outside the BA's fuel-factor range in `meta["outside"]`
   with a warning (never changed). The BA fuel table (`ba_fuel_water_2024.csv`) puts concentrating solar plants' water in solar, and
-  gives a class EIA-930 reports but EIA-923 has no generation for the named plants' factor (Palo Verde for AZPS, Four Corners for PNM,
-  Colstrip for PSEI, St. Lucie for FMPP, Asheville for CPLW), else the BA's EIA-930 region, else the U.S.; new `basis` values `plant`
-  and `region` and column `basis_from`. AZPS's grid withdrawal falls from about 3,700 to 520 gal/MWh; PJM's marginal withdrawal on the
-  peak day about halves.
+  gives a class EIA-930 reports but EIA-923 has no generation for the named plants' factor (Four Corners for PNM, Asheville for CPLW),
+  else the BA's EIA-930 region, else the U.S.; new `basis` values `plant` and `region` and column `basis_from`. AZPS's grid withdrawal
+  falls from about 3,700 to 470 gal/MWh; PJM's marginal withdrawal on the peak day about halves.
+- **No plant's generation in two balancing authorities** (design 0008; methods log, Nov 17): `grid930.DOUBLE_COUNTED` lists the
+  classes EIA-930 also counts in the BA holding the whole plant (Palo Verde in AZPS until Dec 4, 2019; St. Lucie's municipal shares in
+  FMPP; Puget Sound Energy's Colstrip share in PSEI), and `grid930.hourly(ba, raw=False)` leaves them out of those hours (`raw=True`
+  gives EIA's values; new `grid930.double_counted`). The BA fuel table loses those three classes' rows. AZPS's average grid water falls
+  about 10%, FMPP's withdrawal from about 2,400 to 315 gal/MWh and PSEI's consumption from 90 to 36; no other BA changes. Arizona's
+  cells (57 of 83 list AZPS) run on it; no other published state has places in these BAs.
 - **Design totals** (design 0020, proposal 1): `Site.by_design(designs=("dry", "assist", "hybrid", "towers"), plants=None,
   reference="towers")`. `DesignTotal` gains the cooling plant, the peak day's campus water, the balancing authority's hourly grid water
   (average and peak day; the main grid number), annual MWh and peak-day MW, and the differences against the reference (% electricity,
