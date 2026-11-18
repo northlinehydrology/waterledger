@@ -31,6 +31,12 @@ waterledger, waterledger-models and waterledger-data 3.25.0. Model 1.17. Data ce
   hottest-hour MW, the grid water of the extra electricity and its share of the reference's own water). `DesignComparison` gains
   `reference`, `balancing_authority`, `best_hourly_grid` and `plants`. Pads join the default list. Every addition has a default.
 - **Cell runs and snapshots are model 1.17's** (`national.era5.RUN_MODEL`, `MODELS["1.17"]`).
+- **Nothing counted twice** (methods log, Nov 17):
+  - `runoff.natural_below` adds only the below-ground part of the natural yield under a developed site's pervious share, with a new parameter
+    `PARAMS["nutrient_yield"]["natural_surface_mg_l"]` (Clark et al. 2000's flow-weighted medians). Site runoff phosphorus and nitrogen fall under 1%.
+  - `WaterUse.blowdown`, new: blowdown and pad bleed without staff water or condensate. `DataCenter.cooling_blowdown` uses it for towers and
+    hybrid, so cooling phosphorus is no longer worked on staff wastewater and condensate.
+  - The PV and wind fleet checks add curtailment back (`docs/methods/power_supply/curtailment.py`). Their ranges don't change.
 
 ## 3.24.1 (Nov 17, 2026; model 1.16)
 

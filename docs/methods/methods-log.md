@@ -3031,3 +3031,61 @@ built ("Accept all four as built"). For the fourth he then said "I don't want an
 The design notes' other choices (the outside air label, the floating supply, humid supply air accepted) are accepted with them.
 
 **Short form:** none for the first three; no number or method on the pages changes. The double count's fix records its own.
+
+## Nov 17, 2026: nothing counted twice (model 1.17)
+
+Andrew, Nov 17, 2026: "I don't want anything double counted." The packages were searched for any flow, MWh or load added twice into one total.
+
+**What was searched.** Water, the cooling energy balance, grid water, supply scenarios, battery plants, site loads and range middles. Each was found to
+close: withdrawn + condensate = consumed + returned with each flow once; staff water added once at the campus's size; condensate in returned only; one
+balancing authority per campus; each supply MWh in one bucket; the state mix an average, not a sum. Two cases counted something twice, and a third put
+a load on too much water.
+
+**1. Curtailment in the PV and wind resource factors (design 0014, check 5).**
+- *The fault.* The factors were fitted to EIA-923's delivered output, which has the grid's curtailment taken out. A supply scenario's dispatch then
+  takes curtailment out again: PV and wind serve the campus first, and their surplus is exported with no credit. The Nov 11 entry already noted that
+  "a behind-the-meter scenario partly double counts curtailment".
+- *The fix.* The checks add each plant's balancing authority's 2024 curtailment back before fitting (`docs/methods/power_supply/curtailment.py`).
+  - Solar, from Berkeley Lab's U.S. Utility-Scale Solar 2025 Data Update: ERCOT 7.1%, CAISO 3.7%, SPP 2.8% [V]. Other ISOs report none, so 0 [A].
+  - Wind, from Berkeley Lab's Land-Based Wind Energy Technology Update 2025, figure file p. 47: SPP 10.5% [V]; ERCOT 4.6%, MISO 3.4%, NYISO 1.1%,
+    CAISO 0.7%, ISO-NE 0.65% [F]; PJM 0 [A].
+  - This adds 2.85% to the PV fleet's output and 4.91% to wind's.
+- *The result.* The fleet factors rise: PV 0.84 to 0.86, wind at 110 m 0.99 to 1.01.
+  - The sampled ranges stand, PV 0.76-0.92 and wind 0.93-1.05, because their ends are states that report no curtailment: PV Ohio, Wisconsin, Nevada
+    and Georgia; wind Minnesota, Wyoming and Illinois.
+  - Wind's low end had been explained by curtailed Texas and Oklahoma. Added back, they are 0.95 and 0.99.
+  - No supply number changes.
+- *Also fixed.* The checks had read the range midpoint where they meant 1.0. They now pin 1.0.
+
+**2. The natural yield below a developed site's pervious share (runoff.loads).**
+- *The fault.* Developed land is the whole site's Simple Method runoff x one concentration, which already carries the pervious share's surface runoff.
+  The natural yield added below that share (Clark, Mueller and Mast 2000) is a whole-basin yield, surface runoff included. That surface part was
+  counted twice, about 0.5-1% of a site's phosphorus and nitrogen.
+- *The fix.* Below the pervious share only `runoff.natural_below` is added: the yield less natural land's own surface runoff (woods Rv) x the same
+  basins' median flow-weighted concentrations, TP 0.022 and TN 0.26 mg/L [A: surface runoff carries the basin's flow-weighted concentration]. At 32 in
+  of rain that is 6-7% less of the natural yield. The same applies to built land today.
+- The site's runoff loads move by under 1%.
+
+**3. Cooling phosphorus on blowdown alone (not a double count, a load on too much water).**
+- *The fault.* A towers campus's inhibitor phosphorus was worked on all its returned water, which includes staff and maintenance wastewater and
+  condensate, none of which is dosed.
+- *The fix.* `WaterUse.blowdown` (3.25.0) is the model's returned water less condensate, with no staff water. `DataCenter.cooling_blowdown` uses it
+  for towers and hybrid, both of which dose their recirculating water; through 3.24 only towers had a figure. Battery plants already used their own
+  blowdown.
+
+**Tests.** `tests/test_double_count.py`:
+- the natural yield is split, not added;
+- a developed site adds only the below-ground part;
+- returned = blowdown + condensate + staff, each once;
+- cooling phosphorus uses blowdown only;
+- the fleet checks' ranges sit inside the curtailment-free fits.
+
+**Other findings, not double counts.**
+- Hourly grid water has no line-loss gross-up while the power options' factors do: an undercount of about 5%.
+- Lake-source estimates leave staff water and condensate out of withdrawn and consumed: an omission.
+- Both are left for their own fixes.
+
+**Short form** (methods pages): Nothing is counted twice. Wind and solar output was fitted to what plants delivered after curtailment, and the
+scenarios then curtailed again; curtailment is now added back first (the ranges don't change). Natural land's yield below a built site no longer
+repeats the surface runoff the site's runoff already counts (under 1% of its phosphorus and nitrogen). Cooling-water phosphorus is worked on
+blowdown alone, not on staff wastewater and condensate.
