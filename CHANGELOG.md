@@ -2,7 +2,9 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## Unreleased
+## 3.24.1 (Nov 17, 2026; model 1.16)
+
+waterledger 3.24.1; waterledger-models and waterledger-data unchanged. Numbers change only for dry designs under full treatment and reuse.
 
 - **Reuse never takes less than staff water** (`scenario.reuse_taken`, used by `cooling_estimate`; `docs/methods/methods-log.md`, Nov 17):
   under full treatment and reuse, water withdrawn on the average and peak day is the larger of what the cooling has to make up
