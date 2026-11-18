@@ -3013,3 +3013,20 @@ withdraws 0.01-0.25 L per IT kWh, close to what those operators report.
   about 1,060, 2,410 and 8,350 gpd. Pads, hybrid and towers evaporate more than their staff water at every size, so they are unchanged. The highest month
   follows the average day by the share reuse saves, and the annual total is the average day times 365.25, as before.
 
+## Nov 17, 2026: model 1.17's open choices, accepted as built (decision; no numbers change)
+
+The design notes and the grid fix left four choices that would change model 1.17's numbers. Andrew accepted all four as built
+("Accept all four as built"), so the statewide 1.17 rerun stands:
+
+1. **`carnot_water` keeps its name** (design 0021). It now runs 0.828-1.140, the lift term's coefficient with a fitted loss, and
+   the COP stays below Carnot's (test). A rename would reseed its draws and move every towers and hybrid number.
+2. **`pad_full` stays sampled, 0-1** (design 0022). No operator publishes how far the pads run past the setting, and either end
+   halves or doubles the outside air design's water.
+3. **The outside air design's trim chillers stay air-cooled** (design 0022). Heat leaves by air, and there is no tower water in
+   the hottest hours.
+4. **EIA-930's 2019 hours for AZPS stay as reported** (design 0008). They count Palo Verde in both AZPS and SRP; with Palo Verde's
+   own factor this no longer inflates AZPS's water.
+
+The design notes' other choices (the outside air label, the floating supply, humid supply air accepted) are accepted with them.
+
+**Short form:** none. No number or method on the pages changes.
