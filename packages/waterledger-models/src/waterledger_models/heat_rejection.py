@@ -63,14 +63,17 @@ EQUIPMENT = {
     "pump_tower_kpa": (166.9, 250.4),
     "pump_econ_kpa": (114.9, 172.4),
     "pump_eff": (0.60, 0.80),
-    # Chillers as a fraction of Carnot COP. Water-cooled: 0.70 from code minimums for large plant (0.560 kW/ton gives 0.72, 0.585 gives 0.69; WAC
-    # 51-11C-403323, a stated replica of ASHRAE 90.1 Table 6.8.1-3; its part-load adjustment gives 0.67-0.73), +/-11% (Lei and Masanet's COP error).
-    # Both are fitted together with the temperature offsets below (2 K, 2 K, 12 K) [A].
-    # Air-cooled (model 1.16): the Carnot term's fraction in 1/COP = AIR_CHILLER_LOSS + lift / (carnot_air x T_evap), with the loss fitted to
-    # ASHRAE 90.1's reference curve (AIR_CHILLER_LOSS). 0.571 gives COP 2.96 (EER 10.1, 90.1's Path A full-load minimum) at the rating point
-    # (6.7 C leaving water, 35 C air); 0.761 gives 3.61 there, the top of the range through model 1.15 (0.45-0.55 of Carnot then) [A].
-    "carnot_water": (0.62, 0.78),
-    "carnot_air": (0.571, 0.761),
+    # Chillers: the lift term's coefficient in 1/COP = loss + lift / (carnot x T_evap), with each type's loss fitted to ASHRAE 90.1's reference curve
+    # (docs/methods/chillers/fit_chillers.py). With the loss, the COP stays below Carnot's for every value here (largest 0.92 of it; test).
+    # Water-cooled (model 1.17, design 0021): WATER_CHILLER_LOSS. 0.828-1.140 keeps the rating band of models through 1.16, COP 5.33-6.70 at AHRI's
+    # rating point (6.7 C leaving water, 29.4 C entering condenser water, 10 F range): code minimum for large plant (0.560 kW/ton, COP 6.28; WAC
+    # 51-11C-403323, a stated replica of ASHRAE 90.1 Table 6.8.1-3) +/-11% (Lei and Masanet's COP error). Through model 1.16 it was a Carnot fraction,
+    # 0.62-0.78, with no loss and a cap of 8.
+    # Air-cooled (model 1.16, design 0015): AIR_CHILLER_LOSS. 0.584 gives COP 2.96 (EER 10.1, 90.1's Path A full-load minimum) at the rating point
+    # (6.7 C leaving water, 35 C air); 0.761 gives 3.61 there, the top of the range through model 1.15 (0.45-0.55 of Carnot then) [A]. Model 1.16's
+    # 0.571 gave 2.91 there, not the 2.96 design 0015 meant; corrected in model 1.17 (design 0021).
+    "carnot_water": (0.828, 1.140),
+    "carnot_air": (0.584, 0.761),
     # The air-cooled chiller's highest COP (model 1.16, design 0015), which it reaches at small lifts: warm loop water and mild air. Through model 1.15 a
     # fixed 5 [A]. No published value sets it, and a full-load curve does not reach it. ASHRAE 90.1's reference curve flattens toward 7.6 at the bottom of
     # its range (the loss fitted over its whole range, 4.4-46 C air, is 0.132), for minimum-efficiency machines on 4.4-12.2 C water. Makers' part-load
@@ -106,7 +109,17 @@ HYBRID_MIN_RAMP = 1.0      # K [A]: where a location's design dry-bulb is at or 
 # Technical Data Sheet, Form No. 180-01314-1019; 30%: 3.821 and 3.903 at -10 and 40 C, 1033.71 and 1019.56; 40%: 3.668 and 3.768 at 10 and 40 C,
 # 1042.14 and 1026.49), linear in temperature and share.
 GLYCOL = {0.30: (3.870, 1025.2), 0.40: (3.701, 1036.9)}
-CHILLER_COP_CAP = {"water": 8.0}          # FEMP's 5-8 for water-cooled [A]; the air-cooled cap is sampled (EQUIPMENT["air_cop_cap"], model 1.16)
+# A water-cooled chiller's fixed losses (model 1.17, design 0021): 1/COP = WATER_CHILLER_LOSS + lift / (carnot_water x T_evap), with lift = entering
+# condenser water + range + 2 - T_evap and T_evap = supply - 2 (K). Fitted by least squares on relative error to ASHRAE 90.1's default EIR-FT curve for
+# water-cooled centrifugal chillers (COMNET 2017, as given in PNNL-26917, Table 81) over its range (leaving water 4.4-12.2 C, entering condenser
+# water 15.6-29.4 C, AHRI's 10 F range): 0.0471, RMS error 0.8%, largest 2.6%. Screw, scroll and reciprocating curves give 0.065, 0.068 and 0.054.
+# Through model 1.16 the loss was zero and the COP was capped at 8 (FEMP's 5-8), which the shared and warm loops reach in nearly every hour, so a
+# towers plant drew the same chiller power in its hottest hour everywhere.
+WATER_CHILLER_LOSS = 0.0471
+# The smallest lift 90.1's water-cooled curve covers, K: 12.2 C leaving water, 15.6 C entering condenser water, AHRI's 10 F range (12.89 K; code-minimum
+# COP 10.8 there). Below it the chiller gains nothing more from a smaller lift [A]: no published full-load curve goes lower, and makers' figures
+# below it are part-load values, which this model does not represent separately (design 0021). It stands in for model 1.16's cap of 8.
+WATER_MIN_LIFT = 12.89
 # An air-cooled chiller's fixed losses, as a share of its load (model 1.16, design 0015): 1/COP = AIR_CHILLER_LOSS + lift / (carnot_air x T_evap), with
 # lift = air at the coil + 12 - T_evap and T_evap = supply - 2 (K). Fitted by least squares on relative error to ASHRAE 90.1's default EIR-FT curve for
 # air-cooled screw chillers (COMNET 2017, as given in PNNL-26917, the 90.1-2016 Performance Rating Method Reference Manual, Table 80) over its
@@ -258,10 +271,10 @@ def tower_water(btu, tdb, wet, p):
     return evap, drift, blow
 
 
-def chiller_cop(condenser, evaporator, eta, loss, cap):
-    """A chiller's COP from its condensing and evaporating temperatures, C: 1/COP = loss + lift / (eta x T_evap), the lift at least 1 K, capped at cap.
-    With no loss it is a fixed fraction of Carnot (water-cooled chillers); air-cooled chillers carry AIR_CHILLER_LOSS (design 0015)."""
-    return np.minimum(1.0 / (loss + np.maximum(condenser - evaporator, 1.0) / (eta * (evaporator + 273.15))), cap)
+def chiller_cop(condenser, evaporator, eta, loss, cap=np.inf, min_lift=1.0):
+    """A chiller's COP from its condensing and evaporating temperatures, C: 1/COP = loss + lift / (eta x T_evap), the lift at least min_lift K, capped at
+    cap. Air-cooled chillers carry AIR_CHILLER_LOSS and a sampled cap (design 0015); water-cooled chillers WATER_CHILLER_LOSS and WATER_MIN_LIFT (0021)."""
+    return np.minimum(1.0 / (loss + np.maximum(condenser - evaporator, min_lift) / (eta * (evaporator + 273.15))), cap)
 
 
 def loop(load, supply, tdb, twb, coil_air, wet, design, p):
@@ -274,7 +287,7 @@ def loop(load, supply, tdb, twb, coil_air, wet, design, p):
     free = _ramp(ret - outside, 0.0, ret - supply)                # Lei and Masanet: the economizer's share falls from 1 to 0 as outside approaches the return
     chilled = load * (1 - free)
     evaporator = supply - 2.0
-    water_cooled = chiller_cop(twb + p["tower_approach"] + p["range_f"] / 1.8 + 2.0, evaporator, p["carnot_water"], 0.0, CHILLER_COP_CAP["water"])
+    water_cooled = chiller_cop(twb + p["tower_approach"] + p["range_f"] / 1.8 + 2.0, evaporator, p["carnot_water"], WATER_CHILLER_LOSS, min_lift=WATER_MIN_LIFT)
     air_cooled = chiller_cop(coil_air + 12.0, evaporator, p["carnot_air"], AIR_CHILLER_LOSS, p["air_cop_cap"])  # its rated COP includes its condenser fans
     # the chiller rejects through the same split as the rest of the heat: to evaporating water in the wet share, to air in the rest
     chiller = chilled * (wet / water_cooled + (1 - wet) / air_cooled)
@@ -319,7 +332,7 @@ def lake_loop(load, supply, water_t, p):
     free = _ramp(ret - (water_t + p["hx_approach"]), 0.0, ret - supply)
     chilled = load * (1 - free)
     evaporator = supply - 2.0
-    cop = chiller_cop(water_t + p["rise_c"] + 2.0, evaporator, p["carnot_water"], 0.0, CHILLER_COP_CAP["water"])
+    cop = chiller_cop(water_t + p["rise_c"] + 2.0, evaporator, p["carnot_water"], WATER_CHILLER_LOSS, min_lift=WATER_MIN_LIFT)
     chiller = chilled / cop
     pumps = (_pump_kw(load * free / (CP_WATER * p["water_rise"]), p["pump_econ_kpa"], p["pump_eff"])
              + _pump_kw(chilled / (CP_WATER * p["water_rise"]), p["pump_chw_kpa"], p["pump_eff"]))

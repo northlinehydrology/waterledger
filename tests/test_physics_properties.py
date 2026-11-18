@@ -35,8 +35,9 @@ def test_water_balance(design):
     p = model.central_parameters()
     p = model.for_location(p, t)
     w, c, r = model.hourly_rates(t, model.wet_bulb(t, rh), design, p, rh)
-    humidify, condensate = model.hourly_water_with_air(t, model.wet_bulb(t, rh), p, rh)
-    assert humidify.max() > 0 and condensate.max() > 0
+    humidify = model.hourly_water_with_air(t, model.wet_bulb(t, rh), p, rh)[0]
+    condensate = model.hourly_condensate(t, model.wet_bulb(t, rh), design, p, rh)
+    assert humidify.max() > 0 and (condensate.max() > 0 or design == "outside_air")     # the outside air design has no dehumidifying coil
     np.testing.assert_allclose(w + condensate, c + r, rtol=1e-12)
     assert np.all(w > 0) and np.all(c >= 0) and np.all(r >= 0)
 
@@ -75,6 +76,7 @@ def test_designs_order_by_water_use():
     tw = model.wet_bulb(t, rh)
     use = {d: model.hourly_rates(t, tw, d, p)[0].mean() for d in model.DESIGNS}
     assert use["dry"] < min(use["assist"], use["hybrid"]) and max(use["assist"], use["hybrid"]) < use["towers"]    # assist and hybrid overlap
+    assert use["dry"] < use["outside_air"] < use["towers"]        # outside air: its pads in hot hours and its humidifiers on all the halls' air in cold dry ones
 
 
 @pytest.mark.parametrize("plant", model.PLANTS)

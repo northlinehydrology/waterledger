@@ -15,10 +15,22 @@ Method
                            the plant's year
   generation             = all of a class's net generation in the BA and month (EIA-923), plants with no water included,
                            so a gas factor carries the combustion turbines that use none
+  a plant with no thermal generation in EIA-923 (a concentrating solar plant: Solana, Mojave Solar, Crescent Dunes) has its
+                           water split by its own generation, so a CSP plant's water is in the solar class, where EIA-930
+                           counts its output (model 1.17; before, it fell to "other" and was divided by the BA's biomass
+                           and landfill gas: AZPS "other" was 1,600-5,700 gal/MWh against 69 for the U.S.)
   factor                 = water / generation, gal/MWh; basis "month". A month whose class generation is under a quarter
-                           of the class's monthly mean, or not positive, takes the BA's annual factor (basis "year"); a
-                           class with no generation in the BA takes the U.S. factor for the class (ba "US", basis "us")
-  hydro, solar, wind, storage: 0 (reservoir evaporation is not counted, as in the state table)
+                           of the class's monthly mean, or not positive, takes the BA's annual factor (basis "year")
+  a class EIA-930 reports in the BA (2019-2025, over 0.1% of its generation) that has no EIA-923 generation there
+                           (model 1.17) [A], in this order:
+                             basis "plant": the plants EIA-930 counts in the BA but EIA-923 files elsewhere, where they can
+                               be named (ATTRIBUTED: Palo Verde in AZPS, and jointly owned plants), their own water and
+                               generation by month as above;
+                             basis "region": the class in the BA's EIA-930 region (all its BAs' water over their generation);
+                             basis "us": the U.S. factor for the class (ba "US").
+                           Before, every such class took the U.S. factor: AZPS nuclear was 17,236 gal/MWh withdrawn, the U.S.
+                           fleet's once-through share, against Palo Verde's 700, cooled by towers on reclaimed water
+  hydro, wind, storage: 0, and solar without CSP (reservoir evaporation is not counted, as in the state table)
   withdrawal at least consumption, plant by plant [A]: three plants report consumption with no withdrawal (Stanton,
                            FL; Kings Mountain, NC; Ingleside Cogeneration, TX), most likely reclaimed or utility water that
                            EIA's withdrawal leaves out. The same rule as the state table (states.py, from branch
@@ -89,6 +101,58 @@ def plant_months():
     return pd.DataFrame(rows, columns=['plant', 'month', 'cons', 'wd', 'wd_saline', 'tech'])
 
 
+# (BA, class) -> plants EIA-930 counts in the BA that EIA-923 files under another BA [A]; checked against EIA-923 2024's
+# operator and BA code
+ATTRIBUTED = {
+    ('AZPS', 'nuclear'): ([6008], 'Palo Verde, operated by Arizona Public Service and filed under SRP; EIA-930 counted its '
+                                  'whole output (about 4 GW) in AZPS until Dec 4, 2019'),
+    ('PNM', 'coal'): ([2442], 'Four Corners, filed under AZPS, of which PNM owned a share (San Juan closed in 2022)'),
+    ('PSEI', 'coal'): ([6076], 'Colstrip, filed under NWMT, of which Puget Sound Energy owns a share'),
+    ('FMPP', 'nuclear'): ([6045], "St. Lucie, filed under FPL, unit 2 of which the pool's members (FMPA, Orlando) own shares"),
+    ('CPLW', 'gas'): ([2706], "Asheville, Duke Energy Progress's plant in its western area, filed under CPLE"),
+    ('CPLW', 'oil'): ([2706], "Asheville, Duke Energy Progress's plant in its western area, filed under CPLE"),
+}
+MATERIAL = 0.001            # a class EIA-930 reports in a BA at over this share of its 2019-2025 generation gets a fallback row
+
+
+def regions():
+    """{BA: EIA-930 region}, from the six-month files in the grid930 cache (the latest file a BA is in)."""
+    import glob
+    from waterledger_data import grid930
+    out = {}
+    for path in sorted(glob.glob(os.path.join(grid930.RAW, 'files', 'EIA930_BALANCE_*.csv'))):
+        x = pd.read_csv(path, usecols=['Balancing Authority', 'Region']).drop_duplicates()
+        out.update(dict(zip(x['Balancing Authority'], x['Region'])))
+    return out
+
+
+def reported_930(bas):
+    """{(BA, class)} that EIA-930 reports in each BA in `bas` at over MATERIAL of its positive generation, 2019-2025."""
+    from waterledger_data import grid930
+    out = set()
+    for ba in bas:
+        try:
+            d = grid930.hourly(ba)
+        except FileNotFoundError:
+            continue
+        pos = {k: float(np.nansum(np.clip(d[k], 0, None))) for k in grid930.FUELS}
+        tot = sum(pos.values())
+        out |= {(ba, k) for k, v in pos.items() if tot > 0 and v > MATERIAL * tot}
+    return out
+
+
+def monthly(grp, m):
+    """The month's water and generation from `grp` (rows by month), basis "month"; else the year's, basis "year"; else None."""
+    cols = ['mwh', 'cons', 'wd', 'wd_saline']
+    yr = grp[cols].sum()
+    row = grp.loc[grp.month == m, cols].sum()
+    if row.mwh > 0.25 * yr.mwh / 12 and row.mwh > 0:
+        return row, 'month'
+    if yr.mwh > 0:
+        return yr, 'year'
+    return None, None
+
+
 TECH_CLASS = {'coal': 'coal', 'ngcc': 'gas', 'gas_steam': 'gas', 'nuclear': 'nuclear', 'bio': 'other', 'csp': 'other'}
 
 
@@ -101,11 +165,18 @@ def main():
     th = g[g.fuel.isin(THERMAL) & (g.mwh > 0)]
     by_m = {k: v.droplevel([0, 1]) for k, v in th.groupby(['plant', 'month', 'fuel']).mwh.sum().groupby(level=[0, 1])}
     by_y = {k: v.droplevel(0) for k, v in th.groupby(['plant', 'fuel']).mwh.sum().groupby(level=0)}
+    pos = g[g.mwh > 0]
+    own_m = {k: v.droplevel([0, 1]) for k, v in pos.groupby(['plant', 'month', 'fuel']).mwh.sum().groupby(level=[0, 1])}
+    own_y = {k: v.droplevel(0) for k, v in pos.groupby(['plant', 'fuel']).mwh.sum().groupby(level=0)}
     parts = []
     for r in pm.itertuples():
         sh = by_m.get((r.plant, r.month))
         if sh is None:
             sh = by_y.get(r.plant)
+        if sh is None:                  # no thermal generation: the plant's own classes (a CSP plant's is solar)
+            sh = own_m.get((r.plant, r.month))
+        if sh is None:
+            sh = own_y.get(r.plant)
         if sh is None:
             sh = pd.Series({TECH_CLASS.get(r.tech, 'other'): 1.0})
         sh = sh / sh.sum()
@@ -122,30 +193,57 @@ def main():
     gpm = lambda mg, mwh: mg * 1e6 / mwh
     rows = []
     us = t[t.fuel.isin(THERMAL)].groupby('fuel')[['mwh', 'cons', 'wd', 'wd_saline']].sum()
+    region = regions()
+    tr = t.assign(region=t.ba.map(region)).dropna(subset=['region']).groupby(['region', 'fuel', 'month'])[
+        ['mwh', 'cons', 'wd', 'wd_saline']].sum().reset_index()
+    wp = w.groupby(['plant', 'fuel', 'month'])[['cons', 'wd', 'wd_saline']].sum()
+    gp = g.groupby(['plant', 'fuel', 'month']).mwh.sum()
+
+    def fallback(ba, fuel, m):
+        """(water and generation, basis, from) for a class with no EIA-923 generation in the BA: plant, region, U.S. [A]."""
+        if (ba, fuel) in ATTRIBUTED:
+            ids, _ = ATTRIBUTED[(ba, fuel)]
+            grp = pd.concat([gp, wp], axis=1).fillna(0.0).reset_index()
+            grp = grp[grp.plant.isin(ids) & (grp.fuel == fuel)].groupby('month')[['mwh', 'cons', 'wd', 'wd_saline']].sum().reset_index()
+            src, basis = monthly(grp, m)
+            if src is not None:
+                return src, 'plant', ' '.join(str(i) for i in ids)
+        reg = region.get(ba)
+        if isinstance(reg, str):
+            src, basis = monthly(tr[(tr.region == reg) & (tr.fuel == fuel)], m)
+            if src is not None:
+                return src, 'region', reg
+        return (us.loc[fuel] if fuel in us.index else None), 'us', 'US'
+
+    in930 = reported_930(sorted(set(t.ba)))
     for (ba, fuel), grp in t.groupby(['ba', 'fuel']):
-        yr = grp[['mwh', 'cons', 'wd', 'wd_saline']].sum()
-        if fuel in NO_WATER:
+        if fuel in NO_WATER and grp.cons.sum() == 0 and grp.wd.sum() == 0:
             for m in range(1, 13):
                 mwh = grp.loc[grp.month == m, 'mwh'].sum()
-                rows.append((ba, fuel, m, mwh, 0.0, 0.0, 0.0, 'none'))
+                rows.append((ba, fuel, m, mwh, 0.0, 0.0, 0.0, 'none', ''))
             continue
         for m in range(1, 13):
-            row = grp[grp.month == m]
-            mwh = row.mwh.sum()
-            if mwh > 0.25 * yr.mwh / 12 and mwh > 0:
-                src, basis = row[['mwh', 'cons', 'wd', 'wd_saline']].sum(), 'month'
-            elif yr.mwh > 0:
-                src, basis = yr, 'year'
-            else:
-                src, basis = us.loc[fuel] if fuel in us.index else None, 'us'
+            mwh = grp.loc[grp.month == m, 'mwh'].sum()
+            src, basis = monthly(grp, m)
+            frm = ''
+            if src is None:
+                src, basis, frm = fallback(ba, fuel, m)
             if src is None or src.mwh <= 0:
-                rows.append((ba, fuel, m, mwh, np.nan, np.nan, np.nan, 'missing'))
+                rows.append((ba, fuel, m, mwh, np.nan, np.nan, np.nan, 'missing', ''))
                 continue
-            rows.append((ba, fuel, m, mwh, gpm(src.cons, src.mwh), gpm(src.wd, src.mwh), gpm(src.wd_saline, src.mwh), basis))
+            rows.append((ba, fuel, m, mwh, gpm(src.cons, src.mwh), gpm(src.wd, src.mwh), gpm(src.wd_saline, src.mwh), basis, frm))
+    # classes EIA-930 reports in a BA that EIA-923 has no generation for at all
+    have = set(map(tuple, t[['ba', 'fuel']].drop_duplicates().values))
+    for ba, fuel in sorted(in930):
+        if fuel in THERMAL and (ba, fuel) not in have:
+            for m in range(1, 13):
+                src, basis, frm = fallback(ba, fuel, m)
+                if src is not None and src.mwh > 0:
+                    rows.append((ba, fuel, m, 0.0, gpm(src.cons, src.mwh), gpm(src.wd, src.mwh), gpm(src.wd_saline, src.mwh), basis, frm))
     for fuel, src in us.iterrows():
-        rows.append(('US', fuel, 0, src.mwh, gpm(src.cons, src.mwh), gpm(src.wd, src.mwh), gpm(src.wd_saline, src.mwh), 'us'))
+        rows.append(('US', fuel, 0, src.mwh, gpm(src.cons, src.mwh), gpm(src.wd, src.mwh), gpm(src.wd_saline, src.mwh), 'us', ''))
     out = pd.DataFrame(rows, columns=['ba', 'fuel', 'month', 'gen_mwh', 'consumed_gal_mwh', 'withdrawn_gal_mwh',
-                                      'withdrawn_saline_gal_mwh', 'basis'])
+                                      'withdrawn_saline_gal_mwh', 'basis', 'basis_from'])
     out = out.round({'gen_mwh': 0, 'consumed_gal_mwh': 2, 'withdrawn_gal_mwh': 2, 'withdrawn_saline_gal_mwh': 2})
     out.to_csv(OUT, index=False)
 
@@ -160,6 +258,8 @@ def main():
     print(j.sort_values('wd', ascending=False).round(3).head(25).to_string())
     print(out[(out.ba == 'MISO') & out.fuel.isin(THERMAL)].pivot_table(index='month', columns='fuel', values='consumed_gal_mwh').round(0).to_string())
     print(out.basis.value_counts().to_string())
+    fb = out[out.basis.isin(['plant', 'region', 'us']) & (out.ba != 'US')]
+    print(fb.groupby(['ba', 'fuel', 'basis', 'basis_from'])[['consumed_gal_mwh', 'withdrawn_gal_mwh']].mean().round(0).to_string())
 
 
 if __name__ == '__main__':

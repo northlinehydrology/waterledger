@@ -107,8 +107,10 @@ BA_FUEL_TABLE = os.path.join(os.path.dirname(__file__), "tables", "ba_fuel_water
 def ba_fuel_water(ba):
     """Water at power plants per MWh by EIA-930 fuel class and month in a balancing authority, 2024 (design 0008; built by
     docs/methods/power_water/ba_fuels.py): {fuel: {"consumed", "withdrawn", "withdrawn_saline"}} of 12 monthly gal/MWh
-    arrays, January first. A class the BA doesn't generate takes the U.S. factor; one with no water (hydro, solar, wind,
-    storage) is zero. None for a BA not in the table (Alaska and Hawaii have none in EIA-930)."""
+    arrays, January first. A class EIA-930 reports in the BA with no EIA-923 generation there has the table's fallback row
+    (the plants EIA-930 counts in the BA, its region, or the U.S.; model 1.17) [A]; a class with no row takes the U.S.
+    factor. Hydro, wind and storage are zero, and solar is zero except where the BA has a concentrating solar plant
+    reporting water. None for a BA not in the table (Alaska and Hawaii have none in EIA-930)."""
     import numpy as np
     rows = list(csv.DictReader(open(BA_FUEL_TABLE, encoding="utf-8")))
     us = {r["fuel"]: r for r in rows if r["ba"] == "US"}

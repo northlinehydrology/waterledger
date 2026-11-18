@@ -1,7 +1,7 @@
 """Write tests/data/battery_before_runner.json: the battery cell plant Monte Carlo's results as they were before it moved onto the shared runner
 (waterledger_models.runs, design 0010, step 2a): every design, the lake on Lake Michigan's GLERL temperatures, NMC and LFP, full and sampled
 utilization, with two balancing authorities whose water per MWh changes hour by hour, on the stored two years of West Michigan weather, 10 draws.
-test_runs.py holds the runner to it. Written before the move (Nov 10, 2026, waterledger 3.16.0), which matched it; rewritten at model 1.16 (Nov 15, 2026), whose numbers differ.
+test_runs.py holds the runner to it. Written before the move (Nov 10, 2026, waterledger 3.16.0), which matched it; rewritten at model 1.16 (Nov 15, 2026) and at model 1.17 (Nov 17, 2026), whose numbers differ.
 
     uv run python tests/battery_reference.py
 """

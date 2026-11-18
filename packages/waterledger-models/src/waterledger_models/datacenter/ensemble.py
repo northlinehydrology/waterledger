@@ -61,10 +61,10 @@ def _evaluate(tdb, twb, rh, starts, years, months, hour_years, design, params, m
     with every computer at capacity all day."""
     p = {k: np.asarray(v, dtype=float).reshape(-1, 1) for k, v in model.for_location(params, tdb).items()}
     kw = mw * 1000.0 * p["utilization"]
-    rates = (*model.hourly_rates(tdb, twb, design, p, rh), model.hourly_water_with_air(tdb, twb, p, rh)[1])
+    rates = (*model.hourly_rates(tdb, twb, design, p, rh), model.hourly_condensate(tdb, twb, design, p, rh))
     daily = [np.add.reduceat(r * kw, starts, axis=1) / 1e6 for r in rates]
     at_peak = {**p, "utilization": model.peak_utilization(p)}             # the peak day and the record day run at the peak load (model 1.7)
-    peak_rates = (*model.hourly_rates(tdb, twb, design, at_peak, rh), model.hourly_water_with_air(tdb, twb, at_peak, rh)[1])
+    peak_rates = (*model.hourly_rates(tdb, twb, design, at_peak, rh), model.hourly_condensate(tdb, twb, design, at_peak, rh))
     peak_daily = [np.add.reduceat(r * mw * 1000.0 * at_peak["utilization"], starts, axis=1) / 1e6 for r in peak_rates]
     stats = np.stack([_stats(d, pd, years, months) for d, pd in zip(daily, peak_daily)], axis=1)
     full = np.add.reduceat(model.hourly_rates(tdb, twb, design, {**p, "utilization": np.ones_like(p["utilization"])}, rh)[0] * mw * 1000.0, starts, axis=1) / 1e6

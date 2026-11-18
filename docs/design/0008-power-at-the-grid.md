@@ -116,6 +116,53 @@ above 2024's plant water per MWh. Results and checks are in the methods log, Nov
   gal/MWh consumed against 313 on all days. The season moves it (summer 338). So MISO's peak-day plant water comes
   from the campus's own peak power and the summer factors, not from a different mix on peak days. Small BAs may differ.
 
+### The marginal slope as built, and its guards (model 1.17, Nov 16, 2026)
+
+Found in Arizona: on the peak day, AZPS's marginal plant water was 5.6-7.4 MGD per 100 MW (2,500-3,000 gal/MWh), against
+fuel factors of 0-1,143. Four things carried it. Each is fixed for every BA, not only AZPS.
+
+- **Spikes and gaps in EIA-930.** EIA's adjusted columns still hold single hours like AZPS "other" at 6,137 MW (usually
+  31) and gas at 5,905 (usually about 1,100). AZPS nuclear went NaN on Dec 4, 2019, which was read as 0 MW. One such hour
+  in a (month, bin) of about 900 hour pairs moved the least-squares slope by thousands of gal/MWh. Now `grid930.screen`
+  leaves an hour out in three cases:
+  - a class runs beyond both neighbouring hours, for 1-3 hours, by more than 4 times its own 99th-percentile hourly
+    change and by more than 1% of the BA's median generation;
+  - a coal, gas, nuclear, oil or geothermal fleet drops to a tenth of both neighbours;
+  - a class is NaN while it generates on both sides.
+
+  A class that stops being reported counts as 0 MW, and the hour it stops is not paired with the hour before. k = 4 is
+  set from the data (methods log, Nov 16). The screen leaves out 18,411 of 3.85 million BA-hours (0.48%). MISO and SWPP
+  lose none; AZPS 35, PJM 11, ERCOT 36. Most of the hours are gaps: CISO 7,918 (hydro missing Oct 2019-Aug 2020 with
+  1.3-1.9 GW on both sides), IPCO 1,344 (geothermal, Nov-Dec 2024), TEPC 1,145 (coal and wind, Feb-Mar 2021).
+- **The slope.** Theil-Sen's slope (the median of the pairwise slopes) replaces least squares. It moves only once 29%
+  of the pairs are wrong. Only pairs of hours that both pass the screen are used. Where the two agree on clean data,
+  little changes (MISO and ERCOT within 1%). In PJM, least squares ran typically 10-25% and up to 70% above both Theil-Sen
+  and a 4-MAD trimmed fit, which agree within about 5%. The cause is 3-11% of PJM's hour pairs: steps that don't follow
+  load (nuclear and once-through coal) and EIA-930's day-boundary hours (04-05 UTC).
+- **A missing fuel row.** EIA-930 counted Palo Verde in AZPS until Dec 2019; EIA-923 files it under SRP. AZPS's nuclear
+  had no row and took the U.S. factor, 17,236 gal/MWh withdrawn, which reflects the once-through fleet. Now a class that
+  EIA-930 reports in a BA, but that EIA-923 has no generation for there, takes the first of these that has a factor
+  [A]:
+  1. the plants that can be named: Palo Verde for AZPS, Four Corners for PNM, Colstrip for PSEI, St. Lucie for FMPP,
+     Asheville for CPLW;
+  2. the BA's EIA-930 region;
+  3. the U.S.
+- **Concentrating solar.** Solana's water (807 MG in 2024) had no thermal generation to follow. It fell to "other" and was
+  divided by AZPS's biomass and landfill gas, giving 1,600-5,700 gal/MWh. Now a plant with no thermal generation has its
+  water split by its own generation. CSP water (Solana, Mojave Solar, Crescent Dunes) is therefore in solar, where
+  EIA-930 counts the plants' output.
+
+**The check.** Each average and marginal factor is checked against the range of the fuel factors the BA generates with
+in that month (`grid930.intensity`'s `bounds`). A factor outside the range is never changed: it is reported in the
+table's `meta["outside"]`, with a warning. An average can leave the range only through negative generation (pumped
+hydro, batteries). A marginal slope can leave it when, as generation rises, a water-free class rises with it while a
+thermal class falls.
+
+Over the 61 BAs with a table and a year of hours, 26 of 7,320 marginal factors fall outside, by at most 1.24% of the
+month's range. BPAT and AVRN run slightly under 0 in summer, because hydro follows load while gas falls; AECI in August
+runs 1.3 gal/MWh over its top factor. A test holds every BA within 2% of its range. A guarantee would need a constrained
+estimator (non-negative fuel shares), which would change what the marginal means. That was not done.
+
 ## Part 2: what gets built (its own study)
 
 **Question:** when the region's data center pipeline arrives, which plants get built or kept running, and what do they
