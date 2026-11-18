@@ -32,7 +32,7 @@ waterledger, waterledger-models and waterledger-data 3.25.0. Model 1.17. Data ce
   `reference`, `balancing_authority`, `best_hourly_grid` and `plants`. Pads join the default list. Every addition has a default.
 - **Cell runs and snapshots are model 1.17's** (`national.era5.RUN_MODEL`, `MODELS["1.17"]`).
 
-## 3.24.0 (Nov 16, 2026; model 1.16)
+## 3.24.0 (Nov 17, 2026; model 1.16)
 
 waterledger and waterledger-models 3.24.0; waterledger-data stays 3.23.1. Model 1.16. Data center, battery cell plant and supply numbers change; every state's snapshot is rebuilt.
 
