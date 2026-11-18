@@ -39,10 +39,10 @@ RANGES = {
                                    # curtailment, so it stands. It holds ERA5's radiation bias with snow, outages and age (0014, check 5; pv_check.py)
 }
 RANGES_AORC = RANGES | {
-    "resource": (0.73, 1.02),      # the same on AORC (hourly_from_ghi, Erbs, shift 0): EIA's 2024 tracking fleet (944 plants, 24.1%) against
-                                   # this chain on AORC at the plants' 1 km points (27.6%), 0.87 overall and 0.73-1.02 across the 15 states with
-                                   # ten or more plants, wider than ERA5's: AORC's radiation scatters more (design 0018, checks A2 and A3;
-                                   # docs/methods/power_supply/aorc_check.py)
+    "resource": (0.73, 1.03),      # the same on AORC (hourly_from_ghi, Erbs, shift 0): EIA's 2024 tracking fleet (944 plants, 24.8% with
+                                   # curtailment added back, as above) against this chain on AORC at the plants' 1 km points (27.6%), 0.89 overall
+                                   # and 0.73-1.03 across the 15 states with ten or more plants (New York to Nevada), wider than ERA5's: AORC's
+                                   # radiation scatters more (design 0018, checks A2 and A3; docs/methods/power_supply/aorc_check.py)
 }
 GCR = 0.35                         # ground coverage ratio of a tracking array [A]
 MAX_ANGLE = 60.0                   # tracker rotation limit, degrees [A]

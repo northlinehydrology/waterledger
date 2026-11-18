@@ -19,7 +19,9 @@ Model, at the RANGES' midpoints with resource 1.0, capacity-weighted as the ERA5
          the plant's own hub, (hub / 10)^alpha, as wind_check.py's "own hub" composes the curve
 
 Observed over modeled by state (five plants or more), by region and over all; the resource factor that matches each (the chain on a grid of
-factors, interpolated); and by month for the regions. Aggregates only (design 0014's scope rule). Writes aorc_pv_check.csv,
+factors, interpolated); and by month for the regions. The plants' output has each one's balancing authority's 2024 curtailment added back
+(curtailment.py, Nov 17, as pv_check.py), since a scenario's dispatch counts curtailment itself; the delivered-basis results of Nov 16 are
+kept as aorc_pv_check_delivered.csv and aorc_pv_check_monthly_delivered.csv. Aggregates only (design 0014's scope rule). Writes aorc_pv_check.csv,
 aorc_pv_check_monthly.csv, aorc_wind_check.csv and aorc_wind_check_monthly.csv next to this file and prints them.
 """
 import os
@@ -33,6 +35,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import aorc_points  # noqa: E402
+import curtailment  # noqa: E402
 import pv_check  # noqa: E402
 import wind_check  # noqa: E402
 from waterledger_data import era5  # noqa: E402
@@ -60,6 +63,7 @@ def point_name(lat, lon):
 def pv_plants():
     pl = pv_check.plants().join(pv_check.generation(), how="inner")
     pl = pl[pl.gen > 0].copy()
+    pl = curtailment.gross(pl, "solar", pv_check.E860 / "2___Plant_Y2024.xlsx")   # curtailment added back, as pv_check.py (curtailment.py)
     pl["point"] = [point_name(a, b) for a, b in zip(pl.lat, pl.lon)]
     return pl
 

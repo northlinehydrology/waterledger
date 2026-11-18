@@ -148,12 +148,14 @@ tuned except the resource factors, which are what the checks are for.
 
 **A3, PV** (`docs/methods/power_supply/aorc_check.py`, `aorc_pv_check.csv`, `aorc_pv_check_monthly.csv`): EIA's 2024 tracking fleet, the
 same 944 plants (56 GW AC) and screens as `pv_check.py`, against `pv.hourly_from_ghi` on AORC at each plant's 1 km point (Erbs, shift 0, the
-plant's own ILR, central parameters, resource 1.0). The chain gives 27.6% where the fleet delivered 24.1%: the factor that matches is 0.87
-overall (ERA5's 0.84), 0.82 in the Great Lakes states (ERA5's 0.81) and 0.90 in Michigan (0.89). Across the 15 states with ten or more plants
-it is 0.73-1.02 (median 0.84; ERA5's 0.75-0.93): AORC runs closer to the fleet in the Southwest (Colorado 0.99, Nevada 1.02, against ERA5's
-0.87 and 0.93) and alike elsewhere, so its spread is wider, as check A2's scatter said it would be. So `pv.RANGES_AORC` is `pv.RANGES` with
-resource 0.73-1.02. By month the Great Lakes' January is 0.52 (snow on the panels, which the factor holds, as on ERA5). The wind half of A3
-was not run (decision 6).
+plant's own ILR, central parameters, resource 1.0), with each plant's 2024 curtailment added back as `pv_check.py` does since Nov 17
+(`curtailment.py`: a scenario's dispatch counts curtailment itself). The chain gives 27.6% where the fleet would have delivered 24.8% (24.1%
+delivered): the factor that matches is 0.89 overall (ERA5's 0.86), 0.82 in the Great Lakes states (ERA5's 0.81) and 0.90 in Michigan (0.89),
+none of which curtail. Across the 15 states with ten or more plants it is 0.73-1.03 (median 0.88; ERA5's 0.75-0.94), New York to Nevada:
+AORC runs closer to the fleet in the Southwest (Colorado 0.99, Nevada 1.03, against ERA5's 0.87 and 0.94) and alike elsewhere, so its spread
+is wider, as check A2's scatter said it would be. So `pv.RANGES_AORC` is `pv.RANGES` with resource 0.73-1.03 (on delivered output, Nov 16,
+it was 0.87 overall and 0.73-1.02; `aorc_pv_check_delivered.csv`). By month the Great Lakes' January is 0.52 (snow on the panels, which the
+factor holds, as on ERA5). The wind half of A3 was not run (decision 6).
 
 **A4, the hours** (`wind_shape_check.py`, `wind_shape_check.csv`): EIA-930's MISO wind, 2024, against the ERA5 path at the 250 MISO
 plants of the check (31 GW), each at its own hub and summed by nameplate. Hourly correlation 0.949. The night (00-05 CST) over the day
@@ -213,7 +215,7 @@ wind.hourly_from_10m(times_utc, lon, u10, v10, table, p)           # the table, 
 | Parameter | Range | Set from |
 |---|---|---|
 | PV `losses`, `gamma`, `ilr`, `albedo` | as `pv.RANGES` | the same sources (Dobos 2014; [A] as there) |
-| PV `resource` | 0.73-1.02 (check A3) | AORC's PV chain against EIA's 2024 tracking fleet, the spread over states with ten or more plants, as on ERA5 |
+| PV `resource` | 0.73-1.03 (check A3) | AORC's PV chain against EIA's 2024 tracking fleet, the spread over states with ten or more plants, as on ERA5 |
 | PV split | none sampled [A] | its bias is inside the resource factor; check A2 reports its share |
 | PV time shift | fixed | check A1 |
 | Wind shear table | set, per place | ERA5's 10 m and 100 m wind at the place's cell, 1995-2024 (Clam cell: 0.15-0.18 midday, 0.27-0.31 night) |
