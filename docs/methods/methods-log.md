@@ -3015,8 +3015,8 @@ withdraws 0.01-0.25 L per IT kWh, close to what those operators report.
 
 ## Nov 17, 2026: model 1.17's open choices, accepted as built (decision; no numbers change)
 
-The design notes and the grid fix left four choices that would change model 1.17's numbers. Andrew accepted all four as built
-("Accept all four as built"), so the statewide 1.17 rerun stands:
+The design notes and the grid fix left four choices that would change model 1.17's numbers. Andrew accepted the first three as
+built ("Accept all four as built"). For the fourth he then said "I don't want anything double counted":
 
 1. **`carnot_water` keeps its name** (design 0021). It now runs 0.828-1.140, the lift term's coefficient with a fitted loss, and
    the COP stays below Carnot's (test). A rename would reseed its draws and move every towers and hybrid number.
@@ -3024,9 +3024,10 @@ The design notes and the grid fix left four choices that would change model 1.17
    halves or doubles the outside air design's water.
 3. **The outside air design's trim chillers stay air-cooled** (design 0022). Heat leaves by air, and there is no tower water in
    the hottest hours.
-4. **EIA-930's 2019 hours for AZPS stay as reported** (design 0008). They count Palo Verde in both AZPS and SRP; with Palo Verde's
-   own factor this no longer inflates AZPS's water.
+4. **Palo Verde's double count in EIA-930's 2019 hours is taken out** (design 0008). Those hours count Palo Verde in both AZPS and
+   SRP. Every balancing authority is checked for the same fault. The fix goes into model 1.17 before Arizona's cells are rerun, and
+   any other state whose balancing authorities change is rerun for it.
 
 The design notes' other choices (the outside air label, the floating supply, humid supply air accepted) are accepted with them.
 
-**Short form:** none. No number or method on the pages changes.
+**Short form:** none for the first three; no number or method on the pages changes. The double count's fix records its own.
