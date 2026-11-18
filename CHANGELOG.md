@@ -2,7 +2,9 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## Unreleased
+## 3.25.0 (not released; model 1.17)
+
+waterledger, waterledger-models and waterledger-data 3.25.0. Model 1.17. Data center, battery cell plant and supply numbers change; every state's snapshot is rebuilt.
 
 - **Reuse never takes less than staff water** (`scenario.reuse_taken`, used by `cooling_estimate`; `docs/methods/methods-log.md`, Nov 17):
   under full treatment and reuse, water withdrawn on the average and peak day is the larger of what the cooling has to make up
@@ -11,6 +13,31 @@ Package changes (code). Changes to the numbers are listed by model version on th
   holds, the surplus is returned (a site drain or stormwater [A], not the sewer: `to_sewer` stays zero), so withdrawn + condensate =
   consumed + returned on both days; through 3.24.0 returned was zero under reuse and a dry campus's books did not close. Only dry
   designs under reuse change at Michigan's sizes; the highest month and annual totals follow the average day.
+- **Water-cooled chillers on ASHRAE 90.1's curve** (design 0021; `docs/methods/methods-log.md`, Nov 17): `heat_rejection.chiller_cop`
+  takes `min_lift`; water-cooled chillers use `WATER_CHILLER_LOSS` (0.0471, fitted to 90.1's water-cooled centrifugal EIR-FT curve,
+  PNNL-26917 Table 81, RMS 0.8%) and `WATER_MIN_LIFT` (12.89 K, the smallest lift the curve covers). `CHILLER_COP_CAP` is gone.
+  `carnot_water` becomes 0.828-1.140 (the same rating band), and `carnot_air`'s low end 0.584 (COP 2.96 at the rating point, as design
+  0015 meant). The fit is `docs/methods/chillers/fit_chillers.py`, for both chiller types.
+- **A fifth data center design, `outside_air`** (design 0022): outside air into the halls, evaporative pads above the operator's
+  setting, air-cooled trim chillers. `datacenter.physics.outside_air_hall`, `outside_air_switch`, `hourly_condensate` (none for this
+  design); new sampled parameter `pad_full` (0-1); compiled kernel design code 4. `DataCenter(cooling="outside_air")` reads model 1.17
+  results and says so on older ones. Not in `scenario.DESIGNS` or `Site.by_design`'s defaults. Cell runs take about 25% longer.
+- **The grid's plant water without EIA-930 spikes or missing fuel rows** (design 0008; methods log, Nov 16): `grid930.screen` leaves
+  out hours where a fuel class spikes beyond both neighbours (more than 4 times its own 99th-percentile hourly change, for 1-3 hours), a
+  thermal fleet drops out for 1-3 hours, or a class has a gap; a class that stops being reported is 0 MW and not differenced across.
+  `grid930.intensity` returns `pair_ok`, `screened` and `bounds`. `grid.fit` takes `pair_ok=` and `bounds=`, fits the marginal slope by
+  Theil-Sen (`grid.theil_sen`) instead of least squares, and lists any factor outside the BA's fuel-factor range in `meta["outside"]`
+  with a warning (never changed). The BA fuel table (`ba_fuel_water_2024.csv`) puts concentrating solar plants' water in solar, and
+  gives a class EIA-930 reports but EIA-923 has no generation for the named plants' factor (Palo Verde for AZPS, Four Corners for PNM,
+  Colstrip for PSEI, St. Lucie for FMPP, Asheville for CPLW), else the BA's EIA-930 region, else the U.S.; new `basis` values `plant`
+  and `region` and column `basis_from`. AZPS's grid withdrawal falls from about 3,700 to 520 gal/MWh; PJM's marginal withdrawal on the
+  peak day about halves.
+- **Design totals** (design 0020, proposal 1): `Site.by_design(designs=("dry", "assist", "hybrid", "towers"), plants=None,
+  reference="towers")`. `DesignTotal` gains the cooling plant, the peak day's campus water, the balancing authority's hourly grid water
+  (average and peak day; the main grid number), annual MWh and peak-day MW, and the differences against the reference (% electricity,
+  hottest-hour MW, the grid water of the extra electricity and its share of the reference's own water). `DesignComparison` gains
+  `reference`, `balancing_authority`, `best_hourly_grid` and `plants`. Pads join the default list. Every addition has a default.
+- **Cell runs and snapshots are model 1.17's** (`national.era5.RUN_MODEL`, `MODELS["1.17"]`).
 
 ## 3.24.0 (Nov 17, 2026; model 1.16)
 

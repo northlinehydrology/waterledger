@@ -65,15 +65,28 @@ class Site(BaseModel):
             est = est.model_copy(update={"supply": estimate_supply(est, supply, n=supply_draws, storm_years=storm_years)})
         return est
 
-    def by_design(self, designs=("dry", "hybrid", "towers")):
-        """The same facility with each design, on this site's power option: water evaporated at the site and at power plants, electricity, and which evaporates least."""
+    def by_design(self, designs=("dry", "assist", "hybrid", "towers"), plants=None, reference="towers"):
+        """The same facility with each design, on this site's power option: water evaporated at the site and at power plants (the power option's and the
+        balancing authority's hourly mix), electricity, which evaporates least, and each design against `reference` (DesignTotal). Pads (assist) are in the
+        default list from 3.25.0 (design 0020, decision 1b). `plants`: the cooling plants inside the building to compare (a data center's: "shared",
+        "warm", "chilled"), each in DesignComparison.plants; None: the site's own. `designs` is always the site's own plant."""
         ref = states.provider(self.place.state).reference(self.place)
         power = POWER_ALIASES.get(self.power, self.power) or ref["power"]
-        results = {}
-        for k in designs:
-            e = self.model_copy(update={"facility": self.facility.with_design(k)}).estimate()
-            results[k] = (e.water, e.electricity)
-        return comparisons.compare_designs(results, ref["power_options"], power, ref["power"])
+        own = getattr(self.facility, "plant", None)
+        if plants is not None and own is None:
+            raise ValueError(f"{type(self.facility).__name__} has no cooling plant to compare")
+        tables = {}
+        for p in dict.fromkeys((own, *(plants or ()))):
+            results = {}
+            for k in designs:
+                f = self.facility.with_design(k)
+                e = self.model_copy(update={"facility": f if p is None else f.model_copy(update={"plant": p})}).estimate()
+                results[k] = (e.water, e.electricity, e.grid_water)
+            tables[p] = comparisons.compare_designs(results, ref["power_options"], power, ref["power"], reference=reference, plant=p)
+        main = tables[own]
+        if own is None:
+            return main
+        return main.model_copy(update={"plants": {p: t.designs for p, t in tables.items() if plants is None or p in plants}})
 
     def to_bmi_config(self, path=None, forcing=None, end_time=None, design_db=None, parameters=None):
         """The BMI component that runs this site step by step, and its configuration: (entry point, config dict). With `path`,

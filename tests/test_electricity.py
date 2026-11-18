@@ -37,8 +37,18 @@ def test_closed_loop_costs_more_in_the_heat_with_air_cooled_computers():
 
 
 def test_liquid_cooling_lowers_power():
+    """In every water-loop design liquid cooling saves the room's fans. In the outside air design it doesn't, and in warm hours it costs more: outside air
+    cools air-cooled halls with no chillers up to the operator's setting, while liquid racks on the plant's loop water (the shared plant's 16-28.5 C)
+    need dry coolers and, in warm hours, chillers (design 0022). Its halls need fans either way."""
     for d in ph.DESIGNS:
+        if d == "outside_air":
+            continue
         assert np.all(pue(d, liquid_share=1.0) <= pue(d, liquid_share=0.0) + 1e-9)
+
+
+def test_liquid_racks_cost_the_outside_air_design_in_warm_hours_only():
+    oa_liquid, oa_air = pue("outside_air", liquid_share=1.0), pue("outside_air", liquid_share=0.0)
+    assert oa_liquid[0] <= oa_air[0] + 1e-9 and oa_liquid[-1] > oa_air[-1]
 
 
 def test_chillers_add_heat_only_when_they_run():

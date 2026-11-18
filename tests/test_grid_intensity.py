@@ -56,3 +56,79 @@ def test_consumed_within_withdrawn(cache):
     x = g.intensity("PJM")
     ok = ~np.isnan(x["consumed"])
     assert (x["consumed"][ok] <= x["withdrawn"][ok] + 1e-6).all()
+
+
+# --- model 1.17: screened hours, fallback rows and a robust marginal slope ------------------------------------------------
+import glob
+import warnings
+
+from waterledger_models import grid as G
+
+BAS = sorted(os.path.basename(p)[:-4] for p in glob.glob(os.path.join(g.RAW, "ba", "*.npz")))
+
+
+def _temp(hour):
+    """A deterministic temperature for the bins (any series works for the range check: bins only split the hours)."""
+    month, hod, _ = G.calendar(hour)
+    return 10 + 12 * np.sin(2 * np.pi * (month - 3) / 12) + 5 * np.sin(2 * np.pi * (hod - 15) / 24) + \
+        np.random.default_rng(0).normal(0, 3, len(hour))
+
+
+def _table(ba):
+    x = g.intensity(ba)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        return x, G.fit(ba, x["hour"], x["consumed"], x["withdrawn"], x["generation"], _temp(x["hour"]), pair_ok=x["pair_ok"],
+                        bounds=x["bounds"])
+
+
+@pytest.mark.parametrize("ba", BAS)
+def test_every_factor_within_the_bas_fuel_factors(cache, ba):
+    """Every BA's average and marginal factors lie in the range of the fuel factors it generates with, in every month. A marginal
+    slope can leave it a little at the edges (BPAT and AVRN slightly under 0 in summer, as hydro rises with load and gas falls;
+    AECI in August 1.3 gal/MWh over its top factor): those are reported in meta["outside"], and none is over 2% of the range."""
+    if en.ba_fuel_water(ba) is None:
+        pytest.skip(f"{ba}: no plant water table (left out of the runs)")
+    x, tab = _table(ba)
+    if np.isfinite(x["consumed"]).sum() < 8760:
+        pytest.skip(f"{ba}: under a year of hours (left out of the runs)")
+    for kind, m, where, v, lo, hi in tab.meta["outside"]:
+        assert kind.startswith("marginal_"), (kind, m, where, v, lo, hi)
+        assert max(lo - v, v - hi) <= 0.02 * (hi - lo), (kind, m, where, v, lo, hi)
+
+
+def test_azps_regression(cache):
+    """AZPS before model 1.17: marginal 2,500-3,000 gal/MWh (single-hour spikes in "other" and nuclear read as 0 MW), "other" at
+    1,600-5,700 (Solana's water over the BA's biomass) and nuclear at the U.S. 17,236 withdrawn (Palo Verde, filed under SRP)."""
+    h = lambda s: np.datetime64(s, "h")
+    x, tab = _table("AZPS")
+    hour = x["hour"].astype("datetime64[h]")
+    for spike in ("2019-05-30T23", "2024-03-07T16", "2024-03-07T17", "2021-09-01T18", "2025-02-13T23"):
+        i = np.searchsorted(hour, h(spike))
+        assert np.isnan(x["consumed"][i]) and not x["pair_ok"][i] and not x["pair_ok"][i + 1], spike
+    assert not x["pair_ok"][np.searchsorted(hour, h("2019-12-04T08"))]          # nuclear stops being reported
+    f = en.ba_fuel_water("AZPS")
+    assert (f["nuclear"]["withdrawn"] < 1000).all() and (f["other"]["withdrawn"] < 100).all()
+    assert (tab.marginal_withdrawn < 1200).all() and (tab.marginal_withdrawn > 150).all()
+    assert (tab.withdrawn < 1200).all()
+    gen = np.nan_to_num(x["generation"])
+    assert np.nansum(x["withdrawn"] * gen) / gen[np.isfinite(x["withdrawn"])].sum() < 800
+
+
+def test_every_reported_thermal_class_has_its_own_factor(cache):
+    """A thermal class EIA-930 reports in a BA (over 0.1% of its generation) takes the U.S. factor only where neither a named plant
+    nor its region has one (model 1.17)."""
+    t = pd.read_csv(en.BA_FUEL_TABLE)
+    rows = set(map(tuple, t[["ba", "fuel"]].drop_duplicates().values))
+    us_ok = {("NYIS", "coal")}                                   # New York's region is NYIS alone, with no coal since 2020
+    for ba in sorted(set(t.ba) - {"US"}):
+        try:
+            d = g.hourly(ba)
+        except FileNotFoundError:
+            continue
+        pos = {k: float(np.nansum(np.clip(d[k], 0, None))) for k in g.FUELS}
+        for fuel in ("coal", "gas", "nuclear", "oil", "other"):
+            if pos[fuel] > 0.001 * sum(pos.values()):
+                assert (ba, fuel) in rows, (ba, fuel)
+                basis = set(t[(t.ba == ba) & (t.fuel == fuel)].basis)
+                assert "us" not in basis or (ba, fuel) in us_ok, (ba, fuel, basis)

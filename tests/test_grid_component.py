@@ -1,5 +1,7 @@
 """The grid component (design 0008, part 1, step 4) on synthetic hours: the table gives back the fit hours' water, a hot
 hour meets the hot-hour mix, and the marginal slope finds the plant that follows load."""
+import warnings
+
 import numpy as np
 import pytest
 
@@ -91,3 +93,54 @@ def test_bmi_matches_plant_water():
     want = grid.plant_water(tab, np.full(3, 250.0), month, hod, np.array(temps))["consumed"]
     assert np.allclose(out, want)
     assert m.get_current_time() == 3 * 3600
+
+
+def _ols(tab_hours, m, i, tab):
+    hour, c, w, g, t = tab_hours
+    month, hod, _ = grid.calendar(hour)
+    b = grid._bin(tab.edges, month, hod, t)
+    nxt = np.flatnonzero(np.diff(hour) == 1) + 1
+    s = (month[nxt] == m) & (b[nxt] == i)
+    dw, dg = (c * g)[nxt] - (c * g)[nxt - 1], g[nxt] - g[nxt - 1]
+    return np.cov(dw[s], dg[s])[0, 1] / np.var(dg[s], ddof=1)
+
+
+def test_a_spike_leaves_the_slope_unchanged():
+    """One hour of a 6 GW spike in a 0-water class (AZPS "other", 2019-05-30T23) moved the old least-squares slope by thousands
+    of gal/MWh; Theil-Sen's slope doesn't move, screened or not."""
+    hour, c, w, g, t = synthetic()
+    clean = grid.fit("TEST", hour, c, w, g, t)
+    month, hod, _ = grid.calendar(hour)
+    b = grid._bin(clean.edges, month, hod, t)
+    k = np.flatnonzero((month == 6) & (b == 4))[40]                 # a hot July hour
+    g2, c2, w2 = g.copy(), c.copy(), w.copy()
+    g2[k] += 6000
+    c2[k], w2[k] = c[k] * g[k] / g2[k], w[k] * g[k] / g2[k]        # the spike carries no water, as in the cache
+    spiked = grid.fit("TEST", hour, c2, w2, g2, t)
+    assert spiked.marginal_consumed[6, 4] == pytest.approx(clean.marginal_consumed[6, 4], rel=0.01)
+    assert abs(_ols((hour, c2, w2, g2, t), 6, 4, clean) - clean.marginal_consumed[6, 4]) > 50     # the old slope moved
+    ok = np.ones(len(hour), dtype=bool)
+    ok[k:k + 2] = False                                             # screened: neither pair touching the hour
+    screened = grid.fit("TEST", hour, c2, w2, g2, t, pair_ok=ok)
+    assert screened.marginal_consumed[6, 4] == pytest.approx(clean.marginal_consumed[6, 4], rel=0.01)
+
+
+def test_factors_outside_the_fuel_range_are_reported_not_changed():
+    hour, c, w, g, t = synthetic()
+    tight = {"consumed": (np.full(12, 250.0), np.full(12, 500.0)), "withdrawn": (np.full(12, 0.0), np.full(12, 800.0))}
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        tab = grid.fit("TEST", hour, c, w, g, t, bounds=tight)
+    plain = grid.fit("TEST", hour, c, w, g, t)
+    assert np.array_equal(tab.marginal_consumed, plain.marginal_consumed)            # never clipped
+    out = tab.meta["outside"]
+    assert out and all(k == "marginal_consumed" for k, *_ in out) and caught       # the gas slope (200) is under 250
+    assert grid.fit("TEST", hour, c, w, g, t, bounds={k: (np.zeros(12), np.full(12, 1000.0)) for k in tight}).meta["outside"] == []
+
+
+def test_theil_sen():
+    x = np.arange(100.0)
+    y = 3 * x + 1
+    y[::10] += 1e6                                                   # a tenth of the points wild
+    assert grid.theil_sen(y, x) == pytest.approx(3.0)
+    assert np.isnan(grid.theil_sen(y, np.ones(100)))
