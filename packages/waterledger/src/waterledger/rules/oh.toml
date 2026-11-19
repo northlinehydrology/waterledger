@@ -1,0 +1,171 @@
+# Ohio's rules for large new water users, as data (waterledger.rules). Every line was read against its source on `checked`.
+checked = "2026-11-19"
+
+[withdrawals]
+# Registration: a facility with the capacity to withdraw more than 100,000 gallons a day from all sources (ORC 1521.16(A)), a capacity test.
+# Lake Erie basin (ORC 1522.12(A), 1522.14(B)): a permit for a new or increased capacity of at least 2.5 MGD from Lake Erie, 1 MGD from rivers, streams or
+# groundwater, 100,000 gallons a day from a high quality water (not a line here: it depends on the stream), averaged over any 90 days.
+# Outside it (ORC 1521.23(A)): a permit for a new or increased consumptive use of more than 2 MGD averaged over any 30 days; Chapter 1522 facilities are exempt.
+period = "90 days"
+summary = "Ohio requires a facility able to withdraw more than 100,000 gallons a day to register with ODNR. Outside the Lake Erie basin, a new or increased consumptive use of more than 2 million gallons a day, averaged over 30 days, needs a permit from ODNR."
+basin_summary = "Ohio requires a facility able to withdraw more than 100,000 gallons a day to register with ODNR. In the Lake Erie basin, a new or increased capacity of 1 million gallons a day or more from wells, rivers or streams (100,000 gallons a day from a stream designated a high quality water), averaged over 90 days, needs a permit from ODNR."
+lake_summary = "Ohio requires a facility able to withdraw more than 100,000 gallons a day to register with ODNR, and a new or increased capacity of 2.5 million gallons a day or more from Lake Erie, averaged over 90 days, needs a permit from ODNR."
+utility = "Buying all of its water from a public water system, the campus needs no state withdrawal permit of its own. In the Lake Erie basin, the utility needs a permit if its own new or increased capacity reaches 1 million gallons a day from wells or streams, or 2.5 million from Lake Erie."
+sources = ["orc_1521_16", "orc_1521_23", "orc_1522_12", "orc_1522_14", "odnr_permits"]
+
+[[withdrawals.lines]]
+key = "register"
+mgd = 0.1
+period = "capacity"
+level = "mid"
+tag = "Must register with the state"
+sources = ["orc_1521_16"]
+
+[[withdrawals.lines]]
+key = "permit"
+mgd = 1.0
+at_least = true
+where = "great_lakes_basin"
+source = ["ground", "surface"]
+level = "large"
+tag = "Needs a state permit"
+flag = "The estimated need reaches 1 million gallons a day. In the Lake Erie basin, a new or increased capacity of 1 million gallons a day or more from wells, rivers or streams, averaged over 90 days, needs a withdrawal and consumptive use permit from ODNR."
+sources = ["orc_1522_12", "orc_1522_14"]
+
+[[withdrawals.lines]]
+key = "lake_permit"
+mgd = 2.5
+at_least = true
+where = "great_lakes_basin"
+source = ["lake"]
+level = "large"
+tag = "Needs a state permit"
+flag = "The intake reaches 2.5 million gallons a day. A new or increased capacity of 2.5 million gallons a day or more from Lake Erie, averaged over 90 days, needs a withdrawal and consumptive use permit from ODNR."
+sources = ["orc_1522_12", "orc_1522_14"]
+
+[[withdrawals.lines]]
+key = "consumptive_permit"
+mgd = 2.0
+measure = "consumed"
+period = "30 days"
+where = "outside_great_lakes_basin"
+level = "large"
+tag = "Needs a state permit"
+flag = "The water used up is estimated above 2 million gallons a day. Outside the Lake Erie basin, a new or increased consumptive use of more than 2 million gallons a day, averaged over 30 days, needs a permit from ODNR."
+sources = ["orc_1521_23"]
+
+[discharge]
+permit_note = "Ohio EPA issues the permit, and Ohio’s water quality standards set stream temperature limits by river and by half-month."
+sources = ["oac_3745_33_02", "oac_3745_1_35"]
+
+[septic]
+sources = ["orc_3718_01", "orc_3718_021", "orc_6111_44"]
+
+[[septic.lines]]
+max_gpd = 1000
+text = "a small flow system of up to 1,000 gallons a day follows the Ohio Department of Health’s rules and is approved by the local board of health where the board has chosen to regulate such systems, and by Ohio EPA otherwise"
+
+[[septic.lines]]
+text = "a system above 1,000 gallons a day needs plans approved by Ohio EPA through a permit to install"
+
+[lake_erie]
+note = "Ohio’s Domestic Action Plan calls for a 40% cut in spring phosphorus loads from the Maumee River to the western basin, and in annual phosphorus to the central basin, from 2008 levels."
+sources = ["ohio_dap"]
+
+[large_load]
+mw = 25
+utility = "^Ohio Power"
+text = "Above 25 MW, a data center in AEP Ohio’s territory takes service under the utility’s data center tariff (Schedule DCT, ordered by PUCO in July 2025): a contract of the ramp-up period plus 8 years, and minimum bills of up to 85% of the capacity it contracts for."
+caption = "25 MW is the line in AEP Ohio’s data center tariff"
+sources = ["puco_24_508", "aep_dct"]
+
+[[sources]]
+id = "orc_1521_16"
+short = "ORC 1521.16"
+title = "Ohio Revised Code 1521.16: registration of withdrawal facilities"
+publisher = "Ohio Legislative Service Commission"
+url = "https://codes.ohio.gov/ohio-revised-code/section-1521.16"
+
+[[sources]]
+id = "orc_1521_23"
+short = "ORC 1521.23"
+title = "Ohio Revised Code 1521.23: consumptive use permits"
+publisher = "Ohio Legislative Service Commission"
+url = "https://codes.ohio.gov/ohio-revised-code/section-1521.23"
+
+[[sources]]
+id = "orc_1522_12"
+short = "ORC 1522.12"
+title = "Ohio Revised Code 1522.12: Lake Erie watershed withdrawal and consumptive use permits"
+publisher = "Ohio Legislative Service Commission"
+url = "https://codes.ohio.gov/ohio-revised-code/section-1522.12"
+
+[[sources]]
+id = "orc_1522_14"
+short = "ORC 1522.14"
+title = "Ohio Revised Code 1522.14: exemptions and averaging periods"
+publisher = "Ohio Legislative Service Commission"
+url = "https://codes.ohio.gov/ohio-revised-code/section-1522.14"
+
+[[sources]]
+id = "odnr_permits"
+short = "ODNR permitting"
+title = "High Capacity Permitting"
+publisher = "Ohio Department of Natural Resources, Division of Water Resources"
+url = "https://ohiodnr.gov/discover-and-learn/safety-conservation/about-odnr/water-resources/water-inventory-planning/high-capacity-permitting"
+
+[[sources]]
+id = "oac_3745_33_02"
+short = "OAC 3745-33-02"
+title = "Ohio Administrative Code 3745-33-02: Ohio NPDES permits"
+publisher = "Ohio EPA"
+url = "https://codes.ohio.gov/ohio-administrative-code/rule-3745-33-02"
+
+[[sources]]
+id = "oac_3745_1_35"
+short = "OAC 3745-1-35"
+title = "Ohio Administrative Code 3745-1-35: water quality standards, temperature criteria (Table 35-11)"
+publisher = "Ohio EPA"
+url = "https://codes.ohio.gov/ohio-administrative-code/rule-3745-1-35"
+
+[[sources]]
+id = "orc_3718_01"
+short = "ORC 3718.01"
+title = "Ohio Revised Code 3718.01: sewage treatment system definitions (small flow systems)"
+publisher = "Ohio Legislative Service Commission"
+url = "https://codes.ohio.gov/ohio-revised-code/section-3718.01"
+
+[[sources]]
+id = "orc_3718_021"
+short = "ORC 3718.021"
+title = "Ohio Revised Code 3718.021: local regulation of small flow systems"
+publisher = "Ohio Legislative Service Commission"
+url = "https://codes.ohio.gov/ohio-revised-code/section-3718.021"
+
+[[sources]]
+id = "orc_6111_44"
+short = "ORC 6111.44"
+title = "Ohio Revised Code 6111.44: approval of sewage treatment works plans"
+publisher = "Ohio Legislative Service Commission"
+url = "https://codes.ohio.gov/ohio-revised-code/section-6111.44"
+
+[[sources]]
+id = "ohio_dap"
+short = "Ohio Domestic Action Plan"
+title = "Ohio Domestic Action Plan 2023 to Address Nutrients"
+publisher = "Ohio Lake Erie Commission"
+url = "https://lakeerie.ohio.gov/wps/wcm/connect/gov/272ffc6e-76c5-4048-95ee-981e6eee57a1/Ohio+DAP+2023+FINAL.pdf?CACHEID=ROOTWORKSPACE.Z18_K9I401S01H7F40QBNJU3SO1F56-272ffc6e-76c5-4048-95ee-981e6eee57a1-ptqwxdc&CONVERT_TO=url&MOD=AJPERES"
+
+[[sources]]
+id = "puco_24_508"
+short = "PUCO 24-508-EL-ATA"
+title = "PUCO orders AEP Ohio to create data center specific tariff (Case No. 24-508-EL-ATA), Jul 9, 2025"
+publisher = "Public Utilities Commission of Ohio"
+url = "https://puco.ohio.gov/news/puco-orders-aep-ohio-to-create-data-center-specific-tariff"
+
+[[sources]]
+id = "aep_dct"
+short = "AEP Ohio Schedule DCT"
+title = "Ohio Power Company tariff P.U.C.O. No. 22, Schedule DCT (data center tariff), November 2026 tariff book"
+publisher = "Ohio Power Company"
+url = "https://www.aepohio.com/lib/docs/ratesandtariffs/Ohio/November_2026_Ohio_Power_Tariff_Book.pdf"

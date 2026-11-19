@@ -8,7 +8,7 @@
 """
 import waterledger_data as data
 import waterledger_models as models
-from waterledger import scenario, states
+from waterledger import rules, scenario, states
 from waterledger.estimate import Comparison, Estimate, Flow, Percent, Range, WaterUse
 from waterledger.facility import BatteryCellPlant, DataCenter, Facility
 from waterledger.place import Place, place
