@@ -70,6 +70,8 @@ est.before_after                 # what changes at the place, today and after, a
 est.site_loads                   # sediment, phosphorus and nitrogen in runoff from the finished site alone, typical wet ponds and no controls; construction and cooling water phosphorus beside them
 est.levels                       # the levels a reader sees on waterledger.org, by card; waterledger.levels has the bands and levels.compare the verdict against a reported figure
 est.not_covered                  # what isn't covered yet for this state, in words
+place.context().jurisdiction.rules   # the state's reviewed rules, each with its sources; empty where they aren't reviewed yet
+wl.rules.load("OH")              # a state's rules as data (waterledger/rules/<st>.toml): withdrawal lines by basin, source, measure and period, and the discharge, septic, Lake Erie and large-load lines
 
 cells = wl.Site(place=place, facility=wl.BatteryCellPlant(capacity_gwh=40, design="towers")).estimate()   # a battery cell plant, GWh/yr of cells
 cells.water.withdrawn.avg        # the same roles, comparisons, before and after and levels as a data center (design 0010)
@@ -270,9 +272,11 @@ center or place number, so it skips the snapshots and reads model 1.11's (`water
 - **Snapshot format 3.** The snapshots carry each cell's results (`cells/`). Rainfall, road salt and golf stay with the
   regions and division stations.
 
-Michigan has its own layers (state-reported water use, domestic wells, trout streams, lake-source cooling, state rules)
+Michigan has its own layers (state-reported water use, domestic wells, trout streams, lake-source cooling)
 and matches [waterledger.org/mi](https://waterledger.org/mi/) exactly. The other states use national datasets only
-([design 0002](docs/design/0002-national-tier.md)); any other state can be built locally with `waterledger build-state ST`.
+([design 0002](docs/design/0002-national-tier.md)). State rules are not part of a snapshot: a state whose rules have been read
+against their primary sources carries a rules file in the package (`waterledger/rules/`; Michigan and Ohio so far), which
+`est.levels` reads for its legal lines; a state without one has no lines and says so; any other state can be built locally with `waterledger build-state ST`.
 Adding a state from start to publication, step by step with what each step writes and how to tell it's done, is in
 [docs/add-a-state.md](docs/add-a-state.md).
 

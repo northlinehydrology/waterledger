@@ -2,6 +2,23 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## Unreleased (3.26.0)
+
+waterledger only. No estimated number changes; the levels a reader sees change where a state's rules are now reviewed.
+
+- **State rules as data** (`waterledger.rules`, `waterledger/rules/<st>.toml`): each reviewed state's withdrawal lines (threshold, level,
+  the card's words, the permit flag) and its discharge, on-site sewage, Lake Erie and large-load lines, every one with its sources and
+  the date it was read. Michigan's provider reads its Part 327 lines here (`states/mi/build.CONTEXT`'s keys stay, and are still read, for data written before);
+  Ohio's are new (ORC 1521.16, 1521.23, 1522.12, 1522.14). `Jurisdiction.rules` lists them, and `rules` leaves `not_covered` where a
+  state has a file; `national.provider.not_covered(state)`.
+- **Each line on its own measure and period** (`levels.tested_on`, `levels.applies`): a line is tested on water withdrawn or used up, on the
+  peak day for a capacity test or averaged over 30 or 90 days (the highest month for water withdrawn, the highest 90 days for water used
+  up), and applies by basin (in or outside the Great Lakes basin) and by source (wells, streams, a Great Lake). `levels.withdrawal` takes
+  the water by measure and period, or one number as before; `levels.permit_flag(line, W)` and `levels.flag_note` read the flag from the line.
+- **Michigan's Great Lakes intake line corrected**: MCL 324.32723 sets one permit line, 2 MGD (1 MGD in Zone C), for all waters of the state,
+  Great Lakes included. waterledger.org's calculator had used 5 MGD for an intake in a Great Lake; the package never carried that line.
+- **The Compact's 5 MGD is prior notice** (Section 4.6), not regional review, in the docstrings and words; the number is unchanged.
+
 ## 3.25.0 (Nov 19, 2026; model 1.17)
 
 waterledger, waterledger-models and waterledger-data 3.25.0. Model 1.17. Data center, battery cell plant, gas and supply numbers change;
