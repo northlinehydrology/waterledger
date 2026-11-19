@@ -1,6 +1,6 @@
 # ERA5 check: MI
 
-**PASS** (2026-11-16; model 1.16; design 0005's leave-one-station-out check; 36 stations).
+**PASS** (2026-11-17; model 1.17; design 0005's leave-one-station-out check; 36 stations).
 
 | Criterion | Test | Limit | Value | Pass | Limit set from |
 |---|---|---|---|---|---|
@@ -12,12 +12,12 @@
 | W6 | corrected shore cells (3 or more): median |error| no worse than uncorrected | - | 0.48 vs 1.55 | yes | the reason to correct |
 | W7 | corrected cells: |mean error| in the 1-in-10-year peak day's mean wet bulb, C, at most | 0.50 | 0.17 | yes | model 1.10 [A]: qm-2's Michigan peak days ran 0.72 C humid, mapping the dew point brought Michigan and Ohio to 0.23 (methods log, Nov 8, 2026) |
 | P1 | places sampled, at least | 5 | 12 | yes | too few to judge below this |
-| P2 | places: median |difference| in the hybrid average day, % of towers' average day, at most | 1.00 | 0.21 | yes | four states at 1.16 0.10-0.53 (Texas); +0.47 |
+| P2 | places: median |difference| in the hybrid average day, % of towers' average day, at most | 1.00 | 0.20 | yes | four states at 1.16 0.10-0.53 (Texas); +0.47 |
 | P3 | places: |mean difference| in the hybrid average day, % of towers' average day, at most | 0.75 | 0.04 | yes | four states at 1.16 0.04-0.29 (Texas); +0.46 |
-| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 3.82 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
-| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.27 | yes | four states 0.03-0.22; +1.8 |
+| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 3.72 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
+| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.26 | yes | four states 0.03-0.22; +1.8 |
 | P6 | places: median |difference| in the pads average day, % of towers' average day, at most | 1.00 | 0.18 | yes | four states at 1.16 0.17-0.54 (Texas); +0.46 |
-| P7 | places: median |difference| in the pads peak day, % of towers' peak day, at most | 6.00 | 2.24 | yes | four states at 1.16 1.3-3.8 (Texas); +2.2 |
+| P7 | places: median |difference| in the pads peak day, % of towers' peak day, at most | 6.00 | 2.29 | yes | four states at 1.16 1.3-3.8 (Texas); +2.2 |
 
 ## Weather at the held-out stations
 
@@ -77,32 +77,32 @@ The place's cell against the station's own record, p50 per 100 MW: % difference 
 
 | Place | Station (km) | Cell land | towers avg | towers peak | hybrid avg | hybrid peak | assist avg | assist peak |
 |---|---|---|---|---|---|---|---|---|
-| Romulus city | Detroit Metro Wayne County Airport (3) | 0.88 | -0 | +1 | -7 | +5 | -7 | +8 |
-| Hamtramck city | Detroit City Airport (4) | 0.88 | -1 | -1 | -29 | -8 | -34 | -16 |
+| Romulus city | Detroit Metro Wayne County Airport (3) | 0.88 | -0 | +1 | -7 | +4 | -7 | +8 |
+| Hamtramck city | Detroit City Airport (4) | 0.88 | -1 | -1 | -29 | -9 | -34 | -16 |
 | Harrison charter township | Selfridge Air National Guard Base (2) | 0.62 | +1 | +2 | +16 | +4 | +26 | +5 |
-| Holland city | Tulip City Airport (1) | 0.81 | -0 | +0 | -32 | +10 | -37 | -7 |
-| Benton charter township | Sw Michigan Regional Arpt (2) | 0.65 | -0 | +1 | -0 | +4 | -1 | -2 |
-| Norton Shores city | Muskegon County Airport (0) | 0.72 | +0 | +2 | +64 | +11 | +66 | +17 |
-| Van Buren charter township | Willow Run Airport (4) | 0.99 | -0 | +0 | -23 | +8 | -28 | -1 |
+| Holland city | Tulip City Airport (1) | 0.81 | -0 | +1 | -32 | +10 | -37 | -7 |
+| Benton charter township | Sw Michigan Regional Arpt (2) | 0.65 | -0 | +0 | -1 | +3 | -1 | -2 |
+| Norton Shores city | Muskegon County Airport (0) | 0.72 | +0 | +2 | +63 | +11 | +66 | +17 |
+| Van Buren charter township | Willow Run Airport (4) | 0.99 | -0 | +0 | -23 | +7 | -28 | -1 |
 | Lansing city | Capital City Airport (1) | 0.99 | +0 | +1 | +1 | +3 | +5 | +9 |
-| Blackman charter township | Jakson Co-Rynolds Fld Arpt (4) | 0.99 | +0 | +1 | +17 | +12 | +20 | +18 |
+| Blackman charter township | Jakson Co-Rynolds Fld Arpt (4) | 0.99 | +0 | +0 | +18 | +13 | +20 | +18 |
 | Springfield city | W K Kellogg Airport (2) | 0.98 | -0 | +1 | +12 | +10 | +12 | +13 |
-| Cascade charter township | Gerald R Ford International Airport (3) | 0.98 | +0 | +1 | +7 | +8 | +14 | +3 |
-| Portage city | Klmazo/Btl Creek Intl Arpt (5) | 0.97 | -0 | +0 | -14 | +5 | -16 | +1 |
+| Cascade charter township | Gerald R Ford International Airport (3) | 0.98 | +0 | +0 | +7 | +8 | +14 | +3 |
+| Portage city | Klmazo/Btl Creek Intl Arpt (5) | 0.97 | -0 | +0 | -14 | +6 | -16 | +1 |
 
 | Place | hybrid avg, % of towers | hybrid peak, % of towers | assist avg, % of towers | assist peak, % of towers |
 |---|---|---|---|---|
-| Romulus city | -0.11 | +2.53 | -0.09 | +2.55 |
-| Hamtramck city | -0.51 | -5.04 | -0.48 | -5.97 |
-| Harrison charter township | +0.21 | +2.50 | +0.26 | +1.80 |
-| Holland city | -0.39 | +5.03 | -0.32 | -2.05 |
-| Benton charter township | -0.00 | +2.02 | -0.01 | -0.68 |
-| Norton Shores city | +0.46 | +5.37 | +0.32 | +4.17 |
-| Van Buren charter township | -0.44 | +3.77 | -0.51 | -0.18 |
-| Lansing city | +0.02 | +1.52 | +0.05 | +2.43 |
-| Blackman charter township | +0.20 | +5.53 | +0.17 | +4.40 |
-| Springfield city | +0.15 | +4.77 | +0.12 | +3.52 |
-| Cascade charter township | +0.09 | +3.87 | +0.14 | +0.78 |
-| Portage city | -0.22 | +2.56 | -0.19 | +0.20 |
+| Romulus city | -0.10 | +2.04 | -0.09 | +2.55 |
+| Hamtramck city | -0.51 | -5.46 | -0.49 | -6.06 |
+| Harrison charter township | +0.21 | +2.26 | +0.26 | +1.81 |
+| Holland city | -0.38 | +4.88 | -0.32 | -2.10 |
+| Benton charter township | -0.01 | +1.82 | -0.01 | -0.69 |
+| Norton Shores city | +0.45 | +5.31 | +0.33 | +4.22 |
+| Van Buren charter township | -0.44 | +3.53 | -0.51 | -0.18 |
+| Lansing city | +0.02 | +1.47 | +0.05 | +2.48 |
+| Blackman charter township | +0.20 | +5.56 | +0.17 | +4.45 |
+| Springfield city | +0.16 | +4.70 | +0.12 | +3.57 |
+| Cascade charter township | +0.09 | +3.90 | +0.14 | +0.82 |
+| Portage city | -0.21 | +2.68 | -0.19 | +0.18 |
 
 A fail is a method question for Andrew; the command changes nothing. Criteria: `waterledger.national.era5_check.CRITERIA`.

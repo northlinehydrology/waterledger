@@ -1,6 +1,6 @@
 # ERA5 check: VA
 
-**PASS** (2026-11-16; model 1.16; design 0005's leave-one-station-out check; 34 stations).
+**PASS** (2026-11-18; model 1.17; design 0005's leave-one-station-out check; 34 stations).
 
 | Criterion | Test | Limit | Value | Pass | Limit set from |
 |---|---|---|---|---|---|
@@ -14,8 +14,8 @@
 | P1 | places sampled, at least | 5 | 12 | yes | too few to judge below this |
 | P2 | places: median |difference| in the hybrid average day, % of towers' average day, at most | 1.00 | 0.19 | yes | four states at 1.16 0.10-0.53 (Texas); +0.47 |
 | P3 | places: |mean difference| in the hybrid average day, % of towers' average day, at most | 0.75 | 0.07 | yes | four states at 1.16 0.04-0.29 (Texas); +0.46 |
-| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 1.49 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
-| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.25 | yes | four states 0.03-0.22; +1.8 |
+| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 1.20 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
+| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.26 | yes | four states 0.03-0.22; +1.8 |
 | P6 | places: median |difference| in the pads average day, % of towers' average day, at most | 1.00 | 0.19 | yes | four states at 1.16 0.17-0.54 (Texas); +0.46 |
 | P7 | places: median |difference| in the pads peak day, % of towers' peak day, at most | 6.00 | 1.73 | yes | four states at 1.16 1.3-3.8 (Texas); +2.2 |
 
@@ -75,31 +75,31 @@ The place's cell against the station's own record, p50 per 100 MW: % difference 
 | Place | Station (km) | Cell land | towers avg | towers peak | hybrid avg | hybrid peak | assist avg | assist peak |
 |---|---|---|---|---|---|---|---|---|
 | Virginia Beach city | Oceana Nas (4) | 0.51 | +0 | +1 | +4 | +1 | +3 | +3 |
-| Norfolk city | Norfolk International Airport (5) | 0.77 | -0 | +1 | +3 | +8 | -3 | +6 |
-| Newport News city | Nwpt News/Wimburg Intl Apt (7) | 0.67 | +0 | -0 | -10 | +1 | -16 | -0 |
-| Chincoteague town | Wallops Flight Facility Airport (10) | 0.58 | -0 | +1 | +37 | +6 | +62 | +16 |
-| Quantico town | Quantico Mcaf (2) | 0.87 | -0 | +1 | -0 | -1 | +21 | +1 |
-| Henrico County | Richmond International Airport (8) | 0.97 | +0 | -0 | -5 | -0 | -10 | -2 |
-| Charlottesville city | Charlottesville Albemarle Arpt (11) | 1.00 | -0 | -1 | -7 | -5 | -5 | -4 |
+| Norfolk city | Norfolk International Airport (5) | 0.77 | -0 | +0 | +3 | +8 | -3 | +6 |
+| Newport News city | Nwpt News/Wimburg Intl Apt (7) | 0.67 | +0 | -1 | -10 | +1 | -16 | -0 |
+| Chincoteague town | Wallops Flight Facility Airport (10) | 0.58 | -0 | +1 | +38 | +5 | +62 | +16 |
+| Quantico town | Quantico Mcaf (2) | 0.87 | -0 | +0 | +0 | -0 | +21 | +1 |
+| Henrico County | Richmond International Airport (8) | 0.97 | +0 | -1 | -5 | -0 | -10 | -2 |
+| Charlottesville city | Charlottesville Albemarle Arpt (11) | 1.00 | -0 | -1 | -8 | -5 | -5 | -4 |
 | Herndon town | Washington Dulles International Ap (6) | 0.99 | +0 | +1 | -9 | +1 | -6 | +0 |
 | Occoquan town | Davison Aaf Airport (8) | 0.94 | -0 | +1 | -17 | +2 | -18 | -4 |
 | Alexandria city | Ronald Reagan Washington Natl Ap (5) | 0.94 | -1 | -1 | -7 | -15 | -3 | -19 |
-| Lynchburg city | Lynchburg Rgnl/Preston Glenn Fld Ap (9) | 0.99 | +0 | +1 | +1 | +4 | +8 | +8 |
+| Lynchburg city | Lynchburg Rgnl/Preston Glenn Fld Ap (9) | 0.99 | +0 | +0 | +0 | +3 | +8 | +8 |
 | Danville city | Danville Regional Airport (7) | 1.00 | +1 | +0 | +1 | +7 | +7 | +11 |
 
 | Place | hybrid avg, % of towers | hybrid peak, % of towers | assist avg, % of towers | assist peak, % of towers |
 |---|---|---|---|---|
-| Virginia Beach city | +0.12 | +0.47 | +0.08 | +1.08 |
-| Norfolk city | +0.08 | +4.56 | -0.08 | +2.41 |
-| Newport News city | -0.31 | +0.63 | -0.48 | -0.10 |
-| Chincoteague town | +0.70 | +3.11 | +0.89 | +5.20 |
-| Quantico town | -0.01 | -0.60 | +0.46 | +0.60 |
-| Henrico County | -0.18 | -0.06 | -0.37 | -0.87 |
-| Charlottesville city | -0.20 | -2.36 | -0.13 | -1.62 |
-| Herndon town | -0.25 | +0.49 | -0.16 | +0.01 |
-| Occoquan town | -0.56 | +1.28 | -0.64 | -1.85 |
-| Alexandria city | -0.22 | -9.56 | -0.11 | -9.47 |
-| Lynchburg city | +0.01 | +1.71 | +0.17 | +2.52 |
-| Danville city | +0.02 | +3.37 | +0.21 | +4.19 |
+| Virginia Beach city | +0.12 | +0.61 | +0.08 | +1.12 |
+| Norfolk city | +0.08 | +4.35 | -0.08 | +2.43 |
+| Newport News city | -0.32 | +0.52 | -0.49 | -0.07 |
+| Chincoteague town | +0.70 | +2.76 | +0.89 | +5.21 |
+| Quantico town | +0.00 | -0.25 | +0.46 | +0.58 |
+| Henrico County | -0.17 | -0.18 | -0.37 | -0.90 |
+| Charlottesville city | -0.22 | -2.51 | -0.13 | -1.63 |
+| Herndon town | -0.26 | +0.68 | -0.16 | +0.02 |
+| Occoquan town | -0.55 | +1.05 | -0.64 | -1.84 |
+| Alexandria city | -0.23 | -9.54 | -0.11 | -9.59 |
+| Lynchburg city | +0.01 | +1.35 | +0.17 | +2.54 |
+| Danville city | +0.02 | +3.31 | +0.21 | +4.26 |
 
 A fail is a method question for Andrew; the command changes nothing. Criteria: `waterledger.national.era5_check.CRITERIA`.

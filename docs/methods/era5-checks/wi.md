@@ -1,6 +1,6 @@
 # ERA5 check: WI
 
-**PASS** (2026-11-16; model 1.16; design 0005's leave-one-station-out check; 29 stations).
+**PASS** (2026-11-18; model 1.17; design 0005's leave-one-station-out check; 29 stations).
 
 | Criterion | Test | Limit | Value | Pass | Limit set from |
 |---|---|---|---|---|---|
@@ -12,12 +12,12 @@
 | W6 | corrected shore cells (3 or more): median |error| no worse than uncorrected | - | 0.41 vs 1.80 | yes | the reason to correct |
 | W7 | corrected cells: |mean error| in the 1-in-10-year peak day's mean wet bulb, C, at most | 0.50 | 0.02 | yes | model 1.10 [A]: qm-2's Michigan peak days ran 0.72 C humid, mapping the dew point brought Michigan and Ohio to 0.23 (methods log, Nov 8, 2026) |
 | P1 | places sampled, at least | 5 | 12 | yes | too few to judge below this |
-| P2 | places: median |difference| in the hybrid average day, % of towers' average day, at most | 1.00 | 0.24 | yes | four states at 1.16 0.10-0.53 (Texas); +0.47 |
+| P2 | places: median |difference| in the hybrid average day, % of towers' average day, at most | 1.00 | 0.23 | yes | four states at 1.16 0.10-0.53 (Texas); +0.47 |
 | P3 | places: |mean difference| in the hybrid average day, % of towers' average day, at most | 0.75 | 0.12 | yes | four states at 1.16 0.04-0.29 (Texas); +0.46 |
-| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 4.72 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
-| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.25 | yes | four states 0.03-0.22; +1.8 |
+| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 4.67 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
+| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.28 | yes | four states 0.03-0.22; +1.8 |
 | P6 | places: median |difference| in the pads average day, % of towers' average day, at most | 1.00 | 0.23 | yes | four states at 1.16 0.17-0.54 (Texas); +0.46 |
-| P7 | places: median |difference| in the pads peak day, % of towers' peak day, at most | 6.00 | 1.66 | yes | four states at 1.16 1.3-3.8 (Texas); +2.2 |
+| P7 | places: median |difference| in the pads peak day, % of towers' peak day, at most | 6.00 | 1.70 | yes | four states at 1.16 1.3-3.8 (Texas); +2.2 |
 
 ## Weather at the held-out stations
 
@@ -72,30 +72,30 @@ The place's cell against the station's own record, p50 per 100 MW: % difference 
 |---|---|---|---|---|---|---|---|---|
 | St. Francis city | General Mitchell International Ap (3) | 0.75 | -0 | +1 | +6 | +8 | +2 | +3 |
 | Oshkosh city | Whittman Regional Airport (4) | 0.53 | +0 | +1 | +15 | +11 | +19 | +8 |
-| Somers town | Kenosha Regional Airport (4) | 0.73 | -0 | +1 | -24 | +9 | -30 | +8 |
-| Fond du Lac County | Fond Du Lac County Airport (2) | 0.89 | -1 | +0 | -28 | +8 | -35 | -3 |
+| Somers town | Kenosha Regional Airport (4) | 0.73 | -0 | +1 | -24 | +8 | -30 | +8 |
+| Fond du Lac County | Fond Du Lac County Airport (2) | 0.89 | -1 | -0 | -28 | +7 | -35 | -3 |
 | Burke town | Dane Co Regional-Truax Field Airport (3) | 0.96 | -0 | -1 | +2 | -5 | +1 | -4 |
-| Lone Rock village | Tri-County Regional Arpt (3) | 0.99 | -0 | +1 | -20 | +14 | -24 | +4 |
-| Campbell town | La Crosse Municipal Airport (3) | 0.96 | -1 | -2 | -32 | -9 | -41 | -25 |
+| Lone Rock village | Tri-County Regional Arpt (3) | 0.99 | -0 | +1 | -20 | +15 | -24 | +5 |
+| Campbell town | La Crosse Municipal Airport (3) | 0.96 | -1 | -1 | -32 | -9 | -41 | -25 |
 | Eau Claire city | Chippewa Valley Rgnl Arpt (5) | 0.99 | +1 | +2 | +19 | +11 | +22 | +6 |
-| Hobart village | Austin Straubel International Ap (2) | 0.95 | -0 | +0 | +16 | +9 | +33 | +21 |
-| Port Edwards village | Alexander Fd S Wood Co Apt (1) | 0.96 | -0 | +0 | -22 | +13 | -26 | +9 |
+| Hobart village | Austin Straubel International Ap (2) | 0.95 | -0 | +1 | +16 | +9 | +33 | +21 |
+| Port Edwards village | Alexander Fd S Wood Co Apt (1) | 0.96 | -0 | +0 | -22 | +12 | -26 | +9 |
 | Schofield city | Wausau Downtown Airport (2) | 0.98 | -0 | -0 | -12 | +4 | -15 | +1 |
-| Hayward city | Sawyer County Airport (4) | 0.92 | +0 | -1 | -27 | +0 | -29 | -4 |
+| Hayward city | Sawyer County Airport (4) | 0.92 | +0 | -1 | -27 | -0 | -29 | -4 |
 
 | Place | hybrid avg, % of towers | hybrid peak, % of towers | assist avg, % of towers | assist peak, % of towers |
 |---|---|---|---|---|
-| St. Francis city | +0.07 | +4.47 | +0.01 | +0.97 |
-| Oshkosh city | +0.15 | +4.96 | +0.12 | +2.06 |
-| Somers town | -0.35 | +5.13 | -0.33 | +2.64 |
-| Fond du Lac County | -0.34 | +3.81 | -0.30 | -0.78 |
-| Burke town | +0.02 | -2.79 | +0.01 | -1.12 |
-| Lone Rock village | -0.31 | +7.01 | -0.28 | +1.36 |
-| Campbell town | -0.56 | -5.19 | -0.67 | -10.14 |
-| Eau Claire city | +0.25 | +5.57 | +0.23 | +1.97 |
-| Hobart village | +0.16 | +4.44 | +0.22 | +5.89 |
-| Port Edwards village | -0.27 | +5.97 | -0.24 | +2.51 |
-| Schofield city | -0.10 | +1.64 | -0.09 | +0.32 |
-| Hayward city | -0.22 | +0.21 | -0.17 | -1.19 |
+| St. Francis city | +0.07 | +4.47 | +0.01 | +1.02 |
+| Oshkosh city | +0.15 | +5.04 | +0.12 | +2.09 |
+| Somers town | -0.35 | +4.72 | -0.33 | +2.65 |
+| Fond du Lac County | -0.33 | +3.53 | -0.30 | -0.77 |
+| Burke town | +0.02 | -2.96 | +0.01 | -1.11 |
+| Lone Rock village | -0.31 | +7.40 | -0.28 | +1.42 |
+| Campbell town | -0.55 | -5.02 | -0.67 | -10.25 |
+| Eau Claire city | +0.25 | +5.35 | +0.23 | +1.98 |
+| Hobart village | +0.15 | +4.62 | +0.22 | +5.99 |
+| Port Edwards village | -0.26 | +5.74 | -0.24 | +2.55 |
+| Schofield city | -0.10 | +1.79 | -0.09 | +0.36 |
+| Hayward city | -0.22 | -0.17 | -0.17 | -1.20 |
 
 A fail is a method question for Andrew; the command changes nothing. Criteria: `waterledger.national.era5_check.CRITERIA`.

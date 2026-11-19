@@ -1,6 +1,6 @@
 # ERA5 check: MN
 
-**PASS** (2026-11-16; model 1.16; design 0005's leave-one-station-out check; 31 stations).
+**PASS** (2026-11-18; model 1.17; design 0005's leave-one-station-out check; 31 stations).
 
 | Criterion | Test | Limit | Value | Pass | Limit set from |
 |---|---|---|---|---|---|
@@ -14,10 +14,10 @@
 | P1 | places sampled, at least | 5 | 12 | yes | too few to judge below this |
 | P2 | places: median |difference| in the hybrid average day, % of towers' average day, at most | 1.00 | 0.10 | yes | four states at 1.16 0.10-0.53 (Texas); +0.47 |
 | P3 | places: |mean difference| in the hybrid average day, % of towers' average day, at most | 0.75 | 0.01 | yes | four states at 1.16 0.04-0.29 (Texas); +0.46 |
-| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 3.94 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
-| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.25 | yes | four states 0.03-0.22; +1.8 |
+| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 3.96 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
+| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.23 | yes | four states 0.03-0.22; +1.8 |
 | P6 | places: median |difference| in the pads average day, % of towers' average day, at most | 1.00 | 0.12 | yes | four states at 1.16 0.17-0.54 (Texas); +0.46 |
-| P7 | places: median |difference| in the pads peak day, % of towers' peak day, at most | 6.00 | 3.06 | yes | four states at 1.16 1.3-3.8 (Texas); +2.2 |
+| P7 | places: median |difference| in the pads peak day, % of towers' peak day, at most | 6.00 | 3.09 | yes | four states at 1.16 1.3-3.8 (Texas); +2.2 |
 
 ## Weather at the held-out stations
 
@@ -70,32 +70,32 @@ The place's cell against the station's own record, p50 per 100 MW: % difference 
 
 | Place | Station (km) | Cell land | towers avg | towers peak | hybrid avg | hybrid peak | assist avg | assist peak |
 |---|---|---|---|---|---|---|---|---|
-| Hermantown city | Duluth International Airport (7) | 0.81 | +1 | +1 | -46 | -16 | -46 | -30 |
+| Hermantown city | Duluth International Airport (7) | 0.81 | +1 | +0 | -47 | -15 | -46 | -30 |
 | High Forest township | Rochester International Airport (4) | 1.00 | +0 | +1 | +7 | +14 | +10 | +10 |
-| Appleton city | Appleton Municipal Airport (3) | 0.96 | +0 | -0 | +2 | +14 | +7 | +10 |
-| Haven township | St Cloud Regional Airport (3) | 0.95 | +1 | +1 | +15 | +10 | +12 | +1 |
-| Oak Lawn township | Brainerd Lakes Rgnl Arpt (3) | 0.95 | +0 | +0 | +4 | +2 | +6 | -1 |
+| Appleton city | Appleton Municipal Airport (3) | 0.96 | +0 | +0 | +1 | +14 | +7 | +10 |
+| Haven township | St Cloud Regional Airport (3) | 0.95 | +1 | +1 | +15 | +11 | +12 | +1 |
+| Oak Lawn township | Brainerd Lakes Rgnl Arpt (3) | 0.95 | +0 | +1 | +4 | +2 | +6 | -1 |
 | Redwood Falls city | Redwood Falls Muni Airport (2) | 1.00 | +0 | +0 | -6 | +12 | -8 | +6 |
-| Alexandria city | Chandler Field Airport (2) | 0.92 | +0 | +0 | +31 | +6 | +31 | +24 |
-| Brooklyn Center city | Crystal Airport (3) | 0.94 | +0 | +0 | -5 | +2 | -10 | -10 |
-| Eden Prairie city | Flying Cloud Airport (2) | 0.96 | -0 | +1 | -7 | +6 | -9 | -2 |
-| Richfield city | Minneapolis-St Paul International Ap (4) | 0.96 | -0 | -0 | -5 | -1 | -14 | -8 |
+| Alexandria city | Chandler Field Airport (2) | 0.92 | +0 | +0 | +31 | +6 | +30 | +24 |
+| Brooklyn Center city | Crystal Airport (3) | 0.94 | +0 | -0 | -5 | +2 | -10 | -10 |
+| Eden Prairie city | Flying Cloud Airport (2) | 0.96 | -0 | +0 | -7 | +6 | -9 | -1 |
+| Richfield city | Minneapolis-St Paul International Ap (4) | 0.96 | -0 | -1 | -5 | -1 | -14 | -8 |
 | West St. Paul city | St Paul Dwtwn Holman Fd Ap (4) | 0.93 | -0 | +0 | +7 | +9 | +6 | +5 |
 | Park Rapids city | Pk Rpds Muni-Konshok Fd Ap (2) | 0.94 | -0 | -1 | -29 | -6 | -33 | -12 |
 
 | Place | hybrid avg, % of towers | hybrid peak, % of towers | assist avg, % of towers | assist peak, % of towers |
 |---|---|---|---|---|
-| Hermantown city | -0.19 | -6.99 | -0.12 | -7.15 |
-| High Forest township | +0.07 | +6.33 | +0.06 | +2.80 |
-| Appleton city | +0.03 | +6.57 | +0.09 | +3.41 |
-| Haven township | +0.19 | +4.92 | +0.12 | +0.23 |
-| Oak Lawn township | +0.04 | +0.73 | +0.05 | -0.26 |
-| Redwood Falls city | -0.10 | +6.18 | -0.11 | +2.30 |
-| Alexandria city | +0.31 | +2.74 | +0.21 | +7.46 |
-| Brooklyn Center city | -0.08 | +0.87 | -0.14 | -4.00 |
-| Eden Prairie city | -0.12 | +3.03 | -0.12 | -0.59 |
-| Richfield city | -0.08 | -0.80 | -0.19 | -3.32 |
-| West St. Paul city | +0.10 | +4.85 | +0.08 | +1.77 |
-| Park Rapids city | -0.24 | -2.61 | -0.20 | -3.56 |
+| Hermantown city | -0.18 | -6.77 | -0.12 | -7.25 |
+| High Forest township | +0.07 | +6.42 | +0.06 | +2.84 |
+| Appleton city | +0.02 | +6.73 | +0.09 | +3.48 |
+| Haven township | +0.19 | +5.16 | +0.12 | +0.26 |
+| Oak Lawn township | +0.04 | +0.91 | +0.05 | -0.23 |
+| Redwood Falls city | -0.10 | +6.06 | -0.11 | +2.30 |
+| Alexandria city | +0.31 | +2.99 | +0.21 | +7.54 |
+| Brooklyn Center city | -0.07 | +0.93 | -0.14 | -4.04 |
+| Eden Prairie city | -0.11 | +3.17 | -0.12 | -0.58 |
+| Richfield city | -0.08 | -0.70 | -0.19 | -3.34 |
+| West St. Paul city | +0.10 | +4.74 | +0.08 | +1.79 |
+| Park Rapids city | -0.24 | -2.56 | -0.20 | -3.61 |
 
 A fail is a method question for Andrew; the command changes nothing. Criteria: `waterledger.national.era5_check.CRITERIA`.
