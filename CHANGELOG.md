@@ -2,7 +2,7 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## 3.25.0 (not released; model 1.17)
+## 3.25.0 (Nov 19, 2026; model 1.17)
 
 waterledger, waterledger-models and waterledger-data 3.25.0. Model 1.17. Data center, battery cell plant, gas and supply numbers change;
 every state's snapshot is rebuilt. Gas numbers change for fuel cells only (design 0019); design 0018's additions leave the ERA5 supply path
