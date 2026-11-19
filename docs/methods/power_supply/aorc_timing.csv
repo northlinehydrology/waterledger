@@ -1,0 +1,11 @@
+series,kind,clear_days,offset_min_median,offset_min_p25,offset_min_p75,shift_s
+SURFRAD BON,"measured, centred",132,1.0,-1.2,5.2,0
+SURFRAD BON,"measured, hour ending",134,31.0,29.0,36.0,-1800
+SURFRAD PSU,"measured, centred",128,4.0,0.0,16.0,0
+SURFRAD PSU,"measured, hour ending",129,35.0,30.0,43.0,-1800
+SURFRAD SXF,"measured, centred",174,0.0,-3.0,4.0,0
+SURFRAD SXF,"measured, hour ending",175,30.0,27.0,34.0,-1800
+Clam River,AORC,155,-1.0,-4.0,0.0,0
+SURFRAD BON,AORC,175,-2.0,-4.0,1.0,0
+SURFRAD PSU,AORC,133,0.0,-2.0,3.0,0
+SURFRAD SXF,AORC,186,1.0,-2.0,3.0,0

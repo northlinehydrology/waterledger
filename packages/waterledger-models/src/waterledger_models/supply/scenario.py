@@ -18,6 +18,10 @@ share_gas, share_grid, annual_matching, unserved_mwh_annual, unserved_hours_annu
 wind_mwh_annual, pv_cf, wind_cf, gas_fuel_mw_avg, gas_capacity_factor, gas_withdrawn_gal_per_mwh, gas_consumed_gal_per_mwh, pv_washing_mgd,
 and local_withdrawn_avg and local_consumed_avg (MGD: the gas plant and the panel washing, the water on the campus's own source or system,
 decision 8). Construction water is a one-time total by size, reported apart (decision 11), and comes with renewables' land and runoff.
+
+The weather: ERA5's at the place's cell, (utc, ghi, beam_horizontal, u100, v100) (waterledger_data.era5.supply), or, for a study on its own
+forcing, a ForcingWeather (design 0018, decision 4): PV on the forcing's global horizontal radiation and 10 m wind (pv.output_from_ghi,
+pv.RANGES_AORC by default) and wind on ERA5's 100 m wind at the place's cell (decision 6). Either way the temperature is the runner's own.
 """
 from dataclasses import dataclass
 
@@ -36,13 +40,66 @@ WASHING = {"pv_washing": (0.0, 5.0)}
 
 
 @dataclass
+class ForcingWeather:
+    """Supply weather for a study that runs on its own forcing (design 0018, decision 4), on the runner's UTC hours: PV from the forcing's
+    global horizontal radiation (ghi, W/m2) and 10 m wind speed (wind_10m, m/s), split by `method` with the sun placed by `shift_s`; wind from
+    ERA5's 100 m wind components at the place's cell (u100, v100; waterledger_data.era5.supply), the stated exception to the one-forcing rule
+    (decision 6). pv_ranges: the PV parameters to sample; the defaults are AORC's (pv.RANGES_AORC, check A3). Another forcing, or AORC
+    corrected to stations, needs its own check A3 for the resource factor."""
+    utc: np.ndarray
+    ghi: np.ndarray
+    wind_10m: np.ndarray
+    u100: np.ndarray
+    v100: np.ndarray
+    pv_ranges: dict | None = None
+    method: str = pv.AORC_SPLIT
+    shift_s: float = pv.AORC_SHIFT_S
+
+    def __post_init__(self):
+        self.utc = np.asarray(self.utc)
+        self.ghi, self.wind_10m, self.u100, self.v100 = (np.asarray(x, float) for x in (self.ghi, self.wind_10m, self.u100, self.v100))
+        if self.pv_ranges is None:
+            self.pv_ranges = pv.RANGES_AORC
+        if not all(len(x) == len(self.utc) for x in (self.ghi, self.wind_10m, self.u100, self.v100)):
+            raise ValueError("the forcing's radiation and 10 m wind and ERA5's 100 m wind must be on the same hours")
+
+
+class _Weather:
+    """The supply weather either way, with what the PV chain needs: the ERA5 tuple's arrays as they are (its numbers unchanged to the bit,
+    tests/test_supply_identity.py), or a ForcingWeather's."""
+
+    def __init__(self, supply_weather):
+        self.forcing = supply_weather if isinstance(supply_weather, ForcingWeather) else None
+        if self.forcing is None:
+            self.utc, self.ghi, self.beam, self.u, self.v = (np.asarray(x) for x in supply_weather)
+            self.pv_ranges = pv.RANGES
+        else:
+            f = self.forcing
+            self.utc, self.ghi, self.beam, self.u, self.v, self.pv_ranges = f.utc, f.ghi, None, f.u100, f.v100, f.pv_ranges
+
+    def geometry(self, lat, lon, mount):
+        if self.forcing is None:
+            return pv.geometry(self.utc, lat, lon, mount)
+        return pv.geometry(self.utc, lat, lon, mount, shift_s=self.forcing.shift_s)
+
+    def pv_output(self, g, tdb, p):
+        """AC output per MW AC each hour at parameters p, on the runner's temperature."""
+        if self.forcing is None:
+            return pv.output(g, self.ghi, self.beam, tdb, np.hypot(self.u, self.v), p)
+        return pv.output_from_ghi(g, self.ghi, tdb, self.forcing.wind_10m, p, self.forcing.method)
+
+
+@dataclass
 class Gas:
-    """A gas plant resource: technology and design (gas.physics.DESIGNS), unit size, and units (None: sized N + k)."""
+    """A gas plant resource: technology and design (gas.physics.DESIGNS), unit size (None: the technology's, gas.physics.UNIT_MW, else 300), and
+    units (None: sized N + k, or for fuel cells N plus a reserve share, gas.physics.units_for). age_years: a fuel cell plant's age, stated
+    rather than sampled (design 0019)."""
     technology: str = "cc"
     design: str = "towers"
-    unit_mw: float = 300.0
+    unit_mw: float | None = None
     units: int | None = None
     k: int = 1
+    age_years: float | None = None
     firm_mw: float | None = None         # grid-parallel: serves this much of the load each hour, the residual takes the rest
     nox: str = "dln"
     inlet_cooling: bool = False
@@ -83,23 +140,25 @@ def size(model, times, temps, rhs, scenarios, design, supply_weather, lat, lon):
     annual_mwh = float(h.mw.mean()) * HOURS_A_YEAR
     full = h.mw if h.mw_full is None else h.mw_full
     peak = _year_max_quantile(full, np.array([t[:4] for t in times]))
-    utc, ghi, beam, u, v = supply_weather
+    wx = _Weather(supply_weather)
     out = {}
     for name, sc in scenarios.items():
         sc = Scenario(**vars(sc))
         if sc.pv_share is not None:
-            g = pv.geometry(utc, lat, lon, sc.pv_mount)
-            sc.pv_mw = sc.pv_share * annual_mwh / (float(pv.output(g, ghi, beam, tdb, np.hypot(u, v), _lhs(pv.RANGES, 1, 0)[-1]).mean()) * HOURS_A_YEAR)
+            g = wx.geometry(lat, lon, sc.pv_mount)
+            sc.pv_mw = sc.pv_share * annual_mwh / (float(wx.pv_output(g, tdb, _lhs(wx.pv_ranges, 1, 0)[-1]).mean()) * HOURS_A_YEAR)
         if sc.wind_share is not None:
-            sc.wind_mw = sc.wind_share * annual_mwh / (float(wind.hourly(u, v, _lhs(wind.RANGES, 1, 0)[-1]).mean()) * HOURS_A_YEAR)
-        if sc.gas is not None and sc.gas.units is None:
+            sc.wind_mw = sc.wind_share * annual_mwh / (float(wind.hourly(wx.u, wx.v, _lhs(wind.RANGES, 1, 0)[-1]).mean()) * HOURS_A_YEAR)
+        if sc.gas is not None:
             gas = Gas(**vars(sc.gas))
-            p = hr.for_location(gp.central_parameters(gas.technology, gas.design, gas.nox), tdb)
-            t = np.array([p["design_db"]])
-            cap = gp.hourly(1e9, t, hr.wet_bulb(t, np.array([40.0])), np.array([40.0]), gas.technology, gas.design, p, 1, gas.unit_mw,
-                            gas.inlet_cooling, water_t=np.array([10.0]) if gas.design == "lake" else None)["capacity"][0]
-            need = (gas.firm_mw if gas.firm_mw is not None else peak)
-            gas.units = int(np.ceil(need / cap - 1e-9)) + gas.k
+            gas.unit_mw = gp.unit_mw(gas.technology, gas.unit_mw)
+            if gas.units is None:
+                p = hr.for_location(gp.central_parameters(gas.technology, gas.design, gas.nox, gas.age_years), tdb)
+                t = np.array([p["design_db"]])
+                cap = gp.hourly(1e9, t, hr.wet_bulb(t, np.array([40.0])), np.array([40.0]), gas.technology, gas.design, p, 1, gas.unit_mw,
+                                gas.inlet_cooling, water_t=np.array([10.0]) if gas.design == "lake" else None)["capacity"][0]
+                need = (gas.firm_mw if gas.firm_mw is not None else peak)
+                gas.units = gp.units_for(gas.technology, need, cap, p["availability"], gas.k)
             sc.gas = gas
         out[name] = sc
     return out
@@ -114,7 +173,7 @@ def longest_run(flags):
 
 class Supply:
     """The runner's extra for supply scenarios. scenarios: {name: Scenario} with sizes fixed (size()); supply_weather: (utc, ghi,
-    beam_horizontal, u100, v100) on the runner's hours (waterledger_data.era5.supply); lat, lon: the place's; n and seed: the supply's own draws,
+    beam_horizontal, u100, v100) on the runner's hours (waterledger_data.era5.supply), or a ForcingWeather (design 0018); lat, lon: the place's; n and seed: the supply's own draws,
     n as the user's; water_temps: the lake's daily temperatures for a lake-cooled gas plant."""
 
     def __init__(self, scenarios, supply_weather, lat, lon, n, seed=11, water_temps=None):
@@ -126,10 +185,12 @@ class Supply:
             if sc.residual == "gas" and sc.gas is None:
                 raise ValueError(f"{name}: a gas residual needs a gas resource")
         self.scenarios, self.lat, self.lon, self.water_temps = scenarios, lat, lon, water_temps
-        self.utc, self.ghi, self.beam, self.u, self.v = (np.asarray(x) for x in supply_weather)
-        self.pv_draws = _lhs({**pv.RANGES, **WASHING}, n, seed)
+        self.wx = _Weather(supply_weather)
+        self.utc, self.ghi, self.beam, self.u, self.v = self.wx.utc, self.wx.ghi, self.wx.beam, self.wx.u, self.wx.v
+        self.pv_draws = _lhs({**self.wx.pv_ranges, **WASHING}, n, seed)
         self.wind_draws = _lhs(wind.RANGES, n, seed + 1)
-        self.gas_draws = {name: _lhs(gp.ranges(sc.gas.technology, sc.gas.design, sc.gas.nox), n, seed + 2) for name, sc in scenarios.items() if sc.gas}
+        self.gas_draws = {name: _lhs(gp.ranges(sc.gas.technology, sc.gas.design, sc.gas.nox, sc.gas.age_years), n, seed + 2)
+                          for name, sc in scenarios.items() if sc.gas}
         self.seed = seed
 
     def setup(self, times, tdb, twb, rh):
@@ -141,8 +202,7 @@ class Supply:
         self.ndays = len(times) / 24.0
         self.water_t = None if self.water_temps is None else lake_hours(times, self.water_temps)
         mounts = {sc.pv_mount for sc in self.scenarios.values() if sc.pv_mw}
-        self.geometry = {m: pv.geometry(self.utc, self.lat, self.lon, m) for m in mounts}
-        self.wind_100m = np.hypot(self.u, self.v)
+        self.geometry = {m: self.wx.geometry(self.lat, self.lon, m) for m in mounts}
 
     def _dispatch(self, sc, name, load, pv_prof, wind_prof, i):
         gen_pv = (sc.pv_mw or 0.0) * pv_prof * np.ones_like(load)
@@ -155,8 +215,9 @@ class Supply:
             g = sc.gas
             demand = np.minimum(rest, g.firm_mw) if g.firm_mw is not None else rest
             p = hr.for_location(self.gas_draws[name][i], self.tdb)
-            up = gp.outages(g.units, p["availability"], len(load), self.seed + 1000 * i) if g.outages else None
-            gh = gp.hourly(demand, self.tdb, self.twb, self.rh, g.technology, g.design, p, g.units, g.unit_mw, g.inlet_cooling, self.water_t, up,
+            up = gp.outages(g.units, p["availability"], len(load), self.seed + 1000 * i, gp.outage_hours(g.technology)) if g.outages else None
+            gh = gp.hourly(demand, self.tdb, self.twb, self.rh, g.technology, g.design, p, g.units, gp.unit_mw(g.technology, g.unit_mw), g.inlet_cooling,
+                           self.water_t, up,
                            g.discharge or gp.default_discharge(g.technology, g.design, g.supply))
             rest = rest - gh["served"]
         grid = rest if sc.residual == "grid" else 0.0 * rest
@@ -167,7 +228,7 @@ class Supply:
 
     def __call__(self, design, p, hours, i):
         pv_p, wind_p = self.pv_draws[i], self.wind_draws[i]
-        profiles = {m: pv.output(g, self.ghi, self.beam, self.tdb, self.wind_100m, pv_p) for m, g in self.geometry.items()}
+        profiles = {m: self.wx.pv_output(g, self.tdb, pv_p) for m, g in self.geometry.items()}
         wind_prof = wind.hourly(self.u, self.v, wind_p)
         out = runs.Supplied(peak={}, grid_mw_peak={})
         for name, sc in self.scenarios.items():
@@ -197,7 +258,8 @@ class Supply:
                     out.water[f"{pre}gas_{role}"] = (gh[role], 1.0)
                     out.peak[f"{pre}gas_{role}"] = (ghp[role], 1.0)
                 served = float(gh["served"].sum())
-                s.update({"gas_fuel_mw_avg": float(gh["fuel"].mean()), "gas_capacity_factor": float(gh["served"].mean()) / (g.units * g.unit_mw),
+                s.update({"gas_fuel_mw_avg": float(gh["fuel"].mean()),
+                          "gas_capacity_factor": float(gh["served"].mean()) / (g.units * gp.unit_mw(g.technology, g.unit_mw)),
                           "gas_withdrawn_gal_per_mwh": float(gh["withdrawn"].sum()) / served if served > 0 else 0.0,
                           "gas_consumed_gal_per_mwh": float(gh["consumed"].sum()) / served if served > 0 else 0.0})
                 local_w += float(gh["withdrawn"].sum()) / self.ndays / 1e6

@@ -10,7 +10,8 @@ Configuration (a YAML file, or the same keys as a dict passed to initialize):
     technology: cc | ct | engine | fuel_cell        (default cc)
     design: towers | hybrid | assist | dry | lake | none   (one of physics.DESIGNS[technology]; default the technology's first)
     units: 2                                         (identical units)
-    unit_mw: 300                                     (each unit's net rating at ISO, MW)
+    unit_mw: 300                                     (each unit's net rating at ISO, MW; default physics.UNIT_MW's, else 300: a fuel cell's 0.325)
+    age_years: 4                                     (fuel cells: the plant's age, which sets its central heat rate; physics.heat_rate_for_age)
     nox: dln | water                                 (default dln; water injection for turbines)
     inlet_cooling: false                             (inlet evaporative cooling, turbines)
     supply: surface | ground | utility               (default utility: where its water comes from, which sets discharge's default)
@@ -103,7 +104,7 @@ class GasPlantBmi(ScalarPointBmi):
         self._humidity = cfg.get("humidity", "relative")
         if self._humidity not in HUMIDITY:
             raise ValueError(f"humidity must be one of {HUMIDITY}")
-        self._n_units, self._unit_mw = int(cfg.get("units", 2)), float(cfg.get("unit_mw", 300.0))
+        self._n_units, self._unit_mw = int(cfg.get("units", 2)), gp.unit_mw(self._tech, cfg.get("unit_mw"))
         self._inlet = bool(cfg.get("inlet_cooling", False))
         self._discharge = cfg.get("discharge") or gp.default_discharge(self._tech, self._design, cfg.get("supply", "utility"))
         if self._discharge not in gp.DISCHARGES:
@@ -112,7 +113,7 @@ class GasPlantBmi(ScalarPointBmi):
         unknown = set(given) - set(r) - {"design_db"}
         if unknown:
             raise ValueError(f"unknown parameters: {sorted(unknown)}")
-        self._params = {**gp.central_parameters(self._tech, self._design, nox), **given}
+        self._params = {**gp.central_parameters(self._tech, self._design, nox, cfg.get("age_years")), **given}
         if self._design in ("hybrid", "assist") and "design_db" not in self._params:
             raise ValueError("a hybrid or assist condenser needs the place's design dry-bulb: set design_db (heat_rejection.design_dry_bulb)")
         self._dt = float(cfg.get("time_step", 3600.0))

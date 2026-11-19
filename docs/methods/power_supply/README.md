@@ -52,3 +52,21 @@ The sampled ranges stand, because their ends are states that report no curtailme
 
 The delivered-basis results are kept as `*_delivered.csv`. The checks now run the chain at a resource factor of 1.0 whatever
 `RANGES` holds. Before, they read the range's midpoint, which changed once the range was set from them.
+
+## Design 0018: solar and wind on a study's own forcing (AORC), Nov 16, 2026
+
+Each script's docstring gives its inputs and how to run it; the CSV beside it is its output. Aggregates only.
+
+| Check | Script | Found |
+|---|---|---|
+| A1, AORC's time stamp | `aorc_timing.py` | AORC's shortwave is centred on its stamp (0 +/- 2 min at four points; the estimator gives 0 and +30 min on SURFRAD's centred and hour-ending means) |
+| A2, the split | `split_check.py` (`surfrad.py`) | on AORC's global at three SURFRAD stations, Erbs scatters least; AORC's global scatters more than ERA5's (daily 26-31% against 20-22%) |
+| A3, PV against EIA's fleet | `aorc_check.py` (`aorc_points.py`) | 944 plants, curtailment added back: output over modeled 0.89 overall, 0.73-1.03 by state (ERA5's 0.86, 0.75-0.94): `pv.RANGES_AORC` |
+| A4, wind's hours (0014 check 5) | `wind_shape_check.py` | the ERA5 path at 250 MISO plants against EIA-930: hourly correlation 0.949, night over day 1.10-1.29 against 1.01-1.24 |
+| A5, AORC against ERA5 by year | `aorc_drift.py` (`break` for `aorc_wind_break.csv`) | AORC's 10 m wind steps down on January 1, 2018 at five of six points; its shortwave does not |
+
+## Design 0019: solid oxide fuel cells, Nov 16, 2026
+
+`fuel_cell_check.py` (F1): EIA-923's gas fuel cell plants in aggregate. The fleet's heat rate is 7,496 Btu/kWh HHV (98 plants not CHP over
+50% capacity factor); the 1-5 MW plants 7,290; by the year they came online about 6,650 for the newest to 7,400 for those by 2015, which sets
+`gas.physics.AGE_HEAT_RATE`.

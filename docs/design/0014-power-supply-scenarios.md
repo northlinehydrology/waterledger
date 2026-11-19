@@ -100,7 +100,7 @@ heat to the condenser, and the water roles. Hour by hour:
 
 | Parameter | Range or value | Source |
 |---|---|---|
-| ISO heat rate, Btu/kWh HHV | cc 6,200-6,450; ct 9,100-10,500; engine 8,200-9,900; fuel cell 6,300-9,950 | EIA AEO2023 Table 1; NETL Rev. 4a ES-4; EPA CHP Catalog Tables 2-2, 3-2, 6-3 |
+| ISO heat rate, Btu/kWh HHV | cc 6,200-6,450; ct 9,100-10,500; engine 8,200-9,900; fuel cell 6,300-9,950 (solid oxide 6,600-7,500 from Nov 16, 2026: design 0019) | EIA AEO2023 Table 1; NETL Rev. 4a ES-4; EPA CHP Catalog Tables 2-2, 3-2, 6-3 |
 | Capacity derate above 15 °C, per K | ct 0.9-1.0%; cc wet 0.3-0.5%, dry about 0.7%; engine 0.18% above 25 °C; fuel cell about 0 | EPA CHP Catalog p. 3-10, p. 2-12; Sathaye et al. (2011) p. 11 |
 | Heat-rate slope above 15 °C, per K | ct about 0.35%; cc 0.05-0.2% [A] | EPA CHP Catalog p. 3-10; Meng and Sanders (2019) §4 |
 | Part-load heat rate at half load | engine +8-10%; ct and cc +15-25% [A for cc]; linear between [A] | EPA CHP Catalog p. 2-11 |

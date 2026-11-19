@@ -4,7 +4,9 @@ Package changes (code). Changes to the numbers are listed by model version on th
 
 ## 3.25.0 (not released; model 1.17)
 
-waterledger, waterledger-models and waterledger-data 3.25.0. Model 1.17. Data center, battery cell plant and supply numbers change; every state's snapshot is rebuilt.
+waterledger, waterledger-models and waterledger-data 3.25.0. Model 1.17. Data center, battery cell plant, gas and supply numbers change;
+every state's snapshot is rebuilt. Gas numbers change for fuel cells only (design 0019); design 0018's additions leave the ERA5 supply path
+as it was (`tests/test_supply_identity.py`).
 
 - **Water-cooled chillers on ASHRAE 90.1's curve** (design 0021; `docs/methods/methods-log.md`, Nov 17): `heat_rejection.chiller_cop`
   takes `min_lift`; water-cooled chillers use `WATER_CHILLER_LOSS` (0.0471, fitted to 90.1's water-cooled centrifugal EIR-FT curve,
@@ -42,6 +44,27 @@ waterledger, waterledger-models and waterledger-data 3.25.0. Model 1.17. Data ce
   - `WaterUse.blowdown`, new: blowdown and pad bleed without staff water or condensate. `DataCenter.cooling_blowdown` uses it for towers and
     hybrid, so cooling phosphorus is no longer worked on staff wastewater and condensate.
   - The PV and wind fleet checks add curtailment back (`docs/methods/power_supply/curtailment.py`). Their ranges don't change.
+- **Solar and wind on a study's own forcing** ([design 0018](docs/design/0018-supply-on-a-study-forcing.md)), so a coupled study keeps one
+  weather forcing. For a forcing that gives only global horizontal radiation and the 10 m wind (AORC):
+  - `supply.pv.hourly_from_ghi` / `output_from_ghi`: the global split into beam and diffuse by `pv.decompose` (Erbs, PVsyst's default, on
+    AORC; DIRINT and DISC as options; each held to pvlib's hour by hour, closing on the global every hour), the sun placed by the forcing's
+    own time stamp (`geometry(shift_s=)`; AORC's radiation stands at the middle of its hour, `pv.AORC_SHIFT_S = 0`), the 10 m wind as it is.
+  - `pv.RANGES_AORC`: `pv.RANGES` with the resource factor from EIA's 2024 tracking fleet on AORC (944 plants, curtailment added
+    back): 0.89 overall, 0.73-1.03 across the states with ten or more plants (ERA5's 0.86, 0.75-0.94).
+  - `supply.wind.hourly_from_10m`: the 10 m wind to the hub by an exponent for each month and local solar hour, `wind.shear_table`, set
+    from ERA5's own 10 m and 100 m wind at the place (`waterledger_data.era5.fetch_shear`, `era5.shear`); the hours stay the forcing's.
+    Not for AORC: AORC's 10 m wind steps down on January 1, 2018 at most places (confirmed by the Cadillac airport anemometer), so a
+    study on AORC runs wind on ERA5's 100 m wind (`wind.hourly`) and says so.
+  - `supply.scenario.ForcingWeather`: `size` and `Supply` take it in place of ERA5's tuple, so a study on AORC runs the grid,
+    grid-plus-gas and islanded scenarios with PV on its forcing (`pv.RANGES_AORC`) and wind on ERA5's 100 m wind.
+  - Checks in `docs/methods/power_supply/`: AORC's time stamp (`aorc_timing.py`), the split at three SURFRAD stations (`split_check.py`),
+    AORC PV against EIA's fleet (`aorc_check.py`), the ERA5 wind path's hours against EIA-930's MISO wind (`wind_shape_check.py`;
+    hourly correlation 0.949), AORC against ERA5 by year (`aorc_drift.py`).
+- **Fuel cells are solid oxide on gas** ([design 0019](docs/design/0019-solid-oxide-fuel-cells.md)), as data centers buy them: heat rate
+  6,600-7,500 Btu/kWh HHV from EIA-923's plants by age (was 6,300-9,950, all fuel cell types), with `age_years` a setting that narrows it
+  (in `gas.plant`, `supply.scenario.Gas` and `GasPlantBmi`); start-up and restart water, 0.01-0.69 gal/MWh, consumed; the 325 kW server as
+  the unit (`gas.physics.UNIT_MW`), 24-hour outages, and a reserve share from the servers' availability instead of N + k
+  (`gas.physics.units_for`). Check F1 (`fuel_cell_check.py`).
 
 ## 3.24.1 (Nov 17, 2026; model 1.16)
 

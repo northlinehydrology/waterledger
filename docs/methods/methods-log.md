@@ -3184,3 +3184,35 @@ Public Service's average grid water falls about 10%.
 
 **References.** U.S. EIA: Form EIA-930 (2019-2025), Hourly Electric Grid Monitor six-month balance files; Form EIA-923 (2019-2023
 final revisions, 2024 final), Schedules 2-5, Page 1, https://www.eia.gov/electricity/data/eia923/.
+
+## Nov 16, 2026: solar and wind on a study's own forcing, and solid oxide fuel cells (designs 0018 and 0019; branch `supply-on-aorc`)
+
+**Why.** In a coupled study every model runs on the study's one weather forcing (Andrew, Nov 14-15); the Clam River study runs on AORC,
+which gives global horizontal radiation and the 10 m wind, not ERA5's beam and 100 m wind. Scripts and results in
+`docs/methods/power_supply/` (its README's table); the design is [0018](../design/0018-supply-on-a-study-forcing.md).
+
+**PV.** `pv.hourly_from_ghi` splits the global into beam and diffuse and runs the same PVWatts chain. The split is Erbs's (PVsyst's
+default): on AORC's global at three SURFRAD stations it scattered least of Erbs, DISC and DIRINT (DIRINT was best on the stations' own
+measured global; Andrew chose the industry norm, Nov 16). AORC's radiation is centred on its stamp (check A1). Against EIA's 2024 tracking
+fleet (944 plants), the chain on AORC needs 0.89 overall and 0.73-1.03 across the 15 states with ten or more plants, with curtailment added
+back as for ERA5 (Nov 17), wider than ERA5's 0.75-0.94 because AORC's own radiation scatters more against stations (A2: daily 26-31% against
+20-22%). `pv.RANGES_AORC` carries it.
+
+**Wind.** AORC's 10 m wind steps down against ERA5's on January 1, 2018 at five of six points tested (20-60%; not on the Texas plains),
+and the Clam River study's Cadillac airport anemometer dates the step to the day while its own wind holds. No factor fixes a step that
+differs by place. **Decision (Andrew, Nov 16): a study on AORC runs wind on ERA5's 100 m wind and states the exception.**
+`wind.hourly_from_10m`, with a month-by-hour shear table from ERA5's 10 m and 100 m wind, stays for a forcing whose 10 m wind is
+homogeneous. The ERA5 wind path's hours against EIA-930's MISO wind (250 plants, 31 GW): hourly correlation 0.949, the night 4-9% strong
+against midday by season; accepted.
+
+**Fuel cells** ([0019](../design/0019-solid-oxide-fuel-cells.md)). Solid oxide servers on gas, as data centers buy them: heat rate
+6,600-7,500 Btu/kWh HHV from EIA-923's gas fuel cell plants (fleet 7,496; by the year online, about 6,650 for the newest to 7,400 for the
+oldest), with the fleet's age a setting (`age_years`), sampled when not given and stated when it is; the model holds no state between
+runs (Andrew: "sample it or assume it and state"). Start-up and restart water 0.01-0.69 gal/MWh, consumed. The 325 kW server is the
+unit, outages last 24 hours, and the count carries a reserve from the servers' availability (binomial: a 1-in-10,000 chance of too few up in an hour) in place
+of N + k. Air permits stay in the study's notes.
+
+**Numbers.** The ERA5 supply path is unchanged to the bit (`tests/test_supply_identity.py`, against main f370fcc). Fuel cells' numbers
+change, so the release that carries this needs a model step. **Decision 4 (Andrew, Nov 16):** `scenario.Supply` and `size` take a study's
+forcing (`scenario.ForcingWeather`: PV on the forcing, wind on ERA5), so a study's grid, grid-plus-gas and islanded cases come from the same
+tested runner rather than a copy of it.

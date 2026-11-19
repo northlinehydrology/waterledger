@@ -33,7 +33,7 @@ MODELS = {
     "1.14": {"types": ("gas", "supply"), "snapshots": "1.11"},                # outages that last days; PV against the 2024 fleet
     "1.15": {"types": ("supply",), "snapshots": "1.11"},                      # wind against the 2024 fleet
     "1.16": {"types": ("datacenter", "battery", "supply"), "snapshots": "1.16"},   # air-cooled chillers respond to the air (design 0015); snapshots rebuilt
-    "1.17": {"types": ("datacenter", "battery", "supply"), "snapshots": "1.17"},   # water-cooled chillers on 90.1's curve (0021), outside air (0022), grid water screened (0008); rebuilt
+    "1.17": {"types": ("datacenter", "battery", "gas", "supply"), "snapshots": "1.17"},   # water-cooled chillers on 90.1's curve (0021), outside air (0022), grid water screened (0008), solid oxide fuel cells (0019); rebuilt
 }
 
 
