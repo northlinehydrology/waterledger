@@ -1,6 +1,6 @@
 # ERA5 check: PA
 
-**FAIL** (2026-11-16; model 1.16; design 0005's leave-one-station-out check; 48 stations).
+**FAIL** (2026-11-18; model 1.17; design 0005's leave-one-station-out check; 48 stations).
 
 | Criterion | Test | Limit | Value | Pass | Limit set from |
 |---|---|---|---|---|---|
@@ -14,10 +14,10 @@
 | P1 | places sampled, at least | 5 | 12 | yes | too few to judge below this |
 | P2 | places: median |difference| in the hybrid average day, % of towers' average day, at most | 1.00 | 0.42 | yes | four states at 1.16 0.10-0.53 (Texas); +0.47 |
 | P3 | places: |mean difference| in the hybrid average day, % of towers' average day, at most | 0.75 | 0.19 | yes | four states at 1.16 0.04-0.29 (Texas); +0.46 |
-| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 4.58 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
-| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.59 | yes | four states 0.03-0.22; +1.8 |
+| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 4.75 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
+| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.55 | yes | four states 0.03-0.22; +1.8 |
 | P6 | places: median |difference| in the pads average day, % of towers' average day, at most | 1.00 | 0.39 | yes | four states at 1.16 0.17-0.54 (Texas); +0.46 |
-| P7 | places: median |difference| in the pads peak day, % of towers' peak day, at most | 6.00 | 3.39 | yes | four states at 1.16 1.3-3.8 (Texas); +2.2 |
+| P7 | places: median |difference| in the pads peak day, % of towers' peak day, at most | 6.00 | 3.45 | yes | four states at 1.16 1.3-3.8 (Texas); +2.2 |
 
 ## Weather at the held-out stations
 
@@ -90,31 +90,31 @@ The place's cell against the station's own record, p50 per 100 MW: % difference 
 | Place | Station (km) | Cell land | towers avg | towers peak | hybrid avg | hybrid peak | assist avg | assist peak |
 |---|---|---|---|---|---|---|---|---|
 | Highspire borough | Harrisburg International Airport (2) | 0.99 | -0 | -1 | -5 | -10 | +0 | -10 |
-| Tinicum township | Philadelphia International Airport (2) | 0.94 | -1 | -0 | -16 | -8 | -20 | -8 |
-| Rockledge borough | Ne Philadelphia Airport (6) | 0.96 | -0 | -0 | -15 | -7 | -17 | -7 |
+| Tinicum township | Philadelphia International Airport (2) | 0.94 | -0 | -0 | -16 | -8 | -20 | -8 |
+| Rockledge borough | Ne Philadelphia Airport (6) | 0.96 | -0 | -0 | -15 | -8 | -17 | -7 |
 | Muhlenberg township | Rdng Rgnl/C A Spaatz Fd Ap (4) | 1.00 | -1 | -2 | -24 | -18 | -34 | -26 |
-| Jackson township | York Airport (1) | 0.97 | +0 | +2 | +7 | +12 | +14 | +12 |
-| Manheim township | Lancaster Airport (3) | 0.97 | -0 | +1 | +3 | +11 | +9 | +13 |
-| New Cumberland borough | Capital City Airport (2) | 0.97 | -1 | -1 | -24 | -4 | -35 | -16 |
-| Washington township | Du Bois-Jefferson Co Arpt (3) | 1.00 | -1 | +1 | -7 | -3 | +5 | +8 |
-| Martinsburg borough | Altoona-Blair County Arpt (1) | 0.97 | +1 | -0 | -1 | -2 | +6 | +11 |
-| Richland township | J Murtha Jtwn-Cmbra Co Apt (3) | 1.00 | +1 | +2 | +244 | +46 | +260 | +50 |
-| Avoca borough | Wilkes-Barre/Scranton Intl Airport (2) | 0.98 | -1 | -1 | -35 | -0 | -39 | -9 |
-| Montoursville borough | Williamsport Regional Airport (0) | 0.99 | -1 | -1 | -31 | +1 | -41 | -10 |
+| Jackson township | York Airport (1) | 0.97 | +0 | +1 | +7 | +13 | +14 | +12 |
+| Manheim township | Lancaster Airport (3) | 0.97 | -0 | +1 | +2 | +10 | +9 | +13 |
+| New Cumberland borough | Capital City Airport (2) | 0.97 | -1 | -0 | -24 | -4 | -35 | -16 |
+| Washington township | Du Bois-Jefferson Co Arpt (3) | 1.00 | -1 | +0 | -7 | -3 | +5 | +7 |
+| Martinsburg borough | Altoona-Blair County Arpt (1) | 0.97 | +0 | -0 | -1 | -2 | +6 | +11 |
+| Richland township | J Murtha Jtwn-Cmbra Co Apt (3) | 1.00 | +1 | +2 | +246 | +46 | +261 | +50 |
+| Avoca borough | Wilkes-Barre/Scranton Intl Airport (2) | 0.98 | -1 | -2 | -35 | -1 | -39 | -9 |
+| Montoursville borough | Williamsport Regional Airport (0) | 0.99 | -1 | -1 | -31 | +0 | -41 | -10 |
 
 | Place | hybrid avg, % of towers | hybrid peak, % of towers | assist avg, % of towers | assist peak, % of towers |
 |---|---|---|---|---|
-| Highspire borough | -0.10 | -5.81 | +0.00 | -3.58 |
-| Tinicum township | -0.43 | -4.68 | -0.52 | -3.20 |
-| Rockledge borough | -0.40 | -4.49 | -0.46 | -3.09 |
-| Muhlenberg township | -0.50 | -10.59 | -0.70 | -11.55 |
-| Jackson township | +0.13 | +5.87 | +0.21 | +3.71 |
-| Manheim township | +0.05 | +5.20 | +0.15 | +4.18 |
-| New Cumberland borough | -0.56 | -1.89 | -0.80 | -6.19 |
-| Washington township | -0.03 | -0.90 | +0.01 | +1.45 |
-| Martinsburg borough | -0.01 | -0.76 | +0.05 | +2.71 |
-| Richland township | +0.51 | +12.86 | +0.38 | +7.95 |
-| Avoca borough | -0.47 | -0.10 | -0.40 | -2.62 |
-| Montoursville borough | -0.48 | +0.27 | -0.55 | -3.10 |
+| Highspire borough | -0.10 | -6.01 | +0.00 | -3.65 |
+| Tinicum township | -0.44 | -4.77 | -0.53 | -3.25 |
+| Rockledge borough | -0.40 | -4.73 | -0.47 | -3.14 |
+| Muhlenberg township | -0.51 | -10.73 | -0.70 | -11.65 |
+| Jackson township | +0.13 | +6.08 | +0.21 | +3.78 |
+| Manheim township | +0.05 | +4.99 | +0.15 | +4.25 |
+| New Cumberland borough | -0.56 | -2.17 | -0.81 | -6.29 |
+| Washington township | -0.03 | -0.93 | +0.01 | +1.46 |
+| Martinsburg borough | -0.01 | -0.89 | +0.05 | +2.73 |
+| Richland township | +0.51 | +12.78 | +0.38 | +8.07 |
+| Avoca borough | -0.47 | -0.42 | -0.40 | -2.63 |
+| Montoursville borough | -0.47 | +0.20 | -0.56 | -3.13 |
 
 A fail is a method question for Andrew; the command changes nothing. Criteria: `waterledger.national.era5_check.CRITERIA`.

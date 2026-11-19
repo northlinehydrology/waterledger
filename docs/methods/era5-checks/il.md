@@ -1,6 +1,6 @@
 # ERA5 check: IL
 
-**PASS** (2026-11-16; model 1.16; design 0005's leave-one-station-out check; 34 stations).
+**PASS** (2026-11-18; model 1.17; design 0005's leave-one-station-out check; 34 stations).
 
 | Criterion | Test | Limit | Value | Pass | Limit set from |
 |---|---|---|---|---|---|
@@ -14,10 +14,10 @@
 | P1 | places sampled, at least | 5 | 12 | yes | too few to judge below this |
 | P2 | places: median |difference| in the hybrid average day, % of towers' average day, at most | 1.00 | 0.15 | yes | four states at 1.16 0.10-0.53 (Texas); +0.47 |
 | P3 | places: |mean difference| in the hybrid average day, % of towers' average day, at most | 0.75 | 0.08 | yes | four states at 1.16 0.04-0.29 (Texas); +0.46 |
-| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 4.48 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
-| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.17 | yes | four states 0.03-0.22; +1.8 |
+| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 4.58 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
+| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.15 | yes | four states 0.03-0.22; +1.8 |
 | P6 | places: median |difference| in the pads average day, % of towers' average day, at most | 1.00 | 0.25 | yes | four states at 1.16 0.17-0.54 (Texas); +0.46 |
-| P7 | places: median |difference| in the pads peak day, % of towers' peak day, at most | 6.00 | 4.21 | yes | four states at 1.16 1.3-3.8 (Texas); +2.2 |
+| P7 | places: median |difference| in the pads peak day, % of towers' peak day, at most | 6.00 | 4.26 | yes | four states at 1.16 1.3-3.8 (Texas); +2.2 |
 
 ## Weather at the held-out stations
 
@@ -75,31 +75,31 @@ The place's cell against the station's own record, p50 per 100 MW: % difference 
 | Place | Station (km) | Cell land | towers avg | towers peak | hybrid avg | hybrid peak | assist avg | assist peak |
 |---|---|---|---|---|---|---|---|---|
 | Stickney township | Chicago Midway Intl Arpt (2) | 0.82 | -2 | -1 | -42 | -15 | -52 | -22 |
-| Benton township | Waukegan Regional Airport (1) | 0.73 | +0 | +2 | +23 | +12 | +25 | +13 |
-| De Soto village | Southern Illinois Airport (4) | 0.98 | +0 | -0 | -0 | -0 | +5 | +3 |
-| Shiloh Valley township | Scott Air Force Base/Midamerica Airport (3) | 1.00 | +0 | +1 | +8 | +11 | +9 | +15 |
-| Springfield township | Abraham Lincoln Capital Airport (2) | 0.98 | -0 | +1 | +1 | +10 | -1 | +7 |
-| Burton township | Quincy Rgnl-Bldwn Fld Arpt (5) | 0.98 | -0 | +0 | -5 | +6 | -14 | -11 |
-| Bensenville village | Chicago O'Hare International Airport (1) | 0.98 | -0 | -2 | -9 | -10 | -18 | -18 |
-| West Chicago city | Dupage Airport (2) | 0.99 | -0 | +1 | -6 | +8 | +3 | +12 |
-| Cahokia Heights city | St Louis Downtown Airport (1) | 0.98 | +0 | +1 | -2 | +7 | +2 | +11 |
-| Tolono township | Universi Of Il Willard Apt (2) | 1.00 | +1 | +2 | +5 | +22 | +12 | +13 |
-| Long Creek township | Decatur Airport (3) | 0.99 | -0 | -1 | -16 | +0 | -13 | -5 |
-| Lafayette township | Coles County Memo Airport (2) | 1.00 | -0 | +1 | +10 | +8 | +17 | +12 |
+| Benton township | Waukegan Regional Airport (1) | 0.73 | +0 | +2 | +24 | +12 | +25 | +13 |
+| De Soto village | Southern Illinois Airport (4) | 0.98 | +0 | -0 | -1 | -0 | +5 | +3 |
+| Shiloh Valley township | Scott Air Force Base/Midamerica Airport (3) | 1.00 | +0 | +1 | +7 | +11 | +9 | +15 |
+| Springfield township | Abraham Lincoln Capital Airport (2) | 0.98 | -0 | +0 | +2 | +11 | -1 | +7 |
+| Burton township | Quincy Rgnl-Bldwn Fld Arpt (5) | 0.98 | -0 | -0 | -5 | +6 | -14 | -11 |
+| Bensenville village | Chicago O'Hare International Airport (1) | 0.98 | -0 | -2 | -10 | -10 | -18 | -18 |
+| West Chicago city | Dupage Airport (2) | 0.99 | -0 | +1 | -6 | +8 | +3 | +13 |
+| Cahokia Heights city | St Louis Downtown Airport (1) | 0.98 | +0 | +1 | -2 | +6 | +2 | +11 |
+| Tolono township | Universi Of Il Willard Apt (2) | 1.00 | +1 | +2 | +5 | +21 | +12 | +13 |
+| Long Creek township | Decatur Airport (3) | 0.99 | -0 | -1 | -16 | -1 | -13 | -4 |
+| Lafayette township | Coles County Memo Airport (2) | 1.00 | -0 | +0 | +10 | +8 | +17 | +12 |
 
 | Place | hybrid avg, % of towers | hybrid peak, % of towers | assist avg, % of towers | assist peak, % of towers |
 |---|---|---|---|---|
-| Stickney township | -0.89 | -10.66 | -1.03 | -10.72 |
-| Benton township | +0.26 | +6.73 | +0.20 | +4.46 |
-| De Soto village | -0.01 | -0.21 | +0.15 | +0.92 |
-| Shiloh Valley township | +0.25 | +5.43 | +0.28 | +5.72 |
-| Springfield township | +0.04 | +4.96 | -0.03 | +2.25 |
-| Burton township | -0.11 | +3.11 | -0.31 | -4.44 |
-| Bensenville village | -0.18 | -5.95 | -0.29 | -6.81 |
-| West Chicago city | -0.11 | +4.00 | +0.04 | +3.87 |
-| Cahokia Heights city | -0.08 | +3.46 | +0.07 | +4.55 |
-| Tolono township | +0.11 | +9.97 | +0.22 | +3.99 |
-| Long Creek township | -0.43 | +0.14 | -0.28 | -1.51 |
-| Lafayette township | +0.22 | +3.99 | +0.30 | +3.59 |
+| Stickney township | -0.88 | -10.53 | -1.03 | -10.81 |
+| Benton township | +0.26 | +6.52 | +0.20 | +4.50 |
+| De Soto village | -0.03 | -0.13 | +0.15 | +0.92 |
+| Shiloh Valley township | +0.23 | +5.49 | +0.29 | +5.77 |
+| Springfield township | +0.04 | +5.23 | -0.03 | +2.29 |
+| Burton township | -0.12 | +3.04 | -0.31 | -4.52 |
+| Bensenville village | -0.18 | -5.87 | -0.30 | -6.90 |
+| West Chicago city | -0.10 | +3.93 | +0.04 | +3.92 |
+| Cahokia Heights city | -0.08 | +3.12 | +0.07 | +4.63 |
+| Tolono township | +0.10 | +9.63 | +0.23 | +4.02 |
+| Long Creek township | -0.43 | -0.43 | -0.28 | -1.50 |
+| Lafayette township | +0.22 | +3.88 | +0.30 | +3.64 |
 
 A fail is a method question for Andrew; the command changes nothing. Criteria: `waterledger.national.era5_check.CRITERIA`.

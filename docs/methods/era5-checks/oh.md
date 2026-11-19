@@ -1,6 +1,6 @@
 # ERA5 check: OH
 
-**PASS** (2026-11-16; model 1.16; design 0005's leave-one-station-out check; 41 stations).
+**PASS** (2026-11-17; model 1.17; design 0005's leave-one-station-out check; 41 stations).
 
 | Criterion | Test | Limit | Value | Pass | Limit set from |
 |---|---|---|---|---|---|
@@ -12,12 +12,12 @@
 | W6 | corrected shore cells (3 or more): median |error| no worse than uncorrected | - | 0.35 vs 0.95 | yes | the reason to correct |
 | W7 | corrected cells: |mean error| in the 1-in-10-year peak day's mean wet bulb, C, at most | 0.50 | 0.16 | yes | model 1.10 [A]: qm-2's Michigan peak days ran 0.72 C humid, mapping the dew point brought Michigan and Ohio to 0.23 (methods log, Nov 8, 2026) |
 | P1 | places sampled, at least | 5 | 12 | yes | too few to judge below this |
-| P2 | places: median |difference| in the hybrid average day, % of towers' average day, at most | 1.00 | 0.10 | yes | four states at 1.16 0.10-0.53 (Texas); +0.47 |
-| P3 | places: |mean difference| in the hybrid average day, % of towers' average day, at most | 0.75 | 0.04 | yes | four states at 1.16 0.04-0.29 (Texas); +0.46 |
-| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 4.05 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
-| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.22 | yes | four states 0.03-0.22; +1.8 |
+| P2 | places: median |difference| in the hybrid average day, % of towers' average day, at most | 1.00 | 0.11 | yes | four states at 1.16 0.10-0.53 (Texas); +0.47 |
+| P3 | places: |mean difference| in the hybrid average day, % of towers' average day, at most | 0.75 | 0.03 | yes | four states at 1.16 0.04-0.29 (Texas); +0.46 |
+| P4 | places: median |difference| in the hybrid peak day, % of towers' peak day, at most | 6.00 | 3.97 | yes | four states at 1.16 1.5-4.0 (Ohio); +2.0 |
+| P5 | places: median |difference| in towers' average day, %, at most | 2.00 | 0.20 | yes | four states 0.03-0.22; +1.8 |
 | P6 | places: median |difference| in the pads average day, % of towers' average day, at most | 1.00 | 0.17 | yes | four states at 1.16 0.17-0.54 (Texas); +0.46 |
-| P7 | places: median |difference| in the pads peak day, % of towers' peak day, at most | 6.00 | 1.29 | yes | four states at 1.16 1.3-3.8 (Texas); +2.2 |
+| P7 | places: median |difference| in the pads peak day, % of towers' peak day, at most | 6.00 | 1.31 | yes | four states at 1.16 1.3-3.8 (Texas); +2.2 |
 
 ## Weather at the held-out stations
 
@@ -82,31 +82,31 @@ The place's cell against the station's own record, p50 per 100 MW: % difference 
 | Place | Station (km) | Cell land | towers avg | towers peak | hybrid avg | hybrid peak | assist avg | assist peak |
 |---|---|---|---|---|---|---|---|---|
 | New Russia township | Lorain County Rgnl Airport (4) | 0.81 | +0 | +1 | -16 | +11 | -21 | -5 |
-| Brook Park city | Cleveland-Hopkins International Ap (3) | 0.65 | +0 | +1 | -32 | +11 | -45 | -2 |
-| Madison township | Mansfield Lahm Regional Airport (4) | 0.99 | +1 | +2 | +27 | +19 | +45 | +25 |
-| Whitehall city | Port Columbus International Airport (2) | 0.99 | -0 | -0 | -7 | +2 | -16 | +1 |
-| Perry township | Zanesville Municipal Arpt (4) | 1.00 | +0 | +0 | +7 | +7 | +12 | +7 |
+| Brook Park city | Cleveland-Hopkins International Ap (3) | 0.65 | +0 | +1 | -32 | +10 | -45 | -2 |
+| Madison township | Mansfield Lahm Regional Airport (4) | 0.99 | +1 | +1 | +27 | +19 | +44 | +25 |
+| Whitehall city | Port Columbus International Airport (2) | 0.99 | -0 | -1 | -7 | +2 | -16 | +1 |
+| Perry township | Zanesville Municipal Arpt (4) | 1.00 | +0 | -0 | +7 | +7 | +12 | +7 |
 | Lake township | Metcalf Field Airport (2) | 0.96 | -0 | +0 | +1 | +10 | +4 | +3 |
 | Vandalia city | J.M.Cox Dayton International Airport (4) | 1.00 | -0 | +1 | -1 | -3 | +6 | -1 |
-| Greenfield township | Fairfield County Airport (3) | 1.00 | +0 | +1 | +3 | +14 | +18 | +10 |
-| Clinton County | Airborne Airpark Airport (2) | 1.00 | -0 | +1 | +6 | +1 | +13 | +3 |
-| Fairfax village | Cina Muni Apt/Lukn Fd Apt (4) | 0.99 | -0 | -0 | -9 | +2 | -8 | +4 |
-| Perry township | Lima Allen County Airport (4) | 1.00 | -0 | -0 | +6 | +1 | +13 | -9 |
-| Green city | Akron-Canton Regional Airport (5) | 0.99 | -0 | +1 | -5 | +12 | -3 | +7 |
+| Greenfield township | Fairfield County Airport (3) | 1.00 | +0 | +1 | +3 | +13 | +18 | +10 |
+| Clinton County | Airborne Airpark Airport (2) | 1.00 | -0 | +1 | +7 | +1 | +13 | +3 |
+| Fairfax village | Cina Muni Apt/Lukn Fd Apt (4) | 0.99 | -0 | -0 | -9 | +1 | -8 | +4 |
+| Perry township | Lima Allen County Airport (4) | 1.00 | -0 | +0 | +6 | +0 | +13 | -9 |
+| Green city | Akron-Canton Regional Airport (5) | 0.99 | -0 | +1 | -4 | +13 | -3 | +7 |
 
 | Place | hybrid avg, % of towers | hybrid peak, % of towers | assist avg, % of towers | assist peak, % of towers |
 |---|---|---|---|---|
-| New Russia township | -0.23 | +4.99 | -0.22 | -1.30 |
-| Brook Park city | -0.45 | +5.58 | -0.49 | -0.49 |
-| Madison township | +0.32 | +8.22 | +0.37 | +6.09 |
-| Whitehall city | -0.14 | +1.05 | -0.29 | +0.22 |
-| Perry township | +0.11 | +3.20 | +0.15 | +1.86 |
-| Lake township | +0.01 | +4.89 | +0.06 | +1.01 |
-| Vandalia city | -0.02 | -1.52 | +0.09 | -0.31 |
-| Greenfield township | +0.06 | +5.85 | +0.26 | +2.81 |
-| Clinton County | +0.10 | +0.28 | +0.17 | +0.87 |
-| Fairfax village | -0.22 | +0.84 | -0.17 | +1.28 |
-| Perry township | +0.09 | +0.33 | +0.17 | -2.80 |
-| Green city | -0.06 | +5.19 | -0.03 | +1.58 |
+| New Russia township | -0.23 | +5.33 | -0.22 | -1.31 |
+| Brook Park city | -0.44 | +5.20 | -0.49 | -0.49 |
+| Madison township | +0.32 | +8.06 | +0.37 | +6.17 |
+| Whitehall city | -0.14 | +1.12 | -0.29 | +0.24 |
+| Perry township | +0.11 | +2.88 | +0.15 | +1.90 |
+| Lake township | +0.01 | +5.06 | +0.06 | +1.05 |
+| Vandalia city | -0.01 | -1.51 | +0.09 | -0.33 |
+| Greenfield township | +0.06 | +5.57 | +0.26 | +2.85 |
+| Clinton County | +0.10 | +0.32 | +0.17 | +0.89 |
+| Fairfax village | -0.21 | +0.46 | -0.17 | +1.31 |
+| Perry township | +0.09 | +0.02 | +0.17 | -2.84 |
+| Green city | -0.05 | +5.26 | -0.03 | +1.61 |
 
 A fail is a method question for Andrew; the command changes nothing. Criteria: `waterledger.national.era5_check.CRITERIA`.

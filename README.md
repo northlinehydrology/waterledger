@@ -121,7 +121,7 @@ They are validated, round-trip through JSON, and are described in
 | New York | 1,584 cities and villages, towns and counties | ERA5, each place's own cell (250 cells) | [waterledger.org/methods/ny](https://waterledger.org/methods/ny/), [brief](docs/methods/ny.pdf) |
 | Arizona | 107 cities, towns and counties | ERA5, each place's own cell (83 cells) | [waterledger.org/methods/az](https://waterledger.org/methods/az/), [brief](docs/methods/az.pdf) |
 
-**Model 1.17** changes the data center, battery cell plant and supply numbers, and every state's snapshot is rebuilt for it:
+**Model 1.17** changes the data center, battery cell plant, gas (fuel cells only) and supply numbers, and every state's snapshot is rebuilt for it:
 - **Water-cooled chillers follow ASHRAE 90.1's curve** ([design 0021](docs/design/0021-water-cooled-chillers.md)): the
   fixed-loss form of design 0015, fitted to 90.1's water-cooled centrifugal curve within 3%, with no gain below the smallest lift
   the curve covers, in place of a cap of 8 that held in nearly every hour. Towers' electricity falls 0.3-1.3% a year and about
@@ -136,6 +136,8 @@ They are validated, round-trip through JSON, and are described in
   Project until December 2019). Arizona Public Service's grid withdrawal falls from about 3,700 to 470 gal/MWh.
 - **Design totals** (`Site.by_design`, design 0020): the peak day, the cooling plant, the balancing authority's hourly grid water
   and the differences against towers; pads join the default list.
+- **Fuel cells are solid oxide** ([design 0019](docs/design/0019-solid-oxide-fuel-cells.md)), and solar and wind can run on a study's
+  own forcing ([design 0018](docs/design/0018-supply-on-a-study-forcing.md)); the ERA5 supply path is unchanged.
 
 **Model 1.16** changes the data center and battery cell plant numbers, and every state's snapshot is rebuilt for it:
 - **Air-cooled chillers respond to the air** ([design 0015](docs/design/0015-air-cooled-chillers.md)): their COP has a
@@ -167,7 +169,7 @@ Carlo runner, and changes no data center or place number, so it reads model 1.11
     at ISO weather gives 158 and 206 gal/MWh consumed and withdrawn against NETL's 186 and 240; against EIA's 2024 fleet, in
     aggregate, 21% under in the Great Lakes at a new plant's heat rate and 12% over at the fleet's own
     ([docs/methods/power_supply](docs/methods/power_supply/)); a year of weather lands inside the published ranges by design.
-  - **Fuel cells are solid oxide** (branch `supply-on-aorc`, the next model step; [design 0019](docs/design/0019-solid-oxide-fuel-cells.md)):
+  - **Fuel cells are solid oxide** (model 1.17; [design 0019](docs/design/0019-solid-oxide-fuel-cells.md)):
     6,600-7,500 Btu/kWh HHV from EIA-923's gas fuel cell plants by age, with the fleet's age a setting (`age_years`, sampled when not
     given); start-up water consumed; the 325 kW server as the unit, with a reserve from the servers' availability.
 - **New solar and wind** (`waterledger_models.supply`): PV by the PVWatts chain, within 0.04% of the AC rating of pvlib's in
