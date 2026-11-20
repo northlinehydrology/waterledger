@@ -23,6 +23,7 @@ def test_a_rules_file_is_well_formed_and_cited(st):
     keys = [x["key"] for x in W["lines"]]
     assert len(keys) == len(set(keys)) and "below" not in keys
     for x in W["lines"]:
+        assert all(len(h) % 2 == 0 and h.isdigit() for h in x.get("huc", [])) and all(len(c) == 5 and c.isdigit() for c in x.get("counties", [])), x
         assert x["mgd"] > 0 and x["level"] in LEVELS and x["tag"], x
         assert x.get("period", W.get("period", "30 days")) in PERIODS and x.get("measure", "withdrawn") in ("withdrawn", "consumed")
         assert x.get("where") in WHERE | {None} and set(x.get("source", [])) <= SOURCES
@@ -69,7 +70,7 @@ def test_ohio_by_basin_source_measure_and_period():
 
 def test_reviewed_states_are_covered_in_the_package():
     from waterledger.national import provider
-    assert provider.not_covered("OH") == {} and "state_rules" in provider.not_covered("VA")
+    assert provider.not_covered("OH") == {} and "state_rules" in provider.not_covered("KS")
     assert {"topic": "withdrawal", "key": "register", "mgd": 0.1, "tag": "Must register with the state", "sources": ["orc_1521_16"]} in rules.jurisdiction("OH")
 
 
@@ -81,3 +82,18 @@ def test_georgia_one_line_on_the_monthly_average():
     assert lv.withdrawal(q(0.1, 0.5), W, peak=True)[1] == "permit" and lv.permit_flag("permit", W) == "permit" and "EPD" in lv.flag_note("permit", W)
     # no sentence that the utility's permit covers the campus: Georgia's statutes and rules don't say so
     assert "utility" not in rules.load("GA")["withdrawals"] and "lake_erie" not in rules.load("GA")
+
+
+def test_a_line_limited_to_a_basin_or_counties_applies_only_there():
+    W = {"lines": [{"key": "basin", "mgd": 0.1, "level": "large", "huc": ["0205"]}, {"key": "area", "mgd": 0.05, "level": "mid", "counties": ["51001"]}]}
+    assert lv.withdrawal(1.0, W, huc="020501010101")[1] == "basin" and lv.withdrawal(1.0, W, huc="020402030405")[1] == "below"
+    assert lv.withdrawal(1.0, W, county="51001")[1] == "area" and lv.withdrawal(1.0, W, county="51003")[1] == "below"
+    assert lv.withdrawal(1.0, W)[1] == "below", "a place not known to be in the area gets no regional line"
+
+
+def test_virginia_reporting_statewide_and_the_management_areas_by_county():
+    # 9VAC25-200-30: report above 10,000 gallons a day averaged over a month, statewide; 9VAC25-610: a permit at 300,000 gallons a month, only in a management area
+    W = rules.withdrawals("VA")
+    assert lv.withdrawal(0.01, W, county="51107")[1] == "below" and lv.withdrawal(0.011, W, county="51107")[1] == "report"      # Loudoun: no management area
+    assert lv.withdrawal(0.011, W, source="ground", county="51810") == ("large", "gwma_permit")                                  # Virginia Beach: Eastern Virginia
+    assert lv.withdrawal(0.011, W, source="ground", county="51059")[1] == "report"                                               # Fairfax: split by I-95, no line

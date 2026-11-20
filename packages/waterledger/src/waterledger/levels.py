@@ -48,9 +48,15 @@ def _lines(W):
             {"key": "permit", "mgd": W["permit_mgd"], "level": "large", "flag": PERMIT_NOTES["permit"]}]
 
 
-def applies(line, basin=None, source=None):
-    """Whether a line applies at a place: `basin` is whether it is in the Great Lakes basin, `source` the water taken ("ground", "surface" or "lake": a Great Lake itself)."""
+def applies(line, basin=None, source=None, huc=None, county=None):
+    """Whether a line applies at a place: `basin` is whether it is in the Great Lakes basin, `source` the water taken ("ground", "surface" or "lake": a Great Lake itself),
+    `huc` the place's main watershed (a HUC code) and `county` its county's five-digit FIPS code. A line with `huc` (HUC prefixes: a river basin commission's basin) or
+    `counties` (FIPS codes: a management area made of whole counties) applies only at a place known to be in one of them."""
     w, s = line.get("where"), line.get("source")
+    if "huc" in line and not (huc and any(str(huc).startswith(h) for h in line["huc"])):
+        return False
+    if "counties" in line and not (county and str(county) in line["counties"]):
+        return False
     return (w is None or (w == "great_lakes_basin") == bool(basin)) and (s is None or source is None or source in s)
 
 
@@ -66,7 +72,7 @@ def tested_on(line, q, W=None, peak=False):
     return q[f"{m}_peak"] if v is None else v
 
 
-def withdrawal(mgd, W, basin=None, source=None, peak=False):
+def withdrawal(mgd, W, basin=None, source=None, peak=False, huc=None, county=None):
     """(level, line) for water pumped or taken at a site, where a state's rules are reviewed: `line` is the key of the highest line the water exceeds ("below" under all of them),
     from the state's rules (waterledger.rules) as they apply at the place. `mgd` is one number every line is tested on, or the water by measure and period (tested_on).
     W: context.withdrawals."""
@@ -74,7 +80,7 @@ def withdrawal(mgd, W, basin=None, source=None, peak=False):
     out = ("small", "below")
     for x in _lines(W):
         v = tested_on(x, q, W, peak)
-        if applies(x, basin, source) and v is not None and (v >= x["mgd"] if x.get("at_least") else v > x["mgd"]):
+        if applies(x, basin, source, huc, county) and v is not None and (v >= x["mgd"] if x.get("at_least") else v > x["mgd"]):
             out = (x["level"], x["key"])
     return out
 
@@ -168,9 +174,11 @@ def site_levels(est, ref):
             basin = bool(ctx.receiving.great_lake or ctx.receiving.great_lakes_basin)
             q = {"withdrawn_month": w.withdrawn_max_month.p50 if w.withdrawn_max_month is not None else None, "withdrawn_peak": peak,
                  "consumed_90": w.consumed_max_90day.p50 if w.consumed_max_90day is not None else None, "consumed_peak": w.consumed.peak_day.p50}
-            out["withdrawal"], out["withdrawal_line"] = withdrawal(q, W, basin, "ground")
+            sheds = getattr(ctx.receiving, "watersheds", None)                  # the place's main watershed and county, for a line limited to a basin or to counties
+            huc, cty = (sheds[0].huc12 if sheds else None), getattr(s.place, "county_fips", None)
+            out["withdrawal"], out["withdrawal_line"] = withdrawal(q, W, basin, "ground", huc=huc, county=cty)
             out["withdrawal_period"] = "highest_month" if q["withdrawn_month"] is not None else "peak_day"     # the rules' own periods where the data has the month
-            out["withdrawal_line_peak_day"] = withdrawal(q, W, basin, "ground", peak=True)[1]
+            out["withdrawal_line_peak_day"] = withdrawal(q, W, basin, "ground", peak=True, huc=huc, county=cty)[1]
             flag, flag_peak = permit_flag(out["withdrawal_line"], W), permit_flag(out["withdrawal_line_peak_day"], W)
             out["withdrawal_flag"], out["withdrawal_flag_peak_day"] = flag, flag_peak
             if flag or flag_peak:

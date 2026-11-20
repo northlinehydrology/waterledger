@@ -9,7 +9,8 @@ A file holds:
                        ("withdrawn", the default, or "consumed": water used up), `period` ("capacity": the peak day; "30 days" or "90 days": the highest month
                        for water withdrawn, the highest 90 days for water used up; the section's `period` where absent; levels.tested_on), `at_least` (the
                        rule reads "at least" rather than "more than"), `where` ("great_lakes_basin" or "outside_great_lakes_basin") and `source` (a list of
-                       "ground", "surface" and "lake": a Great Lake itself). `summary` words the lines for a card, `utility` says what a
+                       "ground", "surface" and "lake": a Great Lake itself), `huc` (HUC prefixes: the line applies only in those river basins, e.g. a basin
+                       commission's) and `counties` (five-digit county FIPS codes: only in those whole counties, e.g. a management area). `summary` words the lines for a card, `utility` says what a
                        utility serving the campus needs, `screening` names a state screening tool where one exists; `basin_summary` and `lake_summary`
                        word the lines in the Great Lakes basin and for an intake in a Great Lake, where they differ.
   [discharge]          `permit_note`: what a discharge permit usually carries beyond the federal minimum (a phosphorus limit, a temperature rule)
@@ -60,7 +61,7 @@ def jurisdiction(state):
     if not R:
         return []
     out = [{"topic": "withdrawal", "key": x["key"], "mgd": x["mgd"], "tag": x["tag"], **({"where": x["where"]} if "where" in x else {}),
-            **({"source": x["source"]} if "source" in x else {}), "sources": x.get("sources", [])} for x in R.get("withdrawals", {}).get("lines", [])]
+            **({"source": x["source"]} if "source" in x else {}), **{k: x[k] for k in ("huc", "counties") if k in x}, "sources": x.get("sources", [])} for x in R.get("withdrawals", {}).get("lines", [])]
     for k in ("discharge", "lake_erie", "large_load"):
         if k in R:
             out.append({"topic": k, **{a: b for a, b in R[k].items()}})
