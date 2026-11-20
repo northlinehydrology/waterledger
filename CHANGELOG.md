@@ -4,12 +4,17 @@ Package changes (code). Changes to the numbers are listed by model version on th
 
 ## Unreleased
 
-waterledger only. No estimated number changes.
+waterledger only. No estimated number changes; the levels a reader sees change in every state whose rules are now reviewed.
 
-- **Georgia's rules** (`waterledger/rules/ga.toml`): one withdrawal line, a permit from EPD above 100,000 gallons a day of surface water or
-  groundwater on a monthly average (O.C.G.A. 12-5-31(b), 12-5-96(a)(1); Ga. Comp. R. & Regs. 391-3-6-.07, 391-3-2); EPD discharge and
-  temperature criteria; on-site sewage under DPH's rules up to 2,000 gallons a day; Georgia Power's 100 MW large-load rules (PSC Docket 44280).
-  No sentence that a utility's permit covers its customer: Georgia's statutes and rules don't say so.
+- **Ten more states' rules** (`waterledger/rules/<st>.toml`): Georgia, Virginia, Texas, Wisconsin, Indiana, Minnesota, Pennsylvania, Illinois,
+  New York and Arizona, each from a cited review read line by line against its sources on Nov 20, 2026. Every state on waterledger.org now has
+  a rules file.
+- **Lines limited to a river basin or to counties** (`huc`, `counties`; `levels.applies(..., huc, county)`): the Susquehanna and Delaware basin
+  commissions' lines (New York, Pennsylvania), Long Island's well permits and Virginia's groundwater management areas apply only where the place's
+  main watershed or county puts it. A place not known to be in one gets no such line. `site_levels` passes the place's watershed and county.
+- **A state with no numeric line** (Texas: districts set their own rules) carries its summary, and the reader sees it in place of the
+  not-reviewed note (`rules.withdrawals(st)["no_line"]`).
+- No sentence that a utility's permit covers its customer for Georgia: its statutes and rules don't say so.
 
 ## 3.26.0 (Nov 19, 2026; model 1.17)
 
