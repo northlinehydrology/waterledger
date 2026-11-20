@@ -1,0 +1,99 @@
+# Arizona's rules for large new water users, as data (waterledger.rules). Every line was read against its source on `checked`.
+checked = "2026-11-20"
+
+[withdrawals]
+# One statewide line: an exempt well has a pump capacity of 35 gallons a minute or less (A.R.S. 45-402, 45-454), 0.0504 MGD on the peak day. Above it, inside an
+# Active Management Area a well needs a grandfathered right, a service area right or a withdrawal permit from ADWR (45-512); outside the AMAs, groundwater is
+# withdrawn for reasonable and beneficial use with a notice of intention to drill and no permit or volume limit (45-453, 45-596). AMAs are groundwater basins,
+# not counties, and the data doesn't say which places are in one, so the AMA rule is in the summary and the line carries no flag.
+period = "capacity"
+summary = "Arizona’s rules turn on whether a well is in an Active Management Area. Inside one (Phoenix, Pinal, Prescott, Tucson and Santa Cruz, and areas designated later), a well pumping more than 35 gallons a minute needs a groundwater right or a withdrawal permit from ADWR. Outside them, groundwater is pumped for reasonable and beneficial use with a notice of intention to drill and no permit or volume limit."
+sources = ["az_45_402", "az_45_454", "az_45_512", "az_45_453", "az_45_596"]
+
+[[withdrawals.lines]]
+key = "nonexempt"
+mgd = 0.0504
+level = "mid"
+tag = "Larger than an exempt well"
+sources = ["az_45_402", "az_45_454"]
+
+[discharge]
+permit_note = "ADEQ issues the permit (AZPDES), and Arizona’s standards limit a thermal discharge’s warming of a stream to 3.0 °C for warm-water aquatic life uses and 1.0 °C for cold-water uses."
+sources = ["az_r18_11_109"]
+
+[septic]
+sources = ["az_r18_9_a309", "az_r18_9_e302", "az_r18_9_e323"]
+
+[[septic.lines]]
+below_gpd = 3000
+text = "the system is built under a Type 4 general permit from ADEQ’s rules, with a construction authorization and then a discharge authorization"
+
+[[septic.lines]]
+below_gpd = 24000
+text = "the system falls under ADEQ’s general permit for 3,000 to 24,000 gallons a day, with an engineer’s sealed design and a nitrogen loading limit"
+
+[[septic.lines]]
+text = "a system of 24,000 gallons a day or more needs an individual aquifer protection permit from ADEQ"
+
+[[sources]]
+id = "az_45_402"
+short = "A.R.S. 45-402"
+title = "Arizona Revised Statutes 45-402: definitions (exempt well; active management areas)"
+publisher = "Arizona State Legislature"
+url = "https://www.azleg.gov/ars/45/00402.htm"
+
+[[sources]]
+id = "az_45_454"
+short = "A.R.S. 45-454"
+title = "Arizona Revised Statutes 45-454: exemption of small non-irrigation wells"
+publisher = "Arizona State Legislature"
+url = "https://www.azleg.gov/ars/45/00454.htm"
+
+[[sources]]
+id = "az_45_512"
+short = "A.R.S. 45-512"
+title = "Arizona Revised Statutes 45-512: withdrawals in active management areas"
+publisher = "Arizona State Legislature"
+url = "https://www.azleg.gov/ars/45/00512.htm"
+
+[[sources]]
+id = "az_45_453"
+short = "A.R.S. 45-453"
+title = "Arizona Revised Statutes 45-453: withdrawals outside active management areas"
+publisher = "Arizona State Legislature"
+url = "https://www.azleg.gov/ars/45/00453.htm"
+
+[[sources]]
+id = "az_45_596"
+short = "A.R.S. 45-596"
+title = "Arizona Revised Statutes 45-596: notice of intention to drill"
+publisher = "Arizona State Legislature"
+url = "https://www.azleg.gov/ars/45/00596.htm"
+
+[[sources]]
+id = "az_r18_11_109"
+short = "A.A.C. R18-11-109"
+title = "Arizona Administrative Code R18-11-109: numeric water quality standards, as reproduced by Cornell LII"
+publisher = "Arizona Department of Environmental Quality"
+url = "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R18-11-109"
+
+[[sources]]
+id = "az_r18_9_a309"
+short = "A.A.C. R18-9-A309"
+title = "Arizona Administrative Code R18-9-A309: on-site wastewater treatment facilities, general provisions, as reproduced by Cornell LII"
+publisher = "Arizona Department of Environmental Quality"
+url = "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R18-9-A309"
+
+[[sources]]
+id = "az_r18_9_e302"
+short = "A.A.C. R18-9-E302"
+title = "Arizona Administrative Code R18-9-E302: Type 4 general permit, on-site wastewater under 3,000 gallons a day, as reproduced by Cornell LII"
+publisher = "Arizona Department of Environmental Quality"
+url = "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R18-9-E302"
+
+[[sources]]
+id = "az_r18_9_e323"
+short = "A.A.C. R18-9-E323"
+title = "Arizona Administrative Code R18-9-E323: Type 4 general permit, 3,000 to less than 24,000 gallons a day, as reproduced by Cornell LII"
+publisher = "Arizona Department of Environmental Quality"
+url = "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R18-9-E323"

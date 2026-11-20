@@ -1,0 +1,74 @@
+# Texas's rules for large new water users, as data (waterledger.rules). Every line was read against its source on `checked`.
+checked = "2026-11-20"
+
+[withdrawals]
+# No numeric line: Texas sets no statewide permit threshold for wells. Groundwater conservation districts permit wells under their own rules (Water Code
+# 36.113(a)); the only gallons figure in Chapter 36 is the mandatory exemption for a domestic or livestock well on more than 10 acres that can't produce more
+# than 25,000 gallons a day (36.117(b)(1)), which a data center's well isn't. The Edwards Aquifer Authority permits every withdrawal in its area (EAA Act
+# 1.15). Surface water is state water and needs a TCEQ water right with no volume line (11.121). The large-load line (75 MW, 16 TAC 25.194) applies in the
+# ERCOT region only and isn't carried here: the tariff's utility pattern would have to name every ERCOT utility (see rules.md).
+summary = "Texas sets no statewide permit line for wells. Groundwater conservation districts, which cover 173 of the state’s 254 counties, require permits for wells under their own rules, and the Edwards Aquifer Authority permits every withdrawal in its area. Surface water needs a water right from TCEQ."
+sources = ["tx_wa_36", "tx_eaa_act", "tx_wa_11", "twdb_gcd"]
+
+[discharge]
+permit_note = "TCEQ issues the permit (TPDES), and Texas’s standards limit warming above ambient to 5 °F in freshwater streams and 3 °F in lakes and reservoirs, outside the mixing zone the permit sets."
+sources = ["tx_307_4"]
+
+[septic]
+sources = ["tx_hs_366", "tx_285_3"]
+
+[[septic.lines]]
+max_gpd = 5000
+text = "an on-site sewage facility is permitted by the local authorized agent, or by TCEQ where there is none"
+
+[[septic.lines]]
+text = "a system treating more than 5,000 gallons a day on one property is outside the on-site sewage rules and may need a TCEQ permit"
+
+[[sources]]
+id = "tx_wa_36"
+short = "Water Code ch. 36"
+title = "Texas Water Code Chapter 36: groundwater conservation districts"
+publisher = "Texas Legislature"
+url = "https://tcss.legis.texas.gov/resources/WA/htm/WA.36.htm"
+
+[[sources]]
+id = "tx_eaa_act"
+short = "Edwards Aquifer Authority Act"
+title = "Edwards Aquifer Authority Act (compiled through the 2021 amendments)"
+publisher = "Edwards Aquifer Authority"
+url = "https://edwardsaquifer.org/wp-content/uploads/2024/07/EAA-Act.pdf"
+
+[[sources]]
+id = "tx_wa_11"
+short = "Water Code ch. 11"
+title = "Texas Water Code Chapter 11: water rights"
+publisher = "Texas Legislature"
+url = "https://tcss.legis.texas.gov/resources/WA/htm/WA.11.htm"
+
+[[sources]]
+id = "twdb_gcd"
+short = "TWDB, district facts"
+title = "Groundwater Conservation Districts facts"
+publisher = "Texas Water Development Board"
+url = "https://www.twdb.texas.gov/groundwater/conservation_districts/facts.asp"
+
+[[sources]]
+id = "tx_307_4"
+short = "30 TAC 307.4"
+title = "Texas Administrative Code 30 TAC 307.4: general criteria (temperature and nutrients), as reproduced by Cornell LII"
+publisher = "Texas Commission on Environmental Quality"
+url = "https://www.law.cornell.edu/regulations/texas/30-Tex-Admin-Code-SS-307-4"
+
+[[sources]]
+id = "tx_hs_366"
+short = "Health and Safety Code ch. 366"
+title = "Texas Health and Safety Code Chapter 366: on-site sewage disposal systems"
+publisher = "Texas Legislature"
+url = "https://tcss.legis.texas.gov/resources/HS/htm/HS.366.htm"
+
+[[sources]]
+id = "tx_285_3"
+short = "30 TAC 285.3"
+title = "Texas Administrative Code 30 TAC 285.3: on-site sewage facilities, general requirements, as reproduced by Cornell LII"
+publisher = "Texas Commission on Environmental Quality"
+url = "https://www.law.cornell.edu/regulations/texas/30-Tex-Admin-Code-SS-285-3"

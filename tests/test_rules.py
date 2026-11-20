@@ -19,10 +19,12 @@ def test_a_rules_file_is_well_formed_and_cited(st):
     for s in R["sources"]:
         assert s["url"].startswith("https://") and s["title"] and s.get("short"), s
     W = R["withdrawals"]
-    assert W["summary"] and W.get("period", "30 days") in PERIODS
-    keys = [x["key"] for x in W["lines"]]
+    assert W["summary"] and W.get("period", "30 days") in PERIODS and W.get("sources")
+    if not W.get("lines"):          # a reviewed state with no numeric line (districts set their own): the summary is what a reader sees
+        assert rules.withdrawals(st)["no_line"] == W["summary"]
+    keys = [x["key"] for x in W.get("lines", [])]
     assert len(keys) == len(set(keys)) and "below" not in keys
-    for x in W["lines"]:
+    for x in W.get("lines", []):
         assert all(len(h) % 2 == 0 and h.isdigit() for h in x.get("huc", [])) and all(len(c) == 5 and c.isdigit() for c in x.get("counties", [])), x
         assert x["mgd"] > 0 and x["level"] in LEVELS and x["tag"], x
         assert x.get("period", W.get("period", "30 days")) in PERIODS and x.get("measure", "withdrawn") in ("withdrawn", "consumed")
@@ -36,7 +38,7 @@ def test_a_rules_file_is_well_formed_and_cited(st):
     if "large_load" in R:
         assert R["large_load"]["mw"] > 0 and R["large_load"]["text"] and R["large_load"]["caption"]
     # the context carries the Compact's line beside the state's
-    assert rules.withdrawals(st)["compact_use_mgd"] == rules.COMPACT_USE_MGD and rules.withdrawals(st)["lines"]
+    assert rules.withdrawals(st)["compact_use_mgd"] == rules.COMPACT_USE_MGD and (rules.withdrawals(st).get("lines") or rules.withdrawals(st).get("no_line"))
 
 
 def test_a_state_without_a_file_has_no_lines():
@@ -97,3 +99,35 @@ def test_virginia_reporting_statewide_and_the_management_areas_by_county():
     assert lv.withdrawal(0.01, W, county="51107")[1] == "below" and lv.withdrawal(0.011, W, county="51107")[1] == "report"      # Loudoun: no management area
     assert lv.withdrawal(0.011, W, source="ground", county="51810") == ("large", "gwma_permit")                                  # Virginia Beach: Eastern Virginia
     assert lv.withdrawal(0.011, W, source="ground", county="51059")[1] == "report"                                               # Fairfax: split by I-95, no line
+
+
+def test_minnesota_day_and_year_lines_and_the_basin():
+    # Minn. Stat. 103G.271 subd. 4(a): exempt only under 10,000 gallons a day and no more than 1,000,000 a year; 103G.265 subd. 3, 4: water used up over 30 days
+    W = rules.withdrawals("MN")
+    assert lv.withdrawal(0.002, W)[1] == "below" and lv.withdrawal(0.003, W)[1] == "permit_year"
+    assert lv.withdrawal({"withdrawn_month": 0.003, "withdrawn_peak": 0.01, "consumed_90": 0, "consumed_peak": 0}, W)[1] == "permit"
+    used = lambda c: {"withdrawn_month": 9, "withdrawn_peak": 9, "consumed_90": c, "consumed_peak": c}
+    assert lv.withdrawal(used(2.1), W, basin=False)[1] == "consumptive_review" and lv.withdrawal(used(5.1), W, basin=False)[1] == "consumptive_review"
+    assert lv.withdrawal(used(5.1), W, basin=True)[1] == "great_lakes_approval"
+
+
+def test_new_york_capacity_long_island_and_the_basin_commissions():
+    W = rules.withdrawals("NY")
+    q = lambda month, peak, c=0.0: {"withdrawn_month": month, "withdrawn_peak": peak, "consumed_90": c, "consumed_peak": c}
+    assert lv.withdrawal(q(0.05, 0.09), W, huc="041300", county="36029")[1] == "below"                                  # Buffalo area, under 100,000 on the peak day
+    assert lv.withdrawal(q(0.05, 0.1), W, huc="041300", county="36029")[1] == "permit"                                  # ECL 15-1501: capacity, at least
+    assert lv.withdrawal(q(0.05, 0.07), W, huc="020301", county="36103")[1] == "long_island"                            # ECL 15-1527: over 45 gpm
+    assert lv.withdrawal(q(0.1, 0.12, 0.01), W, huc="020501", county="36007")[1] == "srbc_withdrawal"                   # 18 CFR 806.4: SRBC wins over DEC's permit
+    assert lv.withdrawal(q(0.05, 0.05, 0.02), W, huc="020501", county="36007")[1] == "srbc_consumptive"
+    assert lv.withdrawal(q(0.11, 0.12), W, huc="020401", county="36025")[1] == "drbc_review"
+
+
+def test_states_with_no_numeric_line_or_no_flag():
+    # Texas: districts set their own rules, so the reader sees the summary and no level
+    assert "lines" not in rules.withdrawals("TX") and "districts" in rules.withdrawals("TX")["no_line"]
+    # Arizona: 35 gallons a minute is the exempt-well size; the AMA rule is in the summary, with no flag
+    W = rules.withdrawals("AZ")
+    assert lv.withdrawal(0.05, W)[1] == "below" and lv.withdrawal(0.051, W) == ("mid", "nonexempt") and lv.permit_flag("nonexempt", W) is None
+    # Illinois: notice to the district at 100,000 gallons in any 24 hours, no permit
+    W = rules.withdrawals("IL")
+    assert lv.withdrawal(0.1, W, source="ground") == ("mid", "notice") and lv.permit_flag("notice", W) is None
