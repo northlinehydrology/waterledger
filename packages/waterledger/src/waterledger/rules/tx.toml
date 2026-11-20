@@ -2,13 +2,26 @@
 checked = "2026-11-20"
 
 [withdrawals]
-# No numeric line: Texas sets no statewide permit threshold for wells. Groundwater conservation districts permit wells under their own rules (Water Code
+# Texas sets no statewide permit threshold for wells. Groundwater conservation districts permit wells under their own rules (Water Code
 # 36.113(a)); the only gallons figure in Chapter 36 is the mandatory exemption for a domestic or livestock well on more than 10 acres that can't produce more
 # than 25,000 gallons a day (36.117(b)(1)), which a data center's well isn't. The Edwards Aquifer Authority permits every withdrawal in its area (EAA Act
 # 1.15). Surface water is state water and needs a TCEQ water right with no volume line (11.121). The large-load line (75 MW, 16 TAC 25.194) applies in the
 # ERCOT region only and isn't carried here: the tariff's utility pattern would have to name every ERCOT utility (see rules.md).
-summary = "Texas sets no statewide permit line for wells. Groundwater conservation districts, which cover 173 of the state’s 254 counties, require permits for wells under their own rules, and the Edwards Aquifer Authority permits every withdrawal in its area. Surface water needs a water right from TCEQ."
-sources = ["tx_wa_36", "tx_eaa_act", "tx_wa_11", "twdb_gcd"]
+# The district line: a district "shall require a permit" for a well it doesn't exempt (36.113(a)), so any pumping inside one needs a district permit unless the
+# district's own rules exempt it (mgd 0: any amount). tx_areas.json (tools/rule_areas.py, from TWDB's district boundaries, Nov 2019, which TWDB calls approximate)
+# says which places are inside; it includes the Edwards Aquifer Authority and the Harris-Galveston and Fort Bend subsidence districts.
+summary = "Texas sets no statewide permit line for wells. Groundwater conservation districts, which cover 173 of the state’s 254 counties, require permits for wells under their own rules, the Edwards Aquifer Authority permits every withdrawal in its area, and the Harris-Galveston and Fort Bend subsidence districts require a permit for every well. Surface water needs a water right from TCEQ."
+sources = ["tx_wa_36", "tx_eaa_act", "tx_sd_8801", "tx_sd_8834", "tx_wa_11", "twdb_gcd"]
+below_tag = "Outside any groundwater district"
+
+[[withdrawals.lines]]
+key = "district_permit"
+mgd = 0.0
+areas = ["gcd"]
+level = "large"
+tag = "Needs a district permit"
+flag = "The wells would be inside a groundwater district. A Texas groundwater district requires a permit for a well its rules don't exempt, and sets how much it may pump."
+sources = ["tx_wa_36", "tx_sd_8801", "tx_sd_8834", "twdb_gcd_map"]
 
 [discharge]
 permit_note = "TCEQ issues the permit (TPDES), and Texas’s standards limit warming above ambient to 5 °F in freshwater streams and 3 °F in lakes and reservoirs, outside the mixing zone the permit sets."
@@ -72,3 +85,24 @@ short = "30 TAC 285.3"
 title = "Texas Administrative Code 30 TAC 285.3: on-site sewage facilities, general requirements, as reproduced by Cornell LII"
 publisher = "Texas Commission on Environmental Quality"
 url = "https://www.law.cornell.edu/regulations/texas/30-Tex-Admin-Code-SS-285-3"
+
+[[sources]]
+id = "twdb_gcd_map"
+short = "TWDB district boundaries"
+title = "Groundwater Conservation Districts of Texas, GIS boundaries (Nov 2019; approximate)"
+publisher = "Texas Water Development Board"
+url = "https://www.twdb.texas.gov/mapping/gisdata/doc/GCD_Shapefiles.zip"
+
+[[sources]]
+id = "tx_sd_8801"
+short = "Spec. Dist. Code 8801.155"
+title = "Texas Special District Local Laws Code 8801.155: Harris-Galveston Subsidence District, permit required"
+publisher = "Texas Legislature"
+url = "https://tcss.legis.texas.gov/resources/SD/htm/SD.8801.htm"
+
+[[sources]]
+id = "tx_sd_8834"
+short = "Spec. Dist. Code 8834.206"
+title = "Texas Special District Local Laws Code 8834.206: Fort Bend Subsidence District, permit required"
+publisher = "Texas Legislature"
+url = "https://tcss.legis.texas.gov/resources/SD/htm/SD.8834.htm"

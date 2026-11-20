@@ -6,7 +6,8 @@ checked = "2026-11-20"
 # 110.201); registration, not a permit. Susquehanna basin (HUC 0205): SRBC approval for a withdrawal of 100,000 gallons a day or more and a consumptive use of
 # 20,000 or more, each over a consecutive 30-day average (18 CFR 806.4); the estimate has no 30-day figure for water used up, so its highest 90 days stands in
 # [A]. Delaware basin (HUC 0204): DRBC review above 100,000 gallons a day over 30 consecutive days (18 CFR 401.35); in the Southeastern Pennsylvania Ground Water
-# Protected Area the line is 10,000 gallons a day (18 CFR 430.7), but the area is parts of listed townships and boroughs, so it is in the summary, not a line.
+# Protected Area no one may withdraw groundwater at more than 10,000 gallons a day except as the rule allows (18 CFR 430.7; 30 days in DRBC's FAQ). The area is
+# the Delaware-basin parts of listed townships and boroughs and all of Montgomery County: pa_areas.json (tools/rule_areas.py, DRBC's boundary) places each place.
 # Lake Erie basin: DEP applies Act 43 of 2008's line, a new or increased withdrawal of 100,000 gallons a day or more over 90 days, through its permit programs
 # (DEP's Great Lakes report).
 period = "30 days"
@@ -20,6 +21,16 @@ mgd = 0.01
 level = "mid"
 tag = "Must register with the state"
 sources = ["pa_110_201", "pa_27_3118"]
+
+[[withdrawals.lines]]
+key = "sepa_gwpa"
+mgd = 0.01
+areas = ["sepa_gwpa"]
+source = ["ground"]
+level = "large"
+tag = "Needs DRBC approval"
+flag = "The estimated pumping is above 10,000 gallons a day. In the Southeastern Pennsylvania Ground Water Protected Area, a groundwater withdrawal that large needs the Delaware River Basin Commission’s approval."
+sources = ["drbc_430_7", "drbc_gwpa_map"]
 
 [[withdrawals.lines]]
 key = "srbc_consumptive"
@@ -163,3 +174,17 @@ short = "PPL Electric Rate Schedule LP-6"
 title = "PPL Electric Utilities, Tariff Supplement No. 2 to Pa. P.U.C. No. 202, Rate Schedule LP-6 (large load interconnections), pages 35C to 35E"
 publisher = "PPL Electric Utilities"
 url = "https://www.pplelectric.com/site/-/media/PPLElectric/At-Your-Service/Docs/Current-Electric-Tariff/2026/August/LP-6---Large-Load-Interconnections.pdf"
+
+[[sources]]
+id = "drbc_430_7"
+short = "18 CFR 430.7"
+title = "18 CFR 430.7: Southeastern Pennsylvania Ground Water Protected Area, withdrawal limits"
+publisher = "Delaware River Basin Commission (eCFR)"
+url = "https://www.ecfr.gov/current/title-18/section-430.7"
+
+[[sources]]
+id = "drbc_gwpa_map"
+short = "DRBC protected area boundary"
+title = "Southeastern Pennsylvania Ground Water Protected Area boundary (GIS)"
+publisher = "Delaware River Basin Commission"
+url = "https://nj.gov/drbc/library/documents/GIS/gwpabnd.zip"

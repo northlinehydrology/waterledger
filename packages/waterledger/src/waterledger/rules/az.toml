@@ -5,9 +5,9 @@ checked = "2026-11-20"
 # One statewide line: an exempt well has a pump capacity of 35 gallons a minute or less (A.R.S. 45-402, 45-454), 0.0504 MGD on the peak day. Above it, inside an
 # Active Management Area a well needs a grandfathered right, a service area right or a withdrawal permit from ADWR (45-512); outside the AMAs, groundwater is
 # withdrawn for reasonable and beneficial use with a notice of intention to drill and no permit or volume limit (45-453, 45-596). AMAs are groundwater basins,
-# not counties, and the data doesn't say which places are in one, so the AMA rule is in the summary and the line carries no flag.
+# not counties: az_areas.json (tools/rule_areas.py, from ADWR's AMA and INA boundaries) says which places are inside, and a place partly inside sees both rules.
 period = "capacity"
-summary = "Arizona’s rules turn on whether a well is in an Active Management Area. Inside one (Phoenix, Pinal, Prescott, Tucson and Santa Cruz, and areas designated later), a well pumping more than 35 gallons a minute needs a groundwater right or a withdrawal permit from ADWR. Outside them, groundwater is pumped for reasonable and beneficial use with a notice of intention to drill and no permit or volume limit."
+summary = "Arizona’s rules turn on whether a well is in an Active Management Area. Inside one (Phoenix, Pinal, Prescott, Tucson, Santa Cruz, Willcox, Douglas and Ranegras Plain, in ADWR’s boundaries), a well pumping more than 35 gallons a minute needs a groundwater right or a withdrawal permit from ADWR. Outside them, groundwater is pumped for reasonable and beneficial use with a notice of intention to drill and no permit or volume limit. In an Irrigation Non-Expansion Area, a well pumping more than 10 acre-feet a year for other uses is metered and reported to ADWR."
 sources = ["az_45_402", "az_45_454", "az_45_512", "az_45_453", "az_45_596"]
 
 below_tag = "Within the exempt-well size"
@@ -17,6 +17,15 @@ mgd = 0.0504
 level = "mid"
 tag = "Larger than an exempt well"
 sources = ["az_45_402", "az_45_454"]
+
+[[withdrawals.lines]]
+key = "ama_right"
+mgd = 0.0504
+areas = ["ama"]
+level = "large"
+tag = "Needs a groundwater right or permit"
+flag = "The wells would pump more than 35 gallons a minute. In an Active Management Area, a well that large needs a grandfathered right, a service area right or a withdrawal permit from ADWR."
+sources = ["az_45_402", "az_45_512", "adwr_ama"]
 
 [discharge]
 permit_note = "ADEQ issues the permit (AZPDES), and Arizona’s standards limit a thermal discharge’s warming of a stream to 3.0 °C for warm-water aquatic life uses and 1.0 °C for cold-water uses."
@@ -98,3 +107,10 @@ short = "A.A.C. R18-9-E323"
 title = "Arizona Administrative Code R18-9-E323: Type 4 general permit, 3,000 to less than 24,000 gallons a day, as reproduced by Cornell LII"
 publisher = "Arizona Department of Environmental Quality"
 url = "https://www.law.cornell.edu/regulations/arizona/Ariz-Admin-Code-SS-R18-9-E323"
+
+[[sources]]
+id = "adwr_ama"
+short = "ADWR AMA and INA boundaries"
+title = "Active Management Areas and Irrigation Non-Expansion Areas (AMA_INA_2024)"
+publisher = "Arizona Department of Water Resources"
+url = "https://services.arcgis.com/C34zQ7veRS0V1t04/arcgis/rest/services/AMA_INA_2024/FeatureServer/0"

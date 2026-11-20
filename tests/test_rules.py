@@ -26,7 +26,10 @@ def test_a_rules_file_is_well_formed_and_cited(st):
     assert len(keys) == len(set(keys)) and "below" not in keys
     for x in W.get("lines", []):
         assert all(len(h) % 2 == 0 and h.isdigit() for h in x.get("huc", [])) and all(len(c) == 5 and c.isdigit() for c in x.get("counties", [])), x
-        assert x["mgd"] > 0 and x["level"] in LEVELS and x["tag"], x
+        assert (x["mgd"] > 0 or ("areas" in x and not x.get("at_least"))) and x["level"] in LEVELS and x["tag"], x     # 0: any amount, inside an area
+        if "areas" in x:     # every group a line names is in the state's areas file, and the file's places have their status
+            A = rules.areas(st)
+            assert A and set(x["areas"]) <= set(A["groups"]), x
         assert x.get("period", W.get("period", "30 days")) in PERIODS and x.get("measure", "withdrawn") in ("withdrawn", "consumed")
         assert x.get("where") in WHERE | {None} and set(x.get("source", [])) <= SOURCES
         assert x.get("sources") and set(x["sources"]) <= ids, x
@@ -97,8 +100,10 @@ def test_virginia_reporting_statewide_and_the_management_areas_by_county():
     # 9VAC25-200-30: report above 10,000 gallons a day averaged over a month, statewide; 9VAC25-610: a permit at 300,000 gallons a month, only in a management area
     W = rules.withdrawals("VA")
     assert lv.withdrawal(0.01, W, county="51107")[1] == "below" and lv.withdrawal(0.011, W, county="51107")[1] == "report"      # Loudoun: no management area
-    assert lv.withdrawal(0.011, W, source="ground", county="51810") == ("large", "gwma_permit")                                  # Virginia Beach: Eastern Virginia
-    assert lv.withdrawal(0.011, W, source="ground", county="51059")[1] == "report"                                               # Fairfax: split by I-95, no line
+    vb, fx = rules.place_areas("VA", "5182000"), rules.place_areas("VA", "51059")
+    assert vb["gwma"]["status"] == "in" and fx["gwma"]["status"] == "part"                                                      # Virginia Beach; Fairfax, split by I-95
+    assert lv.withdrawal(0.011, W, source="ground", areas=vb) == ("large", "gwma_permit")
+    assert lv.withdrawal(0.011, W, source="ground", areas=fx)[1] == "gwma_permit" and lv.withdrawal(0.011, W, source="ground", areas=fx, inside=False)[1] == "report"
 
 
 def test_minnesota_day_and_year_lines_and_the_basin():
@@ -123,11 +128,18 @@ def test_new_york_capacity_long_island_and_the_basin_commissions():
 
 
 def test_states_with_no_numeric_line_or_no_flag():
-    # Texas: districts set their own rules, so the reader sees the summary and no level
-    assert "lines" not in rules.withdrawals("TX") and "districts" in rules.withdrawals("TX")["no_line"]
+    # Texas: no statewide line; inside a groundwater district any well its rules don't exempt needs a district permit (Water Code 36.113(a))
+    W = rules.withdrawals("TX")
+    hou, aus, dal = (rules.place_areas("TX", g) for g in ("4835000", "4805000", "4819000"))
+    assert "Harris-Galveston Coastal Subsidence District" in hou["gcd"]["names"] and aus["gcd"]["status"] == "part" and dal == {}
+    assert lv.withdrawal(0.001, W, areas=hou) == ("large", "district_permit") and lv.withdrawal(5.0, W, areas=dal) == ("small", "below")
+    assert lv.withdrawal(0.5, W, areas=aus)[1] == "district_permit" and lv.withdrawal(0.5, W, areas=aus, inside=False)[1] == "below"
     # Arizona: 35 gallons a minute is the exempt-well size; the AMA rule is in the summary, with no flag
     W = rules.withdrawals("AZ")
     assert lv.withdrawal(0.05, W)[1] == "below" and lv.withdrawal(0.051, W) == ("mid", "nonexempt") and lv.permit_flag("nonexempt", W) is None
+    phx, mar, yuma = rules.place_areas("AZ", "0455000"), rules.place_areas("AZ", "04013"), rules.place_areas("AZ", "0485540")
+    assert lv.withdrawal(0.051, W, areas=phx) == ("large", "ama_right") and lv.withdrawal(0.051, W, areas=yuma)[1] == "nonexempt"
+    assert mar["ama"]["status"] == "part" and lv.withdrawal(0.051, W, areas=mar, inside=False)[1] == "nonexempt"
     # Illinois: notice to the district at 100,000 gallons in any 24 hours, no permit
     W = rules.withdrawals("IL")
     assert lv.withdrawal(0.1, W, source="ground") == ("mid", "notice") and lv.permit_flag("notice", W) is None
@@ -160,3 +172,20 @@ def test_wisconsin_registration_wells_basin_permits_and_water_loss():
     assert lv.withdrawal(q(0.1, 0.11), W, basin=True, source="ground")[1] == "basin_general_permit"           # the basin permit shows over the well approval
     assert lv.withdrawal(q(1.0, 1.2), W, basin=True, source="ground")[1] == "basin_individual_permit"
     assert lv.withdrawal(q(3, 3, 2.1), W, basin=False, source="ground")[1] == "water_loss"                    # 281.35(4)
+
+
+def test_pennsylvania_protected_area_by_boundary():
+    W = rules.withdrawals("PA")
+    q = {"withdrawn_month": 0.02, "withdrawn_peak": 0.02, "consumed_90": 0.0, "consumed_peak": 0.0}
+    lan, phl = rules.place_areas("PA", "4241432"), rules.place_areas("PA", "4260000")                # Lansdale (Montgomery County); Philadelphia
+    assert lv.withdrawal(q, W, source="ground", huc="020402", areas=lan)[1] == "sepa_gwpa" and lv.withdrawal(q, W, source="ground", huc="020402", areas=phl)[1] == "register"
+
+
+def test_an_areas_file_is_well_formed():
+    for st in ("AZ", "VA", "TX", "PA"):
+        A = rules.areas(st)
+        assert A["in"] == 0.95 and A["part"] == 0.05 and A["sources"] and A["places"]
+        for g, m in A["places"].items():
+            assert g.isdigit() and len(g) in (5, 7, 10)
+            for grp, v in m.items():
+                assert grp in A["groups"] and A["part"] <= v["share"] <= 1 and set(v["names"]) <= set(A["groups"][grp])
