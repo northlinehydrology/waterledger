@@ -131,3 +131,13 @@ def test_states_with_no_numeric_line_or_no_flag():
     # Illinois: notice to the district at 100,000 gallons in any 24 hours, no permit
     W = rules.withdrawals("IL")
     assert lv.withdrawal(0.1, W, source="ground") == ("mid", "notice") and lv.permit_flag("notice", W) is None
+
+
+def test_pennsylvania_registration_commissions_and_lake_erie():
+    W = rules.withdrawals("PA")
+    q = lambda month, c=0.0: {"withdrawn_month": month, "withdrawn_peak": month, "consumed_90": c, "consumed_peak": c}
+    assert lv.withdrawal(q(0.011), W, huc="050100")[1] == "register"                                  # Ohio River basin: registration only
+    assert lv.withdrawal(q(0.011, 0.02), W, huc="020501")[1] == "srbc_consumptive"                     # 18 CFR 806.4(a)(1)
+    assert lv.withdrawal(q(0.1, 0.01), W, huc="020503")[1] == "srbc_withdrawal"
+    assert lv.withdrawal(q(0.1), W, huc="020402")[1] == "register" and lv.withdrawal(q(0.11), W, huc="020402")[1] == "drbc_review"
+    assert lv.withdrawal(q(0.1), W, basin=True, huc="041201")[1] == "great_lakes_review"
