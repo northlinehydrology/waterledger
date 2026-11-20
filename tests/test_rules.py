@@ -141,3 +141,12 @@ def test_pennsylvania_registration_commissions_and_lake_erie():
     assert lv.withdrawal(q(0.1, 0.01), W, huc="020503")[1] == "srbc_withdrawal"
     assert lv.withdrawal(q(0.1), W, huc="020402")[1] == "register" and lv.withdrawal(q(0.11), W, huc="020402")[1] == "drbc_review"
     assert lv.withdrawal(q(0.1), W, basin=True, huc="041201")[1] == "great_lakes_review"
+
+
+def test_indiana_registration_and_the_great_lakes_permits():
+    # IC 14-25-7-15: capability above 100,000 gallons a day; IC 14-25-15-7(a): above 1,000,000 (wells, streams) or 5,000,000 (Lake Michigan) over 90 days
+    W = rules.withdrawals("IN")
+    q = lambda month, peak: {"withdrawn_month": month, "withdrawn_peak": peak, "consumed_90": 0, "consumed_peak": 0}
+    assert lv.withdrawal(q(0.05, 0.1), W)[1] == "below" and lv.withdrawal(q(0.05, 0.11), W)[1] == "register"
+    assert lv.withdrawal(q(1.1, 1.5), W, basin=False, source="ground")[1] == "register" and lv.withdrawal(q(1.1, 1.5), W, basin=True, source="ground") == ("large", "permit")
+    assert lv.withdrawal(q(4.0, 4.0), W, basin=True, source="lake")[1] == "register" and lv.withdrawal(q(5.1, 5.1), W, basin=True, source="lake")[1] == "lake_permit"
