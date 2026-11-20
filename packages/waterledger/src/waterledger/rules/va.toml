@@ -1,0 +1,144 @@
+# Virginia's rules for large new water users, as data (waterledger.rules). Every line was read against its source on `checked`.
+checked = "2026-11-20"
+
+[withdrawals]
+# Reporting (9VAC25-200-30, -40): a user whose average daily withdrawal in any single month exceeds 10,000 gallons a day reports each year, statewide, ground and
+# surface water. Groundwater permits (Va. Code 62.1-258, -259; 9VAC25-610-40, -50): only in a declared groundwater management area, and a withdrawal of less than
+# 300,000 gallons a month is excluded; 300,000 gallons over a 30-day month is 0.01 MGD [A] (over 31 days, 9,677 gallons a day). The areas (9VAC25-600-20): Eastern
+# Virginia (20 whole counties, 11 cities, and the parts east of Interstate 95 of Caroline, Chesterfield, Fairfax, Hanover, Henrico, Prince William, Spotsylvania and
+# Stafford) and the Eastern Shore (Accomack, Northampton). The line lists the whole counties and cities only: a place in one of the eight split counties gets no line
+# (the summary names them), since the data doesn't say which side of I-95 it is on. Surface water needs a VWP permit above 10,000 gallons a day (nontidal) or
+# 2 million (tidal) (9VAC25-210-310(A)(11)); the calculator's lines are for wells.
+period = "30 days"
+summary = "Virginia requires a withdrawal averaging more than 10,000 gallons a day in any month to be reported to DEQ each year. In the Eastern Virginia and Eastern Shore groundwater management areas, wells withdrawing 300,000 gallons a month or more need a groundwater withdrawal permit; in Caroline, Chesterfield, Fairfax, Hanover, Henrico, Prince William, Spotsylvania and Stafford counties the Eastern Virginia area covers only the part east of Interstate 95."
+sources = ["vac_200_30", "vac_200_40", "vac_610_40", "vac_610_50", "vac_600_20", "code_62_1_258", "code_62_1_259"]
+
+[[withdrawals.lines]]
+key = "report"
+mgd = 0.01
+level = "mid"
+tag = "Must report to the state"
+sources = ["vac_200_30", "vac_200_40"]
+
+[[withdrawals.lines]]
+key = "gwma_permit"
+mgd = 0.01
+at_least = true
+source = ["ground"]
+counties = ["51036", "51057", "51073", "51093", "51095", "51099", "51097", "51101", "51103", "51115", "51119", "51127", "51133", "51149", "51159", "51175", "51181", "51183", "51193", "51199", "51550", "51620", "51650", "51670", "51700", "51710", "51735", "51740", "51800", "51810", "51830", "51001", "51131"]
+level = "large"
+tag = "Needs a state permit"
+flag = "The estimated pumping reaches 300,000 gallons a month. In a Virginia groundwater management area, wells withdrawing that much need a groundwater withdrawal permit from DEQ."
+sources = ["vac_610_40", "vac_610_50", "vac_600_20", "code_62_1_258", "code_62_1_259"]
+
+[discharge]
+permit_note = "DEQ issues the permit, and Virginia’s water quality standards limit a discharge’s warming of a stream to 3 °C above natural temperature (1 °C in natural trout waters), with a maximum by stream class, such as 32 °C."
+sources = ["vac_260_50", "vac_260_60"]
+
+[septic]
+sources = ["vac_613_10", "vac_613_60", "vac_790_50"]
+
+[[septic.lines]]
+max_gpd = 1000
+text = "the Virginia Department of Health approves the system"
+
+[[septic.lines]]
+text = "above 1,000 gallons a day a system that doesn’t discharge is a large alternative onsite system, which needs a renewable five-year operation permit from the Virginia Department of Health, and a sewerage system or treatment works under DEQ’s rules needs DEQ’s certificates to construct and to operate"
+
+[large_load]
+mw = 25
+utility = "^Virginia Electric"
+text = "At 25 MW or more on one site with a load factor of at least 75%, a new customer of Dominion Energy Virginia takes service under Rate Schedule GS-5 from January 2027 (SCC Case PUR-2025-00058): a 14-year contract and minimum charges of 85% for distribution and transmission and 60% for generation."
+caption = "25 MW is the line in Dominion Energy Virginia’s GS-5 rate class"
+sources = ["scc_pur_2025_00058"]
+
+[[sources]]
+id = "vac_200_30"
+short = "9VAC25-200-30"
+title = "Virginia Administrative Code 9VAC25-200-30: water withdrawal reporting, applicability"
+publisher = "State Water Control Board"
+url = "https://law.lis.virginia.gov/admincode/title9/agency25/chapter200/section30/"
+
+[[sources]]
+id = "vac_200_40"
+short = "9VAC25-200-40"
+title = "Virginia Administrative Code 9VAC25-200-40: reporting requirements"
+publisher = "State Water Control Board"
+url = "https://law.lis.virginia.gov/admincode/title9/agency25/chapter200/section40/"
+
+[[sources]]
+id = "vac_610_40"
+short = "9VAC25-610-40"
+title = "Virginia Administrative Code 9VAC25-610-40: groundwater withdrawal permits required"
+publisher = "State Water Control Board"
+url = "https://law.lis.virginia.gov/admincode/title9/agency25/chapter610/section40/"
+
+[[sources]]
+id = "vac_610_50"
+short = "9VAC25-610-50"
+title = "Virginia Administrative Code 9VAC25-610-50: withdrawals excluded from permits"
+publisher = "State Water Control Board"
+url = "https://law.lis.virginia.gov/admincode/title9/agency25/chapter610/section50/"
+
+[[sources]]
+id = "vac_600_20"
+short = "9VAC25-600-20"
+title = "Virginia Administrative Code 9VAC25-600-20: the Eastern Virginia and Eastern Shore groundwater management areas"
+publisher = "State Water Control Board"
+url = "https://law.lis.virginia.gov/admincode/title9/agency25/chapter600/section20/"
+
+[[sources]]
+id = "code_62_1_258"
+short = "Va. Code 62.1-258"
+title = "Code of Virginia 62.1-258: groundwater withdrawal permits in management areas"
+publisher = "Virginia General Assembly"
+url = "https://law.lis.virginia.gov/vacode/title62.1/chapter25/section62.1-258/"
+
+[[sources]]
+id = "code_62_1_259"
+short = "Va. Code 62.1-259"
+title = "Code of Virginia 62.1-259: exclusions from permits"
+publisher = "Virginia General Assembly"
+url = "https://law.lis.virginia.gov/vacode/title62.1/chapter25/section62.1-259/"
+
+[[sources]]
+id = "vac_260_50"
+short = "9VAC25-260-50"
+title = "Virginia Administrative Code 9VAC25-260-50: numerical criteria for dissolved oxygen, pH and maximum temperature"
+publisher = "State Water Control Board"
+url = "https://law.lis.virginia.gov/admincode/title9/agency25/chapter260/section50/"
+
+[[sources]]
+id = "vac_260_60"
+short = "9VAC25-260-60"
+title = "Virginia Administrative Code 9VAC25-260-60: rise above natural temperature"
+publisher = "State Water Control Board"
+url = "https://law.lis.virginia.gov/admincode/title9/agency25/chapter260/section60/"
+
+[[sources]]
+id = "vac_613_10"
+short = "12VAC5-613-10"
+title = "Virginia Administrative Code 12VAC5-613-10: alternative onsite sewage systems, definitions"
+publisher = "Virginia Department of Health"
+url = "https://law.lis.virginia.gov/admincode/title12/agency5/chapter613/section10/"
+
+[[sources]]
+id = "vac_613_60"
+short = "12VAC5-613-60"
+title = "Virginia Administrative Code 12VAC5-613-60: operation permits"
+publisher = "Virginia Department of Health"
+url = "https://law.lis.virginia.gov/admincode/title12/agency5/chapter613/section60/"
+
+[[sources]]
+id = "vac_790_50"
+short = "9VAC25-790-50"
+title = "Virginia Administrative Code 9VAC25-790-50: sewage collection and treatment, certificates"
+publisher = "State Water Control Board"
+url = "https://law.lis.virginia.gov/admincode/title9/agency25/chapter790/section50/"
+
+[[sources]]
+id = "scc_pur_2025_00058"
+short = "SCC PUR-2025-00058"
+title = "Final Order, Application of Virginia Electric and Power Company for a biennial review of its rates, Case No. PUR-2025-00058, Nov 25, 2025"
+publisher = "State Corporation Commission of Virginia"
+url = "https://www.scc.virginia.gov/docketsearch/DOCS/89g601!.PDF"
