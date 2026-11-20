@@ -7,7 +7,7 @@ Virginia Groundwater Management Area (whole counties and cities, and the parts o
 conservation districts, Pennsylvania's Southeastern Ground Water Protected Area. For each, this reads the official boundary, every place's Census
 outline (counties, incorporated places and county subdivisions, TIGERweb, generalized), and the share of each place's area inside the area, measured
 in an equal-area projection (EPSG:5070). A place is "in" at 95% or more and "part" from 5%; under 5% it is left out. The rules file's lines name the
-group (`areas = ["ama"]`), and a place partly inside sees both rules, the one inside and the one outside (levels.withdrawal_both).
+group (`areas = ["ama"]`), and a place that straddles an area's edge gets both rules, the one inside and the one outside (levels.site_levels).
 
 Nothing here changes an estimate. Rerun when an area or a boundary file changes; the output records each source and the date it was read.
 """

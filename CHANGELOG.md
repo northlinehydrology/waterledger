@@ -17,8 +17,8 @@ waterledger only. No estimated number changes; the levels a reader sees change i
 - **Areas that don't follow county lines** (`rules/<st>_areas.json`, built by `tools/rule_areas.py`; `rules.areas`, `rules.place_areas`; a line's
   `areas`): each place's share inside Arizona's Active Management Areas (ADWR's boundaries), Virginia's groundwater management areas (the listed
   counties and cities, the split counties cut along Interstate 95), Texas's groundwater and subsidence districts (TWDB's boundaries) and Pennsylvania's
-  Southeastern Ground Water Protected Area (DRBC's boundary), measured in an equal-area projection: in at 95%, part from 5%. A place partly inside
-  sees both rules: `site_levels` adds `withdrawal_line_outside` and the areas' names. New lines: Arizona's groundwater right or permit in an AMA,
+  Southeastern Ground Water Protected Area (DRBC's boundary), measured in an equal-area projection: in at 95%, part from 5%. A place that straddles
+  an area's edge gets both rules: `site_levels` adds `withdrawal_line_outside` and the areas' names. New lines: Arizona's groundwater right or permit in an AMA,
   Texas's district permit, Pennsylvania's protected area; Virginia's management areas now by boundary, not by county list.
 - No sentence that a utility's permit covers its customer for Georgia: its statutes and rules don't say so.
 
