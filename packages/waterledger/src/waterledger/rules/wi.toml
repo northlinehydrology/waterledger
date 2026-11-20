@@ -1,0 +1,143 @@
+# Wisconsin's rules for large new water users, as data (waterledger.rules). Every line was read against its source on `checked`.
+checked = "2026-11-20"
+
+[withdrawals]
+# Statewide: registration with DNR of a withdrawal averaging 100,000 gallons a day or more over any 30 days (Wis. Stat. 281.346(3)(a); NR 856.11); DNR approval
+# before building a high capacity well, more than 100,000 gallons a day of capacity on one property (281.34(1)(b), (2)), a capacity test on the peak day; and a
+# water loss approval for a new withdrawal using up more than 2,000,000 gallons a day averaged over 30 days (281.35(4)). Great Lakes basin (281.346(4m), (4s),
+# (5)): a general permit from 100,000 gallons a day over 30 days, and an individual permit from 1,000,000 gallons a day for any 30 consecutive days.
+period = "30 days"
+summary = "Wisconsin requires a withdrawal averaging 100,000 gallons a day or more to be registered with DNR, and DNR’s approval before a well system able to pump more than 100,000 gallons a day is built. A new withdrawal using up more than 2 million gallons a day, averaged over 30 days, needs DNR’s water loss approval."
+basin_summary = "Wisconsin requires DNR’s approval before a well system able to pump more than 100,000 gallons a day is built. In the Great Lakes basin, a withdrawal averaging 100,000 gallons a day or more over 30 days needs a water use permit from DNR, a general permit below 1 million gallons a day and an individual permit at 1 million or more."
+sources = ["wi_281_346", "wi_nr_856", "wi_281_34", "wi_281_35"]
+
+[[withdrawals.lines]]
+key = "register"
+mgd = 0.1
+at_least = true
+level = "mid"
+tag = "Must register with the state"
+sources = ["wi_281_346", "wi_nr_856"]
+
+[[withdrawals.lines]]
+key = "high_capacity_well"
+mgd = 0.1
+period = "capacity"
+source = ["ground"]
+level = "large"
+tag = "Needs state approval"
+flag = "The wells would pump more than 100,000 gallons a day. In Wisconsin a high capacity well system needs DNR’s approval before it is built."
+sources = ["wi_281_34"]
+
+[[withdrawals.lines]]
+key = "basin_general_permit"
+mgd = 0.1
+at_least = true
+where = "great_lakes_basin"
+level = "large"
+tag = "Needs a state permit"
+flag = "The estimated pumping reaches 100,000 gallons a day over 30 days. In Wisconsin’s Great Lakes basin that needs a water use permit from DNR."
+sources = ["wi_281_346"]
+
+[[withdrawals.lines]]
+key = "basin_individual_permit"
+mgd = 1.0
+at_least = true
+where = "great_lakes_basin"
+level = "large"
+tag = "Needs an individual state permit"
+flag = "The estimated pumping reaches 1 million gallons a day over 30 days. In Wisconsin’s Great Lakes basin that needs an individual water use permit from DNR."
+sources = ["wi_281_346"]
+
+[[withdrawals.lines]]
+key = "water_loss"
+mgd = 2.0
+measure = "consumed"
+level = "large"
+tag = "Needs a water loss approval"
+flag = "The water used up is estimated above 2 million gallons a day. In Wisconsin a new withdrawal with that much water loss, averaged over 30 days, needs DNR’s approval."
+sources = ["wi_281_35"]
+
+[discharge]
+permit_note = "DNR issues the permit (WPDES) and sets monthly temperature limits where an effluent could exceed the water quality-based limit; a facility discharging more than 60 pounds of phosphorus a month (150 for sewage plants) gets a 1 mg/L limit."
+sources = ["wi_nr_106", "wi_nr_217"]
+
+[septic]
+sources = ["wi_sps_383", "wi_nr_200"]
+
+[[septic.lines]]
+max_gpd = 12000
+text = "the county or other local governmental unit issues the sanitary permit, and the state or its agent approves the plans"
+
+[[septic.lines]]
+text = "a system designed for more than 12,000 gallons a day needs DNR’s concurrence and a WPDES permit from DNR before it operates"
+
+[large_load]
+mw = 100
+utility = "^Wisconsin Electric"
+text = "At 100 MW or more, a new customer of We Energies is eligible for the large-load tariff the PSC decided on in April 2026 (Docket 6630-TE-113), lowered from 500 MW: a 15-year minimum term, with large customers paying their full costs, as the PSC’s release describes it."
+caption = "100 MW is the line in We Energies’ large-load tariff"
+sources = ["wi_psc_release"]
+
+[[sources]]
+id = "wi_281_346"
+short = "Wis. Stat. 281.346"
+title = "Wisconsin Statutes 281.346: water resources protection and management (Great Lakes basin)"
+publisher = "Wisconsin Legislature"
+url = "https://docs.legis.wisconsin.gov/statutes/statutes/281/iii/346"
+
+[[sources]]
+id = "wi_nr_856"
+short = "NR 856.11"
+title = "Wisconsin Administrative Code NR 856.11: water withdrawal registration"
+publisher = "Wisconsin Department of Natural Resources"
+url = "https://docs.legis.wisconsin.gov/code/admin_code/nr/800/856"
+
+[[sources]]
+id = "wi_281_34"
+short = "Wis. Stat. 281.34"
+title = "Wisconsin Statutes 281.34: groundwater withdrawals (high capacity wells)"
+publisher = "Wisconsin Legislature"
+url = "https://docs.legis.wisconsin.gov/statutes/statutes/281/iii/34"
+
+[[sources]]
+id = "wi_281_35"
+short = "Wis. Stat. 281.35"
+title = "Wisconsin Statutes 281.35: water resources conservation and management (water loss)"
+publisher = "Wisconsin Legislature"
+url = "https://docs.legis.wisconsin.gov/statutes/statutes/281/iii/35"
+
+[[sources]]
+id = "wi_nr_106"
+short = "NR 106"
+title = "Wisconsin Administrative Code NR 106: procedures for calculating water quality-based effluent limitations (subchapter V, temperature)"
+publisher = "Wisconsin Department of Natural Resources"
+url = "https://docs.legis.wisconsin.gov/code/admin_code/nr/100/106"
+
+[[sources]]
+id = "wi_nr_217"
+short = "NR 217"
+title = "Wisconsin Administrative Code NR 217: effluent standards and limitations for phosphorus"
+publisher = "Wisconsin Department of Natural Resources"
+url = "https://docs.legis.wisconsin.gov/code/admin_code/nr/200/217"
+
+[[sources]]
+id = "wi_sps_383"
+short = "SPS 383"
+title = "Wisconsin Administrative Code SPS 383: private onsite wastewater treatment systems"
+publisher = "Wisconsin Department of Safety and Professional Services"
+url = "https://docs.legis.wisconsin.gov/code/admin_code/sps/safety_and_buildings_and_environment/380_387/383.pdf"
+
+[[sources]]
+id = "wi_nr_200"
+short = "NR 200.03"
+title = "Wisconsin Administrative Code NR 200.03: applications for discharge permits"
+publisher = "Wisconsin Department of Natural Resources"
+url = "https://docs.legis.wisconsin.gov/code/admin_code/nr/200/200"
+
+[[sources]]
+id = "wi_psc_release"
+short = "PSC release, Apr 24, 2026"
+title = "Public Service Commission of Wisconsin press release on We Energies' large-load tariff (Docket 6630-TE-113), Apr 24, 2026"
+publisher = "Public Service Commission of Wisconsin"
+url = "https://psc.wi.gov/Documents/PressReleases/04.24.2026PressRelease.PDF"

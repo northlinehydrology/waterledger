@@ -150,3 +150,13 @@ def test_indiana_registration_and_the_great_lakes_permits():
     assert lv.withdrawal(q(0.05, 0.1), W)[1] == "below" and lv.withdrawal(q(0.05, 0.11), W)[1] == "register"
     assert lv.withdrawal(q(1.1, 1.5), W, basin=False, source="ground")[1] == "register" and lv.withdrawal(q(1.1, 1.5), W, basin=True, source="ground") == ("large", "permit")
     assert lv.withdrawal(q(4.0, 4.0), W, basin=True, source="lake")[1] == "register" and lv.withdrawal(q(5.1, 5.1), W, basin=True, source="lake")[1] == "lake_permit"
+
+
+def test_wisconsin_registration_wells_basin_permits_and_water_loss():
+    W = rules.withdrawals("WI")
+    q = lambda month, peak, c=0.0: {"withdrawn_month": month, "withdrawn_peak": peak, "consumed_90": c, "consumed_peak": c}
+    assert lv.withdrawal(q(0.1, 0.1), W, basin=False, source="ground")[1] == "register"                       # 281.346(3)(a): at least 100,000 over 30 days
+    assert lv.withdrawal(q(0.1, 0.11), W, basin=False, source="ground")[1] == "high_capacity_well"            # 281.34: more than 100,000 of capacity
+    assert lv.withdrawal(q(0.1, 0.11), W, basin=True, source="ground")[1] == "basin_general_permit"           # the basin permit shows over the well approval
+    assert lv.withdrawal(q(1.0, 1.2), W, basin=True, source="ground")[1] == "basin_individual_permit"
+    assert lv.withdrawal(q(3, 3, 2.1), W, basin=False, source="ground")[1] == "water_loss"                    # 281.35(4)
