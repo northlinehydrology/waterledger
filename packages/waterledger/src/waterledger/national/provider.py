@@ -89,7 +89,10 @@ def context(state, place):
                              great_lake=shore["lake"] if shore else None, great_lakes_basin=sheds["h12"][0]["code"].startswith("04") if sheds["h12"] else None,
                              downstream=[cx.Reach(huc12=p["code"], name=p["name"], impairments=[LABELS[g] for g, _, _ in p["listings"]],
                                                   tmdl=[LABELS[g] for g, t, _ in p["listings"] if t], assessed=p.get("assessed")) for p in path])
-    jur = cx.Jurisdiction(provider="national", not_covered=["rules"], sources=["census_tiger"], name=place.name, kind=place.kind, county=place.county, state=state)
+    from waterledger import rules
+    R = rules.load(state)
+    jur = cx.Jurisdiction(provider="national", not_covered=[] if R else ["rules"], sources=["census_tiger", *rules.sources(state)], name=place.name, kind=place.kind, county=place.county,
+                          state=state, rules=rules.jurisdiction(state))
     return cx.Context(place=place, jurisdiction=jur, supply=supply,
                       wastewater=cx.Wastewater(provider="national", sources=["cwns2022", "echo"], plants=plants), receiving=receiving,
                       climate=_climate(state, place), energy=_energy(state, place))
@@ -180,8 +183,15 @@ def _ppw(state):
 
 
 # Where a state's rules aren't reviewed there are no lines for well pumping. The Compact's 5 MGD belongs to the eight Great Lakes states and is used only for a place on the lakes or in their basin.
+# A state's reviewed lines come from its rules file (waterledger.rules).
 WITHDRAWALS = {"compact_use_mgd": 5.0}
 NOT_COVERED = {"state_rules": "This state's water rules are not yet reviewed, so no legal line or level is shown."}
+
+
+def not_covered(state):
+    """What isn't covered yet for a state: its rules until they are reviewed."""
+    from waterledger import rules
+    return {} if rules.load(state) else dict(NOT_COVERED)
 
 
 def home_gpd(state):
@@ -194,6 +204,7 @@ def home_gpd(state):
 def reference(state, place):
     """A state's values to compare an estimate with: its power options, the starting one, a typical golf course at the place, and its homes' electricity
     (None from a snapshot written before 3.7.0)."""
+    from waterledger import rules
     from waterledger.national import power
     from waterledger_data import wateruse
     from waterledger_models import runoff as rq
@@ -204,7 +215,7 @@ def reference(state, place):
     return {"power_options": options, "power": default_power(options, "state_mix" if "state_mix" in options else next(iter(options)), (lambda e: e.utilities or e.nearest_utilities)(place.context().energy)),
             "golf_gpd": G.get("by_region", {}).get(_division(state, place)[0], G["gpd"]), "golf_basis": G["basis"], "golf_note": G["note"],
             "home_gpd": home_gpd(state), "home_kwh_month": res.get("kwh_month"), "home_customers": res.get("customers"), "state_avg_mw": sd.state_avg_mw(),
-            "rain_median_in": rq.rain_median(sd.rain()), "salt_events": sd.salt_events().get(_division(state, place)[0]), "withdrawals": WITHDRAWALS, "state_rules": False, "not_covered": NOT_COVERED}
+            "rain_median_in": rq.rain_median(sd.rain()), "salt_events": sd.salt_events().get(_division(state, place)[0]), "withdrawals": rules.withdrawals(state), "state_rules": rules.load(state) is not None, "not_covered": not_covered(state)}
 
 
 def _division(state, place):

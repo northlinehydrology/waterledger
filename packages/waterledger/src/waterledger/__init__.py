@@ -8,7 +8,7 @@
 """
 import waterledger_data as data
 import waterledger_models as models
-from waterledger import scenario, states
+from waterledger import rules, scenario, states
 from waterledger.estimate import Comparison, Estimate, Flow, Percent, Range, WaterUse
 from waterledger.facility import BatteryCellPlant, DataCenter, Facility
 from waterledger.place import Place, place
@@ -17,5 +17,5 @@ from waterledger.context import Context
 
 Estimate.model_rebuild()
 
-__all__ = ["data", "models", "scenario", "states", "place", "Place", "Facility", "DataCenter", "BatteryCellPlant", "Range", "Flow", "WaterUse", "Site", "Estimate", "Comparison", "Percent", "Context"]
-__version__ = "3.25.0"
+__all__ = ["data", "models", "rules", "scenario", "states", "place", "Place", "Facility", "DataCenter", "BatteryCellPlant", "Range", "Flow", "WaterUse", "Site", "Estimate", "Comparison", "Percent", "Context"]
+__version__ = "3.26.0"

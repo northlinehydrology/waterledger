@@ -1,6 +1,6 @@
 """Michigan's provider: answers for Michigan places from Water Ledger Michigan's data files (the same ones waterledger.org/mi
 reads), through waterledger.scenario, so the package and the page agree."""
-from waterledger import scenario as sc
+from waterledger import rules, scenario as sc
 from waterledger.national.provider import PLANTS_MAX, home_gpd, water_use_record
 
 # EGLE's groups on waterledger.org/mi -> the county water-use categories (waterledger_data.wateruse.CATEGORIES)
@@ -79,7 +79,7 @@ def reference(place):
     T = P.get("total") or P["michigan"]
     options = {"state_mix" if k == "mi_mix" else k: v for k, v in D["power_supply"].items()}      # data built before 3.9.0 calls the state's mix mi_mix
     return {"power_options": options, "power": "state_mix", "golf_gpd": D["golf"]["golf_median_gpd"], "golf_basis": "state reports", "golf_note": "The median of Michigan courses reporting to EGLE. Only facilities able to withdraw 100,000 gallons a day report.", "home_gpd": home_gpd("MI"), "home_kwh_month": D["home_kwh_month"],
-            "home_customers": D["home_customers"], "state_avg_mw": T["avg_mw"], "rain_median_in": W.get("rain_median_in"), "salt_events": rq.salt_events(SALT_DAYS[sc.place(place.geoid)["r"]]), "withdrawals": D["context"].get("withdrawals"), "state_rules": True}
+            "home_customers": D["home_customers"], "state_avg_mw": T["avg_mw"], "rain_median_in": W.get("rain_median_in"), "salt_events": rq.salt_events(SALT_DAYS[sc.place(place.geoid)["r"]]), "withdrawals": rules.withdrawals("MI"), "state_rules": True}
 
 
 def _usgs_water_use(county_fips):
@@ -142,7 +142,9 @@ def context(place):
                        utilities=[utility(i, sh) for i, sh in P["places"].get(r["g"], [])],
                        nearest_place=near[0]["n"] if near else None, nearest_place_km=near[1] if near else None,
                        nearest_utilities=[utility(i, sh) for i, sh in P["places"][near[0]["g"]]] if near else [])
-    jur = cx.Jurisdiction(provider="MI", not_covered=["rules"], sources=["census_tiger"], name=place.name, kind=place.kind, county=place.county, state="MI")
+    from waterledger import rules
+    jur = cx.Jurisdiction(provider="MI", not_covered=[], sources=["census_tiger", *rules.sources("MI")], name=place.name, kind=place.kind, county=place.county, state="MI",
+                          rules=rules.jurisdiction("MI"))
     return cx.Context(place=place, jurisdiction=jur, supply=supply, wastewater=cx.Wastewater(provider="MI", sources=["echo", "cwns2022"], plants=plants),
                       receiving=receiving, climate=climate, energy=energy)
 

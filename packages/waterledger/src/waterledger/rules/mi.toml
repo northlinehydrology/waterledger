@@ -1,0 +1,121 @@
+# Michigan's rules for large new water users, as data (waterledger.rules). Every line was read against its source on `checked`.
+checked = "2026-11-19"
+
+[withdrawals]
+# Part 327: a large quantity withdrawal is over 100,000 gallons a day averaged over any 30 days (MCL 324.32701); one is registered after the screening
+# tool (MCL 324.32705); a permit is needed above 2,000,000 gallons a day, or 1,000,000 where a site-specific review finds a Zone C withdrawal (MCL 324.32723(1)).
+# "Waters of the state" include the Great Lakes (MCL 324.32701), so the same lines apply to an intake in a lake.
+period = "30 days"
+summary = "Michigan requires a withdrawal of more than 100,000 gallons a day, averaged over 30 days, to be screened with the state’s Water Withdrawal Assessment Tool and registered, and a new withdrawal of more than 2 million gallons a day (1 million where a site-specific review finds a Zone C withdrawal) needs a water withdrawal permit from EGLE."
+lake_summary = "Michigan requires a withdrawal of more than 100,000 gallons a day, averaged over 30 days, to be registered, and a new withdrawal of more than 2 million gallons a day (1 million where a site-specific review finds a Zone C withdrawal) needs a water withdrawal permit from EGLE. Michigan’s law counts the Great Lakes among the waters of the state, so the same lines apply to an intake in a lake."
+utility = "Buying from a utility, the campus needs no state water permit of its own. The utility needs a new permit only if it has to develop more than 2 million gallons a day of new withdrawal capacity."
+screening = "Michigan’s Water Withdrawal Assessment Tool"
+sources = ["mcl_32701", "mcl_32705", "mcl_32723"]
+
+[[withdrawals.lines]]
+key = "register"
+mgd = 0.1
+level = "mid"
+tag = "Must register with the state"
+sources = ["mcl_32701", "mcl_32705"]
+
+[[withdrawals.lines]]
+key = "zone_c"
+mgd = 1.0
+level = "mid"
+tag = "Permit if in Zone C"
+flag = "The estimated need exceeds 1 million gallons a day. Where a site-specific review finds a Zone C withdrawal, a new or increased withdrawal above that needs a permit from EGLE."
+sources = ["mcl_32723"]
+
+[[withdrawals.lines]]
+key = "permit"
+mgd = 2.0
+level = "large"
+tag = "Needs a state permit"
+flag = "The estimated need exceeds Michigan’s 2 million gallons a day. A new or increased withdrawal above that needs a water withdrawal permit from EGLE before it starts."
+sources = ["mcl_32723"]
+
+[discharge]
+permit_note = "Michigan’s water quality standards set a default limit of 1 mg/L of total phosphorus, as a monthly average, for point sources."
+sources = ["rule60", "egle_npdes"]
+
+[septic]
+sources = ["mi_part22"]
+
+[[septic.lines]]
+below_gpd = 6000
+text = "the county health department approves the design; no state permit is needed under 6,000 gallons a day"
+
+[[septic.lines]]
+below_gpd = 10000
+text = "the system falls under a state permit-by-rule (6,000 to 10,000 gallons a day): the county health department approves the design, and the flow is metered and reported to EGLE each year"
+
+[[septic.lines]]
+text = "the system needs a groundwater discharge permit from EGLE (above 10,000 gallons a day)"
+
+[lake_erie]
+note = "Michigan’s plan for the western Lake Erie basin calls for a 40% cut in phosphorus loads from 2008 levels, to curb toxic algae."
+sources = ["wleb_dap"]
+
+[large_load]
+mw = 100
+utility = "^Consumers Energy"
+text = "At 100 MW or more, a campus in Consumers Energy’s territory falls under the large-load terms the Michigan Public Service Commission approved in November 2025: a contract of at least 15 years and a minimum bill of 80% of contracted demand, paid regardless of use."
+caption = "100 MW is the line in Consumers Energy’s large-load terms"
+sources = ["mpsc_u21859"]
+
+[[sources]]
+id = "mcl_32701"
+short = "MCL 324.32701"
+title = "MCL 324.32701, Part 327 Great Lakes Preservation: definitions (large quantity withdrawal; waters of the state; Zone C withdrawal)"
+publisher = "Michigan Legislature"
+url = "https://www.legislature.mi.gov/Laws/MCL?objectName=mcl-324-32701"
+
+[[sources]]
+id = "mcl_32705"
+short = "MCL 324.32705"
+title = "MCL 324.32705: registration of a new or increased large quantity withdrawal"
+publisher = "Michigan Legislature"
+url = "https://www.legislature.mi.gov/Laws/MCL?objectName=mcl-324-32705"
+
+[[sources]]
+id = "mcl_32723"
+short = "MCL 324.32723"
+title = "MCL 324.32723: water withdrawal permits"
+publisher = "Michigan Legislature"
+url = "https://www.legislature.mi.gov/Laws/MCL?objectName=mcl-324-32723"
+
+[[sources]]
+id = "rule60"
+short = "R 323.1060"
+title = "Mich. Admin. Code R 323.1060: plant nutrients (phosphorus limit for point sources)"
+publisher = "Michigan EGLE, via Cornell LII"
+url = "https://www.law.cornell.edu/regulations/michigan/Mich-Admin-Code-R-323-1060"
+
+[[sources]]
+id = "egle_npdes"
+short = "EGLE NPDES"
+title = "NPDES rules and regulations (Part 31, NREPA)"
+publisher = "Michigan EGLE"
+url = "https://www.michigan.gov/egle/about/Organization/Water-Resources/npdes/rules-and-regulations"
+
+[[sources]]
+id = "mi_part22"
+short = "Part 22 rules"
+title = "Mich. Admin. Code R 323.2210, 323.2211 and 323.2216: Part 22 groundwater quality rules for sanitary sewage"
+publisher = "Michigan EGLE, via Cornell LII"
+url = "https://www.law.cornell.edu/regulations/michigan/Mich-Admin-Code-R-323-2210"
+
+[[sources]]
+id = "wleb_dap"
+short = "Lake Erie action plan"
+title = "Michigan’s Domestic Action Plan for the Western Lake Erie Basin"
+publisher = "MDARD, EGLE and DNR"
+url = "https://www.michigan.gov/mdard/environment/conservation/wleb"
+
+[[sources]]
+id = "mpsc_u21859"
+short = "MPSC U-21859"
+title = "MPSC approves terms of service between Consumers Energy and data centers (Case No. U-21859), Nov 6, 2025"
+publisher = "Michigan Public Service Commission"
+url = "https://www.michigan.gov/mpsc/commission/news-releases/2025/11/06/mpsc-approves-terms-of-service-between-consumers-energy-and-data-centers"
