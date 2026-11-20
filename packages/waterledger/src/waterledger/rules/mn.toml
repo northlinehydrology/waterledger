@@ -14,6 +14,7 @@ summary = "Minnesota requires a water-use permit from DNR for a withdrawal of 10
 basin_summary = "Minnesota requires a water-use permit from DNR for a withdrawal of 10,000 gallons a day or more than 1,000,000 gallons a year. In the Lake Superior basin, using up more than 5 million gallons a day, averaged over 30 days, also needs notice to the other Great Lakes states and provinces and the legislature’s approval."
 sources = ["mn_103g_271", "mn_6115_0620", "mn_103g_265"]
 
+below_tag = "Below the state’s permit level"
 [[withdrawals.lines]]
 key = "permit_year"
 mgd = 0.00274

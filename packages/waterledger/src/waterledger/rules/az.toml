@@ -10,6 +10,7 @@ period = "capacity"
 summary = "Arizona’s rules turn on whether a well is in an Active Management Area. Inside one (Phoenix, Pinal, Prescott, Tucson and Santa Cruz, and areas designated later), a well pumping more than 35 gallons a minute needs a groundwater right or a withdrawal permit from ADWR. Outside them, groundwater is pumped for reasonable and beneficial use with a notice of intention to drill and no permit or volume limit."
 sources = ["az_45_402", "az_45_454", "az_45_512", "az_45_453", "az_45_596"]
 
+below_tag = "Within the exempt-well size"
 [[withdrawals.lines]]
 key = "nonexempt"
 mgd = 0.0504

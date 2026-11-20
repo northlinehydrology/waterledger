@@ -10,6 +10,7 @@ period = "capacity"
 summary = "Illinois has no permit for wells. Before a well able to withdraw 100,000 gallons or more in a day is built, the county Soil and Water Conservation District must be notified, and it reviews the effect on other water users within 30 days. The well then reports its use to the Illinois State Water Survey."
 sources = ["il_525_45_4", "il_525_45_5", "il_525_45_5_3"]
 
+below_tag = "Below the notice level"
 [[withdrawals.lines]]
 key = "notice"
 mgd = 0.1

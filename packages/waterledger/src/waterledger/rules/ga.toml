@@ -13,6 +13,7 @@ period = "30 days"
 summary = "Georgia requires a permit from EPD for a withdrawal of more than 100,000 gallons a day of surface water or groundwater, on a monthly average."
 sources = ["ocga_12_5_31", "ocga_12_5_96", "gac_391_3_6_07", "gac_391_3_2"]
 
+below_tag = "Below the state’s permit level"
 [[withdrawals.lines]]
 key = "permit"
 mgd = 0.1
