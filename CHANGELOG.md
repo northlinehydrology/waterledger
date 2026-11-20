@@ -2,7 +2,7 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## Unreleased
+## 3.27.0 (Nov 20, 2026; model 1.17)
 
 waterledger only. No estimated number changes; the levels a reader sees change in every state whose rules are now reviewed.
 
