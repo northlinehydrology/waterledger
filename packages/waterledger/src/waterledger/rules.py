@@ -4,7 +4,7 @@ levels a reader sees (waterledger.levels) and the words a display shows beside t
 
 A file holds:
   checked              the date every line was last read against its source (YYYY-MM-DD)
-  [withdrawals]        lines for water pumped or taken at a site, in million gallons a day. Each [[withdrawals.lines]] has a `key`, `mgd`, the `level` above
+  [withdrawals]        (a state with no numeric line has only `summary` and `sources`: the reader sees the summary and no level) lines for water pumped or taken at a site, in million gallons a day. Each [[withdrawals.lines]] has a `key`, `mgd`, the `level` above
                        it, a `tag` (a card's few words), and optionally: `flag` (the sentence a reader sees when an estimate exceeds a permit line), `measure`
                        ("withdrawn", the default, or "consumed": water used up), `period` ("capacity": the peak day; "30 days" or "90 days": the highest month
                        for water withdrawn, the highest 90 days for water used up; the section's `period` where absent; levels.tested_on), `at_least` (the
@@ -52,6 +52,8 @@ def withdrawals(state):
     if R and R.get("withdrawals", {}).get("lines"):
         W = R["withdrawals"]
         out.update(lines=[dict(x) for x in W["lines"]], period=W.get("period", "30 days"))
+    elif R and R.get("withdrawals", {}).get("summary"):
+        out["no_line"] = R["withdrawals"]["summary"]       # reviewed, and the state sets no numeric line a site's pumping can be tested on (Texas: districts set their own)
     return out
 
 

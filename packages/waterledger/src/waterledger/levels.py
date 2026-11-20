@@ -184,7 +184,7 @@ def site_levels(est, ref):
             if flag or flag_peak:
                 out["withdrawal_flag_note"] = flag_note(flag or flag_peak, W)
         else:
-            out["withdrawal_note"] = NOT_REVIEWED_NOTE
+            out["withdrawal_note"] = (W or {}).get("no_line") if ref.get("state_rules", False) and (W or {}).get("no_line") else NOT_REVIEWED_NOTE
     if W and (ctx.receiving.great_lake or ctx.receiving.great_lakes_basin):
         # The Compact covers the basin, not the shore (Akron is in it, Columbus is not). Its period is 90 days. Data from before model 1.7 has only the average
         on_90 = w.consumed_max_90day is not None
