@@ -71,3 +71,13 @@ def test_reviewed_states_are_covered_in_the_package():
     from waterledger.national import provider
     assert provider.not_covered("OH") == {} and "state_rules" in provider.not_covered("VA")
     assert {"topic": "withdrawal", "key": "register", "mgd": 0.1, "tag": "Must register with the state", "sources": ["orc_1521_16"]} in rules.jurisdiction("OH")
+
+
+def test_georgia_one_line_on_the_monthly_average():
+    # O.C.G.A. 12-5-31(b) and 12-5-96(a)(1): a permit from EPD above 100,000 gallons a day, surface water or groundwater; the monthly average (391-3-6-.07(4))
+    W = rules.withdrawals("GA")
+    q = lambda month, peak: {"withdrawn_month": month, "withdrawn_peak": peak, "consumed_90": 0.0, "consumed_peak": 0.0}
+    assert lv.withdrawal(q(0.1, 0.5), W, source="ground")[1] == "below" and lv.withdrawal(q(0.11, 0.11), W, source="surface") == ("large", "permit")
+    assert lv.withdrawal(q(0.1, 0.5), W, peak=True)[1] == "permit" and lv.permit_flag("permit", W) == "permit" and "EPD" in lv.flag_note("permit", W)
+    # no sentence that the utility's permit covers the campus: Georgia's statutes and rules don't say so
+    assert "utility" not in rules.load("GA")["withdrawals"] and "lake_erie" not in rules.load("GA")

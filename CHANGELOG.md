@@ -2,6 +2,15 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## Unreleased
+
+waterledger only. No estimated number changes.
+
+- **Georgia's rules** (`waterledger/rules/ga.toml`): one withdrawal line, a permit from EPD above 100,000 gallons a day of surface water or
+  groundwater on a monthly average (O.C.G.A. 12-5-31(b), 12-5-96(a)(1); Ga. Comp. R. & Regs. 391-3-6-.07, 391-3-2); EPD discharge and
+  temperature criteria; on-site sewage under DPH's rules up to 2,000 gallons a day; Georgia Power's 100 MW large-load rules (PSC Docket 44280).
+  No sentence that a utility's permit covers its customer: Georgia's statutes and rules don't say so.
+
 ## 3.26.0 (Nov 19, 2026; model 1.17)
 
 waterledger only. No estimated number changes; the levels a reader sees change where a state's rules are now reviewed.
