@@ -1,0 +1,123 @@
+# Indiana's rules for large new water users, as data (waterledger.rules). Every line was read against its source on `checked`.
+checked = "2026-11-20"
+
+[withdrawals]
+# Statewide: a significant water withdrawal facility, with the capability to withdraw more than 100,000 gallons in one day from all sources, registers with
+# IDNR and reports each year (IC 14-25-7-15), a capacity test on the peak day. Great Lakes basin (IC 14-25-15-7(a); 312 IAC 6.2-2-5): an IDNR permit for a
+# withdrawal above 5,000,000 gallons a day from Lake Michigan, above 100,000 from a salmonid stream (not a line here: the data doesn't name salmonid streams)
+# and above 1,000,000 from any other surface or ground water, each averaged over any 90 days. Restricted use areas (IC 14-25-3) are designated by IDNR and are
+# in the summary, not a line.
+period = "90 days"
+summary = "Indiana requires a facility able to withdraw more than 100,000 gallons a day to register with IDNR and report each year. In a ground water restricted use area, using more than 100,000 gallons a day more than before needs an IDNR permit."
+basin_summary = "Indiana requires a facility able to withdraw more than 100,000 gallons a day to register with IDNR. In the Great Lakes basin, a withdrawal averaging more than 1 million gallons a day over 90 days from wells or streams (100,000 from a salmonid stream) needs an IDNR permit."
+lake_summary = "Indiana requires a facility able to withdraw more than 100,000 gallons a day to register with IDNR, and a withdrawal from Lake Michigan averaging more than 5 million gallons a day over 90 days needs an IDNR permit."
+sources = ["in_14_25_7", "in_14_25_15", "in_312_6_2"]
+
+[[withdrawals.lines]]
+key = "register"
+mgd = 0.1
+period = "capacity"
+level = "mid"
+tag = "Must register with the state"
+sources = ["in_14_25_7"]
+
+[[withdrawals.lines]]
+key = "permit"
+mgd = 1.0
+where = "great_lakes_basin"
+source = ["ground", "surface"]
+level = "large"
+tag = "Needs a state permit"
+flag = "The estimated pumping is above 1 million gallons a day. In Indiana’s Great Lakes basin, a withdrawal averaging more than that over 90 days needs a permit from IDNR."
+sources = ["in_14_25_15", "in_312_6_2"]
+
+[[withdrawals.lines]]
+key = "lake_permit"
+mgd = 5.0
+where = "great_lakes_basin"
+source = ["lake"]
+level = "large"
+tag = "Needs a state permit"
+flag = "The intake is above 5 million gallons a day. A withdrawal from Lake Michigan averaging more than that over 90 days needs a permit from IDNR."
+sources = ["in_14_25_15", "in_312_6_2"]
+
+[discharge]
+permit_note = "IDEM issues the permit; Indiana’s standards limit warming to 5 °F above natural in streams and 3 °F in lakes, and a discharge of 10 pounds of phosphorus a day or more in the Lake Michigan or Lake Erie basins must remove phosphorus."
+sources = ["in_327_2", "in_327_5"]
+
+[septic]
+sources = ["in_410_6"]
+
+[[septic.lines]]
+max_gpd = 750
+text = "the Indiana Department of Health permits the system, and may delegate a commercial system of this size to the local health department"
+
+[[septic.lines]]
+text = "a commercial system not connected to a sewer needs a written permit from the Indiana Department of Health"
+
+[lake_erie]
+note = "Indiana’s plan for the western Lake Erie basin calls for a 40% cut in spring phosphorus loads from the Maumee River from 2008 levels."
+sources = ["in_dap"]
+
+[large_load]
+mw = 70
+utility = "^Indiana Michigan Power"
+text = "At 70 MW or more at one site (or 150 MW across sites), a new or expanded load of Indiana Michigan Power takes the large-load terms the IURC approved in February 2025 (Cause No. 46097): a contract of at least 12 years after a ramp of up to 5 years, and an exit fee for larger cuts."
+caption = "70 MW is the line in I&M’s large-load tariff"
+sources = ["iurc_46097"]
+
+[[sources]]
+id = "in_14_25_7"
+short = "IC 14-25-7-15"
+title = "Indiana Code 14-25-7-15: significant water withdrawal facilities, registration and reporting"
+publisher = "Indiana General Assembly"
+url = "https://iga.in.gov/ic/2026/Title_14.html"
+
+[[sources]]
+id = "in_14_25_15"
+short = "IC 14-25-15"
+title = "Indiana Code 14-25-15: Great Lakes-St. Lawrence River Basin Water Resources Compact"
+publisher = "Indiana General Assembly"
+url = "https://iga.in.gov/ic/2026/Title_14.html"
+
+[[sources]]
+id = "in_312_6_2"
+short = "312 IAC 6.2"
+title = "Indiana Administrative Code 312 IAC 6.2: Great Lakes basin water withdrawals"
+publisher = "Indiana Department of Natural Resources"
+url = "https://iar.iga.in.gov/code/2026/312/6.2"
+
+[[sources]]
+id = "in_327_2"
+short = "327 IAC 2"
+title = "Indiana Administrative Code 327 IAC 2: water quality standards (2-1-6, 2-1.5-8 temperature)"
+publisher = "Indiana Department of Environmental Management"
+url = "https://iar.iga.in.gov/code/2026/327/2"
+
+[[sources]]
+id = "in_327_5"
+short = "327 IAC 5-10-2"
+title = "Indiana Administrative Code 327 IAC 5-10-2: phosphorus removal"
+publisher = "Indiana Department of Environmental Management"
+url = "https://iar.iga.in.gov/code/2026/327/5"
+
+[[sources]]
+id = "in_410_6"
+short = "410 IAC 6"
+title = "Indiana Administrative Code 410 IAC 6-8.3 and 6-10.1: residential and commercial on-site sewage systems"
+publisher = "Indiana Department of Health"
+url = "https://iar.iga.in.gov/code/2026/410/6"
+
+[[sources]]
+id = "in_dap"
+short = "Indiana Lake Erie plan"
+title = "Indiana's GLWQA Domestic Action Plan for the Western Lake Erie Basin (Dec 2023)"
+publisher = "Indiana State Department of Agriculture and IDEM"
+url = "https://secure.in.gov/isda/files/2023-Indianas-GLWQA-DAP_Final.pdf"
+
+[[sources]]
+id = "iurc_46097"
+short = "IURC Cause No. 46097"
+title = "Order, Indiana Michigan Power Company, large load tariff, Cause No. 46097, Feb 19, 2025"
+publisher = "Indiana Utility Regulatory Commission"
+url = "https://www.in.gov/iurc/files/ord_46097_021925.pdf"

@@ -1,0 +1,190 @@
+# Pennsylvania's rules for large new water users, as data (waterledger.rules). Every line was read against its source on `checked`.
+checked = "2026-11-20"
+
+[withdrawals]
+# Statewide: registration with DEP of a withdrawal over 10,000 gallons a day averaged over 30 days, surface and groundwater (27 Pa.C.S. 3118; 25 Pa. Code
+# 110.201); registration, not a permit. Susquehanna basin (HUC 0205): SRBC approval for a withdrawal of 100,000 gallons a day or more and a consumptive use of
+# 20,000 or more, each over a consecutive 30-day average (18 CFR 806.4); the estimate has no 30-day figure for water used up, so its highest 90 days stands in
+# [A]. Delaware basin (HUC 0204): DRBC review above 100,000 gallons a day over 30 consecutive days (18 CFR 401.35); in the Southeastern Pennsylvania Ground Water
+# Protected Area no one may withdraw groundwater at more than 10,000 gallons a day except as the rule allows (18 CFR 430.7; 30 days in DRBC's FAQ). The area is
+# the Delaware-basin parts of listed townships and boroughs and all of Montgomery County: pa_areas.json (tools/rule_areas.py, DRBC's boundary) places each place.
+# Lake Erie basin: DEP applies Act 43 of 2008's line, a new or increased withdrawal of 100,000 gallons a day or more over 90 days, through its permit programs
+# (DEP's Great Lakes report).
+period = "30 days"
+summary = "Pennsylvania requires a withdrawal of more than 10,000 gallons a day, averaged over 30 days, to be registered with DEP. In the Susquehanna basin, the Susquehanna River Basin Commission approves a withdrawal of 100,000 gallons a day or more and a consumptive use of 20,000 or more; in the Delaware basin, the Delaware River Basin Commission reviews a withdrawal above 100,000 gallons a day, and above 10,000 in the Southeastern Pennsylvania Ground Water Protected Area."
+basin_summary = "Pennsylvania requires a withdrawal of more than 10,000 gallons a day, averaged over 30 days, to be registered with DEP. In the Lake Erie basin, a new or increased withdrawal of 100,000 gallons a day or more, averaged over 90 days, is reviewed by DEP under Pennsylvania’s Great Lakes Compact law."
+sources = ["pa_110_201", "pa_27_3118", "srbc_806_4", "drbc_401_35", "pa_dep_great_lakes"]
+
+[[withdrawals.lines]]
+key = "register"
+mgd = 0.01
+level = "mid"
+tag = "Must register with the state"
+sources = ["pa_110_201", "pa_27_3118"]
+
+[[withdrawals.lines]]
+key = "sepa_gwpa"
+mgd = 0.01
+areas = ["sepa_gwpa"]
+source = ["ground"]
+level = "large"
+tag = "Needs DRBC approval"
+flag = "The estimated pumping is above 10,000 gallons a day. In the Southeastern Pennsylvania Ground Water Protected Area, a groundwater withdrawal that large needs the Delaware River Basin Commission’s approval."
+sources = ["drbc_430_7", "drbc_gwpa_map"]
+
+[[withdrawals.lines]]
+key = "srbc_consumptive"
+mgd = 0.02
+at_least = true
+measure = "consumed"
+huc = ["0205"]
+level = "large"
+tag = "Needs SRBC approval"
+flag = "The water used up is estimated at 20,000 gallons a day or more. In the Susquehanna basin that needs the Susquehanna River Basin Commission’s approval."
+sources = ["srbc_806_4"]
+
+[[withdrawals.lines]]
+key = "srbc_withdrawal"
+mgd = 0.1
+at_least = true
+huc = ["0205"]
+level = "large"
+tag = "Needs SRBC approval"
+flag = "The estimated pumping reaches 100,000 gallons a day over 30 days. In the Susquehanna basin that needs the Susquehanna River Basin Commission’s approval."
+sources = ["srbc_806_4"]
+
+[[withdrawals.lines]]
+key = "drbc_review"
+mgd = 0.1
+huc = ["0204"]
+level = "large"
+tag = "Needs DRBC review"
+flag = "The estimated pumping is above 100,000 gallons a day over 30 days. In the Delaware basin that needs the Delaware River Basin Commission’s review."
+sources = ["drbc_401_35"]
+
+[[withdrawals.lines]]
+key = "great_lakes_review"
+mgd = 0.1
+at_least = true
+period = "90 days"
+where = "great_lakes_basin"
+level = "large"
+tag = "Needs state review"
+flag = "The estimated pumping reaches 100,000 gallons a day. In Pennsylvania’s Lake Erie basin, a new or increased withdrawal of that much, averaged over 90 days, is reviewed by DEP under the state’s Great Lakes Compact law."
+sources = ["pa_dep_great_lakes"]
+
+[discharge]
+permit_note = "DEP issues the permit, and Pennsylvania’s standards set stream temperature limits for heated discharges by half-month and by fishery, such as 87 °F in July for warm water fishes and 66 °F for cold water fishes."
+sources = ["pa_93_7"]
+
+[septic]
+sources = ["pa_72_1", "pa_72_2", "pa_72_21"]
+
+[[septic.lines]]
+max_gpd = 10000
+text = "the local agency’s sewage enforcement officer permits the system under the Sewage Facilities Act"
+
+[[septic.lines]]
+text = "a system of more than 10,000 gallons a day is a large volume system, which no local agency may permit; DEP regulates it under the Clean Streams Law"
+
+[lake_erie]
+note = "Pennsylvania’s Lake Erie plan adopts the central basin target of 6,000 tonnes of phosphorus a year, about a 40% cut from 2008 levels."
+sources = ["pa_dap"]
+
+[large_load]
+mw = 50
+utility = "^PPL Electric"
+text = "At 50 MW or more at one facility (or 75 MW across facilities within 10 miles), a data center on PPL Electric’s system takes service under Rate Schedule LP-6 from July 2026: a contract of at least 10 years and minimum bills of 80% of its ramp load (50% in years 6 to 10 once its security obligation is met)."
+caption = "50 MW is the line in PPL Electric’s LP-6 large-load schedule"
+sources = ["ppl_lp6"]
+
+[[sources]]
+id = "pa_110_201"
+short = "25 Pa. Code 110.201"
+title = "25 Pa. Code 110.201: water resources planning, registration"
+publisher = "Pennsylvania Department of Environmental Protection"
+url = "https://www.pacodeandbulletin.gov/Display/pacode?file=/secure/pacode/data/025/chapter110/s110.201.html"
+
+[[sources]]
+id = "pa_27_3118"
+short = "27 Pa.C.S. 3118"
+title = "27 Pa.C.S. 3118: registration and reporting of withdrawals"
+publisher = "Pennsylvania General Assembly"
+url = "https://www.palegis.us/statutes/consolidated/view-statute?txtType=HTM&ttl=27&div=0&chpt=31"
+
+[[sources]]
+id = "srbc_806_4"
+short = "18 CFR 806.4"
+title = "18 CFR 806.4: projects requiring review and approval (Susquehanna River Basin Commission)"
+publisher = "Susquehanna River Basin Commission (eCFR)"
+url = "https://www.ecfr.gov/current/title-18/section-806.4"
+
+[[sources]]
+id = "drbc_401_35"
+short = "18 CFR 401.35"
+title = "18 CFR 401.35: classification of projects for review (Delaware River Basin Commission)"
+publisher = "Delaware River Basin Commission (eCFR)"
+url = "https://www.ecfr.gov/current/title-18/section-401.35"
+
+[[sources]]
+id = "pa_dep_great_lakes"
+short = "DEP Great Lakes report"
+title = "Pennsylvania Great Lakes Water Management Program Report 2019-2024"
+publisher = "Pennsylvania Department of Environmental Protection"
+url = "https://glslregionalbody.org/media/hkchgnpk/pa-2024-water-management-program-report.pdf"
+
+[[sources]]
+id = "pa_93_7"
+short = "25 Pa. Code 93.7"
+title = "25 Pa. Code 93.7: specific water quality criteria (Table 3, temperature)"
+publisher = "Pennsylvania Department of Environmental Protection"
+url = "https://www.pacodeandbulletin.gov/Display/pacode?file=/secure/pacode/data/025/chapter93/s93.7.html"
+
+[[sources]]
+id = "pa_72_1"
+short = "25 Pa. Code 72.1"
+title = "25 Pa. Code 72.1: administration of the sewage facilities permitting program, definitions"
+publisher = "Pennsylvania Department of Environmental Protection"
+url = "https://www.pacodeandbulletin.gov/Display/pacode?file=/secure/pacode/data/025/chapter72/s72.1.html"
+
+[[sources]]
+id = "pa_72_2"
+short = "25 Pa. Code 72.2"
+title = "25 Pa. Code 72.2: scope"
+publisher = "Pennsylvania Department of Environmental Protection"
+url = "https://www.pacodeandbulletin.gov/Display/pacode?file=/secure/pacode/data/025/chapter72/s72.2.html"
+
+[[sources]]
+id = "pa_72_21"
+short = "25 Pa. Code 72.21"
+title = "25 Pa. Code 72.21: permits for individual and community onlot systems"
+publisher = "Pennsylvania Department of Environmental Protection"
+url = "https://www.pacodeandbulletin.gov/Display/pacode?file=/secure/pacode/data/025/chapter72/s72.21.html"
+
+[[sources]]
+id = "pa_dap"
+short = "Pennsylvania Lake Erie plan"
+title = "Pennsylvania Lake Erie Phosphorus Reduction Domestic Action Plan (Sept 2017)"
+publisher = "Pennsylvania Department of Environmental Protection"
+url = "https://files.dep.state.pa.us/Water/Compacts%20and%20Commissions/GreatLakesProgram/PA%20DAP%20-%20PA%20Lake%20Erie%20Phosphorus%20Reduction%20Domestic%20Action%20Plan.pdf"
+
+[[sources]]
+id = "ppl_lp6"
+short = "PPL Electric Rate Schedule LP-6"
+title = "PPL Electric Utilities, Tariff Supplement No. 2 to Pa. P.U.C. No. 202, Rate Schedule LP-6 (large load interconnections), pages 35C to 35E"
+publisher = "PPL Electric Utilities"
+url = "https://www.pplelectric.com/site/-/media/PPLElectric/At-Your-Service/Docs/Current-Electric-Tariff/2026/August/LP-6---Large-Load-Interconnections.pdf"
+
+[[sources]]
+id = "drbc_430_7"
+short = "18 CFR 430.7"
+title = "18 CFR 430.7: Southeastern Pennsylvania Ground Water Protected Area, withdrawal limits"
+publisher = "Delaware River Basin Commission (eCFR)"
+url = "https://www.ecfr.gov/current/title-18/section-430.7"
+
+[[sources]]
+id = "drbc_gwpa_map"
+short = "DRBC protected area boundary"
+title = "Southeastern Pennsylvania Ground Water Protected Area boundary (GIS)"
+publisher = "Delaware River Basin Commission"
+url = "https://nj.gov/drbc/library/documents/GIS/gwpabnd.zip"

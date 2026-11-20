@@ -5,3 +5,4 @@ dist/
 .pytest_cache/
 tests/.cache/
 .DS_Store
+.cache/

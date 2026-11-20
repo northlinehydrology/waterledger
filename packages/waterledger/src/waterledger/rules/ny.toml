@@ -1,0 +1,134 @@
+# New York's rules for large new water users, as data (waterledger.rules). Every line was read against its source on `checked`.
+checked = "2026-11-20"
+
+[withdrawals]
+# DEC water withdrawal permit for a system with the capacity to withdraw 100,000 gallons a day or more, all sources together, statewide, Great Lakes basin
+# included (ECL 15-1501, 15-1502(14); 6 NYCRR 601.2(v), 601.6): a capacity test, on the peak day. Long Island (Kings, Queens, Nassau, Suffolk): new or
+# additional wells with total pumping capacity over 45 gallons a minute, 0.0648 MGD (ECL 15-1527). Susquehanna basin (HUC 0205): SRBC approval for a
+# withdrawal of 100,000 gallons a day or more and a consumptive use of 20,000 or more, each averaged over any 30 consecutive days (18 CFR 806.4); the estimate
+# has no 30-day figure for water used up, so its highest 90 days stands in [A]. Delaware basin (HUC 0204): DRBC review above 100,000 gallons a day averaged
+# over 30 days (18 CFR 401.35). A withdrawal SRBC or DRBC approves is exempt from DEC's permit (601.9(b)), so the commissions' lines come after DEC's at the
+# same size and win where they apply.
+period = "30 days"
+summary = "New York requires a DEC water withdrawal permit for a system able to withdraw 100,000 gallons a day or more, and on Long Island for wells able to pump more than 45 gallons a minute. In the Susquehanna basin, SRBC approves a withdrawal of 100,000 gallons a day or more and a consumptive use of 20,000 or more; in the Delaware basin, DRBC reviews a withdrawal above 100,000 gallons a day. A withdrawal one of the commissions approves needs no DEC permit."
+sources = ["ny_ecl_15_1501", "ny_601", "ny_ecl_15_1527", "srbc_806_4", "drbc_401_35"]
+
+[[withdrawals.lines]]
+key = "srbc_consumptive"
+mgd = 0.02
+at_least = true
+measure = "consumed"
+huc = ["0205"]
+level = "large"
+tag = "Needs SRBC approval"
+flag = "The water used up is estimated at 20,000 gallons a day or more. In the Susquehanna basin that needs the Susquehanna River Basin Commission’s approval."
+sources = ["srbc_806_4"]
+
+[[withdrawals.lines]]
+key = "long_island"
+mgd = 0.0648
+period = "capacity"
+counties = ["36047", "36081", "36059", "36103"]
+level = "large"
+tag = "Needs a state permit"
+flag = "The wells would pump more than 45 gallons a minute. On Long Island, new or added wells of that capacity need a permit from DEC."
+sources = ["ny_ecl_15_1527"]
+
+[[withdrawals.lines]]
+key = "permit"
+mgd = 0.1
+at_least = true
+period = "capacity"
+level = "large"
+tag = "Needs a state permit"
+flag = "The estimated pumping reaches 100,000 gallons a day on the peak day. In New York a system able to withdraw that much needs a water withdrawal permit from DEC."
+sources = ["ny_ecl_15_1501", "ny_601"]
+
+[[withdrawals.lines]]
+key = "srbc_withdrawal"
+mgd = 0.1
+at_least = true
+huc = ["0205"]
+level = "large"
+tag = "Needs SRBC approval"
+flag = "The estimated pumping reaches 100,000 gallons a day over 30 days. In the Susquehanna basin that needs the Susquehanna River Basin Commission’s approval."
+sources = ["srbc_806_4"]
+
+[[withdrawals.lines]]
+key = "drbc_review"
+mgd = 0.1
+huc = ["0204"]
+level = "large"
+tag = "Needs DRBC review"
+flag = "The estimated pumping is above 100,000 gallons a day over 30 days. In the Delaware basin that needs the Delaware River Basin Commission’s review."
+sources = ["drbc_401_35"]
+
+[discharge]
+permit_note = "DEC issues the permit (SPDES), and New York’s thermal criteria keep a non-trout stream’s surface at or below 90 °F, allow no discharge above 70 °F to trout streams, and limit a lake surface’s rise to 3 °F."
+sources = ["ny_704_2"]
+
+[septic]
+sources = ["ny_75a", "ny_ecl_17_0701"]
+
+[[septic.lines]]
+below_gpd = 1000
+text = "a system discharging sewage to the ground needs no state discharge permit, and the county, city, town or village may set its own permit rules"
+
+[[septic.lines]]
+text = "a system discharging 1,000 gallons a day or more to the ground needs a SPDES permit from DEC"
+
+[[sources]]
+id = "ny_ecl_15_1501"
+short = "ECL 15-1501"
+title = "New York Environmental Conservation Law 15-1501: water withdrawal permits"
+publisher = "New York State Senate"
+url = "https://www.nysenate.gov/legislation/laws/ENV/15-1501"
+
+[[sources]]
+id = "ny_601"
+short = "6 NYCRR Part 601"
+title = "6 NYCRR Part 601: water withdrawal permitting, reporting and registration (courtesy copy)"
+publisher = "New York State Department of Environmental Conservation"
+url = "https://dec.ny.gov/sites/default/files/2026-06/6nycrrpart601_courtesycopy.pdf"
+
+[[sources]]
+id = "ny_ecl_15_1527"
+short = "ECL 15-1527"
+title = "New York Environmental Conservation Law 15-1527: Long Island wells"
+publisher = "New York State Senate"
+url = "https://www.nysenate.gov/legislation/laws/ENV/15-1527"
+
+[[sources]]
+id = "srbc_806_4"
+short = "18 CFR 806.4"
+title = "18 CFR 806.4: projects requiring review and approval (Susquehanna River Basin Commission)"
+publisher = "Susquehanna River Basin Commission (eCFR)"
+url = "https://www.ecfr.gov/current/title-18/chapter-III/subchapter-B/part-806/subpart-A/section-806.4"
+
+[[sources]]
+id = "drbc_401_35"
+short = "18 CFR 401.35"
+title = "18 CFR 401.35: classification of projects for review (Delaware River Basin Commission)"
+publisher = "Delaware River Basin Commission (eCFR)"
+url = "https://www.ecfr.gov/current/title-18/chapter-III/subchapter-A/part-401/subpart-B/section-401.35"
+
+[[sources]]
+id = "ny_704_2"
+short = "6 NYCRR 704.2"
+title = "6 NYCRR 704.2: criteria governing thermal discharges, as reproduced by Cornell LII"
+publisher = "New York State Department of Environmental Conservation"
+url = "https://www.law.cornell.edu/regulations/new-york/6-NYCRR-704.2"
+
+[[sources]]
+id = "ny_75a"
+short = "10 NYCRR Appendix 75-A"
+title = "10 NYCRR Appendix 75-A: wastewater treatment standards, individual household systems, as reproduced by Cornell LII"
+publisher = "New York State Department of Health"
+url = "https://www.law.cornell.edu/regulations/new-york/10-NYCRR-app-75-A-SS-75-A-1"
+
+[[sources]]
+id = "ny_ecl_17_0701"
+short = "ECL 17-0701"
+title = "New York Environmental Conservation Law 17-0701: SPDES permits, exemption for small subsurface discharges"
+publisher = "New York State Senate"
+url = "https://www.nysenate.gov/legislation/laws/ENV/17-0701"

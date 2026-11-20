@@ -1,0 +1,124 @@
+# Georgia's rules for large new water users, as data (waterledger.rules). Every line was read against its source on `checked`.
+checked = "2026-11-20"
+
+[withdrawals]
+# Surface water (O.C.G.A. 12-5-31(b); Ga. Comp. R. & Regs. 391-3-6-.07): a permit from EPD for a withdrawal of more than 100,000 gallons a day on a monthly
+# average, the monthly average being the highest month's total over its days (391-3-6-.07(4)). Groundwater (O.C.G.A. 12-5-96(a)(1); 391-3-2-.03(1)): a permit
+# to withdraw, obtain or utilize more than 100,000 gallons a day; the non-farm text names no period, and EPD writes groundwater permits as monthly and annual
+# averages (391-3-2-.02), so the monthly average is the test here [A]. The line is a withdrawal, not a consumptive use. Georgia has one statewide line; the
+# coastal Upper Floridan plan and the Lower Flint suspension limit what EPD grants, not where a permit starts.
+# No `utility` sentence: neither statute nor EPD's rules say whether a customer of a public water system needs a permit of its own (12-5-96 reads
+# "withdraw, obtain, or utilize"), so the card that says the utility's permit covers the campus is not shown for Georgia.
+period = "30 days"
+summary = "Georgia requires a permit from EPD for a withdrawal of more than 100,000 gallons a day of surface water or groundwater, on a monthly average."
+sources = ["ocga_12_5_31", "ocga_12_5_96", "gac_391_3_6_07", "gac_391_3_2"]
+
+below_tag = "Below the state’s permit level"
+[[withdrawals.lines]]
+key = "permit"
+mgd = 0.1
+level = "large"
+tag = "Needs a state permit"
+flag = "The estimated need exceeds 100,000 gallons a day. In Georgia, a withdrawal of surface water or groundwater above that, on a monthly average, needs a permit from EPD."
+sources = ["ocga_12_5_31", "ocga_12_5_96", "gac_391_3_6_07", "gac_391_3_2"]
+
+[discharge]
+permit_note = "Georgia EPD issues the permit, and Georgia’s water quality standards cap a discharge’s warming of a stream at 5 °F (1.5 °F in estuaries) and 90 °F, with no warming at all in primary trout waters."
+sources = ["gac_391_3_6_06", "gac_391_3_6_03"]
+
+[septic]
+# DPH's rules (511-3-1) cover on-site systems except community systems and those under DNR; above 2,000 gallons a day the plans go to the county board of
+# health with a Georgia-licensed engineer's signature (511-3-1-.03). EPD's general permit GAG278000 covers large community subsurface systems of 10,000 to
+# 150,000 gallons a day. Neither states a single line between the two agencies for a campus, so the last line says only what both say.
+sources = ["gac_511_3_1_03", "epd_gag278000"]
+
+[[septic.lines]]
+max_gpd = 2000
+text = "the county board of health issues the construction permit under the Department of Public Health’s rules"
+
+[[septic.lines]]
+text = "above 2,000 gallons a day the plans go to the county board of health signed by a Georgia-licensed engineer, and EPD permits large community systems of 10,000 to 150,000 gallons a day under a general permit"
+
+[large_load]
+mw = 100
+utility = "^Georgia Power"
+text = "At 100 MW or more, a new customer of Georgia Power falls under the rules the PSC approved in January 2025 (Docket 44280): minimum bills, longer contracts, security, and each contract filed with the PSC at least 30 days before it is signed."
+caption = "100 MW is the line in Georgia Power’s large-load rules"
+sources = ["psc_44280_order", "psc_44280_compliance", "gpc_44280_filing"]
+
+[[sources]]
+id = "ocga_12_5_31"
+short = "O.C.G.A. 12-5-31"
+title = "Official Code of Georgia 12-5-31: surface water withdrawal permits"
+publisher = "State of Georgia (text as reproduced by FindLaw)"
+url = "https://codes.findlaw.com/ga/title-12-conservation-and-natural-resources/ga-code-sect-12-5-31/"
+
+[[sources]]
+id = "ocga_12_5_96"
+short = "O.C.G.A. 12-5-96"
+title = "Official Code of Georgia 12-5-96: groundwater use permits"
+publisher = "State of Georgia (text as reproduced by FindLaw)"
+url = "https://codes.findlaw.com/ga/title-12-conservation-and-natural-resources/ga-code-sect-12-5-96/"
+
+[[sources]]
+id = "gac_391_3_6_07"
+short = "Ga. Comp. R. & Regs. 391-3-6-.07"
+title = "Rules of Georgia DNR 391-3-6-.07: surface water withdrawals"
+publisher = "Georgia Environmental Protection Division"
+url = "https://www.law.cornell.edu/regulations/georgia/Ga-Comp-R-Regs-R-391-3-6-.07"
+
+[[sources]]
+id = "gac_391_3_2"
+short = "Ga. Comp. R. & Regs. 391-3-2"
+title = "Rules of Georgia DNR Chapter 391-3-2: groundwater use"
+publisher = "Georgia Environmental Protection Division"
+url = "https://rules.sos.ga.gov/gac/391-3-2"
+
+[[sources]]
+id = "gac_391_3_6_06"
+short = "Ga. Comp. R. & Regs. 391-3-6-.06"
+title = "Rules of Georgia DNR 391-3-6-.06: NPDES permits"
+publisher = "Georgia Environmental Protection Division"
+url = "https://www.law.cornell.edu/regulations/georgia/Ga-Comp-R-Regs-R-391-3-6-.06"
+
+[[sources]]
+id = "gac_391_3_6_03"
+short = "Ga. Comp. R. & Regs. 391-3-6-.03"
+title = "Rules of Georgia DNR 391-3-6-.03: water use classifications and water quality standards"
+publisher = "Georgia Environmental Protection Division"
+url = "https://www.law.cornell.edu/regulations/georgia/Ga-Comp-R-Regs-R-391-3-6-.03"
+
+[[sources]]
+id = "gac_511_3_1_03"
+short = "Ga. Comp. R. & Regs. 511-3-1-.03"
+title = "Rules of Georgia DPH 511-3-1-.03: on-site sewage management systems, permits and plans"
+publisher = "Georgia Department of Public Health"
+url = "https://www.law.cornell.edu/regulations/georgia/Ga-Comp-R-Regs-R-511-3-1-.03"
+
+[[sources]]
+id = "epd_gag278000"
+short = "EPD General Permit GAG278000"
+title = "General Permit GAG278000 for large community subsurface sewage systems (effective Feb 1, 2025)"
+publisher = "Georgia Environmental Protection Division"
+url = "https://epd.georgia.gov/document/document/gag278000-lcss-general-permit-2025-permit-issuancepdf/download"
+
+[[sources]]
+id = "psc_44280_order"
+short = "PSC Docket 44280"
+title = "Order Approving Revisions to Georgia Power Company's Rules and Regulations, Docket 44280, Jan 23, 2025"
+publisher = "Georgia Public Service Commission"
+url = "https://services.psc.ga.gov/api/v1/External/Public/Get/Document/DownloadFile/221165/102330"
+
+[[sources]]
+id = "gpc_44280_filing"
+short = "Georgia Power filing, Docket 44280"
+title = "Georgia Power Company, Request for Approval of Revisions to Rules and Regulations, Docket 44280, Dec 11, 2024"
+publisher = "Georgia Power Company"
+url = "https://services.psc.ga.gov/api/v1/External/Public/Get/Document/DownloadFile/220667/101841"
+
+[[sources]]
+id = "psc_44280_compliance"
+short = "PSC Docket 44280, Apr 15, 2025"
+title = "Order on Georgia Power Company's Revision to Rules and Regulations Tariff Compliance Filing, Docket 44280, Apr 15, 2025"
+publisher = "Georgia Public Service Commission"
+url = "https://services.psc.ga.gov/api/v1/External/Public/Get/Document/DownloadFile/222325/103475"

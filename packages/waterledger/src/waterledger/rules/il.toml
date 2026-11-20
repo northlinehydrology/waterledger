@@ -1,0 +1,91 @@
+# Illinois's rules for large new water users, as data (waterledger.rules). Every line was read against its source on `checked`.
+checked = "2026-11-20"
+
+[withdrawals]
+# Illinois has no withdrawal permit for wells. A high-capacity well is one where all wells on the parcel can withdraw 100,000 gallons or more in any 24 hours
+# (525 ILCS 45/4), a capacity test on the peak day; before a new one is built, the county Soil and Water Conservation District is notified and reviews its
+# effect on other users within 30 days (45/5), and it reports to the State Water Survey's water inventory (45/5.3). Lake Michigan water is allocated by IDNR
+# permit within the U.S. Supreme Court decree's 3,200 cfs (615 ILCS 50), and Illinois sits outside most of the Compact's sections (45 ILCS 147/5, Section 4.14).
+period = "capacity"
+summary = "Illinois has no permit for wells. Before a well able to withdraw 100,000 gallons or more in a day is built, the county Soil and Water Conservation District must be notified, and it reviews the effect on other water users within 30 days. The well then reports its use to the Illinois State Water Survey."
+sources = ["il_525_45_4", "il_525_45_5", "il_525_45_5_3"]
+
+below_tag = "Below the notice level"
+[[withdrawals.lines]]
+key = "notice"
+mgd = 0.1
+at_least = true
+source = ["ground"]
+level = "mid"
+tag = "Notice to the local district"
+sources = ["il_525_45_4", "il_525_45_5", "il_525_45_5_3"]
+
+[discharge]
+permit_note = "Illinois EPA issues the permit, and Illinois’s standards limit warming to 5 °F above natural, with river maximums of 60 °F from December to March and 90 °F from April to November."
+sources = ["il_302_211"]
+
+[septic]
+sources = ["il_225_225_3", "il_225_225_4"]
+
+[[septic.lines]]
+below_gpd = 1500
+text = "the Illinois Department of Public Health reviews and approves the system"
+
+[[septic.lines]]
+text = "a system of more than 1,500 gallons a day is an alternative system under the Department of Public Health’s rules, and a new outlet or increased discharge to waters of the state needs an Illinois EPA permit"
+
+[large_load]
+mw = 50
+utility = "^Commonwealth Edison"
+text = "At 50 MW or more, a new ComEd customer falls under the large-load terms the ICC approved in March 2026 (Dockets 25-0677 and 25-0679): an analysis deposit of $1 million and more above 200 MW, and a 10-year transmission security agreement."
+caption = "50 MW is the line in ComEd’s large-load tariff"
+sources = ["comed_compliance"]
+
+[[sources]]
+id = "il_525_45_4"
+short = "525 ILCS 45/4"
+title = "Water Use Act of 1983, 525 ILCS 45/4: definitions (high-capacity well)"
+publisher = "Illinois General Assembly"
+url = "https://www.ilga.gov/Documents/legislation/ilcs/documents/052500450K4.htm"
+
+[[sources]]
+id = "il_525_45_5"
+short = "525 ILCS 45/5"
+title = "Water Use Act of 1983, 525 ILCS 45/5: water conflict resolution (notice and review)"
+publisher = "Illinois General Assembly"
+url = "https://www.ilga.gov/Documents/legislation/ilcs/documents/052500450K5.htm"
+
+[[sources]]
+id = "il_525_45_5_3"
+short = "525 ILCS 45/5.3"
+title = "Water Use Act of 1983, 525 ILCS 45/5.3: water inventory reporting"
+publisher = "Illinois General Assembly"
+url = "https://www.ilga.gov/Documents/legislation/ilcs/documents/052500450K5.3.htm"
+
+[[sources]]
+id = "il_302_211"
+short = "35 Ill. Adm. Code 302.211"
+title = "35 Ill. Adm. Code 302.211: water quality standards, temperature"
+publisher = "Illinois Pollution Control Board"
+url = "https://www.ilga.gov/commission/jcar/admincode/035/035003020B02110R.html"
+
+[[sources]]
+id = "il_225_225_3"
+short = "225 ILCS 225/3"
+title = "Private Sewage Disposal Licensing Act, 225 ILCS 225/3: definitions"
+publisher = "Illinois General Assembly"
+url = "https://www.ilga.gov/Documents/legislation/ilcs/documents/022502250K3.htm"
+
+[[sources]]
+id = "il_225_225_4"
+short = "225 ILCS 225/4"
+title = "Private Sewage Disposal Licensing Act, 225 ILCS 225/4: powers and duties of the Department"
+publisher = "Illinois General Assembly"
+url = "https://www.ilga.gov/Documents/legislation/ilcs/documents/022502250K4.htm"
+
+[[sources]]
+id = "comed_compliance"
+short = "ComEd compliance filing, ICC"
+title = "Commonwealth Edison compliance tariff filing, ICC Dockets 25-0677 and 25-0679, Mar 30, 2026"
+publisher = "Illinois Commerce Commission"
+url = "https://icc.illinois.gov/downloads/public/filing/4/397281.pdf"

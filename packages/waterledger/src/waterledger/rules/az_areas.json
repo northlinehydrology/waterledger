@@ -1,0 +1,796 @@
+{
+"state": "AZ",
+"read": "2026-11-19",
+"in": 0.95,
+"part": 0.05,
+"groups": {
+"ama": [
+"Douglas Active Management Area",
+"Phoenix Active Management Area",
+"Pinal Active Management Area",
+"Prescott Active Management Area",
+"Ranegras Plain Active Management Area",
+"Santa Cruz Active Management Area",
+"Tucson Active Management Area",
+"Willcox Active Management Area"
+],
+"ina": [
+"Harquahala Irrigation Non-Expansion Area",
+"Hualapai Valley Irrigation Non-Expansion Area",
+"Joseph City Irrigation Non-Expansion Area"
+]
+},
+"sources": {
+"adwr_ama_ina": {
+"title": "ADWR Active Management Areas and Irrigation Non-Expansion Areas (AMA_INA_2024)",
+"publisher": "Arizona Department of Water Resources",
+"url": "https://services.arcgis.com/C34zQ7veRS0V1t04/arcgis/rest/services/AMA_INA_2024/FeatureServer/0"
+}
+},
+"places": {
+"04003": {
+"ama": {
+"share": 0.397,
+"names": [
+"Willcox Active Management Area",
+"Douglas Active Management Area"
+]
+}
+},
+"0400390306": {
+"ama": {
+"share": 0.236,
+"names": [
+"Douglas Active Management Area"
+]
+}
+},
+"0400390408": {
+"ama": {
+"share": 0.343,
+"names": [
+"Willcox Active Management Area"
+]
+}
+},
+"0400390969": {
+"ama": {
+"share": 0.677,
+"names": [
+"Douglas Active Management Area"
+]
+}
+},
+"0400391122": {
+"ama": {
+"share": 0.548,
+"names": [
+"Willcox Active Management Area",
+"Douglas Active Management Area"
+]
+}
+},
+"0400393182": {
+"ama": {
+"share": 0.126,
+"names": [
+"Douglas Active Management Area"
+]
+}
+},
+"0400393825": {
+"ama": {
+"share": 0.936,
+"names": [
+"Willcox Active Management Area"
+]
+}
+},
+"04009": {
+"ama": {
+"share": 0.085,
+"names": [
+"Willcox Active Management Area"
+]
+}
+},
+"0400990357": {
+"ama": {
+"share": 0.325,
+"names": [
+"Willcox Active Management Area"
+]
+}
+},
+"04012": {
+"ama": {
+"share": 0.2,
+"names": [
+"Ranegras Plain Active Management Area"
+]
+},
+"ina": {
+"share": 0.061,
+"names": [
+"Harquahala Irrigation Non-Expansion Area"
+]
+}
+},
+"0401292480": {
+"ama": {
+"share": 0.2,
+"names": [
+"Ranegras Plain Active Management Area"
+]
+},
+"ina": {
+"share": 0.061,
+"names": [
+"Harquahala Irrigation Non-Expansion Area"
+]
+}
+},
+"04013": {
+"ama": {
+"share": 0.528,
+"names": [
+"Phoenix Active Management Area"
+]
+},
+"ina": {
+"share": 0.053,
+"names": [
+"Harquahala Irrigation Non-Expansion Area"
+]
+}
+},
+"0401390459": {
+"ama": {
+"share": 0.469,
+"names": [
+"Phoenix Active Management Area"
+]
+},
+"ina": {
+"share": 0.215,
+"names": [
+"Harquahala Irrigation Non-Expansion Area"
+]
+}
+},
+"0401390561": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0401390867": {
+"ama": {
+"share": 0.886,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0401391377": {
+"ama": {
+"share": 0.284,
+"names": [
+"Phoenix Active Management Area",
+"Pinal Active Management Area"
+]
+}
+},
+"0401392601": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0401393009": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area",
+"Pinal Active Management Area"
+]
+}
+},
+"0401393060": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0401393472": {
+"ama": {
+"share": 0.359,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0401393774": {
+"ama": {
+"share": 0.636,
+"names": [
+"Phoenix Active Management Area"
+]
+},
+"ina": {
+"share": 0.072,
+"names": [
+"Harquahala Irrigation Non-Expansion Area"
+]
+}
+},
+"04015": {
+"ina": {
+"share": 0.09,
+"names": [
+"Hualapai Valley Irrigation Non-Expansion Area"
+]
+}
+},
+"0401591885": {
+"ina": {
+"share": 0.256,
+"names": [
+"Hualapai Valley Irrigation Non-Expansion Area"
+]
+}
+},
+"0401793952": {
+"ina": {
+"share": 0.102,
+"names": [
+"Joseph City Irrigation Non-Expansion Area"
+]
+}
+},
+"04019": {
+"ama": {
+"share": 0.506,
+"names": [
+"Pinal Active Management Area",
+"Tucson Active Management Area"
+]
+}
+},
+"0401990153": {
+"ama": {
+"share": 0.996,
+"names": [
+"Santa Cruz Active Management Area",
+"Tucson Active Management Area"
+]
+}
+},
+"0401992040": {
+"ama": {
+"share": 1.0,
+"names": [
+"Pinal Active Management Area",
+"Tucson Active Management Area"
+]
+}
+},
+"0401993375": {
+"ama": {
+"share": 0.359,
+"names": [
+"Pinal Active Management Area"
+]
+}
+},
+"0401993570": {
+"ama": {
+"share": 0.701,
+"names": [
+"Tucson Active Management Area"
+]
+}
+},
+"04021": {
+"ama": {
+"share": 0.708,
+"names": [
+"Phoenix Active Management Area",
+"Pinal Active Management Area",
+"Tucson Active Management Area"
+]
+}
+},
+"0402190510": {
+"ama": {
+"share": 1.0,
+"names": [
+"Pinal Active Management Area"
+]
+}
+},
+"0402190816": {
+"ama": {
+"share": 1.0,
+"names": [
+"Pinal Active Management Area"
+]
+}
+},
+"0402191173": {
+"ama": {
+"share": 1.0,
+"names": [
+"Pinal Active Management Area",
+"Tucson Active Management Area"
+]
+}
+},
+"0402191224": {
+"ama": {
+"share": 0.948,
+"names": [
+"Pinal Active Management Area",
+"Tucson Active Management Area"
+]
+}
+},
+"0402191428": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area",
+"Pinal Active Management Area"
+]
+}
+},
+"0402192091": {
+"ama": {
+"share": 1.0,
+"names": [
+"Pinal Active Management Area"
+]
+}
+},
+"0402192346": {
+"ama": {
+"share": 0.652,
+"names": [
+"Phoenix Active Management Area",
+"Pinal Active Management Area"
+]
+}
+},
+"0402193162": {
+"ama": {
+"share": 0.056,
+"names": [
+"Tucson Active Management Area"
+]
+}
+},
+"0402193377": {
+"ama": {
+"share": 1.0,
+"names": [
+"Pinal Active Management Area"
+]
+}
+},
+"04023": {
+"ama": {
+"share": 0.556,
+"names": [
+"Santa Cruz Active Management Area",
+"Tucson Active Management Area"
+]
+}
+},
+"0402392295": {
+"ama": {
+"share": 0.954,
+"names": [
+"Santa Cruz Active Management Area",
+"Tucson Active Management Area"
+]
+}
+},
+"0402392550": {
+"ama": {
+"share": 0.068,
+"names": []
+}
+},
+"04025": {
+"ama": {
+"share": 0.066,
+"names": [
+"Prescott Active Management Area"
+]
+}
+},
+"0402592193": {
+"ama": {
+"share": 0.231,
+"names": [
+"Prescott Active Management Area"
+]
+}
+},
+"0402592754": {
+"ama": {
+"share": 0.156,
+"names": [
+"Prescott Active Management Area"
+]
+}
+},
+"0402830": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0404720": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0406260": {
+"ama": {
+"share": 0.315,
+"names": [
+"Douglas Active Management Area"
+]
+}
+},
+"0407940": {
+"ama": {
+"share": 0.836,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0410180": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0410530": {
+"ama": {
+"share": 1.0,
+"names": [
+"Pinal Active Management Area"
+]
+}
+},
+"0411300": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0412000": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0412840": {
+"ama": {
+"share": 0.971,
+"names": [
+"Prescott Active Management Area"
+]
+}
+},
+"0415500": {
+"ama": {
+"share": 1.0,
+"names": [
+"Pinal Active Management Area"
+]
+}
+},
+"0419145": {
+"ama": {
+"share": 0.945,
+"names": [
+"Prescott Active Management Area"
+]
+}
+},
+"0420050": {
+"ama": {
+"share": 0.994,
+"names": [
+"Douglas Active Management Area"
+]
+}
+},
+"0422220": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0422360": {
+"ama": {
+"share": 1.0,
+"names": [
+"Pinal Active Management Area"
+]
+}
+},
+"0423760": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area",
+"Pinal Active Management Area"
+]
+}
+},
+"0425300": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0427400": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0427820": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0428380": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0430270": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0433280": {
+"ina": {
+"share": 0.054,
+"names": [
+"Joseph City Irrigation Non-Expansion Area"
+]
+}
+},
+"0437620": {
+"ina": {
+"share": 0.696,
+"names": [
+"Hualapai Valley Irrigation Non-Expansion Area"
+]
+}
+},
+"0441330": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0444270": {
+"ama": {
+"share": 1.0,
+"names": [
+"Tucson Active Management Area"
+]
+}
+},
+"0444410": {
+"ama": {
+"share": 1.0,
+"names": [
+"Pinal Active Management Area"
+]
+}
+},
+"0446000": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0449640": {
+"ama": {
+"share": 0.996,
+"names": [
+"Santa Cruz Active Management Area"
+]
+}
+},
+"0451600": {
+"ama": {
+"share": 1.0,
+"names": [
+"Tucson Active Management Area"
+]
+}
+},
+"0452930": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0454050": {
+"ama": {
+"share": 0.809,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0455000": {
+"ama": {
+"share": 0.999,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0457380": {
+"ama": {
+"share": 1.0,
+"names": [
+"Prescott Active Management Area"
+]
+}
+},
+"0457450": {
+"ama": {
+"share": 1.0,
+"names": [
+"Prescott Active Management Area"
+]
+}
+},
+"0458150": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0462140": {
+"ama": {
+"share": 1.0,
+"names": [
+"Tucson Active Management Area"
+]
+}
+},
+"0464210": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0465000": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0468850": {
+"ama": {
+"share": 1.0,
+"names": [
+"Tucson Active Management Area"
+]
+}
+},
+"0471300": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0471510": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0473000": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0474190": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+},
+"0477000": {
+"ama": {
+"share": 1.0,
+"names": [
+"Tucson Active Management Area"
+]
+}
+},
+"0483090": {
+"ama": {
+"share": 1.0,
+"names": [
+"Willcox Active Management Area"
+]
+}
+},
+"0485400": {
+"ama": {
+"share": 1.0,
+"names": [
+"Phoenix Active Management Area"
+]
+}
+}
+}
+}

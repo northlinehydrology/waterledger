@@ -1,0 +1,157 @@
+# Minnesota's rules for large new water users, as data (waterledger.rules). Every line was read against its source on `checked`.
+checked = "2026-11-20"
+
+[withdrawals]
+# A water-use permit from DNR for any appropriation except one of "less than 10,000 gallons per day and totaling no more than 1,000,000 gallons per year"
+# (Minn. Stat. 103G.271 subd. 1, 4(a); the rule, 6115.0620, reads "not to exceed"): two lines, the day's 10,000 gallons on the peak day and the year's
+# 1,000,000 gallons as 2,740 gallons a day on average, with the highest month standing in for the year [A] (the estimate has no annual line period).
+# More than 2,000,000 gallons a day used up, averaged over 30 days, needs the commissioner's finding that the basin's remaining water is adequate (103G.265
+# subd. 3); in the Great Lakes basin, more than 5,000,000 gallons a day used up over 30 days needs notice to the Great Lakes states and provinces and the
+# legislature's approval (103G.265 subd. 4). A data center using up more than 100,000,000 gallons a year gets DNR's preapplication review and permit conditions
+# (103G.265 subd. 5; 103G.271 subd. 5b); that is in the summary, not a line, since it applies to data centers only.
+period = "30 days"
+summary = "Minnesota requires a water-use permit from DNR for a withdrawal of 10,000 gallons a day or more than 1,000,000 gallons a year, from wells or surface water. Using up more than 2 million gallons a day, averaged over 30 days, also needs DNR’s finding that the basin’s remaining water is adequate, and a data center using up more than 100 million gallons a year gets DNR’s preapplication review and permit conditions."
+basin_summary = "Minnesota requires a water-use permit from DNR for a withdrawal of 10,000 gallons a day or more than 1,000,000 gallons a year. In the Lake Superior basin, using up more than 5 million gallons a day, averaged over 30 days, also needs notice to the other Great Lakes states and provinces and the legislature’s approval."
+sources = ["mn_103g_271", "mn_6115_0620", "mn_103g_265"]
+
+below_tag = "Below the state’s permit level"
+[[withdrawals.lines]]
+key = "permit_year"
+mgd = 0.00274
+level = "large"
+tag = "Needs a state permit"
+flag = "The estimated pumping is above 1,000,000 gallons a year. In Minnesota a withdrawal of more than that needs a water-use permit from DNR."
+sources = ["mn_103g_271", "mn_6115_0620"]
+
+[[withdrawals.lines]]
+key = "permit"
+mgd = 0.01
+at_least = true
+period = "capacity"
+level = "large"
+tag = "Needs a state permit"
+flag = "The estimated pumping reaches 10,000 gallons a day. In Minnesota a withdrawal of that much needs a water-use permit from DNR."
+sources = ["mn_103g_271", "mn_6115_0620"]
+
+[[withdrawals.lines]]
+key = "consumptive_review"
+mgd = 2.0
+measure = "consumed"
+period = "30 days"
+level = "large"
+tag = "Needs a state permit and basin finding"
+flag = "The water used up is estimated above 2 million gallons a day. In Minnesota a permit for that much needs DNR’s finding that the water left in the basin will be adequate."
+sources = ["mn_103g_265"]
+
+[[withdrawals.lines]]
+key = "great_lakes_approval"
+mgd = 5.0
+measure = "consumed"
+period = "30 days"
+where = "great_lakes_basin"
+level = "large"
+tag = "Needs the legislature’s approval"
+flag = "The water used up is estimated above 5 million gallons a day. In Minnesota’s Great Lakes basin that needs notice to the other Great Lakes states and provinces and the legislature’s approval."
+sources = ["mn_103g_265"]
+
+[discharge]
+permit_note = "The MPCA issues the permit; Minnesota’s standards limit warming to 5 °F above natural in streams and 3 °F in lakes, never above a daily average of 86 °F, and a new or expanded discharge of more than 1,800 pounds of phosphorus a year must remove phosphorus to 1 mg/L."
+sources = ["mn_7050_0222", "mn_7053_0255"]
+
+[septic]
+sources = ["mn_7080_1100", "mn_7081_0020", "mn_7081_0040", "mn_115_55"]
+
+[[septic.lines]]
+max_gpd = 5000
+text = "the county, city or township permits and inspects the system under the MPCA’s minimum standards"
+
+[[septic.lines]]
+max_gpd = 10000
+text = "the system is a midsized system (5,000 to 10,000 gallons a day), permitted locally under the MPCA’s rules"
+
+[[septic.lines]]
+text = "a system dispersing more than 10,000 gallons a day needs a state disposal system permit from the MPCA"
+
+[large_load]
+mw = 100
+utility = "^Northern States Power"
+text = "At 100 MW or more (or 20 MW for a load the PUC calls system intensive), a new customer of Xcel Energy falls in the very large customer class the PUC set in May 2026 (Docket 25-289): a 15-year contract and a minimum bill of 80% of the capacity it contracts for, as the PUC’s release describes it."
+caption = "100 MW is the line in Xcel Energy’s very large customer class"
+sources = ["mn_puc_release", "mn_puc_vlec"]
+
+[[sources]]
+id = "mn_103g_271"
+short = "Minn. Stat. 103G.271"
+title = "Minnesota Statutes 103G.271: appropriation and use of waters, permits"
+publisher = "Minnesota Office of the Revisor of Statutes"
+url = "https://www.revisor.mn.gov/statutes/cite/103G.271"
+
+[[sources]]
+id = "mn_6115_0620"
+short = "Minn. R. 6115.0620"
+title = "Minnesota Rules 6115.0620: water appropriation permits, when required"
+publisher = "Minnesota Department of Natural Resources"
+url = "https://www.revisor.mn.gov/rules/6115.0620/"
+
+[[sources]]
+id = "mn_103g_265"
+short = "Minn. Stat. 103G.265"
+title = "Minnesota Statutes 103G.265: water supply management, consumptive use and Great Lakes basin"
+publisher = "Minnesota Office of the Revisor of Statutes"
+url = "https://www.revisor.mn.gov/statutes/cite/103G.265"
+
+[[sources]]
+id = "mn_7050_0222"
+short = "Minn. R. 7050.0222"
+title = "Minnesota Rules 7050.0222: specific water quality standards for Class 2 waters"
+publisher = "Minnesota Pollution Control Agency"
+url = "https://www.revisor.mn.gov/rules/7050.0222/"
+
+[[sources]]
+id = "mn_7053_0255"
+short = "Minn. R. 7053.0255"
+title = "Minnesota Rules 7053.0255: phosphorus effluent limits"
+publisher = "Minnesota Pollution Control Agency"
+url = "https://www.revisor.mn.gov/rules/7053.0255/"
+
+[[sources]]
+id = "mn_7080_1100"
+short = "Minn. R. 7080.1100"
+title = "Minnesota Rules 7080.1100: definitions (individual subsurface sewage treatment systems)"
+publisher = "Minnesota Pollution Control Agency"
+url = "https://www.revisor.mn.gov/rules/7080.1100/"
+
+[[sources]]
+id = "mn_7081_0020"
+short = "Minn. R. 7081.0020"
+title = "Minnesota Rules 7081.0020: definitions (midsized subsurface sewage treatment systems)"
+publisher = "Minnesota Pollution Control Agency"
+url = "https://www.revisor.mn.gov/rules/7081.0020/"
+
+[[sources]]
+id = "mn_7081_0040"
+short = "Minn. R. 7081.0040"
+title = "Minnesota Rules 7081.0040: state disposal system permits for subsurface systems"
+publisher = "Minnesota Pollution Control Agency"
+url = "https://www.revisor.mn.gov/rules/7081.0040/"
+
+[[sources]]
+id = "mn_115_55"
+short = "Minn. Stat. 115.55"
+title = "Minnesota Statutes 115.55: subsurface sewage treatment systems, local ordinances"
+publisher = "Minnesota Office of the Revisor of Statutes"
+url = "https://www.revisor.mn.gov/statutes/cite/115.55"
+
+[[sources]]
+id = "mn_puc_release"
+short = "PUC release, May 18, 2026"
+title = "Minnesota PUC press release on Xcel Energy's very large customer class (Docket 25-289), May 18, 2026"
+publisher = "Minnesota Public Utilities Commission"
+url = "https://content.govdelivery.com/bulletins/gd/MNPUBUC-417d139?wgt_ref=MNPUBUC_WIDGET_2"
+
+[[sources]]
+id = "mn_puc_vlec"
+short = "PUC, very large customers"
+title = "Very Large Electric Customers"
+publisher = "Minnesota Public Utilities Commission"
+url = "https://mn.gov/puc/activities/v-l-e-c/"

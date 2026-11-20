@@ -2,6 +2,26 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## Unreleased
+
+waterledger only. No estimated number changes; the levels a reader sees change in every state whose rules are now reviewed.
+
+- **Ten more states' rules** (`waterledger/rules/<st>.toml`): Georgia, Virginia, Texas, Wisconsin, Indiana, Minnesota, Pennsylvania, Illinois,
+  New York and Arizona, each from a cited review read line by line against its sources on Nov 20, 2026. Every state on waterledger.org now has
+  a rules file.
+- **Lines limited to a river basin or to counties** (`huc`, `counties`; `levels.applies(..., huc, county)`): the Susquehanna and Delaware basin
+  commissions' lines (New York, Pennsylvania), Long Island's well permits and Virginia's groundwater management areas apply only where the place's
+  main watershed or county puts it. A place not known to be in one gets no such line. `site_levels` passes the place's watershed and county.
+- **A state with no numeric line** (Texas: districts set their own rules) carries its summary, and the reader sees it in place of the
+  not-reviewed note (`rules.withdrawals(st)["no_line"]`).
+- **Areas that don't follow county lines** (`rules/<st>_areas.json`, built by `tools/rule_areas.py`; `rules.areas`, `rules.place_areas`; a line's
+  `areas`): each place's share inside Arizona's Active Management Areas (ADWR's boundaries), Virginia's groundwater management areas (the listed
+  counties and cities, the split counties cut along Interstate 95), Texas's groundwater and subsidence districts (TWDB's boundaries) and Pennsylvania's
+  Southeastern Ground Water Protected Area (DRBC's boundary), measured in an equal-area projection: in at 95%, part from 5%. A place partly inside
+  sees both rules: `site_levels` adds `withdrawal_line_outside` and the areas' names. New lines: Arizona's groundwater right or permit in an AMA,
+  Texas's district permit, Pennsylvania's protected area; Virginia's management areas now by boundary, not by county list.
+- No sentence that a utility's permit covers its customer for Georgia: its statutes and rules don't say so.
+
 ## 3.26.0 (Nov 19, 2026; model 1.17)
 
 waterledger only. No estimated number changes; the levels a reader sees change where a state's rules are now reviewed.
