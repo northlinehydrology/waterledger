@@ -20,7 +20,7 @@ mgd = 0.0
 areas = ["gcd"]
 level = "large"
 tag = "Needs a district permit"
-flag = "The wells would be inside a groundwater district. A Texas groundwater district requires a permit for a well its rules don't exempt, and sets how much it may pump."
+flag = "Inside a Texas groundwater district, a well the district’s rules don’t exempt needs the district’s permit, and the district sets how much it may pump."
 sources = ["tx_wa_36", "tx_sd_8801", "tx_sd_8834", "twdb_gcd_map"]
 
 [discharge]
