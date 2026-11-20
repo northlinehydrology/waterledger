@@ -1,0 +1,1436 @@
+{
+"state": "PA",
+"read": "2026-11-20",
+"in": 0.95,
+"part": 0.05,
+"groups": {
+"sepa_gwpa": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+},
+"sources": {
+"drbc_gwpa": {
+"title": "Southeastern Pennsylvania Ground Water Protected Area boundary (sepa_gwpa_bnd)",
+"publisher": "Delaware River Basin Commission",
+"url": "https://nj.gov/drbc/library/documents/GIS/gwpabnd.zip"
+}
+},
+"places": {
+"42011": {
+"sepa_gwpa": {
+"share": 0.06,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201119664": {
+"sepa_gwpa": {
+"share": 0.991,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201134016": {
+"sepa_gwpa": {
+"share": 0.971,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201178280": {
+"sepa_gwpa": {
+"share": 0.989,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"42017": {
+"sepa_gwpa": {
+"share": 0.575,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201704976": {
+"sepa_gwpa": {
+"share": 0.996,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201709816": {
+"sepa_gwpa": {
+"share": 0.989,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201712504": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201719784": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201719792": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201720104": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201721760": {
+"sepa_gwpa": {
+"share": 0.996,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201734952": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201736192": {
+"sepa_gwpa": {
+"share": 0.988,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201737304": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201741392": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201741416": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201745112": {
+"sepa_gwpa": {
+"share": 0.996,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201749120": {
+"sepa_gwpa": {
+"share": 0.977,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201749384": {
+"sepa_gwpa": {
+"share": 0.994,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201753296": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201753304": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201754184": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201754192": {
+"sepa_gwpa": {
+"share": 0.968,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201754688": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201758936": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201759384": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201761616": {
+"sepa_gwpa": {
+"share": 0.995,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201763048": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201764536": {
+"sepa_gwpa": {
+"share": 0.985,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201764584": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201769248": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201770744": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201776304": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201777704": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201779296": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201780952": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201781048": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201781144": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201783960": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4201786624": {
+"sepa_gwpa": {
+"share": 0.982,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202264": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"42029": {
+"sepa_gwpa": {
+"share": 0.327,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202906544": {
+"sepa_gwpa": {
+"share": 0.947,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202912744": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202920824": {
+"sepa_gwpa": {
+"share": 0.999,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202921008": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202921192": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202921696": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202921928": {
+"sepa_gwpa": {
+"share": 0.993,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202922000": {
+"sepa_gwpa": {
+"share": 0.999,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202922056": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202923440": {
+"sepa_gwpa": {
+"share": 0.468,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202946792": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202954936": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202960120": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202968288": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202972088": {
+"sepa_gwpa": {
+"share": 0.998,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202972920": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202976568": {
+"sepa_gwpa": {
+"share": 0.923,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202977344": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202981160": {
+"sepa_gwpa": {
+"share": 0.998,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202982544": {
+"sepa_gwpa": {
+"share": 0.995,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202982704": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202983080": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202984104": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202984192": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4202985352": {
+"sepa_gwpa": {
+"share": 0.997,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"42077": {
+"sepa_gwpa": {
+"share": 0.056,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4207744992": {
+"sepa_gwpa": {
+"share": 0.994,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4208568": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"42091": {
+"sepa_gwpa": {
+"share": 0.999,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209100156": {
+"sepa_gwpa": {
+"share": 0.998,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209102264": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209108568": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209109696": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209112968": {
+"sepa_gwpa": {
+"share": 0.998,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209115192": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209115848": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209119672": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209121200": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209121600": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209127280": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209131088": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209133088": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209133112": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209133120": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209135808": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209138000": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209141432": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209143312": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209144912": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209144920": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209144976": {
+"sepa_gwpa": {
+"share": 0.993,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209145008": {
+"sepa_gwpa": {
+"share": 0.997,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209145072": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209145080": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209145096": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209147592": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209150640": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209152664": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209153664": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209154656": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209155512": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209159120": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209159392": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209161664": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209162416": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209163808": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209165568": {
+"sepa_gwpa": {
+"share": 0.94,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209166576": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209167528": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209168328": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209171016": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209171856": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209173088": {
+"sepa_gwpa": {
+"share": 0.997,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209176304": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209177152": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209177304": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209179008": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209179040": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209179056": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209179064": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209179136": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209179176": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209179240": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209179256": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209179280": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209182736": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209183696": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209183912": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209184624": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209184888": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209186496": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4209696": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4212504": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4215192": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4215848": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4219784": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4220104": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4221200": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4223440": {
+"sepa_gwpa": {
+"share": 0.468,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4231088": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4233088": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4233112": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4236192": {
+"sepa_gwpa": {
+"share": 0.988,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4237304": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4238000": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4241392": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4241416": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4241432": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4246792": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4252664": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4253296": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4254184": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4254656": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4255512": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4258936": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4259120": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4259384": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4260120": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4262416": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4263048": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4263808": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4264584": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4265568": {
+"sepa_gwpa": {
+"share": 0.94,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4266576": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4268328": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4269248": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4270744": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4271856": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4272920": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4276304": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4277304": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4277704": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4282704": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+},
+"4282736": {
+"sepa_gwpa": {
+"share": 1.0,
+"names": [
+"Southeastern Pennsylvania Ground Water Protected Area"
+]
+}
+}
+}
+}

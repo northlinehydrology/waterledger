@@ -1,0 +1,1954 @@
+{
+"state": "VA",
+"read": "2026-11-20",
+"in": 0.95,
+"part": 0.05,
+"groups": {
+"gwma": [
+"Eastern Shore Groundwater Management Area",
+"Eastern Virginia Groundwater Management Area"
+]
+},
+"sources": {
+"tiger_counties": {
+"title": "TIGERweb counties",
+"publisher": "U.S. Census Bureau",
+"url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/1"
+},
+"tiger_i95": {
+"title": "TIGERweb primary roads (Interstate 95)",
+"publisher": "U.S. Census Bureau",
+"url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/2"
+}
+},
+"places": {
+"51001": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5100180": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5100191196": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5100191346": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5100191496": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5100191646": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5100191796": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5100191946": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5100192096": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5100192246": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5100192396": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"51033": {
+"gwma": {
+"share": 0.871,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5103368": {
+"gwma": {
+"share": 0.164,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5103390440": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5103394583": {
+"gwma": {
+"share": 0.964,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5103395119": {
+"gwma": {
+"share": 0.98,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5103395271": {
+"gwma": {
+"share": 0.703,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51036": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5103691215": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5103691365": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5103691515": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51041": {
+"gwma": {
+"share": 0.1,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5104190248": {
+"gwma": {
+"share": 0.489,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51057": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5105790720": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5105794879": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5105795751": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5105796027": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51059": {
+"gwma": {
+"share": 0.202,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5105912": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5105993633": {
+"gwma": {
+"share": 0.779,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5105994783": {
+"gwma": {
+"share": 0.832,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51073": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5107390008": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5107393735": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5107395047": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5107396231": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5107396471": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5108120": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"51085": {
+"gwma": {
+"share": 0.412,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5108590096": {
+"gwma": {
+"share": 0.498,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5108590200": {
+"gwma": {
+"share": 0.235,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5108590824": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5108590920": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5108593887": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5108594631": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51087": {
+"gwma": {
+"share": 0.638,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5108793511": {
+"gwma": {
+"share": 0.657,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5108796175": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5108888": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109032": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109208": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51093": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109390616": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109393839": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109394839": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109395727": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109396431": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51095": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109590224": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109594063": {
+"gwma": {
+"share": 0.999,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109595159": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109595375": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109595911": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51097": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109790552": {
+"gwma": {
+"share": 0.999,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109794863": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109795527": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109795631": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109795903": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51099": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109991080": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109994031": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109994039": {
+"gwma": {
+"share": 0.999,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5109995687": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51101": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5110190016": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5110194479": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5110196327": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51103": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5110391241": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5110391391": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5110391541": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5110391691": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5110391841": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51115": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5111590808": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5111595055": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5111596335": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51119": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5111994023": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5111995079": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5111995559": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51127": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5112791257": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5112791407": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5112791557": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5112791707": {
+"gwma": {
+"share": 0.999,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5112791857": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5112808": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5112904": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51131": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5113191258": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5113191408": {
+"gwma": {
+"share": 0.999,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5113191558": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5113191708": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5113191858": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5113192008": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"51133": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5113391259": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5113391409": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5113391559": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5113391709": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5113391859": {
+"gwma": {
+"share": 0.999,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51149": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5114990328": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5114990352": {
+"gwma": {
+"share": 0.999,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5114990472": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5114995343": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5114996063": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5115112": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"51153": {
+"gwma": {
+"share": 0.12,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5115395133": {
+"gwma": {
+"share": 0.268,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5115396455": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51159": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5115991271": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5115991421": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5115991571": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5115991721": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5115991871": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5116000": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5116512": {
+"gwma": {
+"share": 0.999,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5116880": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51175": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5117590240": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5117590458": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5117590608": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5117593407": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5117593639": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5117594103": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5117594855": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51177": {
+"gwma": {
+"share": 0.105,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5117790168": {
+"gwma": {
+"share": 0.455,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5117790232": {
+"gwma": {
+"share": 0.154,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5117794231": {
+"gwma": {
+"share": 0.814,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51179": {
+"gwma": {
+"share": 0.41,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5117990064": {
+"gwma": {
+"share": 0.991,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5117993535": {
+"gwma": {
+"share": 0.939,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5117993687": {
+"gwma": {
+"share": 0.862,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5117993783": {
+"gwma": {
+"share": 0.321,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51181": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5118190136": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5118190624": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5118190848": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5118191136": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5118196023": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51183": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5118391000": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5118393895": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5118394871": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5118395975": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5118396207": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5118396263": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5118400": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51193": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5119390976": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5119394751": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5119396255": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5119600": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51199": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5119991290": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5119991440": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5119991590": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5119991740": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5119991890": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5122160": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5123760": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5124752": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5126416": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5129600": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5134176": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5135000": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5138424": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5140088": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5140232": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5140536": {
+"gwma": {
+"share": 0.559,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5141656": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5142424": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5150984": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5152952": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5154984": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"51550": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5155090812": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5156000": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5156096": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5157000": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5159336": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5159384": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5160296": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5160680": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"51620": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5162093643": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5163768": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5163928": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5164000": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51650": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5165093827": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5165120": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51670": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5167093915": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51700": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5170094851": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5170576": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"51710": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5171094875": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5173200": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51735": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5173595115": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51740": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5174095123": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5175840": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5176432": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5176880": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5177520": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5177568": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51800": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5180095987": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5180272": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51810": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5181096187": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5182000": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5182320": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Shore Groundwater Management Area"
+]
+}
+},
+"5182384": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"51830": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5183096395": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5183168": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5183600": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5184960": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5185600": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5186160": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+},
+"5186784": {
+"gwma": {
+"share": 1.0,
+"names": [
+"Eastern Virginia Groundwater Management Area"
+]
+}
+}
+}
+}

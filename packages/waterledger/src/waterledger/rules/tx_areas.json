@@ -1,0 +1,12755 @@
+{
+"state": "TX",
+"read": "2026-11-20",
+"in": 0.95,
+"part": 0.05,
+"groups": {
+"gcd": [
+"Bandera County River Authority",
+"Barton Springs/Edwards Aquifer Conservation District",
+"Bee Groundwater Conservation District",
+"Blanco-Pedernales Groundwater Conservation District",
+"Bluebonnet Groundwater Conservation District",
+"Brazoria County Groundwater Conservation District",
+"Brazos Valley Groundwater Conservation District",
+"Brewster County Groundwater Conservation District",
+"Brush Country Groundwater Conservation District",
+"Calhoun Groundwater Conservation District",
+"Central Texas Groundwater Conservation District",
+"Clear Fork Groundwater Conservation District",
+"Clearwater Underground Water Conservation District",
+"Coastal Bend Groundwater Conservation District",
+"Coastal Plains Groundwater Conservation District",
+"Coke County Underground Water Conservation District",
+"Colorado County Underground Water Conservation District",
+"Comal Trinity Groundwater Conservation District\r",
+"Corpus Christi Aquifer Storage & Recovery Conservation District",
+"Cow Creek Groundwater Conservation District",
+"Crockett County Groundwater Conservation District",
+"Culberson County Groundwater Conservation District",
+"Duval County Groundwater Conservation District",
+"Edwards Aquifer Authority",
+"Evergreen Underground Water Conservation District",
+"Fayette County Groundwater Conservation District",
+"Fort Bend Subsidence District",
+"Garza County Underground Conservation District",
+"Gateway Groundwater Conservation District",
+"Glasscock Groundwater Conservation District",
+"Goliad County Groundwater Conservation District",
+"Gonzales County Underground Water Conservation District",
+"Guadalupe County Groundwater Conservation District",
+"Harris-Galveston Coastal Subsidence District",
+"Hays Trinity Groundwater Conservation District",
+"Headwaters Groundwater Conservation District",
+"Hemphill County Underground Water Conservation District",
+"Hickory Underground Water Conservation District No. 1",
+"High Plains Underground Water Conservation District No. 1",
+"Hill Country Underground Water Conservation District",
+"Hudspeth County Underground Water Conservation District No. 1",
+"Irion County Water Conservation District",
+"Jeff Davis County Underground Water Conservation District",
+"Kenedy County Groundwater Conservation District",
+"Kimble County Groundwater Conservation District",
+"Kinney County Groundwater Conservation District",
+"Lipan-Kickapoo Water Conservation District",
+"Live Oak Underground Water Conservation District",
+"Llano Estacado Underground Water Conservation District",
+"Lone Star Groundwater Conservation District",
+"Lone Wolf Groundwater Conservation District",
+"Lost Pines Groundwater Conservation District",
+"Lower  Trinity Groundwater Conservation District",
+"Mcmullen Groundwater Conservation District",
+"Medina County Groundwater Conservation District",
+"Menard County Underground Water District",
+"Mesa Underground Water Conservation District",
+"Mesquite Groundwater Conservation District",
+"Mid-East Texas Groundwater Conservation District",
+"Middle Pecos Groundwater Conservation District",
+"Middle Trinity Groundwater Conservation District",
+"Neches & Trinity Valleys Groundwater Conservation District",
+"North Plains Groundwater Conservation District",
+"North Texas Groundwater Conservation District",
+"Northern Trinity Groundwater Conservation District",
+"Panhandle Groundwater Conservation District",
+"Panola County Underground Water Conservation District",
+"Pecan Valley Groundwater Conservation District",
+"Permian Basin Underground Water Conservation District",
+"Pineywoods Groundwater Conservation District",
+"Plateau Underground Water Conservation And Supply District",
+"Plum Creek Conservation District",
+"Post Oak Savannah Groundwater Conservation District",
+"Prairielands Groundwater Conservation District",
+"Presidio County Underground Water Conservation District",
+"Real-Edwards Conservation And Reclamation District",
+"Red River Groundwater Conservation District",
+"Red Sands Groundwater Conservation District",
+"Reeves County Groundwater Conservation District",
+"Refugio Groundwater Conservation District",
+"Rolling Plains Groundwater Conservation District",
+"Rusk County Groundwater Conservation District",
+"San Patricio Groundwater Conservation District",
+"Sandy Land Underground Water Conservation District",
+"Santa Rita Underground Water Conservation District",
+"Saratoga Underground Water Conservation District",
+"South Plains Underground Water Conservation District",
+"Southeast Texas Groundwater Conservation District",
+"Southern Trinity Groundwater Conservation District",
+"Starr County Groundwater Conservation District",
+"Sterling County Underground Water Conservation District",
+"Sutton County Underground Water Conservation District",
+"Terrell Groundwater Conservation District",
+"Texana Groundwater Conservation District",
+"Trinity-Glen Rose Groundwater Conservation District",
+"Upper Trinity Groundwater Conservation District",
+"Uvalde County Underground Water Conservation District",
+"Victoria County Groundwater Conservation District",
+"Wes-Tex Groundwater Conservation District",
+"Wintergarden Groundwater Conservation District"
+]
+},
+"sources": {
+"twdb_gcd": {
+"title": "Groundwater Conservation Districts of Texas (TWDB_GCD_NOV2019; boundaries approximate)",
+"publisher": "Texas Water Development Board",
+"url": "https://www.twdb.texas.gov/mapping/gisdata/doc/GCD_Shapefiles.zip"
+}
+},
+"places": {
+"48001": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4800100": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4800160": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4800190650": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4800191205": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4800191390": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4800192615": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4800192945": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"48005": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"4800591045": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"4800591855": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"4800592325": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"4800593090": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"4800594315": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"48011": {
+"gcd": {
+"share": 0.999,
+"names": [
+"High Plains Underground Water Conservation District No. 1",
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4801108": {
+"gcd": {
+"share": 0.992,
+"names": [
+"Mesa Underground Water Conservation District",
+"Permian Basin Underground Water Conservation District"
+]
+}
+},
+"4801190740": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4801190745": {
+"gcd": {
+"share": 0.998,
+"names": [
+"High Plains Underground Water Conservation District No. 1",
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"48013": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4801390595": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4801390695": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4801391955": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4801393070": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4801393120": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"48015": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4801590250": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4801591873": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4801593490": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4801594070": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4801600": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"48017": {
+"gcd": {
+"share": 0.999,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4801744": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4801792685": {
+"gcd": {
+"share": 0.998,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4801793670": {
+"gcd": {
+"share": 0.999,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"48019": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bandera County River Authority"
+]
+}
+},
+"4801924": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4801990195": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bandera County River Authority"
+]
+}
+},
+"4801992500": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bandera County River Authority"
+]
+}
+},
+"4802044": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"48021": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Lost Pines Groundwater Conservation District"
+]
+}
+},
+"4802104": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brewster County Groundwater Conservation District"
+]
+}
+},
+"4802188": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4802190210": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lost Pines Groundwater Conservation District"
+]
+}
+},
+"4802190655": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Lost Pines Groundwater Conservation District"
+]
+}
+},
+"4802191200": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Lost Pines Groundwater Conservation District"
+]
+}
+},
+"4802193600": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lost Pines Groundwater Conservation District"
+]
+}
+},
+"4802260": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4802272": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4802284": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"48023": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4802393525": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4802393535": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"48025": {
+"gcd": {
+"share": 0.992,
+"names": [
+"Bee Groundwater Conservation District"
+]
+}
+},
+"4802590240": {
+"gcd": {
+"share": 0.987,
+"names": [
+"Bee Groundwater Conservation District"
+]
+}
+},
+"4802593025": {
+"gcd": {
+"share": 0.996,
+"names": [
+"Bee Groundwater Conservation District"
+]
+}
+},
+"4802593585": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bee Groundwater Conservation District"
+]
+}
+},
+"48027": {
+"gcd": {
+"share": 0.997,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"4802790255": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"4802791110": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"4802791352": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"4802792030": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"4802792835": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"4802793310": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"4802793630": {
+"gcd": {
+"share": 0.994,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"4802793680": {
+"gcd": {
+"share": 0.978,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"4802793855": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"48029": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Trinity-Glen Rose Groundwater Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4802993407": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4802993408": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4802993409": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Trinity-Glen Rose Groundwater Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4802993411": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4802993412": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Trinity-Glen Rose Groundwater Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4802993413": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4802993414": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4803000": {
+"gcd": {
+"share": 0.936,
+"names": [
+"High Plains Underground Water Conservation District No. 1",
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4803084": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"48031": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Blanco-Pedernales Groundwater Conservation District"
+]
+}
+},
+"4803190330": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Blanco-Pedernales Groundwater Conservation District"
+]
+}
+},
+"4803191950": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Blanco-Pedernales Groundwater Conservation District"
+]
+}
+},
+"4803192": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4803264": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4803300": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4803336": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4803340": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4803342": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"48035": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4803540": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4803564": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"4803588": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4803590760": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4803590890": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4803591890": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4803592530": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4803593990": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4803600": {
+"gcd": {
+"share": 0.132,
+"names": [
+"San Patricio Groundwater Conservation District"
+]
+}
+},
+"4803708": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4803768": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"48039": {
+"gcd": {
+"share": 0.924,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4803990055": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4803990094": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4803990410": {
+"gcd": {
+"share": 0.957,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4803990415": {
+"gcd": {
+"share": 0.696,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4804000": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"48041": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Brazos Valley Groundwater Conservation District"
+]
+}
+},
+"4804190495": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazos Valley Groundwater Conservation District"
+]
+}
+},
+"4804192790": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazos Valley Groundwater Conservation District"
+]
+}
+},
+"4804193635": {
+"gcd": {
+"share": 0.995,
+"names": [
+"Brazos Valley Groundwater Conservation District"
+]
+}
+},
+"4804194150": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Brazos Valley Groundwater Conservation District"
+]
+}
+},
+"48043": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brewster County Groundwater Conservation District"
+]
+}
+},
+"4804300": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wintergarden Groundwater Conservation District"
+]
+}
+},
+"4804390040": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brewster County Groundwater Conservation District"
+]
+}
+},
+"4804392390": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brewster County Groundwater Conservation District"
+]
+}
+},
+"4804504": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4804600": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4804672": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"48047": {
+"gcd": {
+"share": 0.996,
+"names": [
+"Kenedy County Groundwater Conservation District",
+"Brush Country Groundwater Conservation District"
+]
+}
+},
+"4804791245": {
+"gcd": {
+"share": 0.996,
+"names": [
+"Kenedy County Groundwater Conservation District",
+"Brush Country Groundwater Conservation District"
+]
+}
+},
+"4804791280": {
+"gcd": {
+"share": 0.993,
+"names": [
+"Kenedy County Groundwater Conservation District",
+"Brush Country Groundwater Conservation District"
+]
+}
+},
+"4805000": {
+"gcd": {
+"share": 0.196,
+"names": [
+"Barton Springs/Edwards Aquifer Conservation District"
+]
+}
+},
+"4805036": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Refugio Groundwater Conservation District"
+]
+}
+},
+"48051": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4805168": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District",
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4805190570": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4805190825": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4805192890": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4805193610": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4805264": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4805288": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"48053": {
+"gcd": {
+"share": 0.997,
+"names": [
+"Central Texas Groundwater Conservation District"
+]
+}
+},
+"4805384": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4805390275": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Central Texas Groundwater Conservation District"
+]
+}
+},
+"4805390450": {
+"gcd": {
+"share": 0.992,
+"names": [
+"Central Texas Groundwater Conservation District"
+]
+}
+},
+"4805390545": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Central Texas Groundwater Conservation District"
+]
+}
+},
+"4805392395": {
+"gcd": {
+"share": 0.997,
+"names": [
+"Central Texas Groundwater Conservation District"
+]
+}
+},
+"4805456": {
+"gcd": {
+"share": 0.052,
+"names": [
+"Lipan-Kickapoo Water Conservation District"
+]
+}
+},
+"4805468": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Reeves County Groundwater Conservation District"
+]
+}
+},
+"48055": {
+"gcd": {
+"share": 0.914,
+"names": [
+"Plum Creek Conservation District",
+"Gonzales County Underground Water Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4805528": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bandera County River Authority"
+]
+}
+},
+"4805592245": {
+"gcd": {
+"share": 0.814,
+"names": [
+"Plum Creek Conservation District",
+"Barton Springs/Edwards Aquifer Conservation District",
+"Gonzales County Underground Water Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4805592330": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Plum Creek Conservation District",
+"Gonzales County Underground Water Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4805592440": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Plum Creek Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4805612": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"48057": {
+"gcd": {
+"share": 0.885,
+"names": [
+"Calhoun Groundwater Conservation District"
+]
+}
+},
+"4805732": {
+"gcd": {
+"share": 0.36,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"4805768": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4805791975": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Calhoun Groundwater Conservation District"
+]
+}
+},
+"4805793085": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Calhoun Groundwater Conservation District"
+]
+}
+},
+"4805793105": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Calhoun Groundwater Conservation District"
+]
+}
+},
+"4805793480": {
+"gcd": {
+"share": 0.817,
+"names": [
+"Calhoun Groundwater Conservation District"
+]
+}
+},
+"4805864": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lost Pines Groundwater Conservation District"
+]
+}
+},
+"4805984": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Coastal Plains Groundwater Conservation District"
+]
+}
+},
+"4806060": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4806104": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Refugio Groundwater Conservation District"
+]
+}
+},
+"4806128": {
+"gcd": {
+"share": 0.863,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4806242": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Hays Trinity Groundwater Conservation District"
+]
+}
+},
+"4806272": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"48065": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4806592965": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4806594195": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"48069": {
+"gcd": {
+"share": 0.964,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4806991059": {
+"gcd": {
+"share": 0.929,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4806991732": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4807108": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panola County Underground Water Conservation District"
+]
+}
+},
+"4807132": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4807144": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4807192": {
+"gcd": {
+"share": 0.06,
+"names": [
+"Bee Groundwater Conservation District"
+]
+}
+},
+"48073": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4807300": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4807390045": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4807391910": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4807392670": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4807392745": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4807393370": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4807394135": {
+"gcd": {
+"share": 0.997,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4807408": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4807420": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4807432": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4807492": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"48075": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District",
+"Mesquite Groundwater Conservation District"
+]
+}
+},
+"4807528": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Duval County Groundwater Conservation District"
+]
+}
+},
+"4807552": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4807590700": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4807592777": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District",
+"Mesquite Groundwater Conservation District"
+]
+}
+},
+"4807636": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4807852": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4807864": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Central Texas Groundwater Conservation District"
+]
+}
+},
+"48079": {
+"gcd": {
+"share": 0.999,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4807992650": {
+"gcd": {
+"share": 0.999,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4807994200": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"48081": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Coke County Underground Water Conservation District"
+]
+}
+},
+"4808104": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4808190460": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Coke County Underground Water Conservation District"
+]
+}
+},
+"4808193265": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Coke County Underground Water Conservation District"
+]
+}
+},
+"4808212": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Santa Rita Underground Water Conservation District"
+]
+}
+},
+"4808260": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wintergarden Groundwater Conservation District"
+]
+}
+},
+"4808398": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1",
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4808488": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wes-Tex Groundwater Conservation District",
+"Coke County Underground Water Conservation District"
+]
+}
+},
+"48085": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4808536": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Blanco-Pedernales Groundwater Conservation District"
+]
+}
+},
+"4808590100": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4808590350": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4808590665": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4808591295": {
+"gcd": {
+"share": 0.999,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4808592360": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4808592720": {
+"gcd": {
+"share": 0.999,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4808593065": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4808593150": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"48087": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesquite Groundwater Conservation District"
+]
+}
+},
+"4808793400": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesquite Groundwater Conservation District"
+]
+}
+},
+"4808794130": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesquite Groundwater Conservation District"
+]
+}
+},
+"4808800": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Victoria County Groundwater Conservation District"
+]
+}
+},
+"4808860": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4808872": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"48089": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Colorado County Underground Water Conservation District"
+]
+}
+},
+"4808990800": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Colorado County Underground Water Conservation District"
+]
+}
+},
+"4808991095": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Colorado County Underground Water Conservation District"
+]
+}
+},
+"4808991470": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Colorado County Underground Water Conservation District"
+]
+}
+},
+"4808994120": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Colorado County Underground Water Conservation District"
+]
+}
+},
+"4809004": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"48091": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority",
+"Comal Trinity Groundwater Conservation District\r"
+]
+}
+},
+"4809160": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Cow Creek Groundwater Conservation District"
+]
+}
+},
+"4809190627": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority",
+"Comal Trinity Groundwater Conservation District\r"
+]
+}
+},
+"4809192730": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority",
+"Comal Trinity Groundwater Conservation District\r"
+]
+}
+},
+"48093": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4809328": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4809388": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4809390810": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4809390985": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4809391665": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4809448": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"48095": {
+"gcd": {
+"share": 0.997,
+"names": [
+"Lipan-Kickapoo Water Conservation District",
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"4809591160": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Lipan-Kickapoo Water Conservation District",
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"4809591255": {
+"gcd": {
+"share": 0.994,
+"names": [
+"Lipan-Kickapoo Water Conservation District"
+]
+}
+},
+"4809628": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4809640": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"48097": {
+"gcd": {
+"share": 0.999,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4809748": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4809790580": {
+"gcd": {
+"share": 0.997,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4809791435": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4809791440": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4809792680": {
+"gcd": {
+"share": 0.999,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4809793995": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4809868": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Kinney County Groundwater Conservation District"
+]
+}
+},
+"48099": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4809916": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"4809990845": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4809991270": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4809991315": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4809991353": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4809991480": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4809992885": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4809993157": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4809993965": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4810072": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4810090": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"48101": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4810144": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazos Valley Groundwater Conservation District"
+]
+}
+},
+"4810192930": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4810192935": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4810216": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4810264": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"48105": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Crockett County Groundwater Conservation District"
+]
+}
+},
+"4810528": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Coke County Underground Water Conservation District"
+]
+}
+},
+"4810591120": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Crockett County Groundwater Conservation District"
+]
+}
+},
+"4810594160": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Crockett County Groundwater Conservation District"
+]
+}
+},
+"4810636": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4810648": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"48107": {
+"gcd": {
+"share": 0.75,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4810708": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4810720": {
+"gcd": {
+"share": 1.0,
+"names": [
+"South Plains Underground Water Conservation District"
+]
+}
+},
+"4810756": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4810790905": {
+"gcd": {
+"share": 0.719,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4810792290": {
+"gcd": {
+"share": 0.732,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4810793185": {
+"gcd": {
+"share": 0.804,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4810828": {
+"gcd": {
+"share": 0.903,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"48109": {
+"gcd": {
+"share": 0.453,
+"names": [
+"Culberson County Groundwater Conservation District"
+]
+}
+},
+"4810912": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazos Valley Groundwater Conservation District"
+]
+}
+},
+"4810994010": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Culberson County Groundwater Conservation District"
+]
+}
+},
+"4810994015": {
+"gcd": {
+"share": 0.432,
+"names": [
+"Culberson County Groundwater Conservation District"
+]
+}
+},
+"4811020": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4811080": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Plum Creek Conservation District",
+"Barton Springs/Edwards Aquifer Conservation District"
+]
+}
+},
+"48111": {
+"gcd": {
+"share": 0.999,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4811116": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4811155": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4811190955": {
+"gcd": {
+"share": 0.999,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4811193885": {
+"gcd": {
+"share": 0.999,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4811212": {
+"gcd": {
+"share": 0.203,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4811224": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Comal Trinity Groundwater Conservation District\r"
+]
+}
+},
+"4811300": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4811380": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"4811428": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District",
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4811464": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Central Texas Groundwater Conservation District"
+]
+}
+},
+"48115": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesa Underground Water Conservation District"
+]
+}
+},
+"4811592105": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesa Underground Water Conservation District"
+]
+}
+},
+"4811592110": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesa Underground Water Conservation District"
+]
+}
+},
+"4811592115": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesa Underground Water Conservation District"
+]
+}
+},
+"4811592120": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesa Underground Water Conservation District"
+]
+}
+},
+"4811592125": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesa Underground Water Conservation District"
+]
+}
+},
+"4811656": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4811692": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"48117": {
+"gcd": {
+"share": 0.586,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4811791785": {
+"gcd": {
+"share": 0.923,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4811791790": {
+"gcd": {
+"share": 0.451,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4811836": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4811968": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4811992": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazos Valley Groundwater Conservation District"
+]
+}
+},
+"4812040": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"48121": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4812190637": {
+"gcd": {
+"share": 0.999,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4812191010": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4812191970": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4812192186": {
+"gcd": {
+"share": 0.999,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4812193035": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4812193425": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4812193892": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"48123": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Pecan Valley Groundwater Conservation District"
+]
+}
+},
+"4812388": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Real-Edwards Conservation And Reclamation District"
+]
+}
+},
+"4812390925": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pecan Valley Groundwater Conservation District"
+]
+}
+},
+"4812394170": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pecan Valley Groundwater Conservation District"
+]
+}
+},
+"4812394295": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Pecan Valley Groundwater Conservation District"
+]
+}
+},
+"4812394305": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pecan Valley Groundwater Conservation District"
+]
+}
+},
+"4812412": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Hemphill County Underground Water Conservation District"
+]
+}
+},
+"4812472": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4812532": {
+"gcd": {
+"share": 0.529,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"48127": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wintergarden Groundwater Conservation District"
+]
+}
+},
+"4812790140": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wintergarden Groundwater Conservation District"
+]
+}
+},
+"4812790310": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wintergarden Groundwater Conservation District"
+]
+}
+},
+"4812790635": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Wintergarden Groundwater Conservation District"
+]
+}
+},
+"4812895": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"48129": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4812916": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fayette County Groundwater Conservation District"
+]
+}
+},
+"4812988": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wintergarden Groundwater Conservation District"
+]
+}
+},
+"4812990730": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4812991760": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4813024": {
+"gcd": {
+"share": 0.482,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"48131": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Duval County Groundwater Conservation District"
+]
+}
+},
+"4813108": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panola County Underground Water Conservation District"
+]
+}
+},
+"4813190260": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Duval County Groundwater Conservation District"
+]
+}
+},
+"4813191405": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Duval County Groundwater Conservation District"
+]
+}
+},
+"4813193215": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Duval County Groundwater Conservation District"
+]
+}
+},
+"4813193420": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Duval County Groundwater Conservation District"
+]
+}
+},
+"4813276": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4813312": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority",
+"Medina County Groundwater Conservation District"
+]
+}
+},
+"4813492": {
+"gcd": {
+"share": 0.094,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4813684": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"48137": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Real-Edwards Conservation And Reclamation District"
+]
+}
+},
+"4813793300": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Real-Edwards Conservation And Reclamation District"
+]
+}
+},
+"4813793305": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Real-Edwards Conservation And Reclamation District"
+]
+}
+},
+"48139": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4813900": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4813991250": {
+"gcd": {
+"share": 0.997,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4813991310": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4813991895": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4813992490": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4813992570": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4813994090": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4814224": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4814260": {
+"gcd": {
+"share": 0.972,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"48143": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4814391085": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4814391087": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4814392645": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4814393735": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4814404": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4814584": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4814620": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4814668": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4814680": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"48147": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4814716": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4814776": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"4814790375": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4814791070": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4814791150": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4814791825": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4814792075": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4814792175": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4814793200": {
+"gcd": {
+"share": 0.997,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4814860": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"48149": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fayette County Groundwater Conservation District"
+]
+}
+},
+"4814920": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4814991305": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fayette County Groundwater Conservation District"
+]
+}
+},
+"4814991320": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fayette County Groundwater Conservation District"
+]
+}
+},
+"4814992080": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fayette County Groundwater Conservation District"
+]
+}
+},
+"4814992085": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fayette County Groundwater Conservation District"
+]
+}
+},
+"4814993345": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fayette County Groundwater Conservation District"
+]
+}
+},
+"4814993475": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fayette County Groundwater Conservation District"
+]
+}
+},
+"48151": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Clear Fork Groundwater Conservation District"
+]
+}
+},
+"4815112": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4815192350": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Clear Fork Groundwater Conservation District"
+]
+}
+},
+"4815193275": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clear Fork Groundwater Conservation District"
+]
+}
+},
+"4815193340": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clear Fork Groundwater Conservation District"
+]
+}
+},
+"4815196": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"48153": {
+"gcd": {
+"share": 0.931,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4815328": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4815364": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4815391335": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4815392250": {
+"gcd": {
+"share": 0.874,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4815436": {
+"gcd": {
+"share": 0.122,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"4815472": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"48155": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4815590915": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4815593890": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4815652": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"48157": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4815791415": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4815792715": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4815792915": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4815793337": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4815793715": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4815793780": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4815820": {
+"gcd": {
+"share": 0.997,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4815892": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lower  Trinity Groundwater Conservation District"
+]
+}
+},
+"4815976": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazos Valley Groundwater Conservation District"
+]
+}
+},
+"4815988": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4816036": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4816048": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"48161": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4816120": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Wolf Groundwater Conservation District"
+]
+}
+},
+"4816168": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Colorado County Underground Water Conservation District"
+]
+}
+},
+"4816190555": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4816191275": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4816192": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4816193850": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4816194290": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"48163": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4816391055": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4816392635": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4816392980": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4816432": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"4816468": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"48165": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Llano Estacado Underground Water Conservation District"
+]
+}
+},
+"4816540": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4816593485": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Llano Estacado Underground Water Conservation District"
+]
+}
+},
+"4816593520": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Llano Estacado Underground Water Conservation District"
+]
+}
+},
+"4816624": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Saratoga Underground Water Conservation District",
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4816636": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4816696": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"48167": {
+"gcd": {
+"share": 0.762,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4816790370": {
+"gcd": {
+"share": 0.736,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4816791445": {
+"gcd": {
+"share": 0.499,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4816792100": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4816793880": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"48169": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Garza County Underground Conservation District"
+]
+}
+},
+"4816993108": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Garza County Underground Conservation District"
+]
+}
+},
+"4816993118": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Garza County Underground Conservation District"
+]
+}
+},
+"4817000": {
+"gcd": {
+"share": 0.983,
+"names": [
+"Corpus Christi Aquifer Storage & Recovery Conservation District"
+]
+}
+},
+"4817021": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4817036": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lower  Trinity Groundwater Conservation District"
+]
+}
+},
+"48171": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Hill Country Underground Water Conservation District"
+]
+}
+},
+"4817191395": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Hill Country Underground Water Conservation District"
+]
+}
+},
+"4817191725": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Hill Country Underground Water Conservation District"
+]
+}
+},
+"4817193757": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Hill Country Underground Water Conservation District"
+]
+}
+},
+"4817208": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Central Texas Groundwater Conservation District"
+]
+}
+},
+"4817216": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wintergarden Groundwater Conservation District"
+]
+}
+},
+"48173": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Glasscock Groundwater Conservation District"
+]
+}
+},
+"4817372": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4817391455": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Glasscock Groundwater Conservation District"
+]
+}
+},
+"4817391460": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Glasscock Groundwater Conservation District"
+]
+}
+},
+"4817429": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"48175": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Goliad County Groundwater Conservation District"
+]
+}
+},
+"4817540": {
+"gcd": {
+"share": 0.991,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4817564": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4817591555": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Goliad County Groundwater Conservation District"
+]
+}
+},
+"4817591560": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Goliad County Groundwater Conservation District"
+]
+}
+},
+"4817594115": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Goliad County Groundwater Conservation District"
+]
+}
+},
+"4817612": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Plum Creek Conservation District",
+"Barton Springs/Edwards Aquifer Conservation District"
+]
+}
+},
+"4817648": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District",
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"48177": {
+"gcd": {
+"share": 0.846,
+"names": [
+"Gonzales County Underground Water Conservation District"
+]
+}
+},
+"4817768": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4817790868": {
+"gcd": {
+"share": 0.641,
+"names": [
+"Gonzales County Underground Water Conservation District"
+]
+}
+},
+"4817791565": {
+"gcd": {
+"share": 0.642,
+"names": [
+"Gonzales County Underground Water Conservation District"
+]
+}
+},
+"4817791733": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gonzales County Underground Water Conservation District"
+]
+}
+},
+"4817792760": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gonzales County Underground Water Conservation District"
+]
+}
+},
+"4817793595": {
+"gcd": {
+"share": 0.876,
+"names": [
+"Gonzales County Underground Water Conservation District"
+]
+}
+},
+"4817794060": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gonzales County Underground Water Conservation District"
+]
+}
+},
+"4817852": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"48179": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4817917": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4817948": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4817960": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4817992172": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4817992365": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4817992955": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4818020": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wintergarden Groundwater Conservation District"
+]
+}
+},
+"4818092": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pecan Valley Groundwater Conservation District"
+]
+}
+},
+"48181": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4818152": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4818191125": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4818192840": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4818193685": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4818224": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"4818260": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"48185": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4818524": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4818590080": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4818592710": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"48187": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Guadalupe County Groundwater Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4818792793": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Guadalupe County Groundwater Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4818793470": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4818793500": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Guadalupe County Groundwater Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4818793643": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Guadalupe County Groundwater Conservation District"
+]
+}
+},
+"4818793687": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Guadalupe County Groundwater Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"48189": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4818990005": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4818991675": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4818993020": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4818993060": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4819084": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"48191": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Mesquite Groundwater Conservation District"
+]
+}
+},
+"4819120": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4819191260": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesquite Groundwater Conservation District"
+]
+}
+},
+"4819192095": {
+"gcd": {
+"share": 0.997,
+"names": [
+"Mesquite Groundwater Conservation District"
+]
+}
+},
+"4819192510": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesquite Groundwater Conservation District"
+]
+}
+},
+"4819193960": {
+"gcd": {
+"share": 0.996,
+"names": [
+"Mesquite Groundwater Conservation District"
+]
+}
+},
+"4819288": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"48195": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4819528": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4819570": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4819591660": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4819593695": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4819624": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4819672": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"48197": {
+"gcd": {
+"share": 0.994,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4819708": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Hudspeth County Underground Water Conservation District No. 1"
+]
+}
+},
+"4819790705": {
+"gcd": {
+"share": 0.996,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4819791580": {
+"gcd": {
+"share": 0.997,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4819793160": {
+"gcd": {
+"share": 0.991,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"48199": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4819900": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4819924": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4819972": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4819984": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Sandy Land Underground Water Conservation District",
+"Llano Estacado Underground Water Conservation District"
+]
+}
+},
+"4819992055": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4819992332": {
+"gcd": {
+"share": 0.996,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4819993460": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4819993570": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4819993625": {
+"gcd": {
+"share": 0.997,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"48201": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4820152": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority",
+"Medina County Groundwater Conservation District"
+]
+}
+},
+"4820190225": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4820191835": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4820192795": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4820192845": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4820192975": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4820193645": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4820308": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"4820344": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4820428": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4820464": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"48205": {
+"gcd": {
+"share": 0.835,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4820540": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4820590690": {
+"gcd": {
+"share": 0.619,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4820590956": {
+"gcd": {
+"share": 0.96,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4820680": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"48207": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4820716": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesquite Groundwater Conservation District"
+]
+}
+},
+"4820791735": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4820793285": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4820793360": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4820793390": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4820794125": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"48209": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Plum Creek Conservation District",
+"Barton Springs/Edwards Aquifer Conservation District",
+"Edwards Aquifer Authority",
+"Hays Trinity Groundwater Conservation District"
+]
+}
+},
+"4820932": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4820991075": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Hays Trinity Groundwater Conservation District"
+]
+}
+},
+"4820992065": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Plum Creek Conservation District",
+"Barton Springs/Edwards Aquifer Conservation District",
+"Edwards Aquifer Authority",
+"Hays Trinity Groundwater Conservation District"
+]
+}
+},
+"4820993430": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Barton Springs/Edwards Aquifer Conservation District",
+"Edwards Aquifer Authority",
+"Hays Trinity Groundwater Conservation District"
+]
+}
+},
+"4821028": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4821031": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Central Texas Groundwater Conservation District"
+]
+}
+},
+"48211": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Hemphill County Underground Water Conservation District"
+]
+}
+},
+"4821190605": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Hemphill County Underground Water Conservation District"
+]
+}
+},
+"4821190615": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Hemphill County Underground Water Conservation District"
+]
+}
+},
+"48213": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4821390155": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4821390652": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4821390687": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4821392150": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4821424": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Hays Trinity Groundwater Conservation District"
+]
+}
+},
+"4821484": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"48215": {
+"gcd": {
+"share": 0.162,
+"names": [
+"Red Sands Groundwater Conservation District",
+"Kenedy County Groundwater Conservation District"
+]
+}
+},
+"4821556": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4821593155": {
+"gcd": {
+"share": 0.465,
+"names": [
+"Red Sands Groundwater Conservation District",
+"Kenedy County Groundwater Conservation District"
+]
+}
+},
+"48217": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4821790355": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4821791810": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4821791845": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4821791900": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4821792380": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4821794210": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4821844": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Colorado County Underground Water Conservation District"
+]
+}
+},
+"48219": {
+"gcd": {
+"share": 0.945,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4821928": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4821988": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Coastal Bend Groundwater Conservation District"
+]
+}
+},
+"4821990115": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4821992180": {
+"gcd": {
+"share": 0.974,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4821993320": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4821993800": {
+"gcd": {
+"share": 0.726,
+"names": [
+"South Plains Underground Water Conservation District",
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"48221": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4822191605": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4822191610": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4822192": {
+"gcd": {
+"share": 0.248,
+"names": [
+"Rusk County Groundwater Conservation District"
+]
+}
+},
+"4822516": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4822552": {
+"gcd": {
+"share": 0.991,
+"names": [
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"4822588": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"48227": {
+"gcd": {
+"share": 0.948,
+"names": [
+"Permian Basin Underground Water Conservation District"
+]
+}
+},
+"4822708": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4822720": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Texana Groundwater Conservation District"
+]
+}
+},
+"4822790300": {
+"gcd": {
+"share": 0.884,
+"names": [
+"Permian Basin Underground Water Conservation District"
+]
+}
+},
+"4822790305": {
+"gcd": {
+"share": 0.994,
+"names": [
+"Permian Basin Underground Water Conservation District"
+]
+}
+},
+"4822790770": {
+"gcd": {
+"share": 0.97,
+"names": [
+"Permian Basin Underground Water Conservation District"
+]
+}
+},
+"4822864": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Coastal Bend Groundwater Conservation District"
+]
+}
+},
+"48229": {
+"gcd": {
+"share": 0.197,
+"names": [
+"Hudspeth County Underground Water Conservation District No. 1"
+]
+}
+},
+"4822960": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Plateau Underground Water Conservation And Supply District"
+]
+}
+},
+"4822990990": {
+"gcd": {
+"share": 0.704,
+"names": [
+"Hudspeth County Underground Water Conservation District No. 1"
+]
+}
+},
+"4822993565": {
+"gcd": {
+"share": 0.105,
+"names": [
+"Hudspeth County Underground Water Conservation District No. 1"
+]
+}
+},
+"4823044": {
+"gcd": {
+"share": 0.674,
+"names": [
+"Lost Pines Groundwater Conservation District"
+]
+}
+},
+"4823140": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4823164": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4823176": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fayette County Groundwater Conservation District"
+]
+}
+},
+"4823272": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"48233": {
+"gcd": {
+"share": 0.349,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4823390385": {
+"gcd": {
+"share": 0.123,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4823393750": {
+"gcd": {
+"share": 0.467,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"48235": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Irion County Water Conservation District"
+]
+}
+},
+"4823592540": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Irion County Water Conservation District"
+]
+}
+},
+"4823592545": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Irion County Water Conservation District"
+]
+}
+},
+"48239": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Texana Groundwater Conservation District"
+]
+}
+},
+"4823991175": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Texana Groundwater Conservation District"
+]
+}
+},
+"4823991450": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Texana Groundwater Conservation District"
+]
+}
+},
+"4823992165": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Texana Groundwater Conservation District"
+]
+}
+},
+"4823994005": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Texana Groundwater Conservation District"
+]
+}
+},
+"48241": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4824190520": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4824191920": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4824192040": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4824228": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4824240": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wintergarden Groundwater Conservation District"
+]
+}
+},
+"48243": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Jeff Davis County Underground Water Conservation District"
+]
+}
+},
+"4824348": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4824391355": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Jeff Davis County Underground Water Conservation District"
+]
+}
+},
+"4824393985": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Jeff Davis County Underground Water Conservation District"
+]
+}
+},
+"4824552": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Starr County Groundwater Conservation District"
+]
+}
+},
+"4824636": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesquite Groundwater Conservation District"
+]
+}
+},
+"48247": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brush Country Groundwater Conservation District"
+]
+}
+},
+"4824768": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4824792820": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brush Country Groundwater Conservation District"
+]
+}
+},
+"4824793660": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brush Country Groundwater Conservation District"
+]
+}
+},
+"4824828": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4824864": {
+"gcd": {
+"share": 0.685,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"48249": {
+"gcd": {
+"share": 0.986,
+"names": [
+"Kenedy County Groundwater Conservation District",
+"Brush Country Groundwater Conservation District"
+]
+}
+},
+"4824912": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4824990035": {
+"gcd": {
+"share": 0.969,
+"names": [
+"Kenedy County Groundwater Conservation District",
+"Brush Country Groundwater Conservation District"
+]
+}
+},
+"4824992910": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brush Country Groundwater Conservation District"
+]
+}
+},
+"4824993140": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brush Country Groundwater Conservation District"
+]
+}
+},
+"4825068": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"48251": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4825104": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4825168": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Cow Creek Groundwater Conservation District",
+"Trinity-Glen Rose Groundwater Conservation District",
+"Edwards Aquifer Authority",
+"Comal Trinity Groundwater Conservation District\r"
+]
+}
+},
+"4825190050": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4825190535": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4825190750": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4825191540": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4825191625": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4825224": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4825368": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brush Country Groundwater Conservation District"
+]
+}
+},
+"4825392": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4825488": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"48255": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4825548": {
+"gcd": {
+"share": 0.967,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4825591285": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4825591510": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4825591980": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4825591995": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4825593365": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4825644": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fayette County Groundwater Conservation District"
+]
+}
+},
+"4825752": {
+"gcd": {
+"share": 0.85,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"48259": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Cow Creek Groundwater Conservation District"
+]
+}
+},
+"4825990360": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Cow Creek Groundwater Conservation District"
+]
+}
+},
+"4825990815": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Cow Creek Groundwater Conservation District"
+]
+}
+},
+"4826028": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fayette County Groundwater Conservation District"
+]
+}
+},
+"48261": {
+"gcd": {
+"share": 0.915,
+"names": [
+"Kenedy County Groundwater Conservation District"
+]
+}
+},
+"4826160": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4826193465": {
+"gcd": {
+"share": 0.915,
+"names": [
+"Kenedy County Groundwater Conservation District"
+]
+}
+},
+"4826232": {
+"gcd": {
+"share": 0.999,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4826268": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4826328": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"48265": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Headwaters Groundwater Conservation District"
+]
+}
+},
+"4826544": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4826590675": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Headwaters Groundwater Conservation District"
+]
+}
+},
+"4826591875": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Headwaters Groundwater Conservation District"
+]
+}
+},
+"4826592015": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Headwaters Groundwater Conservation District"
+]
+}
+},
+"4826640": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Permian Basin Underground Water Conservation District"
+]
+}
+},
+"48267": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Kimble County Groundwater Conservation District"
+]
+}
+},
+"4826791960": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Kimble County Groundwater Conservation District"
+]
+}
+},
+"4826791965": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Kimble County Groundwater Conservation District"
+]
+}
+},
+"4826808": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Pecos Groundwater Conservation District"
+]
+}
+},
+"48269": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4826991670": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4827000": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District",
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"48271": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Kinney County Groundwater Conservation District"
+]
+}
+},
+"4827190400": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Kinney County Groundwater Conservation District"
+]
+}
+},
+"4827288": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazos Valley Groundwater Conservation District"
+]
+}
+},
+"48273": {
+"gcd": {
+"share": 0.657,
+"names": [
+"Kenedy County Groundwater Conservation District"
+]
+}
+},
+"4827300": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4827348": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Hill Country Underground Water Conservation District"
+]
+}
+},
+"4827392035": {
+"gcd": {
+"share": 0.665,
+"names": [
+"Kenedy County Groundwater Conservation District"
+]
+}
+},
+"4827393260": {
+"gcd": {
+"share": 0.626,
+"names": [
+"Kenedy County Groundwater Conservation District"
+]
+}
+},
+"4827420": {
+"gcd": {
+"share": 0.994,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4827432": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Duval County Groundwater Conservation District"
+]
+}
+},
+"48275": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4827590265": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4827591585": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4827592045": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4827592695": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4827648": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4827660": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4827684": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4827876": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"48279": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4827984": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4827991105": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4827992220": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4827992900": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4827993775": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4827996": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4828008": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4828068": {
+"gcd": {
+"share": 0.376,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4828080": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Texana Groundwater Conservation District"
+]
+}
+},
+"48281": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Saratoga Underground Water Conservation District"
+]
+}
+},
+"4828190015": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Saratoga Underground Water Conservation District"
+]
+}
+},
+"4828192130": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Saratoga Underground Water Conservation District"
+]
+}
+},
+"4828192255": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Saratoga Underground Water Conservation District"
+]
+}
+},
+"4828248": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority",
+"Comal Trinity Groundwater Conservation District\r"
+]
+}
+},
+"48283": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wintergarden Groundwater Conservation District"
+]
+}
+},
+"4828390870": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wintergarden Groundwater Conservation District"
+]
+}
+},
+"4828391240": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wintergarden Groundwater Conservation District"
+]
+}
+},
+"48287": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lost Pines Groundwater Conservation District"
+]
+}
+},
+"4828791505": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lost Pines Groundwater Conservation District"
+]
+}
+},
+"4828792190": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lost Pines Groundwater Conservation District"
+]
+}
+},
+"4828792205": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lost Pines Groundwater Conservation District"
+]
+}
+},
+"48289": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4828990510": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4828990680": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4828992427": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4828992775": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4828992870": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4829036": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4829060": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"4829108": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panola County Underground Water Conservation District"
+]
+}
+},
+"4829168": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4829348": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Live Oak Underground Water Conservation District"
+]
+}
+},
+"4829408": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4829432": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lost Pines Groundwater Conservation District"
+]
+}
+},
+"48295": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4829590380": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4829591345": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4829591805": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"48297": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Live Oak Underground Water Conservation District"
+]
+}
+},
+"4829791500": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Live Oak Underground Water Conservation District"
+]
+}
+},
+"4829793905": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Live Oak Underground Water Conservation District"
+]
+}
+},
+"4829840": {
+"gcd": {
+"share": 0.333,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4829876": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4829972": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4830080": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Goliad County Groundwater Conservation District"
+]
+}
+},
+"4830092": {
+"gcd": {
+"share": 0.201,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4830116": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gonzales County Underground Water Conservation District"
+]
+}
+},
+"4830224": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lower  Trinity Groundwater Conservation District"
+]
+}
+},
+"4830296": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"48303": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4830391865": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4830392315": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4830393540": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4830393590": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4830416": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4830464": {
+"gcd": {
+"share": 0.395,
+"names": [
+"Northern Trinity Groundwater Conservation District",
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"48305": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4830512": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4830584": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Central Texas Groundwater Conservation District"
+]
+}
+},
+"4830592880": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4830593820": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4830594230": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4830644": {
+"gcd": {
+"share": 0.98,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"48307": {
+"gcd": {
+"share": 0.731,
+"names": [
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"4830790405": {
+"gcd": {
+"share": 0.965,
+"names": [
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"4830792505": {
+"gcd": {
+"share": 0.562,
+"names": [
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"4830793280": {
+"gcd": {
+"share": 0.65,
+"names": [
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"48309": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4830990175": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4830990715": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4830990895": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4830991210": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4830992355": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4830992435": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4830992631": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4830994055": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4830994140": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4831064": {
+"gcd": {
+"share": 1.0,
+"names": [
+"San Patricio Groundwater Conservation District"
+]
+}
+},
+"48311": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mcmullen Groundwater Conservation District"
+]
+}
+},
+"4831100": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Trinity-Glen Rose Groundwater Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4831193920": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mcmullen Groundwater Conservation District"
+]
+}
+},
+"4831292": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"48313": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4831392370": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4831392575": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4831392860": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4831412": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4831592": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4831616": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4831628": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"48317": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Permian Basin Underground Water Conservation District"
+]
+}
+},
+"4831715": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4831793725": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Permian Basin Underground Water Conservation District"
+]
+}
+},
+"4831793835": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Permian Basin Underground Water Conservation District"
+]
+}
+},
+"4831820": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4831880": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"48319": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"4831928": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4831964": {
+"gcd": {
+"share": 0.173,
+"names": [
+"Clear Fork Groundwater Conservation District"
+]
+}
+},
+"4831992445": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"4831992450": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"48321": {
+"gcd": {
+"share": 0.86,
+"names": [
+"Coastal Plains Groundwater Conservation District"
+]
+}
+},
+"4832156": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4832190220": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Coastal Plains Groundwater Conservation District"
+]
+}
+},
+"4832192465": {
+"gcd": {
+"share": 0.68,
+"names": [
+"Coastal Plains Groundwater Conservation District"
+]
+}
+},
+"4832192940": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Coastal Plains Groundwater Conservation District"
+]
+}
+},
+"4832193915": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Coastal Plains Groundwater Conservation District"
+]
+}
+},
+"4832312": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"48325": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority",
+"Medina County Groundwater Conservation District"
+]
+}
+},
+"4832576": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4832590645": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority",
+"Medina County Groundwater Conservation District"
+]
+}
+},
+"4832591030": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority",
+"Medina County Groundwater Conservation District"
+]
+}
+},
+"4832591040": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority",
+"Medina County Groundwater Conservation District"
+]
+}
+},
+"4832591820": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority",
+"Medina County Groundwater Conservation District"
+]
+}
+},
+"4832684": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gonzales County Underground Water Conservation District"
+]
+}
+},
+"4832696": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"48327": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Menard County Underground Water District",
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"4832720": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4832792515": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Menard County Underground Water District",
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"4832792520": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Menard County Underground Water District"
+]
+}
+},
+"4832906": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Barton Springs/Edwards Aquifer Conservation District"
+]
+}
+},
+"4832972": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazos Valley Groundwater Conservation District"
+]
+}
+},
+"4833020": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4833044": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4833068": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"48331": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4833146": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Trinity-Glen Rose Groundwater Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4833190505": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4833190540": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4833190590": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4833190960": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4833191485": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4833193290": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4833193895": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4833200": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4833212": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rusk County Groundwater Conservation District"
+]
+}
+},
+"4833320": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4833428": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4833476": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"48335": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Wolf Groundwater Conservation District"
+]
+}
+},
+"4833590795": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Wolf Groundwater Conservation District"
+]
+}
+},
+"4833592285": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Wolf Groundwater Conservation District"
+]
+}
+},
+"4833594155": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Wolf Groundwater Conservation District"
+]
+}
+},
+"4833608": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"48337": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4833790390": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4833792610": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4833792765": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4833793395": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4833794": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Central Texas Groundwater Conservation District"
+]
+}
+},
+"4833848": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"48339": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"4833968": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4833992375": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"4833992625": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"4833993655": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"4833994220": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"4834018": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4834088": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"48341": {
+"gcd": {
+"share": 0.765,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4834148": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4834191090": {
+"gcd": {
+"share": 0.739,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4834193805": {
+"gcd": {
+"share": 0.837,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4834220": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"48345": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4834502": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4834508": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"4834592454": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4834592822": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4834628": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4834676": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority",
+"Medina County Groundwater Conservation District"
+]
+}
+},
+"48347": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"4834700": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4834790720": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"4834790935": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"4834791465": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"4834792700": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"4834862": {
+"gcd": {
+"share": 0.121,
+"names": [
+"Central Texas Groundwater Conservation District"
+]
+}
+},
+"4835000": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4835072": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4835084": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"48351": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4835180": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4835190530": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4835190575": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4835191035": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4835192750": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4835228": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"4835254": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"48353": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wes-Tex Groundwater Conservation District"
+]
+}
+},
+"4835348": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4835390325": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wes-Tex Groundwater Conservation District"
+]
+}
+},
+"4835393325": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wes-Tex Groundwater Conservation District"
+]
+}
+},
+"4835393810": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wes-Tex Groundwater Conservation District"
+]
+}
+},
+"4835480": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4835492": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"48355": {
+"gcd": {
+"share": 0.418,
+"names": [
+"Corpus Christi Aquifer Storage & Recovery Conservation District"
+]
+}
+},
+"4835528": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4835576": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4835590850": {
+"gcd": {
+"share": 0.646,
+"names": [
+"Kenedy County Groundwater Conservation District",
+"Corpus Christi Aquifer Storage & Recovery Conservation District"
+]
+}
+},
+"4835593095": {
+"gcd": {
+"share": 0.832,
+"names": [
+"Corpus Christi Aquifer Storage & Recovery Conservation District"
+]
+}
+},
+"48357": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4835732": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4835793005": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4835793010": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4835984": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4836008": {
+"gcd": {
+"share": 1.0,
+"names": [
+"San Patricio Groundwater Conservation District"
+]
+}
+},
+"4836020": {
+"gcd": {
+"share": 1.0,
+"names": [
+"San Patricio Groundwater Conservation District"
+]
+}
+},
+"4836032": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Headwaters Groundwater Conservation District"
+]
+}
+},
+"4836068": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4836092": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4836128": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Pecos Groundwater Conservation District"
+]
+}
+},
+"4836140": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"48365": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panola County Underground Water Conservation District"
+]
+}
+},
+"4836590235": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panola County Underground Water Conservation District"
+]
+}
+},
+"4836590640": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panola County Underground Water Conservation District"
+]
+}
+},
+"4836590970": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panola County Underground Water Conservation District"
+]
+}
+},
+"4836591475": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Panola County Underground Water Conservation District"
+]
+}
+},
+"4836592265": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panola County Underground Water Conservation District"
+]
+}
+},
+"48367": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4836793701": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4836794095": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4836794100": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4836794105": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"48369": {
+"gcd": {
+"share": 0.999,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4836991300": {
+"gcd": {
+"share": 0.999,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4836991410": {
+"gcd": {
+"share": 0.999,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4837072": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4837084": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"48371": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Pecos Groundwater Conservation District"
+]
+}
+},
+"4837112": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4837156": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4837191375": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Pecos Groundwater Conservation District"
+]
+}
+},
+"4837191870": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Middle Pecos Groundwater Conservation District"
+]
+}
+},
+"4837191885": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Pecos Groundwater Conservation District"
+]
+}
+},
+"4837216": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4837252": {
+"gcd": {
+"share": 0.997,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"48373": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lower  Trinity Groundwater Conservation District"
+]
+}
+},
+"4837390860": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lower  Trinity Groundwater Conservation District"
+]
+}
+},
+"4837392226": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lower  Trinity Groundwater Conservation District"
+]
+}
+},
+"4837420": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"48375": {
+"gcd": {
+"share": 0.999,
+"names": [
+"High Plains Underground Water Conservation District No. 1",
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4837590065": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4837590610": {
+"gcd": {
+"share": 0.999,
+"names": [
+"High Plains Underground Water Conservation District No. 1",
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4837612": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4837648": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"48377": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Presidio County Underground Water Conservation District"
+]
+}
+},
+"4837780": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Blanco-Pedernales Groundwater Conservation District"
+]
+}
+},
+"4837792400": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Presidio County Underground Water Conservation District"
+]
+}
+},
+"4837793145": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Presidio County Underground Water Conservation District"
+]
+}
+},
+"4837984": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4838068": {
+"gcd": {
+"share": 0.97,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4838080": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"48381": {
+"gcd": {
+"share": 0.474,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4838116": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4838190070": {
+"gcd": {
+"share": 0.552,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4838190625": {
+"gcd": {
+"share": 0.427,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4838248": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Kimble County Groundwater Conservation District"
+]
+}
+},
+"48383": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Glasscock Groundwater Conservation District",
+"Santa Rita Underground Water Conservation District"
+]
+}
+},
+"4838332": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4838390290": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Glasscock Groundwater Conservation District",
+"Santa Rita Underground Water Conservation District"
+]
+}
+},
+"4838452": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4838476": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District",
+"Bluebonnet Groundwater Conservation District",
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"48385": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Real-Edwards Conservation And Reclamation District"
+]
+}
+},
+"4838548": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4838590600": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Real-Edwards Conservation And Reclamation District"
+]
+}
+},
+"4838632": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4838776": {
+"gcd": {
+"share": 0.988,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4838800": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Saratoga Underground Water Conservation District"
+]
+}
+},
+"4838848": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4838860": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4838896": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"48389": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Reeves County Groundwater Conservation District"
+]
+}
+},
+"4838990190": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Reeves County Groundwater Conservation District"
+]
+}
+},
+"4838992990": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Reeves County Groundwater Conservation District"
+]
+}
+},
+"4839040": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Headwaters Groundwater Conservation District"
+]
+}
+},
+"48391": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Refugio Groundwater Conservation District"
+]
+}
+},
+"4839124": {
+"gcd": {
+"share": 0.124,
+"names": [
+"Rusk County Groundwater Conservation District"
+]
+}
+},
+"4839148": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"4839190170": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Refugio Groundwater Conservation District"
+]
+}
+},
+"4839193220": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Refugio Groundwater Conservation District"
+]
+}
+},
+"4839194275": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Refugio Groundwater Conservation District"
+]
+}
+},
+"4839292": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Guadalupe County Groundwater Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"48393": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4839392555": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4839448": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4839460": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"48395": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Brazos Valley Groundwater Conservation District"
+]
+}
+},
+"4839520": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4839590430": {
+"gcd": {
+"share": 0.996,
+"names": [
+"Brazos Valley Groundwater Conservation District"
+]
+}
+},
+"4839590585": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Brazos Valley Groundwater Conservation District"
+]
+}
+},
+"4839591385": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Brazos Valley Groundwater Conservation District"
+]
+}
+},
+"4839591750": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Brazos Valley Groundwater Conservation District"
+]
+}
+},
+"4839680": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4839700": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4839868": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"48399": {
+"gcd": {
+"share": 0.991,
+"names": [
+"Lipan-Kickapoo Water Conservation District"
+]
+}
+},
+"4839904": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4839916": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4839928": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4839940": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazos Valley Groundwater Conservation District"
+]
+}
+},
+"4839952": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Plum Creek Conservation District",
+"Barton Springs/Edwards Aquifer Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4839990185": {
+"gcd": {
+"share": 0.988,
+"names": [
+"Lipan-Kickapoo Water Conservation District"
+]
+}
+},
+"4839992585": {
+"gcd": {
+"share": 0.987,
+"names": [
+"Lipan-Kickapoo Water Conservation District"
+]
+}
+},
+"4839993350": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lipan-Kickapoo Water Conservation District"
+]
+}
+},
+"4839994265": {
+"gcd": {
+"share": 0.992,
+"names": [
+"Lipan-Kickapoo Water Conservation District"
+]
+}
+},
+"48401": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rusk County Groundwater Conservation District"
+]
+}
+},
+"4840108": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority",
+"Medina County Groundwater Conservation District"
+]
+}
+},
+"4840168": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4840180": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4840191775": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rusk County Groundwater Conservation District"
+]
+}
+},
+"4840192025": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Rusk County Groundwater Conservation District"
+]
+}
+},
+"4840192135": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rusk County Groundwater Conservation District"
+]
+}
+},
+"4840192660": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rusk County Groundwater Conservation District"
+]
+}
+},
+"4840192925": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rusk County Groundwater Conservation District"
+]
+}
+},
+"4840193040": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rusk County Groundwater Conservation District"
+]
+}
+},
+"4840193148": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rusk County Groundwater Conservation District"
+]
+}
+},
+"4840193840": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rusk County Groundwater Conservation District"
+]
+}
+},
+"4840276": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fayette County Groundwater Conservation District"
+]
+}
+},
+"4840288": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Starr County Groundwater Conservation District"
+]
+}
+},
+"4840450": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4840472": {
+"gcd": {
+"share": 1.0,
+"names": [
+"San Patricio Groundwater Conservation District"
+]
+}
+},
+"4840516": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4840588": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"48407": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lower  Trinity Groundwater Conservation District"
+]
+}
+},
+"4840738": {
+"gcd": {
+"share": 1.0,
+"names": [
+"San Patricio Groundwater Conservation District"
+]
+}
+},
+"4840744": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4840790775": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lower  Trinity Groundwater Conservation District"
+]
+}
+},
+"4840793080": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lower  Trinity Groundwater Conservation District"
+]
+}
+},
+"4840793555": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lower  Trinity Groundwater Conservation District"
+]
+}
+},
+"4840888": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesquite Groundwater Conservation District"
+]
+}
+},
+"48409": {
+"gcd": {
+"share": 0.999,
+"names": [
+"San Patricio Groundwater Conservation District"
+]
+}
+},
+"4840990125": {
+"gcd": {
+"share": 0.992,
+"names": [
+"San Patricio Groundwater Conservation District"
+]
+}
+},
+"4840992470": {
+"gcd": {
+"share": 0.999,
+"names": [
+"San Patricio Groundwater Conservation District"
+]
+}
+},
+"4840993103": {
+"gcd": {
+"share": 0.999,
+"names": [
+"San Patricio Groundwater Conservation District"
+]
+}
+},
+"4840993580": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Corpus Christi Aquifer Storage & Recovery Conservation District",
+"San Patricio Groundwater Conservation District"
+]
+}
+},
+"4840993815": {
+"gcd": {
+"share": 1.0,
+"names": [
+"San Patricio Groundwater Conservation District"
+]
+}
+},
+"4841050": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4841056": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"48411": {
+"gcd": {
+"share": 0.557,
+"names": [
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"4841116": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4841164": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesa Underground Water Conservation District"
+]
+}
+},
+"4841188": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Saratoga Underground Water Conservation District"
+]
+}
+},
+"4841193231": {
+"gcd": {
+"share": 0.258,
+"names": [
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"4841193439": {
+"gcd": {
+"share": 0.708,
+"names": [
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"48413": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Plateau Underground Water Conservation And Supply District"
+]
+}
+},
+"4841391185": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Plateau Underground Water Conservation And Supply District"
+]
+}
+},
+"4841391190": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Plateau Underground Water Conservation And Supply District"
+]
+}
+},
+"4841440": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4841764": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4841800": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4841848": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Texana Groundwater Conservation District"
+]
+}
+},
+"4841980": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4842004": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Real-Edwards Conservation And Reclamation District"
+]
+}
+},
+"48421": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4842148": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4842193759": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4842193883": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4842340": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4842352": {
+"gcd": {
+"share": 0.976,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4842388": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4842400": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4842448": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"48425": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4842508": {
+"gcd": {
+"share": 0.994,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4842532": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lost Pines Groundwater Conservation District"
+]
+}
+},
+"4842591535": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"48427": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Starr County Groundwater Conservation District"
+]
+}
+},
+"4842792090": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Starr County Groundwater Conservation District"
+]
+}
+},
+"4842793239": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Starr County Groundwater Conservation District"
+]
+}
+},
+"4842793315": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Starr County Groundwater Conservation District"
+]
+}
+},
+"4842868": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4842940": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4843012": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4843024": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4843066": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"4843096": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"48431": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Sterling County Underground Water Conservation District"
+]
+}
+},
+"4843120": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4843132": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lower  Trinity Groundwater Conservation District"
+]
+}
+},
+"4843193745": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Sterling County Underground Water Conservation District"
+]
+}
+},
+"4843240": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Plum Creek Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4843252": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4843354": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"48435": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Sutton County Underground Water Conservation District"
+]
+}
+},
+"4843516": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Saratoga Underground Water Conservation District"
+]
+}
+},
+"4843593615": {
+"gcd": {
+"share": 0.986,
+"names": [
+"Sutton County Underground Water Conservation District"
+]
+}
+},
+"4843593620": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Sutton County Underground Water Conservation District"
+]
+}
+},
+"48437": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4843791700": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4843792060": {
+"gcd": {
+"share": 0.999,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4843793955": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"48439": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4843990135": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4843991380": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4843992805": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4843996": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Wolf Groundwater Conservation District"
+]
+}
+},
+"4844020": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4844032": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4844170": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesa Underground Water Conservation District"
+]
+}
+},
+"48443": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Terrell Groundwater Conservation District"
+]
+}
+},
+"4844308": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4844391140": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Terrell Groundwater Conservation District"
+]
+}
+},
+"4844394175": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Terrell Groundwater Conservation District"
+]
+}
+},
+"48445": {
+"gcd": {
+"share": 0.999,
+"names": [
+"South Plains Underground Water Conservation District"
+]
+}
+},
+"4844590470": {
+"gcd": {
+"share": 0.999,
+"names": [
+"South Plains Underground Water Conservation District"
+]
+}
+},
+"4844592495": {
+"gcd": {
+"share": 0.999,
+"names": [
+"South Plains Underground Water Conservation District"
+]
+}
+},
+"4845000": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4845012": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4845072": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"4845096": {
+"gcd": {
+"share": 0.995,
+"names": [
+"Plum Creek Conservation District",
+"Guadalupe County Groundwater Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"48451": {
+"gcd": {
+"share": 0.746,
+"names": [
+"Lipan-Kickapoo Water Conservation District"
+]
+}
+},
+"4845120": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4845191145": {
+"gcd": {
+"share": 0.988,
+"names": [
+"Lipan-Kickapoo Water Conservation District"
+]
+}
+},
+"4845194180": {
+"gcd": {
+"share": 0.606,
+"names": [
+"Irion County Water Conservation District",
+"Lipan-Kickapoo Water Conservation District"
+]
+}
+},
+"4845288": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District",
+"Edwards Aquifer Authority",
+"Medina County Groundwater Conservation District"
+]
+}
+},
+"48453": {
+"gcd": {
+"share": 0.114,
+"names": [
+"Barton Springs/Edwards Aquifer Conservation District"
+]
+}
+},
+"4845324": {
+"gcd": {
+"share": 0.197,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4845390165": {
+"gcd": {
+"share": 0.248,
+"names": [
+"Barton Springs/Edwards Aquifer Conservation District"
+]
+}
+},
+"4845672": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District",
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"48457": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4845744": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4845780": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4845790785": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4845793710": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4845794075": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4845794285": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4845996": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4846056": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"4846224": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4846260": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"48463": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Uvalde County Underground Water Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4846393375": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Uvalde County Underground Water Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4846393980": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Uvalde County Underground Water Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4846452": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District",
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4846500": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4846584": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Central Texas Groundwater Conservation District"
+]
+}
+},
+"4846620": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Presidio County Underground Water Conservation District"
+]
+}
+},
+"4846692": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4846752": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4846824": {
+"gcd": {
+"share": 0.96,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4846848": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"48469": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Victoria County Groundwater Conservation District"
+]
+}
+},
+"4846968": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"4846994035": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Victoria County Groundwater Conservation District"
+]
+}
+},
+"4846994040": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Victoria County Groundwater Conservation District"
+]
+}
+},
+"4846994045": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Victoria County Groundwater Conservation District"
+]
+}
+},
+"4847004": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4847040": {
+"gcd": {
+"share": 1.0,
+"names": [
+"San Patricio Groundwater Conservation District"
+]
+}
+},
+"48471": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4847191860": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4847192755": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4847193255": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4847268": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"48473": {
+"gcd": {
+"share": 0.998,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4847316": {
+"gcd": {
+"share": 1.0,
+"names": [
+"South Plains Underground Water Conservation District"
+]
+}
+},
+"4847330": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Central Texas Groundwater Conservation District"
+]
+}
+},
+"4847337": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4847390465": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4847391770": {
+"gcd": {
+"share": 0.995,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4847393137": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4847496": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4847568": {
+"gcd": {
+"share": 0.968,
+"names": [
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"4847616": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesquite Groundwater Conservation District"
+]
+}
+},
+"4847628": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Menard County Underground Water District"
+]
+}
+},
+"4847760": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4847820": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4847832": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Irion County Water Conservation District"
+]
+}
+},
+"4847988": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4848072": {
+"gcd": {
+"share": 0.107,
+"names": [
+"Permian Basin Underground Water Conservation District"
+]
+}
+},
+"4848096": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"48481": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Coastal Bend Groundwater Conservation District"
+]
+}
+},
+"4848180": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4848190368": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Coastal Bend Groundwater Conservation District"
+]
+}
+},
+"4848191112": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Coastal Bend Groundwater Conservation District"
+]
+}
+},
+"4848191180": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Coastal Bend Groundwater Conservation District"
+]
+}
+},
+"4848192305": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Coastal Bend Groundwater Conservation District"
+]
+}
+},
+"4848194185": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Coastal Bend Groundwater Conservation District"
+]
+}
+},
+"48483": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4848336": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4848393545": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4848394190": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4848396": {
+"gcd": {
+"share": 0.221,
+"names": [
+"Lipan-Kickapoo Water Conservation District"
+]
+}
+},
+"4848408": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4848564": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4848684": {
+"gcd": {
+"share": 0.358,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4848804": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4848852": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"48489": {
+"gcd": {
+"share": 0.086,
+"names": [
+"Kenedy County Groundwater Conservation District"
+]
+}
+},
+"4848992155": {
+"gcd": {
+"share": 0.322,
+"names": [
+"Kenedy County Groundwater Conservation District"
+]
+}
+},
+"4848993435": {
+"gcd": {
+"share": 0.064,
+"names": [
+"Kenedy County Groundwater Conservation District"
+]
+}
+},
+"4849128": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"4849200": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4849272": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"48493": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4849356": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4849380": {
+"gcd": {
+"share": 0.672,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4849391330": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4849392": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"4849392160": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4849393125": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4849393755": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4849464": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4849600": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Barton Springs/Edwards Aquifer Conservation District"
+]
+}
+},
+"4849692": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"48497": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4849728": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rusk County Groundwater Conservation District"
+]
+}
+},
+"4849790060": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4849790395": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4849790445": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4849790975": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4849932": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4849968": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4850040": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4850076": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"48501": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Sandy Land Underground Water Conservation District"
+]
+}
+},
+"4850100": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4850191015": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Sandy Land Underground Water Conservation District"
+]
+}
+},
+"4850193055": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Sandy Land Underground Water Conservation District"
+]
+}
+},
+"4850200": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Barton Springs/Edwards Aquifer Conservation District"
+]
+}
+},
+"4850256": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+},
+"4850376": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4850400": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority",
+"Medina County Groundwater Conservation District"
+]
+}
+},
+"4850472": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4850496": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4850628": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"48507": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wintergarden Groundwater Conservation District"
+]
+}
+},
+"4850760": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4850772": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4850790215": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wintergarden Groundwater Conservation District"
+]
+}
+},
+"4850790920": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wintergarden Groundwater Conservation District"
+]
+}
+},
+"4850792140": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Wintergarden Groundwater Conservation District"
+]
+}
+},
+"4850796": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Guadalupe County Groundwater Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4850820": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority",
+"Comal Trinity Groundwater Conservation District\r"
+]
+}
+},
+"4850916": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4850920": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District",
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4851012": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4851036": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4851168": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rusk County Groundwater Conservation District"
+]
+}
+},
+"4851336": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4851372": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4851396": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4851492": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Plum Creek Conservation District",
+"Barton Springs/Edwards Aquifer Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4851588": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District",
+"Gonzales County Underground Water Conservation District"
+]
+}
+},
+"4851648": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4851708": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"4851792": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pecan Valley Groundwater Conservation District"
+]
+}
+},
+"4851840": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4852212": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4852356": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4853115": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4853130": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4853154": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4853190": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"4853232": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4853304": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4853376": {
+"gcd": {
+"share": 1.0,
+"names": [
+"San Patricio Groundwater Conservation District"
+]
+}
+},
+"4853436": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesa Underground Water Conservation District",
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4853520": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4853988": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4854012": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4854048": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lower  Trinity Groundwater Conservation District"
+]
+}
+},
+"4854075": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4854168": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brush Country Groundwater Conservation District"
+]
+}
+},
+"4854192": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4854432": {
+"gcd": {
+"share": 0.808,
+"names": [
+"Rusk County Groundwater Conservation District"
+]
+}
+},
+"4854444": {
+"gcd": {
+"share": 0.856,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4854528": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4854600": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4854636": {
+"gcd": {
+"share": 0.112,
+"names": [
+"Lipan-Kickapoo Water Conservation District"
+]
+}
+},
+"4854684": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Coastal Plains Groundwater Conservation District"
+]
+}
+},
+"4854708": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4854744": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4854912": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4854960": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4855008": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"4855020": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4855056": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4855152": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4856000": {
+"gcd": {
+"share": 0.999,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4856108": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4856156": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"4856276": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4856348": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District",
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4856384": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4856432": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4856468": {
+"gcd": {
+"share": 0.116,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4856485": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4856640": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4856672": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4856912": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4856996": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4857476": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4857615": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4857800": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4857968": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Sandy Land Underground Water Conservation District"
+]
+}
+},
+"4857980": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4858016": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4858040": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4858088": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4858280": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4858556": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lower  Trinity Groundwater Conservation District"
+]
+}
+},
+"4858568": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Calhoun Groundwater Conservation District"
+]
+}
+},
+"4858664": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4858904": {
+"gcd": {
+"share": 0.818,
+"names": [
+"San Patricio Groundwater Conservation District"
+]
+}
+},
+"4858916": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Calhoun Groundwater Conservation District"
+]
+}
+},
+"4859012": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Garza County Underground Conservation District"
+]
+}
+},
+"4859084": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4859096": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4859132": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4859192": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4859336": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4859384": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brush Country Groundwater Conservation District"
+]
+}
+},
+"4859396": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Presidio County Underground Water Conservation District"
+]
+}
+},
+"4859576": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4859696": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4859748": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4860044": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4860164": {
+"gcd": {
+"share": 0.335,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4860356": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4860672": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4860752": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4861196": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4861436": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Refugio Groundwater Conservation District"
+]
+}
+},
+"4861508": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District",
+"Rusk County Groundwater Conservation District"
+]
+}
+},
+"4861604": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4861700": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4861796": {
+"gcd": {
+"share": 0.363,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4861844": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4861880": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"4861892": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4861904": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4862108": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4862168": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Starr County Groundwater Conservation District"
+]
+}
+},
+"4862240": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4862384": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4862408": {
+"gcd": {
+"share": 0.996,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4862486": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4862504": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4862528": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gateway Groundwater Conservation District"
+]
+}
+},
+"4862564": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Coke County Underground Water Conservation District"
+]
+}
+},
+"4862588": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4862612": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clear Fork Groundwater Conservation District"
+]
+}
+},
+"4862636": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4862672": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4862816": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Real-Edwards Conservation And Reclamation District"
+]
+}
+},
+"4862924": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"4863008": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Barton Springs/Edwards Aquifer Conservation District"
+]
+}
+},
+"4863020": {
+"gcd": {
+"share": 0.992,
+"names": [
+"Starr County Groundwater Conservation District"
+]
+}
+},
+"4863044": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"4863140": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4863176": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wes-Tex Groundwater Conservation District"
+]
+}
+},
+"4863272": {
+"gcd": {
+"share": 0.996,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4863284": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4863380": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4863464": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clear Fork Groundwater Conservation District"
+]
+}
+},
+"4863476": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Blanco-Pedernales Groundwater Conservation District"
+]
+}
+},
+"4863524": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fayette County Groundwater Conservation District"
+]
+}
+},
+"4863668": {
+"gcd": {
+"share": 0.282,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4863752": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4863782": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4863788": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4863848": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4864004": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Uvalde County Underground Water Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4864064": {
+"gcd": {
+"share": 0.245,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4864088": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4864112": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4864172": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4864184": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4864220": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4864268": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"4865000": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Trinity-Glen Rose Groundwater Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4865066": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4865180": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brush Country Groundwater Conservation District",
+"Duval County Groundwater Conservation District"
+]
+}
+},
+"4865344": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4865345": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4865372": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4865408": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4865552": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Barton Springs/Edwards Aquifer Conservation District"
+]
+}
+},
+"4865600": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Barton Springs/Edwards Aquifer Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4865612": {
+"gcd": {
+"share": 0.999,
+"names": [
+"San Patricio Groundwater Conservation District"
+]
+}
+},
+"4865648": {
+"gcd": {
+"share": 0.948,
+"names": [
+"Hickory Underground Water Conservation District No. 1"
+]
+}
+},
+"4865660": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4865690": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4865726": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4866008": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4866128": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority",
+"Comal Trinity Groundwater Conservation District\r"
+]
+}
+},
+"4866188": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fayette County Groundwater Conservation District"
+]
+}
+},
+"4866392": {
+"gcd": {
+"share": 0.284,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4866416": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Calhoun Groundwater Conservation District"
+]
+}
+},
+"4866440": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Llano Estacado Underground Water Conservation District"
+]
+}
+},
+"4866464": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4866644": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Guadalupe County Groundwater Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4866704": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority",
+"Comal Trinity Groundwater Conservation District\r"
+]
+}
+},
+"4866764": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Llano Estacado Underground Water Conservation District"
+]
+}
+},
+"4866884": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lower  Trinity Groundwater Conservation District"
+]
+}
+},
+"4866908": {
+"gcd": {
+"share": 0.985,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4866968": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4867100": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4867136": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4867160": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4867268": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4867400": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"4867424": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lower  Trinity Groundwater Conservation District"
+]
+}
+},
+"4867496": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4867688": {
+"gcd": {
+"share": 0.947,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4867832": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4867964": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4868036": {
+"gcd": {
+"share": 1.0,
+"names": [
+"San Patricio Groundwater Conservation District"
+]
+}
+},
+"4868120": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4868180": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4868300": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gonzales County Underground Water Conservation District"
+]
+}
+},
+"4868456": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lost Pines Groundwater Conservation District"
+]
+}
+},
+"4868504": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4868576": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4868708": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4868720": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4868756": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Sutton County Underground Water Conservation District"
+]
+}
+},
+"4868828": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4868978": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4869020": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4869032": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District",
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4869104": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4869120": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4869272": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4869476": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4869548": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"4869560": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Kinney County Groundwater Conservation District"
+]
+}
+},
+"4869608": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Comal Trinity Groundwater Conservation District\r"
+]
+}
+},
+"4869764": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4869800": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4869830": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4869908": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4869932": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"4869980": {
+"gcd": {
+"share": 0.745,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4870040": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Permian Basin Underground Water Conservation District"
+]
+}
+},
+"4870052": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4870076": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4870208": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4870232": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Sterling County Underground Water Conservation District"
+]
+}
+},
+"4870340": {
+"gcd": {
+"share": 0.111,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4870376": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Evergreen Underground Water Conservation District"
+]
+}
+},
+"4870406": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4870544": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4870604": {
+"gcd": {
+"share": 0.499,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4870772": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4870808": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4871060": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4871180": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4871324": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Barton Springs/Edwards Aquifer Conservation District"
+]
+}
+},
+"4871384": {
+"gcd": {
+"share": 0.947,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4871492": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4871540": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Wes-Tex Groundwater Conservation District"
+]
+}
+},
+"4871684": {
+"gcd": {
+"share": 1.0,
+"names": [
+"San Patricio Groundwater Conservation District"
+]
+}
+},
+"4871708": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4871924": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rusk County Groundwater Conservation District",
+"Panola County Underground Water Conservation District"
+]
+}
+},
+"4871960": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4872020": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4872176": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"4872296": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4872392": {
+"gcd": {
+"share": 0.859,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4872464": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4872476": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Plains Groundwater Conservation District"
+]
+}
+},
+"4872530": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4872740": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4872776": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Post Oak Savannah Groundwater Conservation District"
+]
+}
+},
+"4872872": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Live Oak Underground Water Conservation District"
+]
+}
+},
+"4872989": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4873112": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4873224": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4873268": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4873316": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4873328": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4873352": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4873493": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Reeves County Groundwater Conservation District"
+]
+}
+},
+"4873496": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Reeves County Groundwater Conservation District"
+]
+}
+},
+"4873592": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4873652": {
+"gcd": {
+"share": 0.997,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4873710": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4873724": {
+"gcd": {
+"share": 0.115,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4873748": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Clearwater Underground Water Conservation District"
+]
+}
+},
+"4873868": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4873964": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesquite Groundwater Conservation District"
+]
+}
+},
+"4874216": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Plum Creek Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4874408": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4874588": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Uvalde County Underground Water Conservation District",
+"Edwards Aquifer Authority"
+]
+}
+},
+"4874648": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Jeff Davis County Underground Water Conservation District"
+]
+}
+},
+"4874732": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District",
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4874756": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4874924": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4875032": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Culberson County Groundwater Conservation District"
+]
+}
+},
+"4875236": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4875428": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Victoria County Groundwater Conservation District"
+]
+}
+},
+"4875764": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4876000": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4876024": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Gonzales County Underground Water Conservation District"
+]
+}
+},
+"4876228": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District",
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4876240": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Bluebonnet Groundwater Conservation District"
+]
+}
+},
+"4876348": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Middle Trinity Groundwater Conservation District"
+]
+}
+},
+"4876672": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4876816": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4876864": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4876948": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4877020": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Colorado County Underground Water Conservation District"
+]
+}
+},
+"4877044": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Rolling Plains Groundwater Conservation District"
+]
+}
+},
+"4877152": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mesquite Groundwater Conservation District"
+]
+}
+},
+"4877164": {
+"gcd": {
+"share": 1.0,
+"names": [
+"South Plains Underground Water Conservation District"
+]
+}
+},
+"4877176": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Neches & Trinity Valleys Groundwater Conservation District"
+]
+}
+},
+"4877332": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4877380": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Wolf Groundwater Conservation District"
+]
+}
+},
+"4877416": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazoria County Groundwater Conservation District"
+]
+}
+},
+"4877620": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District",
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4877632": {
+"gcd": {
+"share": 0.244,
+"names": [
+"Barton Springs/Edwards Aquifer Conservation District"
+]
+}
+},
+"4877740": {
+"gcd": {
+"share": 1.0,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4877746": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Fort Bend Subsidence District"
+]
+}
+},
+"4877788": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4877956": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Harris-Galveston Coastal Subsidence District"
+]
+}
+},
+"4878076": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4878136": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Coastal Bend Groundwater Conservation District"
+]
+}
+},
+"4878208": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4878316": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Panhandle Groundwater Conservation District"
+]
+}
+},
+"4878328": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4878532": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4878544": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Northern Trinity Groundwater Conservation District"
+]
+}
+},
+"4878628": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4878664": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Prairielands Groundwater Conservation District"
+]
+}
+},
+"4879408": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"4879492": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Upper Trinity Groundwater Conservation District"
+]
+}
+},
+"4879612": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4879624": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Hays Trinity Groundwater Conservation District"
+]
+}
+},
+"4879672": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Edwards Aquifer Authority"
+]
+}
+},
+"4879684": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Red River Groundwater Conservation District"
+]
+}
+},
+"4879876": {
+"gcd": {
+"share": 0.093,
+"names": [
+"Lipan-Kickapoo Water Conservation District"
+]
+}
+},
+"4879919": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Brazos Valley Groundwater Conservation District"
+]
+}
+},
+"4879972": {
+"gcd": {
+"share": 1.0,
+"names": [
+"High Plains Underground Water Conservation District No. 1"
+]
+}
+},
+"4880044": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"4880058": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Hays Trinity Groundwater Conservation District"
+]
+}
+},
+"4880144": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Lone Star Groundwater Conservation District"
+]
+}
+},
+"4880176": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Refugio Groundwater Conservation District"
+]
+}
+},
+"4880212": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southeast Texas Groundwater Conservation District"
+]
+}
+},
+"4880224": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Southern Trinity Groundwater Conservation District"
+]
+}
+},
+"4880296": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Mid-East Texas Groundwater Conservation District"
+]
+}
+},
+"4880356": {
+"gcd": {
+"share": 0.966,
+"names": [
+"North Texas Groundwater Conservation District"
+]
+}
+},
+"4880560": {
+"gcd": {
+"share": 0.383,
+"names": [
+"Pecan Valley Groundwater Conservation District"
+]
+}
+},
+"4880584": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pecan Valley Groundwater Conservation District"
+]
+}
+},
+"4880728": {
+"gcd": {
+"share": 1.0,
+"names": [
+"Pineywoods Groundwater Conservation District"
+]
+}
+}
+}
+}
