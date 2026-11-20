@@ -11,13 +11,12 @@ group (`areas = ["ama"]`), and a place partly inside sees both rules, the one in
 
 Nothing here changes an estimate. Rerun when an area or a boundary file changes; the output records each source and the date it was read.
 """
-import argparse, datetime, io, json, os, re, sys, urllib.parse, urllib.request, zipfile
+import argparse, datetime, io, json, os, re, urllib.parse, urllib.request, zipfile
 
 import geopandas as gpd
 import pandas as pd
 import shapely
-from shapely.geometry import LineString, MultiLineString, shape
-from shapely.ops import split, unary_union
+from shapely.ops import nearest_points, split, unary_union
 
 UA = "waterledger-rule-areas/1.0 (+https://github.com/northlinehydrology/waterledger)"
 TIGER = "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb"
@@ -123,7 +122,7 @@ def areas_va(cache):
         for piece in split(poly, line).geoms:
             p = piece.representative_point()
             # east of the line: the nearest point on I-95 lies to the west of the piece's interior point
-            near = shapely.ops.nearest_points(i95, p)[0]
+            near = nearest_points(i95, p)[0]
             if p.x > near.x:
                 east.append(piece)
     gwma = unary_union([c.loc[g, "geometry"] for g in VA_WHOLE] + east)
