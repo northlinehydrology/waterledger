@@ -11,7 +11,7 @@ A file holds:
                        rule reads "at least" rather than "more than"), `where` ("great_lakes_basin" or "outside_great_lakes_basin") and `source` (a list of
                        "ground", "surface" and "lake": a Great Lake itself), `huc` (HUC prefixes: the line applies only in those river basins, e.g. a basin
                        commission's), `counties` (five-digit county FIPS codes: only in those whole counties) and `areas` (groups in rules/<st>_areas.json:
-                       only in places inside those areas; a place partly inside sees both rules, levels.withdrawal's `inside`). `summary` words the lines for a card, `utility` says what a
+                       only in places inside those areas; a place that straddles an area's edge gets both rules, levels.withdrawal's `inside`). `summary` words the lines for a card, `utility` says what a
                        utility serving the campus needs, `screening` names a state screening tool where one exists; `below_tag` the card's words under every line, where the
                        site's default (below the state's reporting level) doesn't fit; `basin_summary` and `lake_summary`
                        word the lines in the Great Lakes basin and for an intake in a Great Lake, where they differ.

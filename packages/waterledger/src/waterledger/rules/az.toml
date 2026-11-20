@@ -5,7 +5,7 @@ checked = "2026-11-20"
 # One statewide line: an exempt well has a pump capacity of 35 gallons a minute or less (A.R.S. 45-402, 45-454), 0.0504 MGD on the peak day. Above it, inside an
 # Active Management Area a well needs a grandfathered right, a service area right or a withdrawal permit from ADWR (45-512); outside the AMAs, groundwater is
 # withdrawn for reasonable and beneficial use with a notice of intention to drill and no permit or volume limit (45-453, 45-596). AMAs are groundwater basins,
-# not counties: az_areas.json (tools/rule_areas.py, from ADWR's AMA and INA boundaries) says which places are inside, and a place partly inside sees both rules.
+# not counties: az_areas.json (tools/rule_areas.py, from ADWR's AMA and INA boundaries) says which places are inside, and a place that straddles an area's edge gets both rules.
 period = "capacity"
 summary = "Arizona’s rules turn on whether a well is in an Active Management Area. Inside one (Phoenix, Pinal, Prescott, Tucson, Santa Cruz, Willcox, Douglas and Ranegras Plain, in ADWR’s boundaries), a well pumping more than 35 gallons a minute needs a groundwater right or a withdrawal permit from ADWR. Outside them, groundwater is pumped for reasonable and beneficial use with a notice of intention to drill and no permit or volume limit. In an Irrigation Non-Expansion Area, a well pumping more than 10 acre-feet a year for other uses is metered and reported to ADWR."
 sources = ["az_45_402", "az_45_454", "az_45_512", "az_45_453", "az_45_596"]
