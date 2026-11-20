@@ -48,15 +48,21 @@ def _lines(W):
             {"key": "permit", "mgd": W["permit_mgd"], "level": "large", "flag": PERMIT_NOTES["permit"]}]
 
 
-def applies(line, basin=None, source=None, huc=None, county=None):
+def applies(line, basin=None, source=None, huc=None, county=None, areas=None, inside=True):
     """Whether a line applies at a place: `basin` is whether it is in the Great Lakes basin, `source` the water taken ("ground", "surface" or "lake": a Great Lake itself),
     `huc` the place's main watershed (a HUC code) and `county` its county's five-digit FIPS code. A line with `huc` (HUC prefixes: a river basin commission's basin) or
-    `counties` (FIPS codes: a management area made of whole counties) applies only at a place known to be in one of them."""
+    `counties` (FIPS codes: a management area made of whole counties) applies only at a place known to be in one of them. A line with `areas` applies
+    where `areas` (rules.place_areas) puts the place inside; where the place is partly inside, only when `inside` is True."""
     w, s = line.get("where"), line.get("source")
     if "huc" in line and not (huc and any(str(huc).startswith(h) for h in line["huc"])):
         return False
     if "counties" in line and not (county and str(county) in line["counties"]):
         return False
+    if "areas" in line:
+        # `areas`: the place's membership (rules.place_areas); a place partly inside takes the line when `inside` (the part inside) and not otherwise
+        got = [(areas or {}).get(g, {}).get("status") for g in line["areas"]]
+        if not ("in" in got or ("part" in got and inside)):
+            return False
     return (w is None or (w == "great_lakes_basin") == bool(basin)) and (s is None or source is None or source in s)
 
 
@@ -72,7 +78,7 @@ def tested_on(line, q, W=None, peak=False):
     return q[f"{m}_peak"] if v is None else v
 
 
-def withdrawal(mgd, W, basin=None, source=None, peak=False, huc=None, county=None):
+def withdrawal(mgd, W, basin=None, source=None, peak=False, huc=None, county=None, areas=None, inside=True):
     """(level, line) for water pumped or taken at a site, where a state's rules are reviewed: `line` is the key of the highest line the water exceeds ("below" under all of them),
     from the state's rules (waterledger.rules) as they apply at the place. `mgd` is one number every line is tested on, or the water by measure and period (tested_on).
     W: context.withdrawals."""
@@ -80,7 +86,7 @@ def withdrawal(mgd, W, basin=None, source=None, peak=False, huc=None, county=Non
     out = ("small", "below")
     for x in _lines(W):
         v = tested_on(x, q, W, peak)
-        if applies(x, basin, source, huc, county) and v is not None and (v >= x["mgd"] if x.get("at_least") else v > x["mgd"]):
+        if applies(x, basin, source, huc, county, areas, inside) and v is not None and (v >= x["mgd"] if x.get("at_least") else v > x["mgd"]):
             out = (x["level"], x["key"])
     return out
 
@@ -176,9 +182,19 @@ def site_levels(est, ref):
                  "consumed_90": w.consumed_max_90day.p50 if w.consumed_max_90day is not None else None, "consumed_peak": w.consumed.peak_day.p50}
             sheds = getattr(ctx.receiving, "watersheds", None)                  # the place's main watershed and county, for a line limited to a basin or to counties
             huc, cty = (sheds[0].huc12 if sheds else None), getattr(s.place, "county_fips", None)
-            out["withdrawal"], out["withdrawal_line"] = withdrawal(q, W, basin, "ground", huc=huc, county=cty)
+            from waterledger import rules as _rules
+            ar = _rules.place_areas(getattr(s.place, "state", ""), getattr(s.place, "geoid", None))
+            out["withdrawal"], out["withdrawal_line"] = withdrawal(q, W, basin, "ground", huc=huc, county=cty, areas=ar)
             out["withdrawal_period"] = "highest_month" if q["withdrawn_month"] is not None else "peak_day"     # the rules' own periods where the data has the month
-            out["withdrawal_line_peak_day"] = withdrawal(q, W, basin, "ground", peak=True, huc=huc, county=cty)[1]
+            out["withdrawal_line_peak_day"] = withdrawal(q, W, basin, "ground", peak=True, huc=huc, county=cty, areas=ar)[1]
+            used = {g for x in _lines(W) for g in x.get("areas", [])}            # only the areas a line names
+            ar = {g: v for g, v in ar.items() if g in used}
+            if any(v["status"] == "part" for v in ar.values()):
+                # the place is partly inside an area a line names: the rule outside it too, and the areas, so a reader sees both
+                lo = withdrawal(q, W, basin, "ground", huc=huc, county=cty, areas=ar, inside=False)
+                if lo[1] != out["withdrawal_line"]:
+                    out["withdrawal_outside"], out["withdrawal_line_outside"] = lo
+                    out["withdrawal_areas"] = sorted({n for v in ar.values() if v["status"] == "part" for n in v["names"]})
             flag, flag_peak = permit_flag(out["withdrawal_line"], W), permit_flag(out["withdrawal_line_peak_day"], W)
             out["withdrawal_flag"], out["withdrawal_flag_peak_day"] = flag, flag_peak
             if flag or flag_peak:
