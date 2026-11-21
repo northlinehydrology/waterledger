@@ -9,6 +9,7 @@ import os
 import pytest
 
 from contract_reference import PLACES, cases
+from waterledger_models import MODEL_VERSION
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 RECORD = os.path.join(HERE, "data", "estimates_before_contract.json.gz")
@@ -18,7 +19,12 @@ BY_DESIGN_ADDED = {"plant", "evaporated_peak_day", "at_power_plants_peak_day", "
                    "more_electricity_pct", "more_peak_mw", "saves_on_site", "extra_grid_water", "extra_grid_water_share", "extra_plant_water",
                    "extra_plant_water_share", "balancing_authority", "best_hourly_grid", "plants"}
 
-pytestmark = pytest.mark.live
+# The record is model 1.15's (3.21.0), on the snapshots cached Nov 12, 2026. It held the facility contract's move (design 0010, steps 1-6, done Nov 12) to the
+# bit. Model 1.16 and 1.17 changed the numbers on purpose, so it can't hold now: before the next move that must not change a number, write the record again
+# with contract_reference.py and set RECORD_MODEL to the model it was written at.
+RECORD_MODEL = "1.15"
+pytestmark = [pytest.mark.live,
+              pytest.mark.skipif(MODEL_VERSION != RECORD_MODEL, reason=f"the record is model {RECORD_MODEL}'s and the model is {MODEL_VERSION}: rewrite it with contract_reference.py")]
 
 
 def held(want, got, path=""):
