@@ -8,6 +8,7 @@ import pytest
 
 from waterledger_models import heat_rejection as hr
 
+pytest.importorskip("scipy")                                       # the fit needs scipy, a dev dependency; the nightly wheel job has none
 _SPEC = importlib.util.spec_from_file_location("fit_chillers", os.path.join(os.path.dirname(__file__), "..", "docs", "methods", "chillers", "fit_chillers.py"))
 fit = importlib.util.module_from_spec(_SPEC)
 _SPEC.loader.exec_module(fit)
