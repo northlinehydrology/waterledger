@@ -37,6 +37,18 @@ jobs:
           python-version: "3.12"
           enable-cache: true
       - run: uv sync --locked
+      # A facility run at its place (battery cell plants, the supply scenarios) reads EIA-930's hourly generation by balancing authority, which isn't in
+      # the snapshots: grid930.build() writes it (about 600 MB of EIA files, 44 MB kept). Without it those runs have no grid water.
+      - id: year
+        run: echo "year=$(date +%Y)" >> "$GITHUB_OUTPUT"
+      - id: grid930
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/waterledger/grid930/ba
+          key: grid930-${{ steps.year.outputs.year }}
+      - name: EIA-930 by balancing authority (once a year; cached)
+        if: steps.grid930.outputs.cache-hit != 'true'
+        run: uv run python -c "from waterledger_data import grid930; print(len(grid930.build()), 'balancing authorities')"
       - run: uv run pytest -m live -v
       - name: Reproduce Water Ledger's published estimates (30 years of weather, one Open-Meteo request)
         run: WATERLEDGER_FETCH=1 uv run pytest -v tests/test_reproduction.py
