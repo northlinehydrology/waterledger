@@ -10,6 +10,12 @@ PLANTS_KM, PLANTS_MAX = 40, 10
 UTILITY_KM = 50         # with no utility territory over a place, the nearest place that has one within this distance stands in [A]
 
 
+def _cap(name):
+    """A name as written: sources that write in capitals (HIFLD's utilities, ECHO's receiving waters) in title case, names already written properly
+    (MPSC's "Holland Board of Public Works") as they are."""
+    return name.title() if name and name.isupper() else name
+
+
 def _places(state):
     return state_data(state).places()
 
@@ -40,6 +46,11 @@ def find(state, name, county=None):
     hits = exact if len(exact) else g[g.name.str.lower().str.startswith(n)]
     if len(hits) == 1:
         return hits.iloc[0].geoid
+    if len(hits) > 1 and hits.name.nunique() == 1 and "geometry" in hits:
+        # one city in parts, one per county (Census lists a Michigan city that spans counties once per county: Lansing in Clinton, Eaton and
+        # Ingham): the part with most of it, as Michigan's own lookup found these before design 0011
+        from waterledger_data import energy as en
+        return hits.iloc[int(hits.to_crs(en.ALBERS).geometry.area.values.argmax())].geoid
     opts = [f"{r.name} ({r.county} County)" for r in hits.head(6).itertuples()]
     raise KeyError(f"{name!r} in {state} matches {opts or 'nothing'}; give the full name (e.g. 'Columbus city'), a county, or the GEOID")
 
@@ -74,21 +85,29 @@ def context(state, place):
     mine = sd.systems_for(place.geoid)
     near, near_km = (None, None) if serves(mine) else sd.nearest_system(place.geoid)
     use, usgs = county_water_use(state, place.county_fips)
-    supply = cx.Supply(provider="national", not_covered=["household_wells"], sources=["epa_sa", *dict.fromkeys(u.source for u in (use, usgs) if u)], systems=[sys_(w) for w in mine],
+    wells = sd.layer("household_wells")                 # the state's own layers (design 0011), where its data has them
+    supply = cx.Supply(provider="national", not_covered=[] if wells is not None else ["household_wells"],
+                       sources=["epa_sa", *dict.fromkeys(u.source for u in (use, usgs) if u), *(["wellogic"] if wells is not None else [])], systems=[sys_(w) for w in mine],
                        nearest_system=sys_(near) if near else None, nearest_system_km=near_km,
-                       county_use_mgd=use.mgd if use else {}, county_water_use=use, county_water_use_usgs=usgs)
+                       county_use_mgd=use.mgd if use else {}, county_water_use=use, county_water_use_usgs=usgs,
+                       household_wells=(wells or {}).get(place.geoid))
     plants = [cx.SewerPlant(npdes=q["id"], name=q["name"], design_mgd=q["design_mgd"], flow_mgd=q["flow_mgd"], km=q["km"],
-                            own=q["own"], system=q["system"], receiving_water=q["receiving"] or None, combined_sewer=q["cso"], lagoon=q["lagoon"])
+                            own=q["own"], system=q["system"], receiving_water=_cap(q["receiving"]) or None, combined_sewer=q["cso"], lagoon=q["lagoon"])
               for q in ww.nearest(sd.plants(), place.lat, place.lon, base, km=PLANTS_KM, township="township" in place.name.lower(), system=ww.main_system(mine))[:PLANTS_MAX]]
     sheds = sd.sheds_for(place.geoid)
     shore = sd.great_lake(place.geoid)
     path = sd.downstream(sheds["h12"][0]["code"]) if sheds["h12"] else []
-    receiving = cx.Receiving(provider="national", not_covered=["coldwater_streams"], sources=["usgs_wbd", "attains"],
+    imp, trout = sd.layer("impairments") or {}, sd.layer("coldwater_streams")
+    # the state's own reading of its assessment units replaces EPA's table, reach by reach (copies: the path may be cached)
+    path = [{**p, "listings": imp[p["code"]]["listings"], "assessed": imp[p["code"]]["assessed"]} if p["code"] in imp else p for p in path]
+    rsrc = ["usgs_wbd", *(["attains2026"] if imp else ["attains"]), *(["mdnr_trout"] if trout is not None else [])]
+    receiving = cx.Receiving(provider="national", not_covered=[] if trout is not None else ["coldwater_streams"], sources=rsrc,
                              watersheds=[cx.Watershed(huc12=w["code"], name=w["name"], share_of_place=w["share"]) for w in sheds["h12"]],
                              basin=cx.Watershed(huc12=sheds["h8"]["code"], name=sheds["h8"]["name"]) if sheds["h8"] else None,
                              great_lake=shore["lake"] if shore else None, great_lakes_basin=sheds["h12"][0]["code"].startswith("04") if sheds["h12"] else None,
                              downstream=[cx.Reach(huc12=p["code"], name=p["name"], impairments=[LABELS[g] for g, _, _ in p["listings"]],
-                                                  tmdl=[LABELS[g] for g, t, _ in p["listings"] if t], assessed=p.get("assessed")) for p in path])
+                                                  tmdl=[LABELS[g] for g, t, _ in p["listings"] if t], assessed=p.get("assessed"),
+                                                  coldwater_streams=(trout or {}).get(p["code"], [])) for p in path])
     from waterledger import rules
     R = rules.load(state)
     jur = cx.Jurisdiction(provider="national", not_covered=[] if R else ["rules"], sources=["census_tiger", *rules.sources(state)], name=place.name, kind=place.kind, county=place.county,
@@ -133,18 +152,30 @@ def _energy(state, place):
     def utility(u):
         e = L.get(u["eia_id"]) or {}
         w = W.get(u["balancing_authority"]) or {}
-        return cx.Utility(name=u["name"].title(), type=(u["type"] or "").title(), share_of_place=u["share"], customers=e.get("customers"),
+        return cx.Utility(name=_cap(u["name"]), type=(u["type"] or "").title(), share_of_place=u["share"], customers=e.get("customers"),
                           avg_mw=e["mwh"] / 8760 if e.get("mwh") else None, summer_peak_mw=e.get("summer_mw"),
                           balancing_authority=u["balancing_authority"], power_plant_water_l_per_kwh=w.get("consumed_excl_hydro"))
-    out = [utility(u) for u in en.ranked(sd.utilities_for(place.geoid), L, own)]
+    out = [utility(u) for u in _utilities(state, place.geoid, L, own)]
     near, near_km, near_out = None, None, []
     if not out:
         near, near_km = nearest_served(state, place.geoid)
         if near:
-            near_out = [utility(u) for u in en.ranked(sd.utilities_for(near), L, None)]
+            near_out = [utility(u) for u in _utilities(state, near, L, None)]
             near = pl.set_index("geoid").name.get(near, near)
-    return cx.Energy(provider="national", sources=["hifld_territories", "eia861", "siddik2024", "eia923_2024", "macknick2012"], utilities=out,
+    terr = "mpsc_territory" if sd.layer("utilities") is not None else "hifld_territories"
+    return cx.Energy(provider="national", sources=[terr, "eia861", "siddik2024", "eia923_2024", "macknick2012"], utilities=out,
                      nearest_place=near, nearest_place_km=near_km, nearest_utilities=near_out, power_plant_water=_ppw(state))
+
+
+def _utilities(state, geoid, loads, own):
+    """A place's utilities in the order to show them: the state's own territory layer as it orders them (by the share each covers, design 0011),
+    else the base's territories ranked (energy.ranked: the place's own first, then by EIA customers, with the county screen)."""
+    from waterledger_data import energy as en
+    sd = state_data(state)
+    lay = sd.layer("utilities")
+    if lay is not None:
+        return sorted(lay.get(geoid, []), key=lambda u: u.get("order", 0))
+    return en.ranked(sd.utilities_for(geoid), loads, own)
 
 
 @functools.lru_cache(maxsize=16)
@@ -153,7 +184,9 @@ def _served(state):
     from waterledger_data import energy as en
     sd = state_data(state)
     pl = sd.places()
-    return pl[[bool(sd.utilities_for(g)) for g in pl.geoid]][["geoid", "geometry"]].to_crs(en.ALBERS)
+    lay = sd.layer("utilities")
+    has = (lambda g: bool(lay.get(g))) if lay is not None else (lambda g: bool(sd.utilities_for(g)))
+    return pl[[has(g) for g in pl.geoid]][["geoid", "geometry"]].to_crs(en.ALBERS)
 
 
 def nearest_served(state, geoid):
@@ -215,7 +248,7 @@ def reference(state, place):
     return {"power_options": options, "power": default_power(options, "state_mix" if "state_mix" in options else next(iter(options)), (lambda e: e.utilities or e.nearest_utilities)(place.context().energy)),
             "golf_gpd": G.get("by_region", {}).get(_division(state, place)[0], G["gpd"]), "golf_basis": G["basis"], "golf_note": G["note"],
             "home_gpd": home_gpd(state), "home_kwh_month": res.get("kwh_month"), "home_customers": res.get("customers"), "state_avg_mw": sd.state_avg_mw(),
-            "rain_median_in": rq.rain_median(sd.rain()), "salt_events": sd.salt_events().get(_division(state, place)[0]), "withdrawals": rules.withdrawals(state), "state_rules": rules.load(state) is not None, "not_covered": not_covered(state)}
+            "rain_median_in": rq.rain_median(sd.rain()), "salt_events": (lambda own: rq.salt_events(own[1]["salt_days"]) if own else sd.salt_events().get(_division(state, place)[0]))(_salt_region(state, place)), "withdrawals": rules.withdrawals(state), "state_rules": rules.load(state) is not None, "not_covered": not_covered(state)}
 
 
 def _division(state, place):
@@ -239,14 +272,25 @@ def _cooling(state, place):
     return c["cell"], {c["cell"]: sd.cell(c["cell"])}
 
 
+def _salt_region(state, place):
+    """The place's road-salt region from the state's own layer (design 0011): (id, {name, station, salt_days}), or None where the state has none."""
+    lay = state_data(state).layer("salt_regions")
+    if lay is None or place.geoid not in lay["places"]:
+        return None
+    rid = lay["places"][place.geoid]
+    return rid, lay["regions"][rid]
+
+
 def _climate(state, place):
     from waterledger import context as cx
     sd = state_data(state)
     d, runs = _division(state, place)
+    own = _salt_region(state, place)
+    region, name, station = (own[0], own[1]["name"], own[1]["station"]) if own else (d, runs[d]["name"], runs[d]["station"])
     cell = sd.cell_of(place.geoid) if sd.format() >= 3 else None
     extra = {} if cell is None else {k: cell[k] for k in ("cell", "cell_km", "cell_land", "cell_moved", "weather_corrected")}
-    return cx.Climate(provider="national", sources=["noaa_isd", "noaa_cag", "noaa_atlas14", *(["era5"] if cell else [])], region=d, region_name=runs[d]["name"],
-                      station=runs[d]["station"], rain_in=sd.rain().get(place.county_fips), rain_from=sd.rain_from().get(place.county_fips), design_storms_in=sd.storms().get(place.county_fips, {}),
+    return cx.Climate(provider="national", sources=["noaa_isd", "noaa_cag", "noaa_atlas14", *(["era5"] if cell else [])], region=region, region_name=name,
+                      station=station, rain_in=sd.rain().get(place.county_fips), rain_from=sd.rain_from().get(place.county_fips), design_storms_in=sd.storms().get(place.county_fips, {}),
                       **extra)
 
 

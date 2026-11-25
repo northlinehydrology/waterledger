@@ -1,6 +1,6 @@
-"""One folder per state (states/<st>/): a builder that writes the state's site data, and a provider that answers for its
-places (Place, Context, Estimate). A state without a folder, or a part its folder doesn't provide, is answered by the
-national tier (waterledger.national). Michigan is the full version."""
+"""The states: postal codes and names, and the provider that answers for a state's places (Place, Context, Estimate), the national tier
+for every state (waterledger.national) with the state's own layers on it (design 0011). states/mi/ keeps Michigan's former builder and
+provider, deprecated, through 3.x (`waterledger build mi` still writes its site files)."""
 import importlib
 
 STATES = {"mi": "Michigan"}
@@ -34,11 +34,13 @@ def builder(state):
 
 
 class Provider:
-    """Answers for one state: each call goes to the state's own provider if it has that function, else to the national one."""
+    """Answers for one state, through the national provider: every state, Michigan included, is the national base plus its own layers
+    (design 0011). `own` stays for code that checked it, and is None; Michigan's former provider (waterledger.states.mi.provider) is kept,
+    deprecated, through 3.x."""
 
     def __init__(self, state):
         self.state = state.upper()
-        self.own = importlib.import_module(f"waterledger.states.{state.lower()}.provider") if state.lower() in STATES else None
+        self.own = None
         self.national = importlib.import_module("waterledger.national.provider")
 
     def __getattr__(self, name):

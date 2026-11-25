@@ -7,7 +7,8 @@ from waterledger import scenario as sc
 
 def test_gaines():
     c = wl.place("Gaines charter township, MI").context()
-    assert c.jurisdiction.county == "Kent" and c.supply.provider == "MI"
+    assert c.jurisdiction.county == "Kent" and c.supply.provider == "national"          # the base with Michigan's layers (design 0011, decision 8)
+    assert c.supply.household_wells and "wellogic" in c.supply.sources and not c.supply.not_covered
     assert any("Byron" in s.name or "Gaines" in s.name for s in c.supply.systems)
     assert c.wastewater.plants and c.wastewater.plants[0].km <= 40
     assert c.receiving.downstream and c.receiving.downstream[0].huc12 == c.receiving.watersheds[0].huc12
@@ -16,8 +17,8 @@ def test_gaines():
     assert wl.Context.model_validate_json(c.model_dump_json()) == c
     w = c.supply.county_water_use                       # EGLE's figures, the same numbers the page shows, in the shared categories
     assert (w.source, w.kind, w.year, w.county_fips) == ("egle2025", "reported", 2025, "26081")
-    assert w.mgd["public_supply"] == c.supply.county_use_mgd["Public water systems"]
-    assert w.mgd["total"] == pytest.approx(sum(c.supply.county_use_mgd.values()))
+    assert w.mgd["public_supply"] == c.supply.county_use_mgd["public_supply"]          # the shared categories in every state (design 0011)
+    assert w.mgd["total"] == pytest.approx(sum(v for k, v in c.supply.county_use_mgd.items() if k != "total"))
 
 
 def test_plants_and_systems_match_the_page():

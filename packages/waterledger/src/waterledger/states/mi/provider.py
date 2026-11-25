@@ -1,5 +1,8 @@
 """Michigan's provider: answers for Michigan places from Water Ledger Michigan's data files (the same ones waterledger.org/mi
 reads), through waterledger.scenario, so the package and the page agree."""
+import warnings as _w
+_w.warn("waterledger.states.mi.provider is deprecated: Michigan is answered by the national provider with its own layers (design 0011)", DeprecationWarning, stacklevel=2)
+
 from waterledger import rules, scenario as sc
 from waterledger.national.provider import PLANTS_MAX, home_gpd, water_use_record
 
