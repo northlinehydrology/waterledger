@@ -1,0 +1,345 @@
+division,state,name
+0101,AL,Northern Valley
+0102,AL,Appalachian Mountain
+0103,AL,Upper Plains
+0104,AL,Eastern Valley
+0105,AL,Piedmont Plateau
+0106,AL,Prairie
+0107,AL,Coastal Plain
+0108,AL,Gulf
+0201,AZ,Northwest
+0202,AZ,Northeast
+0203,AZ,North Central
+0204,AZ,East Central
+0205,AZ,Southwest
+0206,AZ,South Central
+0207,AZ,Southeast
+0301,AR,Northwest
+0302,AR,North Central
+0303,AR,Northeast
+0304,AR,West Central
+0305,AR,Central
+0306,AR,East Central
+0307,AR,Southwest
+0308,AR,South Central
+0309,AR,Southeast
+0401,CA,North Coast Drainage
+0402,CA,Sacramento Drng.
+0403,CA,Northeast Inter. Basins
+0404,CA,Central Coast Drng.
+0405,CA,San Joaquin Drng.
+0406,CA,South Coast Drng.
+0407,CA,Southeast Desert Basin
+0501,CO,Arkansas Drainage Basin
+0502,CO,Colorado Drainage Basin
+0503,CO,Kansas Drainage Basin
+0504,CO,Platte Drainage Basin
+0505,CO,Rio Grande Drainage Basin
+0601,CT,Northwest
+0602,CT,Central
+0603,CT,Coastal
+0701,DE,Northern
+0702,DE,Southern
+0801,FL,Northwest
+0802,FL,North
+0803,FL,North Central
+0804,FL,South Central
+0805,FL,Everglades
+0806,FL,Lower East Coast
+0807,FL,Keys
+0901,GA,Northwest
+0902,GA,North Central
+0903,GA,Northeast
+0904,GA,West Central
+0905,GA,Central
+0906,GA,East Central
+0907,GA,Southwest
+0908,GA,South Central
+0909,GA,Southeast
+1001,ID,Panhandle
+1002,ID,North Central Prairies
+1003,ID,North Central Canyons
+1004,ID,Central Mountains
+1005,ID,Southwestern Valleys
+1006,ID,Southwestern Highlands
+1007,ID,Central Plains
+1008,ID,Northeastern Valleys
+1009,ID,Upper Snake River Plains
+1010,ID,Eastern Highlands
+1101,IL,Northwest
+1102,IL,Northeast
+1103,IL,West
+1104,IL,Central
+1105,IL,East
+1106,IL,West Southwest
+1107,IL,East Southeast
+1108,IL,Southwest
+1109,IL,Southeast
+1201,IN,Northwest
+1202,IN,North Central
+1203,IN,Northeast
+1204,IN,West Central
+1205,IN,Central
+1206,IN,East Central
+1207,IN,Southwest
+1208,IN,South Central
+1209,IN,Southeast
+1301,IA,Northwest
+1302,IA,North Central
+1303,IA,Northeast
+1304,IA,West Central
+1305,IA,Central
+1306,IA,East Central
+1307,IA,Southwest
+1308,IA,South Central
+1309,IA,Southeast
+1401,KS,Northwest
+1402,KS,North Central
+1403,KS,Northeast
+1404,KS,West Central
+1405,KS,Central
+1406,KS,East Central
+1407,KS,Southwest
+1408,KS,South Central
+1409,KS,Southeast
+1501,KY,Western
+1502,KY,Central
+1503,KY,Blue Grass
+1504,KY,Eastern
+1601,LA,Northwest
+1602,LA,North Central
+1603,LA,Northeast
+1604,LA,West Central
+1605,LA,Central
+1606,LA,East Central
+1607,LA,Southwest
+1608,LA,South Central
+1609,LA,Southeast
+1701,ME,Northern
+1702,ME,Southern Interior
+1703,ME,Coastal
+1801,MD,Southeastern Shore
+1802,MD,Central Eastern Shore
+1803,MD,Lower Southern
+1804,MD,Upper Southern
+1805,MD,Northeastern Shore
+1806,MD,Northern Central
+1807,MD,Appalachian Mountain
+1808,MD,Allegheny Plateau
+1901,MA,Western
+1902,MA,Central
+1903,MA,Coastal
+2001,MI,West Upper
+2002,MI,East Upper
+2003,MI,Northwest
+2004,MI,Northeast Lower
+2005,MI,West Central Lower
+2006,MI,Central Lower
+2007,MI,East Central Lower
+2008,MI,Southwest Lower
+2009,MI,South Central Lower
+2010,MI,Southeast Lower
+2101,MN,Northwest
+2102,MN,North Central
+2103,MN,Northeast
+2104,MN,West Central
+2105,MN,Central
+2106,MN,East Central
+2107,MN,Southwest
+2108,MN,South Central
+2109,MN,Southeast
+2201,MS,Upper Delta
+2202,MS,North Central
+2203,MS,Northeast
+2204,MS,Lower Delta
+2205,MS,Central
+2206,MS,East Central
+2207,MS,Southwest
+2208,MS,South Central
+2209,MS,Southeast
+2210,MS,Coastal
+2301,MO,Northwest Prairie
+2302,MO,Northeast Prairie
+2303,MO,West Central Plains
+2304,MO,West Ozarks
+2305,MO,East Ozarks
+2306,MO,Bootheel
+2401,MT,Western
+2402,MT,Southwestern
+2403,MT,North Central
+2404,MT,Central
+2405,MT,South Central
+2406,MT,Northeastern
+2407,MT,Southeastern
+2501,NE,Panhandle
+2502,NE,North Central
+2503,NE,Northeast
+2505,NE,Central
+2506,NE,East Central
+2507,NE,Southwest
+2508,NE,South Central
+2509,NE,Southeast
+2601,NV,Northwestern
+2602,NV,Northeastern
+2603,NV,South Central
+2604,NV,Extreme Southern
+2701,NH,Northern
+2702,NH,Southern
+2801,NJ,Northern
+2802,NJ,Southern
+2803,NJ,Coastal
+2901,NM,Northwestern Plateau
+2902,NM,Northern Mountains
+2903,NM,Northeastern Plains
+2904,NM,Southwestern Mountains
+2905,NM,Central Valley
+2906,NM,Central Highlands
+2907,NM,Southeastern Plains
+2908,NM,Southern Desert
+3001,NY,Western Plateau
+3002,NY,Eastern Plateau
+3003,NY,Northern Plateau
+3004,NY,Coastal
+3005,NY,Hudson Valley
+3006,NY,Mohawk Valley
+3007,NY,Champlain Valley
+3008,NY,St. Lawrence Valley
+3009,NY,Great Lakes
+3010,NY,Central Lakes
+3101,NC,Southern Mountains
+3102,NC,Northern Mountains
+3103,NC,Northern Piedmont
+3104,NC,Central Piedmont
+3105,NC,Southern Piedmont
+3106,NC,Southern Coastal Plain
+3107,NC,Central Coastal Plain
+3108,NC,Northern Coastal Plain
+3201,ND,Northwest
+3202,ND,North Central
+3203,ND,Northeast
+3204,ND,West Central
+3205,ND,Central
+3206,ND,East Central
+3207,ND,Southwest
+3208,ND,South Central
+3209,ND,Southeast
+3301,OH,Northwest
+3302,OH,North Central
+3303,OH,Northeast
+3304,OH,West Central
+3305,OH,Central
+3306,OH,East Central
+3307,OH,Northeast Hills
+3308,OH,Southwest
+3309,OH,South Central
+3310,OH,Southeast
+3401,OK,Panhandle
+3402,OK,North Central
+3403,OK,Northeast
+3404,OK,West Central
+3405,OK,Central
+3406,OK,East Central
+3407,OK,Southwest
+3408,OK,South Central
+3409,OK,Southeast
+3501,OR,Coastal Area
+3502,OR,Willamette Valley
+3503,OR,Southwestern Valleys
+3504,OR,Northern Cascades
+3505,OR,High Plateau
+3506,OR,North Central
+3507,OR,South Central
+3508,OR,Northeast
+3509,OR,Southeast
+3601,PA,Pocono Mountains
+3602,PA,East Central Mountains
+3603,PA,Southeastern Piedmont
+3604,PA,Lower Susquehanna
+3605,PA,Middle Susquehanna
+3606,PA,Upper Susquehanna
+3607,PA,Central Mountains
+3608,PA,South Central Mountains
+3609,PA,Southwest Plateau
+3610,PA,Northwest Plateau
+3701,RI,All
+3801,SC,Mountain
+3802,SC,Northwest
+3803,SC,North Central
+3804,SC,Northeast
+3805,SC,West Central
+3806,SC,Central
+3807,SC,Southern
+3901,SD,Northwest
+3902,SD,North Central
+3903,SD,Northeast
+3904,SD,Black Hills
+3905,SD,Southwest
+3906,SD,Central
+3907,SD,East Central
+3908,SD,South Central
+3909,SD,Southeast
+4001,TN,Eastern
+4002,TN,Cumberland Plateau
+4003,TN,Middle
+4004,TN,Western
+4101,TX,High Plains
+4102,TX,Low Rolling Plains
+4103,TX,North Central
+4104,TX,East Texas
+4105,TX,Trans Pecos
+4106,TX,Edwards Plateau
+4107,TX,South Central
+4108,TX,Upper Coast
+4109,TX,Southern
+4110,TX,Lower Valley
+4201,UT,Western
+4202,UT,Dixie
+4203,UT,North Central
+4204,UT,South Central
+4205,UT,Northern Mountains
+4206,UT,Uinta Basin
+4207,UT,Southeast
+4301,VT,Northeastern
+4302,VT,Western
+4303,VT,Southeastern
+4401,VA,Tidewater
+4402,VA,Eastern Piedmont
+4403,VA,Western Piedmont
+4404,VA,Northern
+4405,VA,Central Mountain
+4406,VA,Southwestern Mountain
+4501,WA,West Olympic Coast
+4502,WA,NE Olympic San Juan
+4503,WA,Puget Sound Lowlands
+4504,WA,E Olympic Cascade Foothills
+4505,WA,Cascade Mountains West
+4506,WA,East Slope Cascades
+4507,WA,Okanogan Big Bend
+4508,WA,Central Basin
+4509,WA,Northeastern
+4510,WA,Palouse Blue Mountains
+4601,WV,Northwestern
+4602,WV,North Central
+4603,WV,Southwestern
+4604,WV,Central
+4605,WV,Southern
+4606,WV,Northeastern
+4701,WI,Northwest
+4702,WI,North Central
+4703,WI,Northeast
+4704,WI,West Central
+4705,WI,Central
+4706,WI,East Central
+4707,WI,Southwest
+4708,WI,South Central
+4709,WI,Southeast
+4801,WY,Yellowstone Drainage
+4802,WY,Snake Drainage
+4803,WY,Green And Bear Drainage
+4804,WY,Big Horn
+4805,WY,"Powder, Little Missouri, Tongu"
+4806,WY,Belle Fourche Drainage
+4807,WY,Cheyenne & Niobrara Drainage
+4808,WY,Lower Platte
+4809,WY,Wind River
+4810,WY,Upper Platte

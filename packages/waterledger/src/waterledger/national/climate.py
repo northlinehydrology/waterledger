@@ -24,6 +24,14 @@ def climate_areas(state):
             + [{"geoid": r.county_fips, "lat": float(r.lat), "lon": float(r.lon)} for r in cities.itertuples()])
 
 
+def _named(out, state):
+    """Divisions read from a cache written before NOAA's names (3.28): each gets its NOAA name."""
+    from waterledger_data import divisions
+    for d, v in out.items():
+        v["name"] = divisions.division_name(d, state)
+    return out
+
+
 def division_stations(state):
     """{division id: {"name", "station", "station_id", "lat", "lon", "share_observed", "screen"}}: each climate division's NOAA station,
     which model 1.8 keeps for rainfall, road salt and golf; its cooling comes from each place's ERA5 cell instead (snapshot format 3)."""
@@ -31,11 +39,11 @@ def division_stations(state):
     from waterledger_data.config import CACHE
     path = os.path.join(CACHE, "climate", f"{state}_division_station_records.json")
     if os.path.exists(path):
-        return json.load(open(path, encoding="utf-8"))
+        return _named(json.load(open(path, encoding="utf-8")), state)
     fips = next(f for f, s in states.FIPS.items() if s == state)
     stations = divisions.division_stations(fips, counties(state))
     got = {d: climate.isd_hourly(s, divisions.FIRST, divisions.LAST) for d, s in stations.items()}
-    out = {d: {"name": f"{state} climate division {int(d[2:])}", "station": s["name"], "station_id": s["id"], "lat": s["lat"], "lon": s["lon"],
+    out = {d: {"name": divisions.division_name(d, state), "station": s["name"], "station_id": s["id"], "lat": s["lat"], "lon": s["lon"],
                "share_observed": s["share_observed"], "screen": got[d][4]} for d, s in stations.items()}
     os.makedirs(os.path.dirname(path), exist_ok=True)
     json.dump(out, open(path, "w", encoding="utf-8"))
@@ -50,12 +58,12 @@ def division_runs(state, n=DRAWS):
     from waterledger_models.datacenter import cooling as cw
     path = os.path.join(CACHE, "climate", f"{state}_runs_model{snapshot_model()}_n{n}.json")
     if os.path.exists(path):
-        return json.load(open(path, encoding="utf-8"))
+        return _named(json.load(open(path, encoding="utf-8")), state)
     fips = next(f for f, s in states.FIPS.items() if s == state)
     stations = divisions.division_stations(fips, counties(state))
     got = {d: climate.isd_hourly(s, divisions.FIRST, divisions.LAST) for d, s in stations.items()}
     runs = cw.run_locations({d: g[:3] for d, g in got.items()}, n=n, mw=100.0)
-    out = {d: {"name": f"{state} climate division {int(d[2:])}", "station": s["name"], "station_id": s["id"], "lat": s["lat"], "lon": s["lon"],
+    out = {d: {"name": divisions.division_name(d, state), "station": s["name"], "station_id": s["id"], "lat": s["lat"], "lon": s["lon"],
                "share_observed": s["share_observed"], "screen": got[d][4], "per_100mw": runs[d]} for d, s in stations.items()}
     os.makedirs(os.path.dirname(path), exist_ok=True)
     json.dump(out, open(path, "w", encoding="utf-8"))
