@@ -1,43 +1,58 @@
 # 0011: Michigan on the base path: every state is the base plus its own layers
 
-Status: **proposed, Nov 9, 2026, for review. No code yet.** Comes before 0010's refactor, as its own release, so that
-0010 has one path to move onto and its decision 5 needs no Michigan exception. Cathode materials plants move to 0012.
+Status: **proposed Nov 9, 2026; refreshed Nov 25, 2026, for Andrew's agreement. No code for the move itself yet.** The
+refresh checks the note against the package as of 3.27.0 (about 290 commits since Nov 9), marks what has been done
+since, re-runs the Nov 9 measurements on Michigan's 2026-11-17 snapshot, and sets the order of work from here. The
+decisions below were proposed on Nov 9 and never agreed; decision 3 changes with the new measurements, and decisions 5,
+8 and 9 are new.
+
+Where it sits: it is the next package work in Northline's plan for reports in every state (step 3b there), after the
+reports read only `wl.place`, `place.context()` and `site.estimate()`, so a change in how Michigan is built reaches them
+only through those calls. 0010's decision 5 (providers supply the place, facilities compute) waits on this note.
 
 ## Why
 
 Michigan came first, and the national tier was built around it rather than under it (Andrew, Nov 9: "mostly I think
-it's an artifact of the decision that it came first"). Today:
+it's an artifact of the decision that it came first"; Nov 25: "it's just going to keep coming up"). Michigan has
+denser local data (EGLE's reported withdrawals, Wellogic wells, DNR trout streams, MPSC territories). That data stays.
+It becomes layers on top of the base that any state can have, and Michigan is built and read like the other eleven
+states.
 
-| | Michigan | Ohio, Virginia, Texas, Wisconsin |
+### Today (Nov 25, 2026: waterledger 3.27.0, Michigan's snapshot 2026-11-17)
+
+| | Michigan | The other eleven states (OH VA TX WI IN MN PA GA IL NY AZ) |
 |---|---|---|
-| Built by | `states/mi/build.py`, which writes the site files first | `national/build.py`, which writes a snapshot |
-| Snapshot | written *from* the site files, which it carries in `michigan/` | the source |
-| Site files | copied out of the snapshot (`engine/products/mi_data.py`) | written from the snapshot (`engine/products/state_data.py`) |
-| Package answers | `states/mi/provider.py`, reading the site files through `scenario.py` (map coordinates, short keys) | `national/provider.py`, reading the snapshot |
-| Page | no `state` block in `estimates.json`, so `wq.js` falls back to "Michigan" | a `state` block |
+| Built by | `states/mi/build.py` (`fetch.py`, `egle.py`), which writes the site files first (`waterledger build mi`) | `national/build.py` (`waterledger build-state <ST>`) |
+| Snapshot | `states/mi/snapshot.py`, written *from* the site files, which it carries in `michigan/` | `national/snapshot.py`, from the sources |
+| Commands and workflow | `cli.py` branches to `states.mi` for `snapshot MI` and `build mi`; `build-state.yml` has a Michigan branch (`test_snapshot_michigan.py`, a stub `MI_build.json`); `national/build.check_snapshot` loads `michigan/` into `scenario`'s cache | one path |
+| Package answers | `states/mi/provider.py`, reading the site files through `scenario.py` (map coordinates, short keys); `states.Provider` sends each call to it first | `national/provider.py`, reading the snapshot |
+| Facilities | `DataCenter.results` asks the state's provider; the battery cell plant already uses the national place rules (`default_source`, `default_wastewater`) | the same |
+| Grid regions of ERA5 cells | `national/era5.cell_bas` gives every Michigan cell both MISO and PJM | from each place's utilities in the snapshot |
+| Site files (Northline) | copied out of the snapshot (`engine/products/mi_data.py`); `engine/states.toml` marks Michigan `source = "michigan"`; `state_data.py` imports `SOURCES`, `SHORT`, `PARAM_SOURCES`, `CONTEXT`, `GREAT_LAKE_BY_HUC4` and `_dp` from `states/mi/build.py` | written from the snapshot (`engine/products/state_data.py`) |
+| Page | no `state` block in `estimates.json`, so `wq.js` falls back to `{code: 'MI', name: 'Michigan', ...}` | a `state` block |
 
-The page is already shared: every state's page is Michigan's, and every state runs the same `wq.js`. The cooling
-numbers are already shared too: since model 1.8 every state, Michigan included, uses ERA5 cells with the same staff,
-lake and grid-water results. The split is in how the place data is built and read.
-
-What Andrew wants (Nov 9): **the base state plus more, not a separate process, and no better estimate lost.** Michigan
-has denser local data (EGLE's reported withdrawals, Wellogic wells, DNR trout streams, MPSC territories, reviewed state
-rules). That data stays. It becomes layers on top of the base that any state can have.
+Already shared, Michigan included: the page and `wq.js`; ERA5 cells and their correction (model 1.8), staff water and
+lake-source results; state rules as data (`waterledger.rules`, `rules/<st>.toml` for all twelve states, 3.27.0, which
+both providers and the page's `rules.json` read); the sewer plant ranking (`wastewater.rank`, Nov 12); the nearest
+sizable water system (`supply.nearest_sizable`, 3.9.0); the Great Lake within 5 km (`greatlakes.near`); a place no
+utility territory covers taking the nearest served place's utilities; downstream paths past the state line
+(`receiving.past_the_line`); and USGS's 2015 county estimate carried beside EGLE's (`county_water_use_usgs`).
 
 ## The rule: base plus layers
 
 Every state is built by one builder. For each category of place data, the national source is the base. A state can add
 its own layer, and a layer does one of two things:
 
-- **adds** something the base doesn't have (household wells, trout streams, state rules), or
+- **adds** something the base doesn't have (household wells, trout streams), or
 - **replaces** the base for that state, where the state's own source is better (reported withdrawals in place of USGS's
   2015 estimates).
 
 County water use already works this way: `wateruse.state_layer(state)` replaces USGS's estimates with Ohio's, Texas's
-and Virginia's own records, and `write_water_use(state_layer=)` passes Michigan's EGLE layer in. This note uses the same
-pattern for every category. A layer lives in `waterledger_data` with the state's other sources, is registered by state
-and category, and is recorded in the snapshot's manifest (`layers`: category, source, adds or replaces). The provider
-reads the layers wherever a snapshot has them; nothing in the provider asks which state it is.
+and Virginia's own records (`wateruse.STATE_LAYERS`), and Michigan's snapshot passes EGLE in through
+`write_water_use(state_layer=egle_layer())`. This note uses the same pattern for every category. A layer lives in
+`waterledger_data` with the state's other sources, is registered by state and category, and is recorded in the
+snapshot's manifest (`layers`: category, source, adds or replaces). The provider reads the layers wherever a snapshot
+has them; nothing in the provider asks which state it is.
 
 **When a layer replaces the base** depends on what it is:
 
@@ -52,102 +67,185 @@ reads the layers wherever a snapshot has them; nothing in the provider asks whic
 
 Each replacement is stated in the methods page with its reason and the comparison.
 
-This is the add-state process in two passes (Andrew, Nov 9: "a nation flavor first addition. And a later second
-addition that deep dives on state level data"). A state first goes on with the national base alone. A later deep dive
-adds its own layers one at a time, each kept only where it measures better. Michigan is a state whose deep dive was
-done first; moving it onto the base keeps the layers that earn their place.
+This is the add-state process in two passes (Andrew, Nov 9): a state first goes on with the national base alone; a later
+deep dive adds its own layers one at a time, each kept only where it measures better. Michigan is a state whose deep
+dive was done first; moving it onto the base keeps the layers that earn their place.
 
 ## Michigan, category by category
 
-From the code as of Nov 9. "Compare" means the numbers are measured side by side before choosing (step 1 below).
+"Compare" means the numbers are measured side by side before choosing. "Done" is work landed since Nov 9 that this note
+needed; "left" is what the build still has to do.
 
-| Category | Michigan today | National base | Plan |
-|---|---|---|---|
-| Places | 1,541 cities and townships (county subdivision GEOIDs) | Census places, county subdivisions and counties | Keep Michigan's list and GEOIDs (see "Places"); villages are a later question |
-| Water systems, nearest sizable system | EPA service areas, the shared rule | the same | Base |
-| Sewer plants | `wastewater.plants("MI")`, the shared rule, at map coordinates (about 200 m) | the same, at true positions | Base (true distances) |
-| Watersheds, downstream path, impairments | USGS WBD; ATTAINS, Michigan's 2026 report | USGS WBD; ATTAINS by HUC12 | Compare (same sources; check the cycle) |
-| Trout streams | Michigan DNR | none | Layer (adds) |
-| Household wells | EGLE Wellogic | none | Layer (adds) |
-| County water use | EGLE reported withdrawals, 2025 | USGS 2015, or a state layer | Layer (replaces), moved into `wateruse.STATE_LAYERS` beside Ohio, Texas and Virginia |
-| Design storms | NOAA Atlas 14 | the same | Base |
-| County rainfall | NOAA Climate at a Glance by county | the same source | Compare |
-| Cooling weather | ERA5 cells | the same | Base (already shared) |
-| Road salt regions | Michigan's eight regions, stations chosen by hand, salt days by the national method | NOAA climate divisions (ten in Michigan), their ISD stations | Layer (replaces), with the eastern Upper Peninsula split off; decision 3 (measured below) |
-| Golf course water | median of 453 EGLE-reported courses, 43,500 gal/day | GCSAA's North Central survey median, 36,200 gal/day (no Michigan entry in `wateruse.GOLF`) | Layer (replaces): reported beats a survey; measured below |
-| Electric utilities | MPSC service territories | HIFLD territories (PNNL's copy) | Layer (replaces): measured below; the base also gains an EIA-861 county screen in every state |
-| Balancing authority | a hand-kept list of Michigan's PJM utilities | HIFLD control area, then EIA-861 | Base, if it gives the same seven utilities (the list's comment says it came from these sources) |
-| State rules | reviewed: Part 327, Part 22 septic, the Compact | not covered | Layer (adds) |
-| Source citations | `states/mi/build.py`'s `SOURCES`, which `state_data.py` also imports | | Moved to a shared module; no change in content |
+| Category | Michigan today | Base today | Plan | Done since Nov 9 / left |
+|---|---|---|---|---|
+| Places | 1,541 county subdivisions by Census LSAD (1,122 townships, 118 charter townships, 301 city records; 18 cities cross a county line and have two), no FUNCSTAT filter (`places.municipalities`) | `census.places`: active Census places, active county subdivisions and counties. In Michigan: the same 1,240 townships, but cities as 281 Census places with 7-digit GEOIDs, plus 252 villages and 83 counties | Keep Michigan's list and GEOIDs through a state places rule in the base builder | Left: the places rule |
+| Water systems, nearest sizable system | EPA service areas queried place by place (`places.enrich`); nearest sizable by `supply.nearest_sizable`, stored in the site files | `supply.systems_by_place` (bulk overlay); the same nearest rule | Base | Done: the nearest rule is shared. Left: the overlay path, compared in the before and after record |
+| Sewer plants | `wastewater.plants("MI")`, ranked by `wastewater.rank`, distances from map coordinates (about 200 m) | the same, at true positions | Base (true distances) | Done: one ranking. Left: true positions, which come with the provider |
+| Watersheds, downstream path, impairments | WBD overlap per place (`places.enrich`); ATTAINS by assessment unit ID with Michigan's recodes (2026 cycle); paths past the state line | `receiving.watersheds_by_place` (its sliver and mostly-inside rule); ATTAINS assessment units to HUC12 (table 7) | Compare | Done: paths past the line. Left: the comparison (not run; below) |
+| Trout streams | Michigan DNR (`waters.trout_by_huc12`), `Reach.coldwater_streams` | none (`not_covered`) | Layer (adds) | Left |
+| Household wells | EGLE Wellogic (`waters.household_wells`), `Supply.household_wells` | none (`not_covered`) | Layer (adds) | Left |
+| County water use | EGLE 2025 reported withdrawals, `egle_layer()` rebuilt from the site file's numbers; USGS 2015 beside it | USGS 2015, or a state layer (OH, TX, VA) | Layer (replaces), in `wateruse.STATE_LAYERS`, read from the names-removed EGLE file the package ships (`states/mi/inputs/`) | Done: USGS carried beside EGLE. Left: the move |
+| Design storms | NOAA Atlas 14 at each county's internal point (`places.county_design_storms`) | the same (`divisions.design_storms`) | Base | Left: confirmed identical in the record |
+| County rainfall | NOAA Climate at a Glance, 1991-2020 (`waters.county_precip`) | the same URL and period (`divisions.rain_in`) | Base | Left: confirmed identical in the record |
+| Cooling weather | ERA5 cells | the same | Base | Done (model 1.8) |
+| Lake-source cooling | `national.climate.lake_results` | the same | Base | Done |
+| Road salt regions | eight regions, `provider.SALT_DAYS` from NOAA ISD-Lite by the national method | NOAA climate divisions (ten in Michigan) and their stations, named "MI climate division N" | Layer (replaces), with the eastern Upper Peninsula taking NOAA division 2 (decision 3, measured below) | Left. NOAA's division names in every state also left |
+| Golf course water | median of 453 EGLE-reported courses, 43,500 gal/day, in `estimates.json` | GCSAA's North Central median, 36,200 gal/day (`wateruse.golf_regional`; no Michigan entry in `GOLF`) | Layer (replaces), as Ohio's ODNR figure | Left. `wateruse.golf` marks "state reports" only when `odnr_wwfr` is a source; it needs a basis field |
+| Electric utilities | MPSC territories, by area share | HIFLD territories (PNNL's copy), the place's own utility first, then EIA-861 customers (model 1.9) | Layer (replaces); the base gains an EIA-861 county screen in every state (decision 4) | Left: both |
+| Balancing authority | a hand list of seven Michigan utilities in PJM (`provider.PJM`); `era5.cell_bas` gives every cell MISO and PJM | HIFLD control area, else the one RTO EIA-861 lists | Base: measured to give the same seven (decision 5) | Left |
+| Nearest served place (no territory) | `provider.nearest_served`, center to center on map coordinates | `national.provider.nearest_served`, edge to edge | Base | Left (comes with the provider) |
+| State rules | `rules/mi.toml` through `waterledger.rules` | the same file format, every state | Base reads the state's file | Done (3.27.0); the page reads `rules.json` |
+| Source citations | `states/mi/build.py`'s `SOURCES`, `SHORT`, `PARAM_SOURCES`, `CONTEXT`, which `state_data.py` imports | | One shared module; no change in content | Left |
+| Page-only fields | `validation` (checks against LBNL, Google, and Michigan applicants and Switch's metered use), `size_examples`, `home_customers`, `home_kwh_month` written by Michigan's builder | `validation: []`; residential figures from `power.residential` | Validation as data per state (decision 9); residential figures from the base | Left |
 
-## Measured, Nov 9
+## Measured, Nov 25
 
-Scripts and output: the session scratchpad (`mi/utilities.py`, `mi/salt.py`), from Michigan's 2026-11-09 snapshot.
+Scripts in the session scratchpad, reading only files on the machine (no downloads): Michigan's snapshot 2026-11-17
+(model 1.17, 3.25.0), the HIFLD territory layer for Michigan cached Nov 9, EIA-861 2025 (sales, short form, operational
+and utility data), the cached NOAA ISD-Lite station years and NOAA's county-to-division table, and EGLE's 2025 file as
+the package ships it. The Nov 9 scripts were not kept, so where a count differs below it may be the station set as
+much as the data.
 
-**Utilities.** Judged against EIA-861's Service Territory file (2025), where each utility lists the counties it serves:
+### Utilities
 
-| | Top utility serves the place's county | Same top utility as MPSC |
+Michigan's top utility for each place (the largest MPSC share) against the base's (HIFLD, ranked):
+
+| | Places | Same top utility as MPSC |
 |---|---|---|
-| MPSC | 1,540 of 1,540 | |
-| HIFLD, ranked by customers (the base) | 1,062 of 1,541 | 819 |
-| HIFLD with an EIA-861 county screen | | 1,072 |
+| MPSC covers | 1,540 of 1,541 (not St. James township, Beaver Island) | |
+| HIFLD ranked by customers (the Nov 9 rule) | 1,541 | 819 (Nov 9: 819) |
+| HIFLD with the place's own utility first (model 1.9, the base today) | 1,541 | 837 |
 
-HIFLD draws territories coarsely, and the base ranks a place's utilities by customers, so DTE comes first in 280
-Consumers Energy places and dozens in the Upper Peninsula. The balancing authority, which sets power-plant water,
-differs in 21 southwest Michigan places (Indiana Michigan Power and Midwest Energy Cooperative, in PJM). MPSC replaces
-the base in Michigan. The county screen goes into the base for every state (fix all states): the top utility misses
-EIA's county list in 5% of Ohio's places, 2% of Virginia's and Texas's and under 1% of Wisconsin's; screened, the grid
-region changes in 8 Texas places and none elsewhere.
+The own-utility rule adds 18 places that agree; the misses are the same as on Nov 9: HIFLD draws DTE over much of the state, and
+it ranks first in 280 Consumers Energy places, 130 Great Lakes Energy places, 31 Upper Michigan Energy Resources places,
+26 Presque Isle Electric & Gas places and dozens more in the north and the Upper Peninsula. In 34 Indiana Michigan Power
+places HIFLD's first utility is Midwest Energy Cooperative.
 
-**Road salt.** Median winter days with precipitation at 1 C or below, 2005-2024 (NOAA ISD-Lite), the measure
-`runoff.salt_events` uses (0.6 events a day). Checked at the ten Michigan stations with whole records that neither
-grouping uses: mean absolute error 10.8 days for the eight regions (bias +6.6), 9.1 for the divisions (+4.5). At the 810
-places within 40 km of a station: 4.4 and 4.8 days. Close on average, but not interchangeable: the two differ by 5 days
-or more at 539 of the 1,541 places, and by 20 to 30 days at 88. Area by area, against the nearest stations:
+**Balancing authority.** The two paths differ at 20 places (21 under the Nov 9 ranking): 10 Indiana Michigan Power, 9
+Midwest Energy Cooperative and 1 City of South Haven place, all in southwest Michigan, where MPSC's utility is in PJM and
+HIFLD's first utility is Consumers Energy (MISO). Applied to MPSC's own 57 utilities by EIA number, the base's rule
+(HIFLD's control area, else EIA-861's one RTO) puts exactly the seven of the hand list in PJM and the rest in MISO, with
+none left without a region. So the hand list and `cell_bas`'s Michigan case can go (decision 5).
 
-| Where they differ | Places | Regions | Divisions | Nearest observed | Closer |
-|---|---|---|---|---|---|
-| Eastern Upper Peninsula | 38 | 119 | 93 | Chatham 82 (36 km) | Divisions |
-| Northeast region in the eastern UP division | 17 | 88 | 93 | Sault Ste. Marie 101 (24 km) | Divisions |
-| Southwest region in division 8 | 121 | 64 | 72 | Kellogg 63 (65 km), South Bend 60 | Regions |
-| Central region in division 9 | 107 | 71 | 62 | Lansing 71 (15 km) | Regions |
-| West region in division 9 | 36 | 72 | 62 | Grand Rapids 72 (30 km) | Regions |
-| West region in division 5 | 68 | 72 | 67 | Muskegon 67 (38 km) | Divisions |
-| Thumb region in division 10 | 49 | 64 | 59 | Flint 64 (22 km) | Regions |
-| North region in division 6 | 18 | 89 | 64 | Roscommon 96 (67 km) | Regions |
-| North region in division 5 | 32 | 89 | 67 | Muskegon 67 (91 km), Traverse City 89 (93 km) | Unclear |
+**Not re-run: the EIA-861 county list.** On Nov 9 each source's top utility was judged against EIA-861's Service
+Territory file, where each utility lists the counties it serves (MPSC 1,540 of 1,540; HIFLD 1,062 of 1,541; HIFLD with
+a county screen agreeing with MPSC at 1,072), and the screen was measured in other states (top utility outside EIA's
+list in 5% of Ohio's places, 2% of Virginia's and Texas's, under 1% of Wisconsin's; grid region changed in 8 Texas
+places). That file is in EIA's yearly zip (`www.eia.gov/electricity/data/eia861/zip/f861{year}.zip`) but
+`power.fetch_eia861` keeps only four of its files, and it is not on the machine. Re-running it takes the 2025 zip
+(`fetch_eia861` keeping `Service_Territory_*` too) and the twelve states' cached territory layers; it is step 2 below.
 
-The regions are closer for more places; their one large miss is the Upper Peninsula, which they give a single station
-(Hancock, 119 days). So Michigan keeps its regions as a layer, with the eastern Upper Peninsula split off on its own
-station (decision 3). A place's own nearest station was tried and did not do better (10.7 days at all 32 stations,
-each predicted from the others); the station network is too thin for the lake-effect gradients. The per-place answer
-for every state is the place's own ERA5 cell, corrected to stations as cooling weather already is, once the cells'
-precipitation is pulled (later). The base gets NOAA's own division names ("Southwest Lower") in every state, in place of
-"MI climate division 8".
+### Road salt
 
-**Golf.** EGLE's reported median (453 courses with a usable report) against GCSAA's survey figure. Splitting the
-median by region or division doesn't help: predicting each course from the others misses by about a factor of two
-whichever grouping is used (median absolute log error 0.81 to 0.85). So the statewide reported median stays, as a
-layer like Ohio's ODNR figure.
+Median winter days with precipitation at 1 C or below, 2005-2024 (NOAA ISD-Lite), the measure `runoff.salt_events`
+uses, at every cached station in and around Michigan with at least 15 whole winters (precipitation reported on half the
+days): 62 stations, 28 in Michigan. The eight regions' stations reproduce `SALT_DAYS` exactly. NOAA's ten divisions use
+Houghton (division 1, 119 days), Pellston (2, 93), Traverse City (3, 89), Alpena (4, 88), Muskegon (5, 67), Saginaw (6
+and 7, 64), Grand Rapids (8, 72), Jackson (9, 62) and Detroit Metro (10, 59).
+
+Overall:
+
+- The two differ by 5 days or more at 526 of the 1,541 places (Nov 9: 539), by 20 to 26 days at 88 (88). None differ by
+  more than 26.
+- At the 964 places within 40 km of a station: mean absolute error 5.6 days for the regions, 6.5 for the divisions
+  (Nov 9, 810 places: 4.4 and 4.8). The regions are closer at 274 places, the divisions at 137, and they tie at 553.
+- At the 16 Michigan stations neither grouping uses: 16.3 days for the regions (bias +10.2), 13.9 for the divisions
+  (+7.7) (Nov 9, ten stations: 10.8 and 9.1). The Upper Peninsula sets this: at its five held-out stations 35.6 and 24.2;
+  at the Lower Peninsula's eleven, 7.5 for the regions and 9.3 for the divisions.
+- Each place's own nearest station, tried by predicting each Michigan station from its nearest neighbor: 11.0 days at 28
+  stations (Nov 9: 10.7 at 32). It does not beat either grouping, as on Nov 9.
+
+Area by area, where they differ by 5 days or more ("closer" is the smaller mean absolute error against each place's
+nearest station; where that station is one a grouping uses, the check favors that grouping):
+
+| Region in division | Places | Regions | Divisions | Nearest observed (median distance) | Error, regions / divisions | Closer | Nov 9 |
+|---|---|---|---|---|---|---|---|
+| Southwest in 8 | 121 | 64 | 72 | Southwest Michigan Regional 57 (22 km), Kalamazoo 64 (23 km) | 3.6 / 10.2 | Regions | Regions |
+| Central in 9 | 107 | 71 | 62 | Lansing 71 (25 km), Jackson 62 (19 km) | 3.4 / 5.6 | Regions | Regions |
+| West in 5 | 68 | 72 | 67 | Muskegon 67 (43 km) | 4.9 / 0.1 | Divisions | Divisions |
+| Thumb in 10 | 49 | 64 | 59 | Flint 64 (20 km), Oakland County 71 (44 km) | 1.1 / 6.1 | Regions | Regions |
+| West in 6 | 40 | 72 | 64 | Grand Rapids 72 (60 km), Muskegon 67 (82 km) | 3.9 / 10.1 | Regions | not listed |
+| Upper Peninsula in 2 (eastern UP) | 38 | 119 | 93 | Chatham 82 (48 km), Munising 74 (51 km) | 39.4 / 13.9 | Divisions | Divisions |
+| West in 9 | 36 | 72 | 62 | Grand Rapids 72 (31 km), Kellogg 63 (27 km) | 2.7 / 7.3 | Regions | Regions |
+| North in 5 | 32 | 89 | 67 | Muskegon 67 (86 km), Traverse City 89 (84 km) | 11.9 / 10.5 | Unclear: far from both | Unclear |
+| North in 6 | 18 | 89 | 64 | Roscommon 96 (68 km) | 6.6 / 31.6 | Regions | Regions |
+| Northeast in 2 | 17 | 88 | 93 | Sault Ste. Marie 101 (34 km) | 13.0 / 8.0 | Divisions | Divisions |
+
+The Nov 9 reading holds: the regions are closer for more places, and their one large miss is the eastern Upper
+Peninsula, which they give Houghton's 119 days.
+
+**The eastern Upper Peninsula.** NOAA's division 2 is six counties and 68 places (38 in the Upper Peninsula region, 17
+in the Northeast, 13 in the North). Three of its stations have whole records: Sault Ste. Marie 101, Chatham 82 and
+Munising 74 (Chippewa County International, 117, and Delta County, 98, have 7 and 8 winters). Each candidate value
+checked against each place's nearest of those three, with the candidate's own station left out:
+
+| For division 2's 68 places | Error (days) | Bias |
+|---|---|---|
+| The regions as now | 28.0 | +17.9 |
+| Pellston, 93 (division 2's station, in Emmet County, outside the area) | 12.0 | +5.4 |
+| Chatham, 82 | 12.5 | -3.1 |
+| Munising, 74 | 16.4 | -16.4 |
+| Sault Ste. Marie, 101 | 24.5 | +24.5 |
+
+Sault Ste. Marie, one of the two Nov 9 candidates, reads higher than the rest of the area. Pellston and Chatham tie;
+Pellston is NOAA's own choice for the division and independent of the check, so the eastern UP takes division 2 as the
+base has it (decision 3). Salt days change at those 68 places: 38 from 119 to 93, 17 from 88 to 93, 13 from 89 to 93.
+
+**A finding outside this note: the western Upper Peninsula.** Both groupings give division 1's 105 places Houghton's
+119 days. The division's other two whole-record stations read 65 (Copper Harbor, at the tip of the Keweenaw) and 90
+(Ford Airport, Iron Mountain-Kingsford, the nearest station for 56 of the 105 places); against them Houghton runs about
+36 days high. It is not a choice between the groupings, so it goes to the health queue rather than this round. The
+per-place answer for every state remains each place's own ERA5 cell, corrected to stations as cooling weather is, once
+the cells' precipitation is pulled.
+
+### Golf
+
+EGLE's 2025 file (names removed, shipped in `states/mi/inputs/`): 453 courses with a usable report, median 43,500
+gal/day (quartiles 20,200 and 77,400), unchanged since Nov 9. GCSAA's North Central median is 40.5 acre-feet a year,
+36,200 gal/day; EGLE's median is 1.2 times it. Predicting each course from the others' median misses by a median
+absolute log error of 0.63 statewide, 0.64 by region and 0.62 by division (a factor of about 1.9; means 0.87 to 0.89);
+the survey figure at every course misses by 0.71. Nov 9 reported 0.81 to 0.85 by a statistic that wasn't recorded; the
+conclusion is the same: splitting by area doesn't help, and the statewide reported median stays, as a layer like Ohio's.
+Only facilities able to withdraw 100,000 gallons a day report, so it may run high, as Ohio's note says of ODNR's.
+
+### Places
+
+From the cached Census layers: Michigan's 1,240 townships and charter townships are active county subdivisions and keep
+their GEOIDs on the base. Its 301 city records are county subdivisions that the base's active-only filter leaves out;
+the base would list the cities as 281 Census places with 7-digit GEOIDs instead, and add 252 villages and 83 counties.
+So the state places rule is needed to keep `wl.place("2608130860")` and every saved scenario working.
+
+### Not measured
+
+- **Watersheds and impairments, base against Michigan's.** The base's ATTAINS and WBD pulls for Michigan aren't cached;
+  it takes the receiving stage of `build-state MI` (step 2).
+- **Water systems by the base's overlay.** Not cached for Michigan; same stage.
+- **County rainfall and design storms.** Same source, URL and period on both paths, so expected identical; the before
+  and after record confirms it.
+- **The EIA-861 county screen**, in Michigan and the other states (above).
 
 ## No better estimate lost: the check
 
-Step 1 writes every number the Michigan page and `wl.place(...).estimate()` show, for all 1,541 places, at the starting
-settings and every cooling design, from today's path. After the switch, the same numbers again. Every difference
-gets a cause:
+Step 1 writes every number `wl.place(...)`, `place.context()`, `site.estimate()` and the provider's `reference()` give
+for all 1,541 places, at the starting settings and every cooling design (lake-source where a place is on a Great Lake),
+from 3.27.0 and Michigan's current snapshot, plus the site files. After the switch, the same numbers again. Every
+difference gets a cause:
 
-- **expected**: the base or a layer is better (true distances in place of map coordinates, a newer source);
+- **expected**: the base or a layer is better (true distances in place of map coordinates, a newer source, a measured
+  choice in this note);
 - **bug**: a better Michigan source was dropped or read wrong. These are fixed before release.
 
 Andrew reviews the list of differences and their causes before anything is released or deployed. A default rule that
 flips at the 10 km line, because a distance moved by 200 m, is listed by place. The methods log records the data
-change, and Michigan's model version is unchanged (no model changes).
+changes, and the model version is unchanged (no model changes). Northline's record of its reports is separate (its
+plan's step 4) and catches what reaches the reports.
 
 ## Places
 
 Michigan's GEOIDs are public API: `wl.place("2608130860")` and every saved scenario use them. They stay. The base
-builder gains a state places rule (which Census layers make a state's places), and Michigan's rule keeps cities and
-townships as county subdivisions, as now. Adding villages, or counties, is a separate question for later.
+builder gains a state places rule (which Census layers and codes make a state's places); Michigan's keeps cities,
+townships and charter townships as county subdivisions by LSAD, as now, with no counties. Adding villages, or counties,
+is a separate question for later.
 
 ## The 3.x promise
 
@@ -156,51 +254,75 @@ townships as county subdivisions, as now. Adding villages, or counties, is a sep
   The shared functions in `scenario.py` (`cooling_estimate`, `lake_estimate`, `check_lake`, `land_default`,
   `for_plant`, `electricity`, `grid_water`) stay where they are.
 - `wl.place`, `Place`, `Context` and `Estimate` keep their shape for Michigan. Fields Michigan alone fills
-  (`household_wells`, `coldwater_streams`) are filled from the layers.
-- Older packages (3.15 and earlier) read Michigan through the site files. They fall back to waterledger.org/mi/data/
-  when a snapshot has no `michigan/` folder, so new snapshots can drop the folder as long as the site files keep their
-  shape. A test reads the new site files with 3.15's `scenario.py`.
+  (`Supply.household_wells`, `Reach.coldwater_streams`, the EGLE groups in `county_use_mgd`, Michigan's region in
+  `Climate.region`) are filled from the layers. The parts' `provider` field changes from "MI" to "national", with the
+  layers' sources in each part's `sources` (decision 8).
+- Packages up to 3.27 read Michigan through the site files: the local site, else the snapshot's `michigan/` folder,
+  else the published file at waterledger.org/mi/data/, which `scenario.data` downloads when the folder is missing. So
+  new snapshots can drop the folder as long as the site files keep their shape. A test reads the new site files with
+  3.27's `scenario.py` and Michigan provider, for every place.
 - Snapshots already published are not changed.
 
 ## The site
 
-`state_data.py` writes Michigan's files like every other state's, and `mi_data.py` is retired. Michigan's
-`estimates.json` gains a `state` block listing its layers, so the "no block means Michigan" fallback in `wq.js` can go.
-The page's rule text for Michigan (Part 327, the septic thresholds) stays in `wq.js` as Michigan's rules for now;
-turning rules into data waits until a second state's rules are reviewed. The page change is small, but it changes live
-numbers, so Andrew checks it locally before any deploy.
+`state_data.py` writes Michigan's files like every other state's, and `mi_data.py` is retired; `engine/states.toml`
+marks Michigan `national`. Michigan's `estimates.json` gains a `state` block listing its layers, so the fallback in
+`wq.js` can go. The rule text is already data (`rules.json`). The page change is small, but it changes live numbers, so
+Andrew checks it locally before any deploy.
 
 ## Not in this note
 
-- The water user contract (0010), which follows on top of this.
-- Rules as data, villages, and Michigan's learn, changelog and tracker pages (unchanged).
+- The water user contract (0010), apart from its decision 5, which follows on this path (step 8).
+- Villages and counties as Michigan places; Michigan's learn, changelog and tracker pages (unchanged).
+- The western Upper Peninsula's salt days (health queue) and salt from ERA5 cells (later, every state).
 
-## Order of work, each step its own commit
+## Order of work, from where things stand (each step its own commit)
 
-1. The before record: every Michigan number from today's path, for all places and designs, and the context fields.
-2. Layers in `waterledger_data`: Michigan's wells, trout streams, MPSC utilities, golf median and rules flag,
-   registered by state and category; EGLE moved into `wateruse.STATE_LAYERS`. The citation list moved to a shared
-   module. In the base: the EIA-861 county screen and NOAA's division names, for every state (these change other
-   states' context, recorded in the methods log).
-3. The base builder reads layers and writes them into the snapshot, with the manifest's `layers`; the state places
-   rule; `build-state MI` runs it.
-4. The national provider reads layers; Michigan uses it. The old readers warn.
-5. The after record and the list of differences with causes, for Andrew.
-6. Northline: `state_data.py` writes Michigan; `mi_data.py` retired; `wq.js` fallback removed; parity checks.
-7. READMEs, CHANGELOG, methods log; a minor release and a Michigan snapshot, each on Andrew's word. The battery cell
-   plant model went first, as 3.16.0 (Andrew, Nov 10); 0010's contract and the battery facility follow this.
+1. **The before record**: every Michigan number from today's path (3.27.0, snapshot 2026-11-17), for all places and
+   designs, the context fields and `reference()`, kept compressed in `tests/data/` as the contract's record is.
+2. **The measurements this refresh could not run**: `fetch_eia861` keeps the Service Territory file; the county list
+   judges MPSC, HIFLD and the screen in all twelve states; a base build of Michigan's receiving and supply stages
+   compares watersheds, impairments and water systems with Michigan's. Results added to this note; a decision
+   reopened only if a result goes against it.
+3. **Layers in `waterledger_data`**: Michigan's wells, trout streams, MPSC utilities, salt regions (with division 2 for
+   the eastern UP) and golf median, registered by state and category; EGLE moved into `wateruse.STATE_LAYERS`, read
+   from the shipped file; `wateruse.golf` given a basis field. The citation list and `CONTEXT` moved to a shared module.
+   The state places rule. In the base, for every state: the EIA-861 county screen and NOAA's division names (these
+   change other states' context; recorded in the methods log).
+4. **The base builder reads layers** and writes them into the snapshot, with the manifest's `layers`; `build-state MI`
+   runs it; the CLI's and the workflow's Michigan branches go.
+5. **The national provider reads layers; Michigan uses it.** `states.Provider`'s own-provider branch, `cell_bas`'s
+   Michigan case and the PJM list go; the old readers warn. Validation rows as data (decision 9).
+6. **The after record** and the list of differences with causes, for Andrew.
+7. **Northline**: `state_data.py` writes Michigan; `mi_data.py` retired; `states.toml` `national`; the `wq.js` fallback
+   removed; `check_parity`; Andrew's local check of the page.
+8. **0010's decision 5**: providers reduced to the place side, now that there is one provider path. Its own commit,
+   after the after record, so the record isolates this note's changes; its own identity test (`test_contract_identity`).
+9. READMEs, `docs/add-a-state.md`, CHANGELOG (Deprecated), the methods log (short and long notes); a minor release and a
+   Michigan snapshot, each on Andrew's word. Then Northline rebuilds its reports' record (its plan's step 4).
 
 ## Decisions to agree
 
 1. **Base plus layers, one builder.** Each layer adds or replaces, and replaces only with a stated reason.
 2. **No better estimate lost:** the before and after record, every difference with a cause, Andrew's review before
    release.
-3. **Michigan's regions stay as a layer, with the eastern Upper Peninsula split off** (its own station, Sault Ste.
-   Marie or Pellston, chosen by the same check). Close to the divisions on average, but closer at more places, and the
-   names are Michigan's. The split changes salt days at about 40 places, a correction recorded in the methods log.
-   Later, for every state: salt from each place's corrected ERA5 cell.
-4. **MPSC replaces HIFLD in Michigan** (measured: 1,540 of 1,540 against 1,062), and the base gains the EIA-861
-   county screen in every state. EGLE's golf median replaces the survey.
-5. **Michigan's places and GEOIDs stay**; villages later.
-6. **Order:** this first, then 0010 and the battery facility. Revised Nov 10: Andrew put the battery work ahead of the
-   Michigan work, so the battery model shipped first as 3.16.0 (model 1.12), and this note is the next minor release.
+3. **Michigan's regions stay as a layer, with the eastern Upper Peninsula taking NOAA's division 2** (its six counties,
+   68 places, at Pellston's 93 days). Changed from Nov 9, which proposed Sault Ste. Marie or Pellston: left out of its
+   own check, Sault Ste. Marie misses by 24.5 days and Pellston by 12.0 (the regions as now: 28.0). The regions are
+   closer at more places elsewhere, and the names are Michigan's. The change is a correction recorded in the methods
+   log.
+4. **MPSC replaces HIFLD in Michigan** (re-measured: HIFLD's top utility agrees with MPSC's at 837 of 1,540 places
+   under today's rule), and the base gains the EIA-861 county screen in every state, once step 2 re-runs its measurement.
+   **EGLE's golf median replaces the survey** (43,500 against 36,200 gal/day).
+5. **The balancing authority comes from the base** (new): its rule gives the same seven PJM utilities as Michigan's hand
+   list, so the list and `cell_bas`'s Michigan case go. The 20 places where the region differs today differ because of
+   which utility comes first, which decision 4 settles.
+6. **Michigan's places and GEOIDs stay**, by a state places rule; villages and counties later.
+7. **New snapshots drop the `michigan/` folder**; packages up to 3.27 fall back to the published site files, which keep
+   their shape, with a test.
+8. **Context's `provider` reads "national" for Michigan too** (new), with each layer's source listed in the part's
+   `sources`, as Ohio's water use already is. Anything testing `provider == "MI"` changes (one test in this repo); the
+   CHANGELOG says so.
+9. **Validation as data per state** (new): Michigan's validation rows (its applicants' figures and Switch's metered use)
+   move from its builder into a data file the shared code reads, so any state can carry reported figures, as the
+   add-state bar has them come in as methods updates.
