@@ -239,3 +239,8 @@ def test_michigan_is_a_state_layer():
     assert L["basis"]["source"] == "egle2025" and L["basis"]["kind"] == "reported"
     kent = next(v for v in L["counties"].values() if v["name"] == "Kent County")
     assert kent["mgd"]["total"] == pytest.approx(sum(kent["source_values"].values()))
+
+
+def test_michigan_citation_is_the_published_one():
+    from waterledger.citations import SOURCES
+    assert (wu.EGLE_CITATION, wu.EGLE_URL) == SOURCES["egle2025"]

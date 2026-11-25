@@ -581,9 +581,8 @@ EGLE_GROUPS = {"Irrigation": "Farm irrigation", "Community Water Supply": "Publi
                "Power Generation": "Power plants"}
 EGLE_CATS = {"Public water systems": "public_supply", "Industry": "industrial", "Bottled water": "industrial", "Farm irrigation": "irrigation",
              "Golf courses": "golf", "Livestock": "livestock", "Mining and dewatering": "mining", "Power plants": "thermoelectric", "Other": "other"}
-EGLE_CITATION = ("Michigan Department of Environment, Great Lakes, and Energy (EGLE), Water Use Reporting: facility water use data, 2025. "
-                 "Facilities able to withdraw 100,000 gallons a day or more report each year (Part 327, NREPA).")
-EGLE_URL = "https://www.michigan.gov/egle/about/organization/water-resources/water-use"
+EGLE_CITATION = "Michigan EGLE. Water Use Data, 2025 (by county and sector; reported by registered large-quantity withdrawals)."     # as waterledger.citations' egle2025
+EGLE_URL = "https://www.michigan.gov/egle/about/organization/geologic-resources-management/groundwater/water-use/reporting/water-use-data"
 TABLES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tables")
 
 
@@ -687,7 +686,7 @@ def inputs(state):
 # acre-feet per facility regardless of holes, at 325,851 gallons an acre-foot. Regions are read from its Figure 1 map (p. 3), which has no state or county list.
 GOLF = {
     "MI": {"gpd": 43500, "sources": ["egle2025"], "basis": "state reports",
-           "note": "This is the median of Michigan courses reporting to EGLE in 2025 (453 courses with a usable report; michigan_groups' golf_median_gpd, which a test holds it to). Only courses able to withdraw 100,000 gallons a day report, so it may run high."},
+           "note": "This is the median of Michigan courses reporting to EGLE for 2025 (453 courses). Only courses able to withdraw 100,000 gallons a day report, so it may run high."},
     "OH": {"gpd": 33300, "sources": ["odnr_wwfr"], "basis": "state reports", "note": "This is the median of Ohio courses reporting to ODNR, the middle of the 2022 to 2024 yearly medians (32,500, 33,300 and 43,100). Only courses able to withdraw 100,000 gallons a day register, so it may run high."},
     "VA": {"gpd": 34400, "sources": ["gcsaa2022"], "basis": "regional survey", "note": "This is a national survey's median for the Transition region (38.5 acre-feet a year), since Virginia's reports do not separate golf. It is a survey, not metered."},
     "TX": {"gpd": 99200, "sources": ["gcsaa2022"], "basis": "regional survey",
