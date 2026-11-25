@@ -83,7 +83,7 @@ def fetch_eia861(year):
     d = os.path.join(RAW, f"eia861_{year}")
     os.makedirs(d, exist_ok=True)
     for n in z.namelist():
-        if n.startswith(("Sales_Ult_Cust_", "Short_Form_", "Operational_Data_", "Utility_Data_")):
+        if n.startswith(("Sales_Ult_Cust_", "Short_Form_", "Operational_Data_", "Utility_Data_", "Service_Territory_")):
             open(os.path.join(d, os.path.basename(n)), "wb").write(z.read(n))
     return d
 
