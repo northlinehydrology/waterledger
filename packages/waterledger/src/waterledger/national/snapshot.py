@@ -115,6 +115,7 @@ def write(state, out, date=None, checks=None, runs_dir=None):
     from waterledger_data import divisions, energy, greatlakes, power as pw, receiving, supply, wastewater
     from waterledger_models import MODEL_VERSION
     from waterledger_models.datacenter import cooling as cw
+    from waterledger_models.datacenter.physics import DRAWS
     import waterledger
     import waterledger_data
     import waterledger_models
@@ -155,7 +156,7 @@ def write(state, out, date=None, checks=None, runs_dir=None):
 
     storms, rain = nc.storms_and_rain(state)
     divs = nc.division_stations(state)            # format 3: the divisions' stations, for rainfall, salt and golf; cooling is by cell
-    _write(os.path.join(folder, "climate.json"), {"divisions": divs, "staff_runs": cw.staff_runs(200),
+    _write(os.path.join(folder, "climate.json"), {"divisions": divs, "staff_runs": cw.staff_runs(DRAWS),         # the model's own draws, as Michigan's build has used (design 0011: 200 before, in every state)
                                                    "design_storms_in": storms, "rain_in": rain, "rain_from": nc.rain_from(state), "salt_events": nc.salt_events(divs),
                                                    "lake_source": nc.lake_source(sorted({v["lake"] for v in shore.values()}))})
 
@@ -167,6 +168,11 @@ def write(state, out, date=None, checks=None, runs_dir=None):
                                                   "residential": pw.residential(state, pw.latest_eia861()), "state_retail_mwh": pw.state_retail_mwh(state, pw.latest_eia861())})
 
     wu_source, inputs, wu_years = write_water_use(state, folder)
+
+    from waterledger_data import layers
+    own = layers.build(state, pl)                 # the state's own layers on the base (design 0011): read by the provider wherever present
+    if own:
+        _write(os.path.join(folder, "layers.json"), own)
 
     files = {}
     for name in sorted(os.listdir(folder)):
@@ -184,6 +190,7 @@ def write(state, out, date=None, checks=None, runs_dir=None):
                             "cooling_weather": "Copernicus ERA5 (Open-Meteo's open copy), corrected near the shore toward NOAA ISD and ECCC stations (designs 0004, 0005)",
                             "energy": "HIFLD retail service territories (PNNL), EIA-861, Siddik et al. 2024", "wateruse": wu_source},
                 "water_use_years": wu_years, "inputs_downloaded_since": _oldest_download(), "files": files, "inputs": inputs, "checks": checks,
-                "cells": cell_files, "cell_rule": {"land_at_least": era5.LAND}, "weather": weather, "correction": correction}
+                "cells": cell_files, "cell_rule": {"land_at_least": era5.LAND}, "weather": weather, "correction": correction,
+                "layers": layers.describe(state)}
     _write(os.path.join(folder, "manifest.json"), manifest)
     return folder

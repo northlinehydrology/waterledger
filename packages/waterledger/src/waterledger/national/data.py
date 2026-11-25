@@ -54,6 +54,13 @@ class SnapshotData:
         import geopandas as gpd
         return gpd.read_parquet(os.path.join(self.folder, "places.parquet"))
 
+    def layer(self, category):
+        """The state's own layer for `category` (design 0011), or None: a snapshot from before 3.28, or a state without that layer."""
+        if "layers" not in self._j:
+            path = os.path.join(self.folder, "layers.json")
+            self._j["layers"] = json.load(open(path, encoding="utf-8")) if os.path.exists(path) else {}
+        return self._j["layers"].get(category)
+
     def model_version(self):
         """The model version of the numbers in this snapshot."""
         return self.manifest["model_version"]
@@ -254,7 +261,8 @@ class LiveData:
 
     def staff_runs(self):
         from waterledger_models.datacenter import cooling as cw
-        return cw.staff_runs(200)
+        from waterledger_models.datacenter.physics import DRAWS
+        return cw.staff_runs(DRAWS)
 
     def storms(self):
         from waterledger.national import climate as nc
@@ -263,6 +271,12 @@ class LiveData:
     def rain(self):
         from waterledger.national import climate as nc
         return nc.storms_and_rain(self.state)[1]
+
+    def layer(self, category):
+        from waterledger_data import layers
+        if not hasattr(self, "_layers"):
+            self._layers = layers.build(self.state, self._pl)
+        return self._layers.get(category)
 
     def _utilities(self):
         from waterledger_data import energy
