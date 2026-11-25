@@ -76,3 +76,15 @@ def test_place_at_a_point(state, lat, lon, name):
 def test_michigan_point_lookup_uses_michigan_places(lat, lon, name):
     p = wl.place(lat=lat, lon=lon)
     assert p.name == name and len(p.geoid) == 10
+
+
+@pytest.mark.live
+def test_michigans_places_rule_keeps_its_geoids():
+    """Design 0011: Michigan's places are its county subdivisions with land, cities included, with the GEOIDs and counties Water Ledger Michigan has
+    used since October 2026 (the before record, tests/data/michigan_before_0011.json.xz)."""
+    import michigan_reference as mr
+    from waterledger_data import census
+    g = census.places("26")
+    before = {k.split("|")[0]: v["ok"] for k, v in mr.load().items() if k.endswith("|place")}
+    assert len(g) == 1541 and set(g.geoid) == set(before)
+    assert all(before[r.geoid]["county"] == r.county for r in g.itertuples())
