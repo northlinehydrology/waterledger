@@ -1,6 +1,6 @@
 # 0011: Michigan on the base path: every state is the base plus its own layers
 
-Status: **proposed Nov 9, 2026; refreshed Nov 25, 2026, for Andrew's agreement. No code for the move itself yet.** The
+Status: **proposed Nov 9, 2026; refreshed Nov 25, 2026; decisions agreed Nov 25, 2026 (Andrew: "Agreed, start 0011"). Building.** The
 refresh checks the note against the package as of 3.27.0 (about 290 commits since Nov 9), marks what has been done
 since, re-runs the Nov 9 measurements on Michigan's 2026-11-17 snapshot, and sets the order of work from here. The
 decisions below were proposed on Nov 9 and never agreed; decision 3 changes with the new measurements, and decisions 5,
@@ -301,7 +301,7 @@ Andrew checks it locally before any deploy.
 9. READMEs, `docs/add-a-state.md`, CHANGELOG (Deprecated), the methods log (short and long notes); a minor release and a
    Michigan snapshot, each on Andrew's word. Then Northline rebuilds its reports' record (its plan's step 4).
 
-## Decisions to agree
+## Decisions (agreed, Andrew, Nov 25, 2026)
 
 1. **Base plus layers, one builder.** Each layer adds or replaces, and replaces only with a stated reason.
 2. **No better estimate lost:** the before and after record, every difference with a cause, Andrew's review before
