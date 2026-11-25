@@ -38,9 +38,14 @@ PLACE_RULES = {"26": {"cousub_lsad": ("25", "44", "49"), "places": False, "count
 
 
 def places_key(places):
-    """A short key for a set of places (their GEOIDs), for caches worked out place by place: a cache written for another set (Census
-    places before 3.16.0 had no consolidated city balances) is not read for this one."""
-    return hashlib.sha256(",".join(sorted(str(g) for g in places.geoid)).encode()).hexdigest()[:10]
+    """A short key for a set of places, for caches worked out place by place: their GEOIDs and, where the frame has them, their outlines. A cache
+    written for another set (Census places before 3.16.0 had no consolidated city balances) or for other outlines of the same places (Michigan's
+    snapshot outlines before design 0011 against Census's) is not read for this one."""
+    h = hashlib.sha256(",".join(sorted(str(g) for g in places.geoid)).encode())
+    if "geometry" in places:
+        for g, geom in sorted(zip(places.geoid.astype(str), places.geometry), key=lambda x: x[0]):
+            h.update(shapely.to_wkb(geom) if geom is not None else b"-")
+    return h.hexdigest()[:10]
 
 
 def _features(kind, state_fips):
@@ -70,13 +75,27 @@ def _features(kind, state_fips):
     return out
 
 
+TREE_RINGS = 64     # above this many rings, combine them pairwise in a balanced tree: one at a time costs the square of the count, and a Great
+                    # Lakes shore HUC12 has 23,000 island rings (about an hour each, 7.4 hours for Michigan's watersheds; design 0011, Nov 25, 2026)
+
+
+def _xor(parts):
+    if len(parts) == 1:
+        return parts[0]
+    mid = len(parts) // 2
+    return _xor(parts[:mid]).symmetric_difference(_xor(parts[mid:]))
+
+
 def _polygon(rings):
-    """Census rings as one shapely geometry, even-odd (holes and separate parts), cleaned of any self-intersection."""
-    geom = None
-    for r in rings:
-        if len(r) >= 4:
-            p = shapely.make_valid(shapely.Polygon(r))
-            geom = p if geom is None else geom.symmetric_difference(p)
+    """Census (or WBD) rings as one shapely geometry, even-odd (holes and separate parts), cleaned of any self-intersection."""
+    parts = [shapely.make_valid(shapely.Polygon(r)) for r in rings if len(r) >= 4]
+    if not parts:
+        return None
+    if len(parts) > TREE_RINGS:
+        return _xor(parts)
+    geom = parts[0]
+    for p in parts[1:]:
+        geom = geom.symmetric_difference(p)
     return geom
 
 
