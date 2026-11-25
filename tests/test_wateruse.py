@@ -147,7 +147,7 @@ def test_virginia_table_read_from_a_pdf(tmp_path):
 
 
 def test_state_layers():
-    assert set(wu.STATE_LAYERS) == {"OH", "TX", "VA"} and wu.state_layer("WY") is None
+    assert set(wu.STATE_LAYERS) == {"MI", "OH", "TX", "VA"} and wu.state_layer("WY") is None
 
 
 def test_snapshot_water_use_reads_and_prefers_the_state(tmp_path, monkeypatch):
@@ -198,6 +198,7 @@ def test_golf_regional_default(state, region, acre_feet, gpd):
 
 
 def test_golf_states_with_their_own_row_keep_it():
+    assert wu.golf("MI")["gpd"] == 43500 and wu.golf("MI")["basis"] == "state reports"         # EGLE's reported median (design 0011)
     assert wu.golf("OH")["gpd"] == 33300 and wu.golf("OH")["basis"] == "state reports"
     assert wu.golf("VA")["gpd"] == 34400 and wu.golf("VA")["basis"] == "regional survey"        # VA's row is the same survey's Transition median
     assert wu.golf("TX")["by_region"]["4101"] == 335400
@@ -222,3 +223,19 @@ def test_twdb_tls_carries_the_intermediate_twdbs_server_leaves_out():
     ctx = wateruse.twdb_tls()
     names = [dict(x[0] for x in c["subject"]).get("commonName") for c in ctx.get_ca_certs()]
     assert "Entrust OV TLS Issuing RSA CA 2" in names and ctx.verify_mode == ssl.CERT_REQUIRED and ctx.check_hostname
+
+
+def test_michigan_golf_row_is_egles_median():
+    """GOLF["MI"] is the median michigan_groups works out from the shipped EGLE file, so a new year's file can't leave it stale."""
+    assert wu.golf("MI")["gpd"] == wu.michigan_groups()[2]["golf_median_gpd"]
+
+
+def test_every_golf_row_says_its_basis():
+    assert all(r["basis"] in ("state reports", "regional survey") for r in wu.GOLF.values())
+
+
+def test_michigan_is_a_state_layer():
+    L = wu.state_layer("MI")
+    assert L["basis"]["source"] == "egle2025" and L["basis"]["kind"] == "reported"
+    kent = next(v for v in L["counties"].values() if v["name"] == "Kent County")
+    assert kent["mgd"]["total"] == pytest.approx(sum(kent["source_values"].values()))

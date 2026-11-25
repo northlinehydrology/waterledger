@@ -4,8 +4,7 @@ from waterledger import rules, scenario as sc
 from waterledger.national.provider import PLANTS_MAX, home_gpd, water_use_record
 
 # EGLE's groups on waterledger.org/mi -> the county water-use categories (waterledger_data.wateruse.CATEGORIES)
-EGLE_CATS = {"Public water systems": "public_supply", "Industry": "industrial", "Bottled water": "industrial", "Farm irrigation": "irrigation",
-             "Golf courses": "golf", "Livestock": "livestock", "Mining and dewatering": "mining", "Power plants": "thermoelectric", "Other": "other"}
+from waterledger_data.wateruse import EGLE_CATS  # noqa: E402,F401  moved (design 0011)
 
 # Median winter's days with precipitation at 1 C or below, by region, from NOAA ISD-Lite 2005-2024 (national.climate._median_cold_precip_days), the same method as every other state: Ann Arbor 725374-94889,
 # Kalamazoo 726357-94815, Grand Rapids 726350-94860, Lansing 725390-14836, Saginaw 726379-14845, Traverse City 726387-14850, Alpena 726390-94849, and Hancock 727440-14858 for the Upper Peninsula:
@@ -160,28 +159,10 @@ def place_at(lat, lon):
 
 
 def egle_layer():
-    """EGLE's reported withdrawals by county as a water-use layer (waterledger_data.wateruse's shape), from the numbers
-    waterledger.org/mi shows (estimates.json county_uses_mgd); EGLE's own groups are kept in source_values."""
-    from waterledger_data.wateruse import CATEGORIES
+    """EGLE's reported withdrawals by county as a water-use layer: waterledger_data.wateruse.michigan (design 0011), on the groups and citation
+    waterledger.org/mi shows (estimates.json county_uses_mgd and its egle2025 source), so the numbers are the page's."""
+    from waterledger_data import wateruse
     E = sc.data("estimates")
-    fips = {p["c"]: p["cf"] for p in sc.data("places")["places"]}
+    fips = {p["c"].upper(): p["cf"] for p in sc.data("places")["places"]}
     src = E["sources"]["egle2025"]
-    out = {}
-    for county, groups in E["county_uses_mgd"].items():
-        if county not in fips:
-            continue
-        mgd = {}
-        for g, v in groups.items():
-            c = EGLE_CATS.get(g, "other")
-            mgd[c] = mgd.get(c, 0.0) + v
-        mgd = {c: mgd[c] for c in CATEGORIES if c in mgd}
-        mgd["total"] = sum(mgd.values())
-        out[fips[county]] = {"name": f"{county} County", "mgd": mgd, "source_values": groups}
-    basis = {"source": "egle2025", "kind": "reported", "measure": "withdrawals", "year": 2025, "units": "Mgal/d", "source_units": "gallons per year",
-             "citation": src["citation"], "url": src["url"],
-             "threshold": "facilities able to withdraw 100,000 gallons a day or more (Part 327, NREPA) report each year",
-             "categories": {v: k for k, v in EGLE_CATS.items() if k != "Bottled water"} | {"industrial": "Industry, and bottled water"},
-             "caveats": ["Golf courses are irrigation facilities whose names mark them as golf or country clubs",
-                         "Entries far outside the range of their kind are left out as likely reporting errors (see the methods page)",
-                         "Gallons a year averaged over 365 days"]}
-    return {"basis": basis, "counties": dict(sorted(out.items()))}
+    return wateruse.michigan(E["county_uses_mgd"], fips, src["citation"], src["url"])

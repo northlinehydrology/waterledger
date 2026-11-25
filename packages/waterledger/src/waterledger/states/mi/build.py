@@ -355,52 +355,8 @@ def build_places(counties, munis, enrich, cmap, shore=None, near=None):
     return out
 
 
-USE_GROUPS = {"Irrigation": "Farm irrigation", "Community Water Supply": "Public water systems", "Public Water Supply": "Public water systems",
-              "Public water supply": "Public water systems", "Industrial": "Industry", "Industrial/Manufacturing": "Industry",
-              "Mining": "Mining and dewatering", "Dewatering": "Mining and dewatering", "Livestock": "Livestock", "Bottled Water": "Bottled water",
-              "Power Generation": "Power plants"}
-
-
-# EGLE's yearly facility file, with facility names removed (some are individual farms), shipped with the package in states/mi/inputs/. EGLE's site refuses scripted
-# downloads, so each year's file is downloaded by hand and reduced with `python -m waterledger.states.mi.egle FILE.xlsx`.
-INPUTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "inputs")
-
-
-def egle_use_file():
-    """The newest names-removed EGLE file: `WATERLEDGER_INPUTS` if set, else the one shipped with the package, else the cache."""
-    import glob
-    for d in (setting("inputs", ""), INPUTS, RAW):
-        files = sorted(glob.glob(os.path.join(d, "egle_water_use_[0-9][0-9][0-9][0-9].csv"))) if d else []
-        if files:
-            return files[-1]
-    raise FileNotFoundError("No EGLE water-use file; see states/mi/inputs/README.md")
-
-
-def county_uses():
-    """EGLE 2025 reported withdrawals by facility, grouped by county into plain categories (million gallons a day, averaged over the year).
-    Golf courses are irrigation facilities whose names mark them as golf or country clubs; anything not grouped is 'Other'."""
-    df = pd.read_csv(egle_use_file())
-    df["County"] = df["County"].astype(str).str.strip().replace({"Saint Clair": "St. Clair", "St Clair": "St. Clair", "Saint Joseph": "St. Joseph", "St Joseph": "St. Joseph"})
-    # Entries far outside the range of their kind are left out and reported (see methods). Irrigation: the largest entry
-    # is ~9x the next-largest farm statewide, which reads as a reporting error rather than a real withdrawal.
-    odd = (df["Purpose"] == "Irrigation") & (df["Total Gallons"] > 2e10)
-    flags = {r["County"]: f"One {r['Purpose'].lower()} entry (farm) reports {r['Total Gallons'] / 1e9:,.1f} billion gallons for 2025, about {r['Total Gallons'] / 365 / 1e6:,.0f} million gallons a day. That is many times the largest similar entry elsewhere in Michigan, so it is left out here as a likely reporting error."
-             for _, r in df[odd].iterrows()}
-    df = df[~odd].copy()
-    golf = df["Golf"] == 1
-    df["group"] = df["Purpose"].map(USE_GROUPS).fillna("Other")
-    df.loc[golf, "group"] = "Golf courses"
-    out, n_golf = {}, {}
-    for (c, g), v in df.groupby(["County", "group"])["Total Gallons"].sum().items():
-        if c and c != "nan":
-            out.setdefault(c, {})[g] = round(float(v) / 365 / 1e6, 3)
-    for c, n in df[golf & (df["Total Gallons"] > 0)].groupby("County").size().items():
-        n_golf[c] = int(n)
-    per = df.loc[golf & (df["Total Gallons"] > 0), "Total Gallons"] / 365
-    stats = {"golf_courses_reporting": int(len(per)), "golf_median_gpd": round(float(per.median()), -2),
-             "golf_p25_gpd": round(float(per.quantile(0.25)), -2), "golf_p75_gpd": round(float(per.quantile(0.75)), -2)}
-    stats["flags"] = flags
-    return out, n_golf, stats
+# EGLE's reported withdrawals moved to waterledger_data.wateruse (design 0011): the same functions, under their old names here until this builder retires
+from waterledger_data.wateruse import EGLE_GROUPS as USE_GROUPS, egle_use_file, michigan_groups as county_uses  # noqa: E402,F401
 
 
 GREAT_LAKE_BY_HUC4 = {"0401": "Lake Superior", "0402": "Lake Superior", "0418": "Lake Superior", "0403": "Lake Michigan", "0404": "Lake Michigan",
