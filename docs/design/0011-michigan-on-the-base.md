@@ -81,7 +81,7 @@ needed; "left" is what the build still has to do.
 | Places | 1,541 county subdivisions by Census LSAD (1,122 townships, 118 charter townships, 301 city records; 18 cities cross a county line and have two), no FUNCSTAT filter (`places.municipalities`) | `census.places`: active Census places, active county subdivisions and counties. In Michigan: the same 1,240 townships, but cities as 281 Census places with 7-digit GEOIDs, plus 252 villages and 83 counties | Keep Michigan's list and GEOIDs through a state places rule in the base builder | Left: the places rule |
 | Water systems, nearest sizable system | EPA service areas queried place by place (`places.enrich`); nearest sizable by `supply.nearest_sizable`, stored in the site files | `supply.systems_by_place` (bulk overlay); the same nearest rule | Base | Done: the nearest rule is shared. Left: the overlay path, compared in the before and after record |
 | Sewer plants | `wastewater.plants("MI")`, ranked by `wastewater.rank`, distances from map coordinates (about 200 m) | the same, at true positions | Base (true distances) | Done: one ranking. Left: true positions, which come with the provider |
-| Watersheds, downstream path, impairments | WBD overlap per place (`places.enrich`); ATTAINS by assessment unit ID with Michigan's recodes (2026 cycle); paths past the state line | `receiving.watersheds_by_place` (its sliver and mostly-inside rule); ATTAINS assessment units to HUC12 (table 7) | Compare | Done: paths past the line. Left: the comparison (not run; below) |
+| Watersheds, downstream path, impairments | WBD overlap per place (`places.enrich`); ATTAINS by assessment unit ID with Michigan's recodes (2026 cycle); paths past the state line | `receiving.watersheds_by_place` (its sliver and mostly-inside rule); ATTAINS assessment units to HUC12 (table 7) | Base for watersheds and paths; layer (replaces) for impairments (step 2, below) | Done: paths past the line; compared Nov 25. Left: the impairments layer |
 | Trout streams | Michigan DNR (`waters.trout_by_huc12`), `Reach.coldwater_streams` | none (`not_covered`) | Layer (adds) | Left |
 | Household wells | EGLE Wellogic (`waters.household_wells`), `Supply.household_wells` | none (`not_covered`) | Layer (adds) | Left |
 | County water use | EGLE 2025 reported withdrawals, `egle_layer()` rebuilt from the site file's numbers; USGS 2015 beside it | USGS 2015, or a state layer (OH, TX, VA) | Layer (replaces), in `wateruse.STATE_LAYERS`, read from the names-removed EGLE file the package ships (`states/mi/inputs/`) | Done: USGS carried beside EGLE. Left: the move |
@@ -224,6 +224,106 @@ So the state places rule is needed to keep `wl.place("2608130860")` and every sa
   and after record confirms it.
 - **The EIA-861 county screen**, in Michigan and the other states (above).
 
+## Step 2, measured Nov 25
+
+Scripts in the session scratchpad (`0011-measure/county_list.py`, `screen_variants.py`, `base_mi.py`, `base_vs_mi.py`).
+EIA-861 2025 was fetched again with the Service Territory file kept (`fetch_eia861`, this branch). The base's supply
+and receiving stages were run for Michigan's 1,541 places on the 2026-11-17 places, downloading what they needed, and
+compared with the before record (`tests/data/michigan_before_0011.json.xz`).
+
+### The EIA-861 county list
+
+EIA's Service Territory file lists the counties each utility serves. Two fixes were needed before the check means
+anything:
+
+- Virginia's independent cities are "Alexandria City" in EIA's file and "Alexandria" in the snapshot; the county FIPS
+  (510 and up) tells them apart.
+- A utility the list doesn't have in the state at all is unknown, not ruled out. FirstEnergy's Pennsylvania companies
+  (West Penn, Met-Ed, Penn Power, Penelec) were merged in 2024 under one new EIA number. HIFLD still carries the old
+  numbers, which are top at 431 Pennsylvania places.
+
+The base's top utility (today's rule: own utility first, then EIA customers) is listed for the place's county at:
+
+| | MI | OH | VA | TX | WI | IN | MN | PA | GA | IL | NY | AZ |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Places | 1,541 | 2,318 | 312 | 1,481 | 1,922 | 1,661 | 2,719 | 2,622 | 697 | 2,807 | 1,584 | 106 |
+| Top lists the county | 69.4% | 95.3% | 99.7% | 98.1% | 99.8% | 99.3% | 99.2% | 82.9%* | 97.8% | 97.9% | 99.4% | 95.3% |
+
+\* Pennsylvania's shortfall is the retired FirstEnergy numbers, not a wrong utility.
+
+**The list has errors of its own**, so a screen that drops whatever it leaves out is wrong in places:
+
+- Georgia Power lists 155 counties but not Chatham, where it serves Savannah. A blind screen hands Savannah and
+  Pooler to Canoochee EMC.
+- A city's own utility lists its whole county. A blind screen gives Norman County's townships to the City of Ada (MN)
+  instead of their co-ops.
+
+Three versions were judged in Michigan against MPSC's territories, which are independent of both HIFLD and EIA's list
+(top utility agrees with MPSC's, of 1,540 places):
+
+| Screen | Agrees with MPSC |
+|---|---|
+| None (today's base) | 837 |
+| Blind | 1,090 |
+| No municipal promoted outside its own place | 1,090 |
+| That, and the replacement must cover at least as much of the place as the utility dropped (**chosen**) | 1,073 |
+
+The chosen screen gives up 17 Michigan places (where MPSC replaces the base anyway) and fixes Savannah and the City of
+Ada. It changes the top utility at 51 places in Ohio, 28 in Texas, 17 in Pennsylvania, 13 in Minnesota, 41 in
+Illinois, 10 in Indiana, 5 in Georgia, 5 in Arizona, 3 in Wisconsin, 1 in New York and none in Virginia. The
+balancing authority changes at 43 places:
+
+- Texas, 8 (MISO or SPP to ERCOT: Dallas, Coppell, Richardson, Grand Prairie and others);
+- Illinois, 23 (PJM to MISO: Henry County's places from ComEd to Ameren);
+- Georgia, 5 (Southern to TVA: Blairsville, Hiawassee, Fannin, Towns, Union);
+- Arizona, 5;
+- Indiana, 2.
+
+Each place is listed in `screen_variants.json` for the methods log. Decision 4 stands, with the screen as chosen
+here.
+
+**For the health queue, not this note:**
+
+- Texas: the base names a co-op (Denton County Electric, then Farmers Electric after the screen) as Dallas's top
+  utility, where Oncor delivers. Delivery-only utilities report no customers, so they rank low in ERCOT's open
+  areas. The screen fixes Dallas's balancing authority but not its utility.
+- Pennsylvania: the retired FirstEnergy numbers have no EIA-861 customers, so co-ops and small boroughs outrank
+  Penelec, West Penn and Met-Ed (Scalp Level and Westmont show Somerset Rural Electric today). The numbers need a map
+  to FirstEnergy Pennsylvania's new one.
+
+### Water systems
+
+At the 5% line where a system is taken to serve a place, the base and Michigan give the same systems at 1,522 of
+1,541 places. All 19 differences sit within a point of 5% (map coordinates against true outlines), and 6 of them
+flip whether the place has a system. The base also lists systems on 0.5–5% of a place (535 places), as it does in
+every state. Base, as decided.
+
+### Watersheds and paths
+
+The main watershed is the same at 1,523 places. The 18 that differ split near-equal shares. The base lists every
+watershed on 1% or more of a place; Michigan's list stops sooner. Only 9 of the base's 1,785 extra entries cover 10%
+or more of a place. Base.
+
+### Impairments
+
+Along the downstream paths, the base's impairments match Michigan's on 8,041 of 10,914 reaches (74%), and TMDLs on
+88%. The base nearly always lists more. Both read the 2026 cycle; the difference is how a unit is placed:
+
+- The base reads EPA's table of assessment units by HUC12 (ATTAINS layer 7). It links a unit to every HUC12 its
+  catchments touch. Belle Isle-Detroit River (040900040503) picks up the streams of three neighbouring HUC12s (units
+  named "Rivers/Streams in HUC 040900040407" and others).
+- Lake Erie's, Lake Huron's and Lake Superior's units land on every shore HUC12.
+- Michigan's path places each unit in its own watershed.
+
+Michigan's placement is the better one, so **impairments become a Michigan layer that replaces the base's**. It is
+the state's own reading of EGLE's units, kept because it doesn't measure worse. The base's placement leaks in every
+state, which goes to the health queue: place a unit by where most of it lies, not where it touches.
+
+### Build time
+
+The base's `watersheds_by_place` took 7.4 hours for Michigan's places. Every other stage took under 15 seconds.
+`build-state MI` runs it, so step 4 has to make it fast, or cache it, before Michigan's snapshot is built on the base.
+
 ## No better estimate lost: the check
 
 Step 1 writes every number `wl.place(...)`, `place.context()`, `site.estimate()` and the provider's `reference()` give
@@ -280,11 +380,10 @@ Andrew checks it locally before any deploy.
 
 1. **The before record**: every Michigan number from today's path (3.27.0, snapshot 2026-11-17), for all places and
    designs, the context fields and `reference()`, kept compressed in `tests/data/` as the contract's record is.
-2. **The measurements this refresh could not run**: `fetch_eia861` keeps the Service Territory file; the county list
-   judges MPSC, HIFLD and the screen in all twelve states; a base build of Michigan's receiving and supply stages
-   compares watersheds, impairments and water systems with Michigan's. Results added to this note; a decision
-   reopened only if a result goes against it.
-3. **Layers in `waterledger_data`**: Michigan's wells, trout streams, MPSC utilities, salt regions (with division 2 for
+2. **The measurements this refresh could not run.** *Done Nov 25* (above): the county screen, guarded, goes into the
+   base. Impairments become a Michigan layer. Water systems, watersheds and paths take the base.
+   `watersheds_by_place` has to be made fast for Michigan before step 4.
+3. **Layers in `waterledger_data`**: Michigan's wells, trout streams, impairments, MPSC utilities, salt regions (with division 2 for
    the eastern UP) and golf median, registered by state and category; EGLE moved into `wateruse.STATE_LAYERS`, read
    from the shipped file; `wateruse.golf` given a basis field. The citation list and `CONTEXT` moved to a shared module.
    The state places rule. In the base, for every state: the EIA-861 county screen and NOAA's division names (these
