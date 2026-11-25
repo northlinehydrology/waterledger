@@ -121,8 +121,11 @@ def places(state_fips):
         for f in _features(kind, state_fips):
             a = f["a"]
             base, kind_ = _base_kind(a)
+            level = {"place": "place", "cousub": "township", "county": "county"}[kind]
+            if kind == "cousub" and "cousub_lsad" in rule and kind_.lower() == "city":
+                level = "place"                     # a Michigan city, listed as a county subdivision, is still a city: written by name (PLACE_RULES)
             rows.append({"geoid": a["GEOID"], "name": a["NAME"], "base": base, "kind": kind_,
-                         "level": {"place": "place", "cousub": "township", "county": "county"}[kind],
+                         "level": level,
                          "lat": float(a["INTPTLAT"]), "lon": float(a["INTPTLON"]), "geometry": _polygon(f["rings"])})
     g = gpd.GeoDataFrame(rows, geometry="geometry", crs=4326)
     counties = g[g.level == "county"][["geoid", "base", "geometry"]].rename(columns={"geoid": "county_fips", "base": "county"})
