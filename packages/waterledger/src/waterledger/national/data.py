@@ -264,9 +264,14 @@ class LiveData:
         from waterledger.national import climate as nc
         return nc.storms_and_rain(self.state)[1]
 
-    def utilities_for(self, geoid):
+    def _utilities(self):
         from waterledger_data import energy
-        return energy.utilities_by_place(self.state, self._pl).get(geoid, [])
+        if not hasattr(self, "_us"):
+            self._us = energy.mark_counties(self.state, energy.utilities_by_place(self.state, self._pl), self._pl)
+        return self._us
+
+    def utilities_for(self, geoid):
+        return self._utilities().get(geoid, [])
 
     def loads(self):
         from waterledger_data import energy

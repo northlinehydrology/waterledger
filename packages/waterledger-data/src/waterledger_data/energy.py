@@ -263,6 +263,54 @@ def is_own(u, place, loads_):
     return cust >= OWN_MIN_DENSITY * place["km2"] * u["share"]
 
 
+def _county_key(name):
+    """A county name as EIA's Service Territory file and Census both reduce to: lower case, letters only, without "County" or "Parish"."""
+    c = str(name).lower().replace("saint ", "st ").replace("st. ", "st ").replace("ste. ", "ste ")
+    c = re.sub(r"\b(county|parish)\b", "", c)
+    return re.sub(r"[^a-z]", "", c)
+
+
+def county_lists(state, year=None):
+    """{EIA utility number: {county keys}} for the utilities EIA-861's Service Territory file lists in `state` (each utility reports the counties it
+    serves), from the newest year on disk. Empty if the file isn't there (EIA-861 fetched before 3.28 kept only four of its files)."""
+    import glob
+    import pandas as pd
+    from waterledger_data import power
+    year = year or power.latest_eia861()
+    files = sorted(glob.glob(os.path.join(power.RAW, f"eia861_{year}", "Service_Territory_*.xlsx"))) if year else []
+    if not files:
+        return {}
+    t = pd.read_excel(files[-1], sheet_name="Counties_States")
+    out = {}
+    for r in t[t["State"] == state.upper()].itertuples(index=False):
+        out.setdefault(int(r[1]), set()).add(_county_key(r[5]))
+    return out
+
+
+def place_county_key(state, county, county_fips):
+    """The county key for a place's county; Virginia's independent cities (county FIPS 510 and up) are "<name> City" in EIA's file."""
+    k = _county_key(county)
+    return k + "city" if state.upper() == "VA" and int(str(county_fips)[-3:]) >= 510 else k
+
+
+def mark_counties(state, by_place, places, lists=None):
+    """Mark each place's utilities with `county_listed`: True where EIA-861 lists the utility in the place's county, False where EIA lists it in the
+    state but not that county, None where EIA doesn't list it in the state at all (a number since retired: FirstEnergy's Pennsylvania companies,
+    merged in 2024, are unknown, not ruled out). ranked() screens on it (design 0011). Returns by_place, marked."""
+    lists = county_lists(state) if lists is None else lists
+    if not lists:
+        return by_place
+    P = places.set_index("geoid")
+    for g, us in by_place.items():
+        if g not in P.index or not isinstance(P.county.get(g), str):
+            continue
+        key = place_county_key(state, P.county[g], P.county_fips[g])
+        for u in us:
+            eid = u.get("eia_id")
+            u["county_listed"] = None if eid is None or eid not in lists else key in lists[eid]
+    return by_place
+
+
 def ranked(utilities, loads_, place=None):
     """A place's utilities in the order to show them: by EIA customers in the state (AEP Ohio before the City of Columbus's
     own small utility; Austin Energy before the cooperatives around it). HIFLD draws many territories as whole counties, so
@@ -271,4 +319,24 @@ def ranked(utilities, loads_, place=None):
     drawn over whole counties otherwise outranks the city's own (Wisconsin Power & Light in Madison, Consumers Energy in Coldwater)."""
     cust = lambda u: (loads_.get(u["eia_id"]) or {}).get("customers") or 0
     own = (lambda u: is_own(u, place, loads_)) if place else (lambda u: False)
-    return sorted(utilities, key=lambda u: (not own(u), -cust(u), -(u.get("share") or 0), u.get("name") or ""))
+    r = sorted(utilities, key=lambda u: (not own(u), -cust(u), -(u.get("share") or 0), u.get("name") or ""))
+    return screened(r, loads_, place)
+
+
+def screened(r, loads_, place=None):
+    """The county screen (design 0011, measured Nov 25, 2026): where the first utility is one EIA-861 lists in the state but not in the place's
+    county (`county_listed` False, from mark_counties), the next one it doesn't rule out comes first instead, unless that one is a municipal
+    utility not named for the place, or covers less of the place than the one it would replace. EIA's list has errors of its own (Georgia Power
+    lists 155 counties but not Chatham, where it serves Savannah; a city's own utility lists its whole county), which the two guards catch.
+    Judged in Michigan against MPSC's territories: 837 of 1,540 places agreed unscreened, 1,073 screened. Utilities without the mark (snapshots
+    before 3.28) are not screened."""
+    if not r or r[0].get("county_listed") is not False:
+        return r
+    muni = lambda u: (u.get("type") or "").upper() == "MUNICIPAL" and not (place and is_own(u, place, loads_))
+    for u in r[1:]:
+        if u.get("county_listed") is False or muni(u):
+            continue
+        if (u.get("share") or 0) < (r[0].get("share") or 0):
+            return r
+        return [u] + [x for x in r if x is not u]
+    return r

@@ -159,7 +159,7 @@ def write(state, out, date=None, checks=None, runs_dir=None):
                                                    "design_storms_in": storms, "rain_in": rain, "rain_from": nc.rain_from(state), "salt_events": nc.salt_events(divs),
                                                    "lake_source": nc.lake_source(sorted({v["lake"] for v in shore.values()}))})
 
-    us = energy.utilities_by_place(state, pl)
+    us = energy.mark_counties(state, energy.utilities_by_place(state, pl), pl)       # EIA-861 county lists, for the screen (design 0011)
     loads = energy.loads(state)
     bas = {u["balancing_authority"] for v in us.values() for u in v if u["balancing_authority"]}
     _write(os.path.join(folder, "energy.json"), {"by_place": us, "loads": {str(k): v for k, v in loads.items()},
