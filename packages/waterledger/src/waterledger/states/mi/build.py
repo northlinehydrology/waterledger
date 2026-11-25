@@ -30,16 +30,7 @@ RAW_BASE = CACHE
 RAW_PLACES = os.path.join(RAW_BASE, "places")
 RAW = os.path.join(RAW_BASE, "lit")
 
-REGIONS = {
-    "southeast": {"name": "Southeast Michigan", "station": "Ann Arbor area", "lat": 42.25, "lon": -83.60},
-    "southwest": {"name": "Southwest Michigan", "station": "Kalamazoo area", "lat": 42.29, "lon": -85.59},
-    "west": {"name": "West Michigan", "station": "Grand Rapids area", "lat": 42.88, "lon": -85.52, "cache": "gaines"},
-    "central": {"name": "Central Michigan", "station": "Lansing area", "lat": 42.73, "lon": -84.55},
-    "thumb": {"name": "Saginaw Valley and the Thumb", "station": "Saginaw area", "lat": 43.42, "lon": -83.95},
-    "north": {"name": "Northwest Michigan", "station": "Traverse City area", "lat": 44.76, "lon": -85.62},
-    "northeast": {"name": "Northeast Michigan", "station": "Alpena area", "lat": 45.06, "lon": -83.43},
-    "up": {"name": "Central and Western Upper Peninsula", "station": "Marquette area", "lat": 46.54, "lon": -87.40},
-}
+from waterledger_data.layers import MI_REGIONS as REGIONS  # noqa: E402  moved to Michigan's layers (design 0011)
 
 
 
@@ -126,9 +117,8 @@ def _geom_path(geom, tol, minpts=4):
 
 
 def nearest_region(lat, lon):
-    def d(r):
-        return (lat - r["lat"]) ** 2 + ((lon - r["lon"]) * math.cos(math.radians(lat))) ** 2
-    return min(REGIONS, key=lambda k: d(REGIONS[k]))
+    from waterledger_data.layers import mi_nearest_region
+    return mi_nearest_region(lat, lon)
 
 
 def build_map(counties):
