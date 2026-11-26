@@ -8,6 +8,52 @@ Layer-by-layer notes for the national tier (places, water supply, wastewater, re
 [national-tier-notes.md](national-tier-notes.md); county water use sources are in [water-use-sources.md](water-use-sources.md).
 This log covers decisions that cut across layers, and points there for detail.
 
+## Nov 25, 2026: Michigan on the base, with its own layers (3.28.0, design 0011)
+
+- **Decision.** Michigan is built and answered like every other state: the national base, plus layers of its own that add to the base
+  or replace it where they measure better. Its former builder and provider are kept, deprecated, through 3.x.
+- **Why.** Michigan came first, and the national tier was built around it rather than under it. Two paths meant every method change
+  was made twice and could drift (Andrew, Nov 9: "the base state plus more, not a separate process, and no better estimate lost").
+- **What each of Michigan's sources became** (measured Nov 25 on Michigan's 2026-11-17 snapshot; scripts in the design note):
+  - **Utilities: MPSC replaces HIFLD.** MPSC's top utility lists the place's county in EIA-861 at 1,540 of 1,540 places. HIFLD's
+    agrees with MPSC at 837, and at 1,073 with the county screen.
+  - **Impairments: EGLE's assessment units, each in its own HUC12, replace EPA's table.** EPA's table (ATTAINS layer 7) links a unit to
+    every HUC12 its catchments touch, so a reach picks up its neighbours' streams and every shore HUC12 the whole Great Lake. The base
+    matched Michigan on 74% of reaches.
+  - **Road-salt regions: Michigan's regions replace NOAA's divisions.** The regions are closer at 274 places, the divisions at 137. The
+    eastern Upper Peninsula (NOAA division 2, 68 places) is split off on Pellston's 93 days. Pellston misses the held-out stations there
+    by 12.0 days; Sault Ste. Marie by 24.5; the old Upper Peninsula region (Hancock, 119 days) by 28.0.
+  - **Golf: EGLE's reported median (43,500 gal/day) replaces the survey's (36,200).**
+  - **County water use: EGLE's reported withdrawals replace USGS 2015**, as Ohio's, Texas's and Virginia's records do.
+  - **Household wells (Wellogic) and trout streams (DNR) are added.**
+  - **The base for everything else.** Water systems agree at the 5% line at 1,522 of 1,541 places; the rest sit within a point of 5%.
+    The main watershed agrees at 1,523. Places, plants and distances move from map coordinates (about 200 m) to true positions.
+- **Changed for every state:**
+  - **The EIA-861 county screen.** EIA's own list has errors: Georgia Power omits Chatham County, and a city's utility lists its whole
+    county. So the screen moves a utility out of first place only if its replacement isn't a city's utility outside its city and covers
+    at least as much of the place. It changes the top utility at 174 places outside Michigan and the balancing authority at 43
+    (Dallas-area cities from MISO to ERCOT; Henry County, Illinois, from PJM to MISO).
+  - **NOAA's own division names.**
+  - **Staff water from 400 draws (was 200).**
+  - **A place's water systems are those on 5% of it or more.** A system on less is taken not to be there, as the defaults already
+    assumed, so it is no longer listed, compared with or named as the supply.
+- **Michigan's numbers.** 11,112 answers were compared before and after; 281 fields differ, each with a cause
+  (`docs/design/0011-differences.md`). Cooling water is unchanged, apart from lake-source figures in the sixth significant figure and
+  three places that move to a neighbouring ERA5 cell by their true position. Twelve places' default water source or wastewater flips
+  at the 10 km or 5% line. MISO's withdrawal is the Siddik et al. table's 54.8 L/kWh, not the 57.1 that had been typed into Michigan's
+  builder.
+- **Considered.**
+  - **Keeping Michigan's builder and adding layers to the national one.** That would have been two processes still.
+  - **NOAA's divisions in place of Michigan's regions.** Closer on average in the Upper Peninsula, but not interchangeable place by
+    place.
+  - **A blind county screen.** It sends Savannah to Canoochee EMC.
+- **Open (health queue).**
+  - The base's ATTAINS placement leaks in every state.
+  - Texas's delivery-only utilities rank last in ERCOT's open areas.
+  - FirstEnergy Pennsylvania's retired EIA numbers have no customers.
+  - Houghton runs about 36 salt days high in the western Upper Peninsula.
+  - Which plant and water system serve a place is now design 0023 (proposed).
+
 ## Oct 30, 2026: Michigan builds on GitHub like the other states
 
 `waterledger build-state MI` now downloads Michigan's sources and builds from an empty cache, so its snapshot no longer waits for

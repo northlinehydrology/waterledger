@@ -93,7 +93,7 @@ carry `wateruse.json` and the downloaded inputs under `inputs/wateruse/`.
 | Ohio | `ohio()` | reported withdrawals, 2024 | Public, Industry, Power, Golf Course, Agriculture to irrigation, Mineral Extraction and Hydro Fracturing to mining, Misc to other |
 | Texas | `texas()` | estimate (TWDB's "use"), 2024 | Municipal to public_supply, Manufacturing to industrial, Mining, Power to thermoelectric, Irrigation, LiveStock |
 | Virginia | `virginia()` | reported withdrawals excluding power, 2024 | total only |
-| Michigan | `states.mi.provider.egle_layer()` | reported withdrawals, 2025 | EGLE's groups as on the page; bottled water to industrial |
+| Michigan | `wateruse.michigan()` (`STATE_LAYERS`) | reported withdrawals, 2025 | EGLE's groups kept in `source_values`; bottled water to industrial |
 
 Decisions and deviations from the plan above:
 

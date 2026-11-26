@@ -1,4 +1,4 @@
-"""build-state MI and build mi run Michigan's own build; other states stay on the national tier (design 0003, decision 8)."""
+"""build-state runs the national build for every state, Michigan included (design 0011); `build mi` still runs Michigan's former site build (deprecated)."""
 from types import SimpleNamespace
 
 import pytest
@@ -19,9 +19,9 @@ def calls(monkeypatch):
 
 
 @pytest.mark.parametrize("state", ["MI", "mi"])
-def test_build_state_michigan_is_michigans_build(calls, state):
+def test_build_state_michigan_is_the_national_build(calls, state):
     cli.main(["build-state", state])
-    assert calls == ["fetch", "estimates", "waters", "power"]
+    assert calls == [("national", state)]
 
 
 def test_build_mi_still_works(calls):

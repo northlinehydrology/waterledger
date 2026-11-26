@@ -118,6 +118,9 @@ def build(state, out=None, n=DRAWS, run_checks=True):
                 "state_source": own["basis"]["source"] if own else None, "state_year": own["basis"]["year"] if own else None,
                 "state_counties": len(own["counties"]) if own else 0}
     stage("wateruse", water_use)
+    from waterledger_data import layers
+    stage("layers", lambda: {L.category: len(v["places"] if L.category == "salt_regions" else v) for L in layers.for_state(state)
+                             for v in [L.build(pl)] if L.build})
     if run_checks:
         stage("checks", lambda: checks(state, LiveData(state)))
     report["seconds"] = round(time.time() - t_all, 1)

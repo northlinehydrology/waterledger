@@ -60,7 +60,7 @@ jobs:
             .wlcache/climate/*_county_rain.json
           key: raw-${{ inputs.state }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: raw-${{ inputs.state }}-
-      - name: Build the state (Michigan from its own sources, the others from the national tier)
+      - name: Build the state (every state on the base with its own layers, design 0011)
         run: uv run waterledger build-state ${{ inputs.state }} --out build-report --no-checks
       - name: Keep what was downloaded, even if the build failed
         if: ${{ !cancelled() }}
@@ -94,14 +94,8 @@ jobs:
       - name: Write the snapshot and check it statewide
         run: |
           uv run waterledger snapshot ${{ inputs.state }} --out snapshot ${{ inputs.snapshot_id && format('--date {0}', inputs.snapshot_id) || '' }}
-          if [ "${{ inputs.state }}" = "MI" ]; then
-            uv run pytest -m live -v tests/test_snapshot_michigan.py
-            uv run waterledger check-snapshot MI --dir snapshot
-            echo '{"state": "MI", "note": "built from Michigan sources by build-state"}' > snapshot/MI_build.json
-          else
-            uv run waterledger check-snapshot ${{ inputs.state }} --dir snapshot
-            cp build-report/${{ inputs.state }}_build.json snapshot/
-          fi
+          uv run waterledger check-snapshot ${{ inputs.state }} --dir snapshot
+          cp build-report/${{ inputs.state }}_build.json snapshot/
           du -ah snapshot | sort -h | tail -12
       - uses: actions/upload-artifact@v4
         with:

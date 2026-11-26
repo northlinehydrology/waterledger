@@ -1,4 +1,4 @@
-"""wl.place finds Michigan places by name or Census GEOID (from the local site, or the files waterledger.org publishes)."""
+"""wl.place finds Michigan places by name or Census GEOID (from Michigan's snapshot, on the base with its own layers)."""
 import pytest
 
 import waterledger as wl
@@ -14,7 +14,7 @@ def test_by_name_and_geoid():
 
 def test_other_states_go_to_the_national_tier():
     assert repr(wl.states.provider("OH")) == "Provider(OH: national)"
-    assert repr(wl.states.provider("mi")) == "Provider(MI: own and national)"
+    assert repr(wl.states.provider("mi")) == "Provider(MI: national)"           # Michigan too, with its own layers (design 0011)
     with pytest.raises(KeyError):
         wl.states.provider("XX")
     with pytest.raises(ValueError, match="state"):

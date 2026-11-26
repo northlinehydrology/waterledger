@@ -10,6 +10,15 @@ def test_places_key_follows_the_place_list_not_its_order():
     assert census.places_key(a) != census.places_key(a.iloc[:1])          # a place added (Indianapolis's balance) is a new key
 
 
+def test_places_key_follows_the_outlines_too():
+    """The same places with other outlines (Michigan's snapshot outlines and Census's, design 0011) are another key."""
+    import geopandas as gpd
+    import shapely
+    a = gpd.GeoDataFrame({"geoid": ["2608100240"], "geometry": [shapely.box(0, 0, 1, 1)]}, crs=4326)
+    b = gpd.GeoDataFrame({"geoid": ["2608100240"], "geometry": [shapely.box(0, 0, 1, 1.001)]}, crs=4326)
+    assert census.places_key(a) == census.places_key(a.copy()) and census.places_key(a) != census.places_key(b)
+
+
 def test_census_cache_is_named_for_its_query(tmp_path, monkeypatch):
     calls = []
     monkeypatch.setattr(census, "RAW", str(tmp_path))

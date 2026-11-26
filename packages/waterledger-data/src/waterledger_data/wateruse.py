@@ -115,7 +115,8 @@ USGS_BASIS = {
 
 
 def usgs_file():
-    """The revised 2015 county table on disk (the parquet from the data release's zip, else the xlsx), downloaded once."""
+    """The revised 2015 county table on disk (the parquet from the data release's zip, else the xlsx): the cached download, else the copy shipped in
+    tables/ (a fixed data release, so the copy doesn't go stale), else downloaded from ScienceBase."""
     d = os.path.join(RAW, "usgs2015")
     pq = os.path.join(d, "2015-Revised-County.parquet")
     if os.path.exists(pq):
@@ -123,6 +124,9 @@ def usgs_file():
     xl = os.path.join(d, USGS_FILES["xlsx"])
     if os.path.exists(xl):
         return xl
+    shipped = os.path.join(TABLES, "usgs_2015_revised_county.parquet")      # the same table, shipped: ScienceBase refused every request on Nov 26, 2026
+    if os.path.exists(shipped):
+        return shipped
     item = json.loads(urllib.request.urlopen(urllib.request.Request(USGS_ITEM + "?format=json", headers={"User-Agent": UA}), timeout=60).read())
     links = {f["name"]: f["url"] for f in item.get("files", [])}
     try:
@@ -572,13 +576,91 @@ def virginia(year=2024, table=None, fips=None):
     return {"basis": basis, "counties": dict(sorted(out.items()))}
 
 
+
+# Michigan: EGLE's reported withdrawals (Part 327). EGLE's yearly facility file, with facility names removed (some are individual farms), ships in
+# tables/; EGLE's site refuses scripted downloads, so each year's file is downloaded by hand and reduced with `python -m waterledger_data.egle FILE.xlsx`.
+EGLE_GROUPS = {"Irrigation": "Farm irrigation", "Community Water Supply": "Public water systems", "Public Water Supply": "Public water systems",
+               "Public water supply": "Public water systems", "Industrial": "Industry", "Industrial/Manufacturing": "Industry",
+               "Mining": "Mining and dewatering", "Dewatering": "Mining and dewatering", "Livestock": "Livestock", "Bottled Water": "Bottled water",
+               "Power Generation": "Power plants"}
+EGLE_CATS = {"Public water systems": "public_supply", "Industry": "industrial", "Bottled water": "industrial", "Farm irrigation": "irrigation",
+             "Golf courses": "golf", "Livestock": "livestock", "Mining and dewatering": "mining", "Power plants": "thermoelectric", "Other": "other"}
+EGLE_CITATION = "Michigan EGLE. Water Use Data, 2025 (by county and sector; reported by registered large-quantity withdrawals)."     # as waterledger.citations' egle2025
+EGLE_URL = "https://www.michigan.gov/egle/about/organization/geologic-resources-management/groundwater/water-use/reporting/water-use-data"
+TABLES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tables")
+
+
+def egle_use_file():
+    """The newest names-removed EGLE file: `WATERLEDGER_INPUTS` if set, else the one shipped in tables/, else the cache."""
+    from waterledger_data.config import setting
+    for d in (setting("inputs", ""), TABLES, RAW):
+        files = sorted(glob.glob(os.path.join(d, "egle_water_use_[0-9][0-9][0-9][0-9].csv"))) if d else []
+        if files:
+            return files[-1]
+    raise FileNotFoundError("No EGLE water-use file; see waterledger_data/tables/README.md")
+
+
+def michigan_groups():
+    """EGLE 2025 reported withdrawals by facility, grouped by county into plain categories (million gallons a day, averaged over the year):
+    ({county name: {group: mgd}}, {county: golf courses reporting}, stats). Golf courses are irrigation facilities whose names mark them as golf
+    or country clubs; anything not grouped is 'Other'."""
+    import pandas as pd
+    df = pd.read_csv(egle_use_file())
+    df["County"] = df["County"].astype(str).str.strip().replace({"Saint Clair": "St. Clair", "St Clair": "St. Clair", "Saint Joseph": "St. Joseph", "St Joseph": "St. Joseph"})
+    # Entries far outside the range of their kind are left out and reported (see methods). Irrigation: the largest entry
+    # is ~9x the next-largest farm statewide, which reads as a reporting error rather than a real withdrawal.
+    odd = (df["Purpose"] == "Irrigation") & (df["Total Gallons"] > 2e10)
+    flags = {r["County"]: f"One {r['Purpose'].lower()} entry (farm) reports {r['Total Gallons'] / 1e9:,.1f} billion gallons for 2025, about {r['Total Gallons'] / 365 / 1e6:,.0f} million gallons a day. That is many times the largest similar entry elsewhere in Michigan, so it is left out here as a likely reporting error."
+             for _, r in df[odd].iterrows()}
+    df = df[~odd].copy()
+    golf = df["Golf"] == 1
+    df["group"] = df["Purpose"].map(EGLE_GROUPS).fillna("Other")
+    df.loc[golf, "group"] = "Golf courses"
+    out, n_golf = {}, {}
+    for (c, g), v in df.groupby(["County", "group"])["Total Gallons"].sum().items():
+        if c and c != "nan":
+            out.setdefault(c, {})[g] = round(float(v) / 365 / 1e6, 3)
+    for c, n in df[golf & (df["Total Gallons"] > 0)].groupby("County").size().items():
+        n_golf[c] = int(n)
+    per = df.loc[golf & (df["Total Gallons"] > 0), "Total Gallons"] / 365
+    stats = {"golf_courses_reporting": int(len(per)), "golf_median_gpd": round(float(per.median()), -2),
+             "golf_p25_gpd": round(float(per.quantile(0.25)), -2), "golf_p75_gpd": round(float(per.quantile(0.75)), -2)}
+    stats["flags"] = flags
+    return out, n_golf, stats
+
+
+def michigan(groups=None, fips=None, citation=EGLE_CITATION, url=EGLE_URL):
+    """EGLE's reported withdrawals by county as a water-use layer, in this module's shape; EGLE's own groups are kept in source_values."""
+    uses = groups if groups is not None else michigan_groups()[0]
+    fips = fips or county_fips("MI")
+    out = {}
+    for county, gr in uses.items():
+        cf = fips.get(county.upper())
+        if cf is None:
+            continue
+        mgd = {}
+        for g, v in gr.items():
+            c = EGLE_CATS.get(g, "other")
+            mgd[c] = mgd.get(c, 0.0) + v
+        mgd = {c: mgd[c] for c in CATEGORIES if c in mgd}
+        mgd["total"] = sum(mgd.values())
+        out[cf] = {"name": f"{county} County", "mgd": mgd, "source_values": gr}
+    basis = {"source": "egle2025", "kind": "reported", "measure": "withdrawals", "year": 2025, "units": "Mgal/d", "source_units": "gallons per year",
+             "citation": citation, "url": url,
+             "threshold": "facilities able to withdraw 100,000 gallons a day or more (Part 327, NREPA) report each year",
+             "categories": {v: k for k, v in EGLE_CATS.items() if k != "Bottled water"} | {"industrial": "Industry, and bottled water"},
+             "caveats": ["Golf courses are irrigation facilities whose names mark them as golf or country clubs",
+                         "Entries far outside the range of their kind are left out as likely reporting errors (see the methods page)",
+                         "Gallons a year averaged over 365 days"]}
+    return {"basis": basis, "counties": dict(sorted(out.items()))}
+
 # ---------------------------------------------------------------------------------------------------------------------
 
-STATE_LAYERS = {"OH": ohio, "TX": texas, "VA": virginia}
+STATE_LAYERS = {"MI": michigan, "OH": ohio, "TX": texas, "VA": virginia}
 
 
 def state_layer(state, **kw):
-    """The state's own county layer (Ohio, Texas, Virginia), or None where Water Ledger uses only the USGS estimates."""
+    """The state's own county layer (Michigan, Ohio, Texas, Virginia), or None where Water Ledger uses only the USGS estimates."""
     fn = STATE_LAYERS.get(state.upper())
     return fn(**kw) if fn else None
 
@@ -594,6 +676,9 @@ def inputs(state):
     elif state == "TX":
         p = twdb_file()
         out[os.path.basename(p)] = open(p, "rb").read()
+    elif state == "MI":
+        p = egle_use_file()
+        out[os.path.basename(p)] = open(p, "rb").read()
     elif state == "VA":
         t = va_table21()
         out[f"va_table21_{t['year']}.json"] = json.dumps(t, separators=(",", ":")).encode()
@@ -604,9 +689,11 @@ def inputs(state):
 # survey for the state's agronomic region. GCSAA (2022), Golf Course Environmental Profile, Phase III, Vol. I (2020 data; Shaddox and Unruh), Table 2, p. 7: median
 # acre-feet per facility regardless of holes, at 325,851 gallons an acre-foot. Regions are read from its Figure 1 map (p. 3), which has no state or county list.
 GOLF = {
-    "OH": {"gpd": 33300, "sources": ["odnr_wwfr"], "note": "This is the median of Ohio courses reporting to ODNR, the middle of the 2022 to 2024 yearly medians (32,500, 33,300 and 43,100). Only courses able to withdraw 100,000 gallons a day register, so it may run high."},
-    "VA": {"gpd": 34400, "sources": ["gcsaa2022"], "note": "This is a national survey's median for the Transition region (38.5 acre-feet a year), since Virginia's reports do not separate golf. It is a survey, not metered."},
-    "TX": {"gpd": 99200, "sources": ["gcsaa2022"],
+    "MI": {"gpd": 43500, "sources": ["egle2025"], "basis": "state reports",
+           "note": "This is the median of Michigan courses reporting to EGLE for 2025 (453 courses). Only courses able to withdraw 100,000 gallons a day report, so it may run high."},
+    "OH": {"gpd": 33300, "sources": ["odnr_wwfr"], "basis": "state reports", "note": "This is the median of Ohio courses reporting to ODNR, the middle of the 2022 to 2024 yearly medians (32,500, 33,300 and 43,100). Only courses able to withdraw 100,000 gallons a day register, so it may run high."},
+    "VA": {"gpd": 34400, "sources": ["gcsaa2022"], "basis": "regional survey", "note": "This is a national survey's median for the Transition region (38.5 acre-feet a year), since Virginia's reports do not separate golf. It is a survey, not metered."},
+    "TX": {"gpd": 99200, "sources": ["gcsaa2022"], "basis": "regional survey",
            "note": "This is a national survey's median for this part of Texas, which the survey splits between its Southeast region (111.1 acre-feet a year) and much drier Southwest region (375.7). Which climate division falls in which region is read from the survey's map [A]. It is a survey, not metered.",
            # NOAA climate divisions: High Plains, Low Rolling Plains, Trans-Pecos, Edwards Plateau, Southern and Lower Valley in the Southwest [A]
            "by_region": {"4101": 335400, "4102": 335400, "4103": 99200, "4104": 99200, "4105": 335400, "4106": 335400, "4107": 99200, "4108": 99200, "4109": 335400, "4110": 335400}},
@@ -643,5 +730,5 @@ def golf(state):
     """A typical golf course's water in `state`: {"gpd", "sources", "note", "basis", and "by_region" where it differs within the state}. Where Water Ledger has no figure for the
     state, the survey's regional one, labeled in "basis" and "note"."""
     state = state.upper()
-    return {"basis": "state reports" if "odnr_wwfr" in GOLF[state]["sources"] else "regional survey", **GOLF[state]} if state in GOLF else golf_regional(state)
+    return dict(GOLF[state]) if state in GOLF else golf_regional(state)
 

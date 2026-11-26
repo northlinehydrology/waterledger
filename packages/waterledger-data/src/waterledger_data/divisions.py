@@ -30,6 +30,19 @@ def _cached(name, fn):
     return json.load(open(path, encoding="utf-8"))
 
 
+NAMES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tables", "climate_division_names.csv")
+
+
+def division_name(division, state):
+    """NOAA's own name for a climate division ("Southwest Lower" for Michigan's 8, "2008"), from the names in NOAA's division map
+    (tables/climate_division_names.csv); "<state> climate division <n>" for one the table doesn't have."""
+    import csv
+    if not hasattr(division_name, "_t"):
+        with open(NAMES_FILE, encoding="utf-8", newline="") as f:
+            division_name._t = {r["division"]: r["name"] for r in csv.DictReader(f)}
+    return division_name._t.get(str(division)) or f"{state} climate division {int(str(division)[2:])}"
+
+
 def county_divisions():
     """{county FIPS: climate division id}, e.g. {"39049": "3305"} (NOAA's state code + division number)."""
     def fetch():

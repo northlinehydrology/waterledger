@@ -115,20 +115,11 @@ def main(argv=None):
         from waterledger.national.publish import publish
         print("published", publish(a.state, a.dir, a.date, a.build))
         return
-    if a.cmd == "snapshot":
-        if a.state.upper() == "MI":                       # Michigan: from its own data, with its site files carried along
-            from waterledger.states.mi.snapshot import write as write_mi
-            print(write_mi(a.out, a.date))
-        else:
-            from waterledger.national.snapshot import write
-            print(write(a.state, a.out, a.date))
+    if a.cmd == "snapshot":                               # every state, Michigan included, on the base with its own layers (design 0011)
+        from waterledger.national.snapshot import write
+        print(write(a.state, a.out, a.date))
         return
     if a.cmd == "build-state":
-        if a.state.lower() in STATES:                     # a state with its own data (Michigan) builds from that, not the national tier
-            from waterledger.states.mi.fetch import fetch_all
-            fetch_all()
-            _build_site(a.state.lower())
-            return
         from waterledger.national.build import build
         build(a.state, a.out, run_checks=not a.no_checks)
         return
