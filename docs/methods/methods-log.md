@@ -8,6 +8,39 @@ Layer-by-layer notes for the national tier (places, water supply, wastewater, re
 [national-tier-notes.md](national-tier-notes.md); county water use sources are in [water-use-sources.md](water-use-sources.md).
 This log covers decisions that cut across layers, and points there for detail.
 
+## Nov 25, 2026 (later): which plant treats a place's sewage, from who serves whom (3.29.0, design 0023)
+
+- **Decision.** A place's sewer plant comes from the survey's own record of how sewers connect, before any rule of distance or name.
+  EPA's Clean Watersheds Needs Survey 2022 lists collection systems as facilities, with where each discharges. Every plant now says how
+  it was chosen.
+- **Why.** The guess by distance named plants that don't serve the place:
+  - Ada Township: Lowell, not Grand Rapids.
+  - Plymouth Township: Hamburg Township's plant, not GLWA.
+  - North Muskegon: a university's own plant.
+  - Loudoun County: Purcellville, not Loudoun Water's Broad Run.
+
+  Andrew (Nov 25): a wrong plant "looks pretty stupid" on a report.
+- **Rule.**
+  - A place's collection systems are those named for it (its name followed by a sewer or plant word, within 15 km) and those inside it
+    that are named for no other place. They are counted together, weighted by the people each serves, and followed to their plants.
+  - Counties take their primary-county facilities.
+  - A link beyond 80 km is taken as a record error [A].
+  - Then the old rule, with the water system's seller's town (EPA SDWIS consecutive connections) beside its own.
+  - A plant the survey reaches is in reach for the wastewater default whatever the distance.
+- **Measured.** Survey evidence at 9,056 of 19,781 places in the twelve states. The first plant changes at 2,644, the sewer comes into
+  reach at 793 and leaves at none (`docs/design/0023-changes.csv`). Spot checks:
+  - Ada to Grand Rapids; Ypsilanti Township to YCUA; Plymouth Township to GLWA; Allen Park to Wyandotte (Downriver); Loudoun County to
+    Broad Run (82% of its surveyed flow); Friendswood (Texas) to Blackhawk Regional.
+  - Gaines Township: 81% to Wyoming through Cutlerville's system, 19% to Grand Rapids through its own, agreeing with Northline's site
+    record.
+- **Considered.**
+  - **Names before locations.** Gaines's own small system would have sent it to Grand Rapids alone.
+  - **Locations without the "named for another place" guard.** Williamstown Township took Meridian's system.
+  - **No distance limit.** Two survey records sent places 228 and 424 km away.
+- **Open.**
+  - The water source keeps its 5% and 10 km lines: there is no survey of water service to match the sewer survey's.
+  - A place whose survey systems all fail the 80 km check falls back to the old rule; the cover says so through its basis.
+
 ## Nov 25, 2026: Michigan on the base, with its own layers (3.28.0, design 0011)
 
 - **Decision.** Michigan is built and answered like every other state: the national base, plus layers of its own that add to the base

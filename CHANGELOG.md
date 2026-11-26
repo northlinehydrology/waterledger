@@ -2,6 +2,24 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.29.0 (unreleased; model 1.17)
+
+waterledger and waterledger-data. Which plant treats a place's sewage and where its water comes from, from who serves whom (design 0023). No model
+change; the sewer plant and the wastewater default change at the places listed in `docs/design/0023-changes.csv`.
+
+- **The survey's sewers first** (`wastewater.served_by`, `wastewater.ranked_for`): a place's collection systems in EPA's CWNS 2022 are those named
+  for it within 15 km and those located inside it that are named for no other place, counted together and weighted by the people each serves.
+  They are followed through the survey's DISCHARGES to their plants. A county with neither takes its primary-county facilities. A link to a plant
+  beyond 80 km is taken as a record error. Then the old rule: own, the water system's town (now its seller's town too), nearest.
+- **Every plant says how it was chosen** (`SewerPlant.basis`: "name", "inside", "county", "own", "system" or "nearest"; `served_share`), and
+  plants carry their survey id (`cwns`).
+- **The wastewater default:** a plant the survey's sewers reach from the place is in reach whatever the distance; the 10 km line applies
+  only where the survey says nothing.
+- **Who a water system buys from** (`supply.sellers`: EPA SDWIS consecutive connections; `WaterSystem.buys_from`).
+- Snapshots carry `served` (`wastewater.json`) and `sellers` (`supply.json`); older snapshots answer as before.
+- Measured in the twelve states on waterledger.org: survey evidence at 9,056 of 19,781 places, the first plant changes at 2,644, the sewer
+  comes into reach at 793 and out of reach at none.
+
 ## 3.28.0 (Nov 25, 2026; model 1.17)
 
 waterledger and waterledger-data (waterledger-models unchanged, 3.25.0). Every state, Michigan included, is the national base plus its own layers (design 0011). No model change; data changes are listed in the methods log
