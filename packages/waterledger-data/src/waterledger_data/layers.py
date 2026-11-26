@@ -13,10 +13,10 @@ Two layers are registered where their kind of data already lives: county water u
 
 Formats (keys are the base's: GEOIDs for places, HUC12 codes for reaches):
     household_wells      {geoid: {drift_n, drift_depth_ft, drift_level_ft, rock_n, rock_depth_ft, rock_level_ft}}
-    coldwater_streams    {huc12: [stream names]}
+    coldwater_streams    {huc12: {"n": designated segments, "names": [up to three stream names]}}
     impairments          {huc12: {"assessed": bool, "listings": [[group, tmdl 0/1, [waters]]]}}
     utilities            {geoid: [{eia_id, name, type, share, balancing_authority, order}]}, in the order to show them
-    salt_regions         {"regions": {id: {name, station, salt_days}}, "places": {geoid: id}}
+    salt_regions         {"regions": {id: {name, station, salt_days, and lat, lon or the NOAA division whose station stands for it}}, "places": {geoid: id}}
 """
 import dataclasses
 import math
@@ -74,8 +74,10 @@ def mi_county_regions(counties):
 def mi_salt_regions(places):
     from waterledger_data import places as pl
     regions = mi_county_regions(pl.counties())
-    meta = {k: {"name": r["name"], "station": r["station"], "salt_days": MI_SALT_DAYS[k]} for k, r in MI_REGIONS.items()}
-    meta[MI_EASTERN_UP["id"]] = {"name": MI_EASTERN_UP["name"], "station": MI_EASTERN_UP["station"], "salt_days": MI_SALT_DAYS[MI_EASTERN_UP["id"]]}
+    meta = {k: {"name": r["name"], "station": r["station"], "salt_days": MI_SALT_DAYS[k], "lat": r["lat"], "lon": r["lon"]} for k, r in MI_REGIONS.items()}
+    # the eastern Upper Peninsula's point is NOAA division 2's station, which the snapshot's climate divisions carry
+    meta[MI_EASTERN_UP["id"]] = {"name": MI_EASTERN_UP["name"], "station": MI_EASTERN_UP["station"], "salt_days": MI_SALT_DAYS[MI_EASTERN_UP["id"]],
+                                 "division": MI_EASTERN_UP["division"]}
     return {"regions": meta, "places": {r.geoid: regions[r.county_fips] for r in places.itertuples() if r.county_fips in regions}}
 
 
@@ -93,8 +95,9 @@ def mi_household_wells(places):
 
 
 def mi_coldwater_streams(places=None):
+    """{huc12: {"n": designated segments, "names": up to three stream names}}."""
     from waterledger_data import waters as wi
-    return {h: v["names"] for h, v in wi.trout_by_huc12().items()}
+    return {h: {"n": v["n"], "names": v["names"]} for h, v in wi.trout_by_huc12().items()}
 
 
 def mi_impairments(places=None):

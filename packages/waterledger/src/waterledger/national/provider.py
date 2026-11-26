@@ -107,7 +107,7 @@ def context(state, place):
                              great_lake=shore["lake"] if shore else None, great_lakes_basin=sheds["h12"][0]["code"].startswith("04") if sheds["h12"] else None,
                              downstream=[cx.Reach(huc12=p["code"], name=p["name"], impairments=[LABELS[g] for g, _, _ in p["listings"]],
                                                   tmdl=[LABELS[g] for g, t, _ in p["listings"] if t], assessed=p.get("assessed"),
-                                                  coldwater_streams=(trout or {}).get(p["code"], [])) for p in path])
+                                                  coldwater_streams=(trout or {}).get(p["code"], {}).get("names", [])) for p in path])
     from waterledger import rules
     R = rules.load(state)
     jur = cx.Jurisdiction(provider="national", not_covered=[] if R else ["rules"], sources=["census_tiger", *rules.sources(state)], name=place.name, kind=place.kind, county=place.county,

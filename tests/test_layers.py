@@ -47,7 +47,7 @@ def test_michigan_layers_match_its_site_data():
     Wd = json.load(open(os.path.join(W, "waters.json"), encoding="utf-8"))
     P = {p["g"]: p for p in json.load(open(os.path.join(W, "places.json"), encoding="utf-8"))["places"]}
     PW = json.load(open(os.path.join(W, "power.json"), encoding="utf-8"))
-    assert all(L["coldwater_streams"][h] == v["tr"][1] for h, v in Wd["h12"].items() if v.get("tr"))
+    assert all([L["coldwater_streams"][h]["n"], L["coldwater_streams"][h]["names"]] == v["tr"] for h, v in Wd["h12"].items() if v.get("tr"))
     assert all(L["impairments"][h]["listings"] == v.get("i", []) for h, v in Wd["h12"].items() if h in L["impairments"])
     assert all(PW["utilities"][lst[0][0]]["n"] == L["utilities"][g][0]["name"] for g, lst in PW["places"].items() if lst)
     moved = {g for g in P if P[g]["r"] != L["salt_regions"]["places"][g]}
