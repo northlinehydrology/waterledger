@@ -1,5 +1,5 @@
 """County water use (waterledger_data.wateruse): each layer's arithmetic, category mapping and basis, on small fixtures."""
-import json, math
+import json, math, os
 
 import pytest
 
@@ -251,5 +251,6 @@ def test_usgs_table_without_a_download_is_the_shipped_copy(tmp_path, monkeypatch
     every request on Nov 26, 2026)."""
     monkeypatch.setattr(wu, "RAW", str(tmp_path))
     monkeypatch.setattr(wu.urllib.request, "urlopen", lambda *a, **k: (_ for _ in ()).throw(AssertionError("no download expected")))
-    assert wu.usgs_file().endswith("tables/usgs_2015_revised_county.parquet")
+    path = wu.usgs_file()
+    assert os.path.basename(path) == "usgs_2015_revised_county.parquet" and os.path.basename(os.path.dirname(path)) == "tables"
     assert len(wu.usgs_2015("MI")["counties"]) == 83

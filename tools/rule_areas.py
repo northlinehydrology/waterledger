@@ -40,7 +40,7 @@ def _get(url, cache, name, binary=False):
     if not os.path.exists(p):
         with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": UA}), timeout=180) as r:
             open(p, "wb").write(r.read())
-    return open(p, "rb").read() if binary else json.load(open(p))
+    return open(p, "rb").read() if binary else json.load(open(p, encoding="utf-8"))
 
 
 def _arcgis(layer, where, cache, name, fields="*", offset=0.0005):
@@ -163,7 +163,7 @@ def build(st, cache):
            "sources": {k: dict(zip(("title", "publisher", "url"), SOURCES[k])) for k in used},
            "places": dict(sorted(m.items()))}
     p = os.path.join(OUT, f"{st}_areas.json")
-    json.dump(doc, open(p, "w"), indent=0, sort_keys=False, ensure_ascii=False)
+    json.dump(doc, open(p, "w", encoding="utf-8"), indent=0, sort_keys=False, ensure_ascii=False)
     n_in = sum(1 for v in m.values() for x in v.values() if x["share"] >= IN)
     print(f"{st.upper()}: {len(m)} places in an area ({n_in} wholly), groups {list(doc['groups'])} -> {os.path.relpath(p)}")
 
