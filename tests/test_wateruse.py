@@ -244,3 +244,12 @@ def test_michigan_is_a_state_layer():
 def test_michigan_citation_is_the_published_one():
     from waterledger.citations import SOURCES
     assert (wu.EGLE_CITATION, wu.EGLE_URL) == SOURCES["egle2025"]
+
+
+def test_usgs_table_without_a_download_is_the_shipped_copy(tmp_path, monkeypatch):
+    """The 2015 county table is a fixed data release shipped in tables/, so a build with an empty cache doesn't need ScienceBase (which refused
+    every request on Nov 26, 2026)."""
+    monkeypatch.setattr(wu, "RAW", str(tmp_path))
+    monkeypatch.setattr(wu.urllib.request, "urlopen", lambda *a, **k: (_ for _ in ()).throw(AssertionError("no download expected")))
+    assert wu.usgs_file().endswith("tables/usgs_2015_revised_county.parquet")
+    assert len(wu.usgs_2015("MI")["counties"]) == 83

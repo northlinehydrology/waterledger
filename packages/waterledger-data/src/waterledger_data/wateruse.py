@@ -115,7 +115,8 @@ USGS_BASIS = {
 
 
 def usgs_file():
-    """The revised 2015 county table on disk (the parquet from the data release's zip, else the xlsx), downloaded once."""
+    """The revised 2015 county table on disk (the parquet from the data release's zip, else the xlsx): the cached download, else the copy shipped in
+    tables/ (a fixed data release, so the copy doesn't go stale), else downloaded from ScienceBase."""
     d = os.path.join(RAW, "usgs2015")
     pq = os.path.join(d, "2015-Revised-County.parquet")
     if os.path.exists(pq):
@@ -123,6 +124,9 @@ def usgs_file():
     xl = os.path.join(d, USGS_FILES["xlsx"])
     if os.path.exists(xl):
         return xl
+    shipped = os.path.join(TABLES, "usgs_2015_revised_county.parquet")      # the same table, shipped: ScienceBase refused every request on Nov 26, 2026
+    if os.path.exists(shipped):
+        return shipped
     item = json.loads(urllib.request.urlopen(urllib.request.Request(USGS_ITEM + "?format=json", headers={"User-Agent": UA}), timeout=60).read())
     links = {f["name"]: f["url"] for f in item.get("files", [])}
     try:
