@@ -21,7 +21,8 @@ pip install waterledger-data
 | `grid930` | EIA-930 hourly demand and generation by fuel for every balancing authority, 2019 on, and the BA's power plant water by fuel class and month from EIA's 2024 plant reports, so its plant water hour by hour (design 0008) |
 | `power` | EIA-861 retail sales and residential use for any state (`state_retail_mwh`, `residential`); Michigan's MPSC territories |
 | `wateruse` | water use by county and category: USGS's revised 2015 estimates for every state (`usgs_2015`), and the states' own figures for Ohio (ODNR registration, `ohio`), Texas (TWDB Water Use Survey, `texas`) and Virginia (DEQ locality totals, `virginia`), each with its basis (year, reported or estimate, withdrawals or use) |
-| `places`, `waters` | Michigan's own layers (cities and townships, EGLE water use and wells) |
+| `layers` | each state's own layers on the base (Michigan: wells, trout streams, EGLE's assessment units, MPSC territories, road-salt regions) |
+| `places`, `waters` | Michigan's sources behind its layers (cities and townships, EGLE assessment units, wells, trout streams) |
 
 Downloads are cached under `WATERLEDGER_CACHE` (default `~/.cache/waterledger`) or the `cache` path in a
 `waterledger.toml`. A build that stops part way resumes from the cache.

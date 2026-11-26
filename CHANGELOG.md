@@ -2,6 +2,36 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## 3.28.0 (unreleased; model 1.17)
+
+Every state, Michigan included, is the national base plus its own layers (design 0011). No model change; data changes are listed in the methods log
+(Nov 25, 2026), and the differences in Michigan's answers, each with its cause, in `docs/design/0011-differences.md`.
+
+- **Michigan on the base.** `build-state MI` and `snapshot MI` build Michigan as every state, and the national provider answers for it.
+  `Context`'s parts read `provider="national"` for Michigan too, with its layers' sources listed (a breaking change for code testing for `"MI"`).
+  Michigan's GEOIDs, places and counties are unchanged (`census.PLACE_RULES`).
+- **State layers** (`waterledger_data.layers`): a state's own data that adds to or replaces the base, registered by state and category, written
+  into the snapshot (`layers.json`, listed in its manifest) and read by the provider wherever present. Michigan's: household wells (Wellogic) and
+  trout streams (DNR), which add; EGLE's assessment units placed in their own HUC12s, MPSC's utility territories and its road-salt regions (the
+  eastern Upper Peninsula on NOAA division 2's station, Pellston), which replace. County water use (`wateruse.STATE_LAYERS["MI"]`, EGLE's file now
+  shipped in `waterledger_data/tables`) and golf (`wateruse.GOLF["MI"]`, every row with its `basis`).
+- **Validation rows as data per state** (`waterledger.validation.rows`); Michigan's ten move out of its builder unchanged.
+- **Shared citations** (`waterledger.citations`: `SOURCES`, `SHORT`, `PARAM_SOURCES`, `CONTEXT`), moved from Michigan's builder unchanged.
+- **For every state:**
+  - the EIA-861 county screen on a place's utilities (`energy.mark_counties`, `energy.screened`), guarded against a city's utility outside its city
+    and a smaller replacement; `fetch_eia861` keeps the Service Territory file;
+  - NOAA's own climate division names (`divisions.division_name`, `tables/climate_division_names.csv`);
+  - staff water from the model's 400 draws in snapshots (was 200);
+  - a place's water systems are those on 5% of it or more (a system on less isn't listed, compared with or named as its supply);
+  - polygons with many rings combined in a balanced tree (`census._polygon`: Michigan's watershed overlay from 7.4 hours to 12 seconds, same
+    result), and caches keyed by the places' outlines as well as their GEOIDs;
+  - a city Census lists once per county (Lansing) is found by name, as its largest part.
+
+**Deprecated** (kept, with a warning, through 3.x): `waterledger.states.mi.provider` (Michigan is answered by the national provider);
+`waterledger.states.mi`'s builder (`waterledger build mi` still writes its former site files); `waterledger.scenario`'s Michigan readers;
+`waterledger.states.mi.egle` (now `waterledger_data.egle`). Snapshots from 3.28 carry no `michigan/` folder; packages up to 3.27 read Michigan's
+published site files instead, which keep their shape.
+
 ## 3.27.0 (Nov 20, 2026; model 1.17)
 
 waterledger only. No estimated number changes; the levels a reader sees change in every state whose rules are now reviewed.
