@@ -134,7 +134,7 @@ def plants(state):
         if f_echo and (design is None or not 0.1 <= f_echo / design <= 1.3):
             f_echo = None
         name = fr["FACILITY_NAME"].upper()
-        out.append({"id": (e or {}).get("SourceID") or (permits[cid] or [cid])[0], "name": name, "city": loc[cid]["CITY"],
+        out.append({"id": (e or {}).get("SourceID") or (permits[cid] or [cid])[0], "cwns": cid, "name": name, "city": loc[cid]["CITY"],
                     "lat": float(loc[cid]["LATITUDE"]), "lon": float(loc[cid]["LONGITUDE"]), "design_mgd": design, "flow_mgd": f_echo,
                     "major": bool(e and e["CWPMajorMinorStatusFlag"] == "M"), "cso": bool(e and e["CWPCsoFlag"] == "Y"),
                     "receiving": (e or {}).get("CWPStateWaterBodyName"), "huc12": (e or {}).get("RadWBDHuc12"),
@@ -240,9 +240,9 @@ def rank(rows, city=None, township=False, system=None):
     town whose water system serves most of the place (Cascade Township is on Grand Rapids' water, and the Grand Rapids plant comes before Lowell's, which is nearer):
     water and sewer service often come from the same city, though not always; then the rest, nearest first."""
     twp = re.compile(r"\bTWP\b|TOWNSHIP", re.I)
-    town = system_town(system) if system else None
+    towns = [system_town(x) for x in ([system] if isinstance(system, str) else system or []) if x]     # the system's town, and its seller's (design 0023)
     for q in rows:
-        q["system"] = bool(town) and not q["own"] and named_for(q.get("name") or q.get("n"), town)
+        q["system"] = bool(towns) and not q["own"] and any(named_for(q.get("name") or q.get("n"), t) for t in towns)
 
     def key(q):
         n = q.get("name") or q.get("n")
@@ -264,3 +264,130 @@ def nearest(plants_, lat, lon, city=None, km=40, min_design=0.5, township=False,
         if d <= km and (own or (q["design_mgd"] or 0) >= min_design):
             rows.append({**q, "km": d, "own": own})
     return rank(rows, city, township, system)
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------------
+# Who treats a place's sewage (design 0023): the survey's own record of how sewers connect. Each collection system is a facility of its
+# own ("Collection: Separate Sewers", "Collection: Combined Sewers"), and DISCHARGES says where its flow goes, with a percentage, to
+# another facility, ending at a treatment plant. A place's collection systems are those named for it within its county (strongest), else
+# those located inside it (a village's inside a township); a county's are the survey's facilities whose primary county it is.
+NAMED_KM = 15          # a sewer system named for a place counts as its own when it lies within this distance of the place [A] (Gaines Township, Kent
+                       # County, not Gaines Township, Genesee County)
+ALBERS_M = 5070
+SERVED_BASIS = {"name": "a sewer system named for the place (EPA CWNS 2022)", "inside": "a sewer system located in the place (EPA CWNS 2022)",
+                "county": "a sewer system whose primary county it is (EPA CWNS 2022)"}
+NAME_STOP = {"twp", "township", "charter", "city", "of", "village", "town", "borough", "boro", "county", "the", "coll", "collection", "sys",
+             "system", "sewers", "sewer", "cs", "wwtp", "stp", "wwtf", "wrf", "plant", "sanitary", "district", "authority", "and"}
+
+
+def _name_words(s):
+    return [w for w in re.findall(r"[a-z]+", (s or "").lower()) if w not in NAME_STOP]
+
+
+def _sewer_graph(state):
+    """The survey's facilities in `state`: (collection systems {cwns: {name, counties, lat, lon, pop}}, discharges {cwns: [(to, share)]},
+    treatment plants {cwns}, county facilities {county FIPS: [(cwns, pop)]})."""
+    types = collections.defaultdict(set)
+    for r in _cwns("FACILITY_TYPES"):
+        if r["STATE_CODE"] == state:
+            types[r["CWNS_ID"]].add(r["FACILITY_TYPE"])
+    fac = {r["CWNS_ID"]: r for r in _cwns("FACILITIES") if r["STATE_CODE"] == state and r["INFRASTRUCTURE_TYPE"] == "Wastewater"}
+    loc = {r["CWNS_ID"]: r for r in _cwns("PHYSICAL_LOCATION") if r["STATE_CODE"] == state}
+    pop = {r["CWNS_ID"]: float(r["TOTAL_RES_POPULATION_2022"] or 0) for r in _cwns("POPULATION_WASTEWATER") if r["STATE_CODE"] == state}
+    counties, primary = collections.defaultdict(set), collections.defaultdict(list)
+    for r in _cwns("AREAS_COUNTY"):
+        if r["STATE_CODE"] == state and r["COUNTY_FIPS"]:
+            f = r["COUNTY_FIPS"].zfill(5)
+            counties[r["CWNS_ID"]].add(f)
+            if r.get("COUNTY_PRIMARY_FLAG") == "Y":
+                primary[f].append(r["CWNS_ID"])
+    to = collections.defaultdict(list)
+    for r in _cwns("DISCHARGES"):
+        if r["STATE_CODE"] == state and r["DISCHARGES_TO_CWNSID"]:
+            to[r["CWNS_ID"]].append((r["DISCHARGES_TO_CWNSID"], float(r["PRESENT_DISCHARGE_PERCENTAGE"] or 100) / 100))
+    plants_ = {c for c in fac if "Treatment Plant" in types[c]}
+    coll = {}
+    for c in fac:
+        if any(t.startswith("Collection") for t in types[c]):
+            L = loc.get(c, {})
+            coll[c] = {"name": fac[c]["FACILITY_NAME"], "counties": counties[c] | ({L["COUNTY_FIPS"].zfill(5)} if L.get("COUNTY_FIPS") else set()),
+                       "lat": float(L["LATITUDE"]) if L.get("LATITUDE") else None, "lon": float(L["LONGITUDE"]) if L.get("LONGITUDE") else None,
+                       "pop": pop.get(c, 0.0)}
+    county_fac = {f: [(c, pop.get(c, 0.0)) for c in cs if c in fac] for f, cs in primary.items()}
+    return coll, to, plants_, county_fac
+
+
+def chain_end(c, to, plants_, seen=()):
+    """The treatment plant(s) at the end of facility c's discharge chain, with the share of c's flow that reaches each: [(plant, share)]."""
+    if c in plants_:
+        return [(c, 1.0)]
+    if c in seen or not to.get(c):
+        return []
+    out = []
+    for d, share in to[c]:
+        out += [(p, s * share) for p, s in chain_end(d, to, plants_, seen + (c,))]
+    return out
+
+
+def served_by(state, places):
+    """For each place (a GeoDataFrame with geoid, name, base, level, county_fips, geometry), the plants the survey's sewers send its sewage to:
+    {geoid: [{"cwns": plant, "share": share of the place's surveyed flow, "basis": "name" | "inside" | "county", "systems": [names]}]},
+    largest share first. A place's systems are those named for it (within NAMED_KM) and those located inside it, together, each weighted by the
+    people it serves: Gaines Township, Kent County, has its own (to Grand Rapids) and Cutlerville's (to Wyoming), and the larger decides. A
+    county with neither takes the survey's facilities whose primary county it is. Places the survey says nothing about are left out."""
+    import geopandas as gpd
+    import shapely
+    coll, to, plants_, county_fac = _sewer_graph(state)
+    pts = gpd.GeoDataFrame([{"c": c, "geometry": shapely.Point(v["lon"], v["lat"])} for c, v in coll.items() if v["lat"] is not None],
+                           geometry="geometry", crs=4326)
+    inside = collections.defaultdict(set)
+    if len(pts):
+        P = places[["geoid", "geometry"]].dropna(subset=["geometry"])
+        for r in gpd.sjoin(pts, P.to_crs(4326), predicate="within").itertuples():
+            inside[r.geoid].add(r.c)
+    near = collections.defaultdict(set)              # within NAMED_KM of a place: a system named for it there is its own (the survey seldom gives a collection system's county)
+    if len(pts):
+        P = places[["geoid", "geometry"]].dropna(subset=["geometry"]).to_crs(ALBERS_M)
+        for r in gpd.sjoin(pts.to_crs(ALBERS_M), P.assign(geometry=P.buffer(NAMED_KM * 1000)), predicate="within").itertuples():
+            near[r.geoid].add(r.c)
+    # a system located in one place but named for another (Meridian Township's, inside Williamstown Township) is the other's
+    bases = {tuple(b) for b in (_name_words(x) for x in places.base) if b}
+    named_for_some = {c for c, v in coll.items() if any(tuple(_name_words(v["name"])[:len(b)]) == b for b in bases)}
+    out = {}
+    for r in places.itertuples():
+        base = _name_words(r.base)
+        named = {c for c in near[r.geoid] | {c for c, v in coll.items() if r.county_fips in v["counties"]}
+                 if base and _name_words(coll[c]["name"])[:len(base)] == base}
+        mine = named | {c for c in inside[r.geoid] if c not in named_for_some}
+        county = not mine and getattr(r, "level", None) == "county" and bool(county_fac.get(r.county_fips))
+        if county:
+            mine = {c for c, _ in county_fac[r.county_fips]}
+        if not mine:
+            continue
+        flows, names, how = collections.Counter(), collections.defaultdict(set), collections.defaultdict(set)
+        for c in mine:
+            weight = max((coll.get(c) or {}).get("pop", 0.0) or next((p for k, p in county_fac.get(r.county_fips, []) if k == c), 0.0), 1.0)
+            for p, share in chain_end(c, to, plants_):
+                flows[p] += weight * share
+                names[p].add((coll.get(c) or {}).get("name") or p)
+                how[p].add("county" if county else "name" if c in named else "inside")
+        total = sum(flows.values())
+        if total:
+            out[r.geoid] = [{"cwns": p, "share": round(v / total, 3), "basis": "name" if "name" in how[p] else min(how[p]), "systems": sorted(names[p])[:3]}
+                            for p, v in flows.most_common()]
+    return out
+
+
+def ranked_for(plants_, served, lat, lon, city=None, km=40, min_design=0.5, township=False, system=None):
+    """A place's plants: the survey's (served, from served_by; each row gets its `basis` and `share`), then nearest's order for the rest (own, the water
+    system's town, nearest), each row marked with how it was chosen (`basis`: "name", "inside", "county", "own", "system", "nearest")."""
+    by = {q.get("cwns"): q for q in plants_}
+    first = []
+    for s in served or []:
+        q = by.get(s["cwns"])
+        if q is not None:
+            first.append({**q, "km": distance_km(lat, lon, q["lat"], q["lon"]), "own": False, "system": False, "basis": s["basis"], "served_share": s["share"],
+                          "served_systems": s["systems"]})
+    rest = [{**q, "basis": "own" if q["own"] else "system" if q.get("system") else "nearest"}
+            for q in nearest(plants_, lat, lon, city, km, min_design, township, system) if q.get("cwns") not in {f["cwns"] for f in first}]
+    return first + rest
