@@ -65,9 +65,12 @@ converts them to relative humidity each step (waterledger_models.weather.relativ
 not read. Staff water is a constant flow at the configured capacity (it follows the people on site, not the weather or the
 IT load); withdrawal plus condensate always equals consumption plus return.
 """
+import json
+
 import numpy as np
 from bmipy import Bmi
 
+from waterledger_models import state
 from waterledger_models.datacenter import lake, physics as model
 from waterledger_models.weather import from_open_meteo_json, relative_humidity
 
@@ -143,8 +146,11 @@ class ScalarPointBmi(Bmi):
         initialize(config_file=None)
                           reads its settings (read_config takes a YAML path or a dict) and sets self._dt, self._end and self._time
         _compute()        reads the inputs in self._values and writes the outputs; it has no side effects other than the outputs
+                          and the attributes named in _STATE
         _advance()        optional: loads the inputs for the step starting at self._time when the component reads forcing itself,
                           through self._force(name, value), which leaves alone any input set since the last update
+        _STATE            optional: names of the attributes that change as it steps (beyond the values and the clock), which
+                          get_state carries; every other attribute is a setting, covered by the state's fingerprint (design 0024)
     The order of a step: update() calls _advance(), then _compute() for the step from the current time to the next, then moves the clock
     one step on. set_value and set_value_at_indices only store inputs (an output raises KeyError), so outputs change on update() alone and
     always describe the last step taken; before the first update they are 0. A framework can set the next step's inputs before it reads
@@ -181,6 +187,52 @@ class ScalarPointBmi(Bmi):
 
     def finalize(self):
         pass
+
+    # ---------- state (CSDMS bmi PR #112; not part of BMI 2.0; design 0024) ----------
+    _STATE: tuple = ()             # names of the attributes, beyond the values and the clock, that carry state from step to step
+    _NOT_SETTINGS = ("_values", "_time", "_set")
+
+    def _settings(self):
+        """Everything initialize set that stepping doesn't change: what a state's fingerprint covers."""
+        skip = set(self._NOT_SETTINGS) | set(self._STATE)
+        return {k: v for k, v in vars(self).items() if k not in skip}
+
+    def get_state(self):
+        """The component's whole state as one string (JSON): the clock, every input and output, the inputs set since the last update,
+        and any state the component carries between steps (_STATE), exactly, with a fingerprint of its settings. A component
+        initialized the same way and given it with set_state carries on as this one would, to the bit."""
+        return json.dumps({
+            "format": state.FORMAT, "version": state.VERSION, "component": type(self).__module__ + "." + type(self).__qualname__,
+            "settings": state.fingerprint(self._settings()),
+            "time": float(self._time).hex(),
+            "values": {k: [float(x).hex() for x in v] for k, v in self._values.items()},
+            "set": sorted(self._set),
+            "carried": {k: state.pack(getattr(self, k)) for k in self._STATE},
+        })
+
+    def set_state(self, text):
+        """Carry on from a state from get_state. The component must be initialized as the one that made it: same class and the same
+        settings (configuration and forcing), or the state is refused. Values are written into the existing arrays, so pointers from
+        get_value_ptr stay live."""
+        s = json.loads(text)
+        if s.get("format") != state.FORMAT:
+            raise ValueError("not a waterledger-models BMI state")
+        if s.get("version") != state.VERSION:
+            raise ValueError(f"a version {s.get('version')} state; this waterledger-models reads version {state.VERSION}")
+        here = type(self).__module__ + "." + type(self).__qualname__
+        if s["component"] != here:
+            raise ValueError(f"a state of {s['component']}, not {here}")
+        if s["settings"] != state.fingerprint(self._settings()):
+            raise ValueError("this state was made by a component initialized differently (configuration or forcing): initialize this one "
+                             "the same way first")
+        if set(s["values"]) != set(self._values) or set(s["carried"]) != set(self._STATE):
+            raise ValueError("this state's variables aren't this component's")
+        for k, v in s["values"].items():
+            self._values[k][:] = [float.fromhex(x) for x in v]
+        self._time = float.fromhex(s["time"])
+        self._set = set(s["set"])
+        for k, v in s["carried"].items():
+            setattr(self, k, state.unpack(v))
 
     # ---------- information ----------
     def get_component_name(self):

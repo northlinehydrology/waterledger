@@ -345,6 +345,16 @@ set, the component reports the dissolved mass in its return and the return's tem
 on site. It has no water limits yet. `waterledger_models.gas.bmi.GasPlantBmi` serves the demand set each step
 (`power_plant__electric_power_demand`) and reports what it served and could not, its fuel and the water roles.
 
+`waterledger_models.ponds.bmi.CoolingPondBmi` is a cooling pond that keeps state (design 0024): a plant's heat (`heat_mw`,
+a data center's `it_capacity_mw`, or set each step) into a pond whose volume, temperature and dissolved mass carry from one
+step to the next. Makeup holds its level and blowdown its cycles of concentration. Under a withdrawal limit it gives up
+blowdown, then draws down and warms. It reports all its evaporation as consumption, and beside it what the same pond with no
+plant heat would evaporate.
+
+Every component has `get_state()` and `set_state(text)` (after CSDMS bmi PR #112): the whole state as one JSON string, exact
+to the bit. A component initialized the same way carries on from it, so scenarios can start from a shared warm-up. A state is
+refused by a component set up differently.
+
 A component of your own at one point can build on `waterledger_models.datacenter.ScalarPointBmi`, which supplies every BMI
 function but `initialize()`; its docstring has the contract. `waterledger_models.hydrology.stream_depletion` takes arrays,
 for a well's response at every step of a run.
