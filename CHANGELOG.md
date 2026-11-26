@@ -2,6 +2,34 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
+## Unreleased
+
+waterledger-models. State on the BMI components, and a cooling pond that keeps it (design 0024), for Basin Ledger's request 6, so scenarios
+can start from a shared warm-up. No model change: every output of every existing component is the same to the bit, and no estimate moves.
+The pond is a BMI component only, not a design in the runs, the snapshots or the site.
+
+- **`get_state()` and `set_state(text)`** on `ScalarPointBmi`, so on every component, after the CSDMS proposal (bmi PR #112). A state is one
+  JSON string holding the clock, every input and output, the inputs set since the last update, and anything a component names in `_STATE`.
+  Floats are written exactly (`float.hex`). A component initialized as the saver was carries on from it as the saver would, to the bit, and
+  pointers from `get_value_ptr` stay live.
+- **Refused:** a state from another component, or from one initialized differently (configuration, parameters, time step, or forcing by its
+  contents), and a state format version other than 1.
+- `waterledger_models.state`: the exact packing and the settings fingerprint, for components built on `ScalarPointBmi`.
+- **A cooling pond, `ponds.bmi.CoolingPondBmi`** (design 0024, part 2): a plant's heat (`heat_mw`, a data center's `it_capacity_mw`, or
+  `water_user__waste_heat_power` set each step) into a well-mixed pond whose volume, temperature and dissolved mass carry from step to
+  step.
+  - A surface energy balance (shortwave, longwave, evaporation and conduction on Brady, Graves and Geyer's 1969 wind function), solved
+    implicitly, so hourly and daily steps agree.
+  - Makeup holds the level; blowdown holds the cycles of concentration; seepage goes to its own ground return; rain is a gain; water above
+    the operating volume spills.
+  - Consumption is all of the pond's evaporation (Andrew, Nov 26). A shadow pond with no plant heat gives the natural evaporation, and the
+    difference is the forced evaporation.
+  - Under a withdrawal limit or dry mode, blowdown goes first, then the pond draws down and warms. Below its lowest workable volume the
+    plant's heat isn't taken and is reported as heat not removed. A pond above the plant's highest supply temperature counts lost hours.
+  - Water, heat and mass close every step (`tests/test_cooling_pond.py`).
+- `tools/compare_bmi_outputs.py`: a digest of every component's outputs over a year of hourly steps, to compare two checkouts. On this
+  change and `origin/main` (5345cf0), 19 cases are identical.
+
 ## 3.29.0 (Nov 26, 2026; model 1.17)
 
 waterledger and waterledger-data. Which plant treats a place's sewage and where its water comes from, from who serves whom (design 0023). No model
