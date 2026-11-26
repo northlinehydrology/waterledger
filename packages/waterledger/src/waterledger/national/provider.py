@@ -82,7 +82,10 @@ def context(state, place):
     base = _places(state).set_index("geoid").base.get(place.geoid, place.name)
     sys_ = lambda w: cx.WaterSystem(pwsid=w["pwsid"], name=w["name"].title(), population=w.get("population"),
                                     connections=w.get("connections"), share_of_place=w.get("share"))
-    mine = sd.systems_for(place.geoid)
+    from waterledger_data.supply import SERVES_SHARE
+    # the systems that serve the place, on 5% of it or more: one on less is taken not to be there (serves), so it isn't listed, compared with or
+    # named as the place's supply (Greenbush Township and Harrisville's system, 0.6% of it); the nearest sizable one stands in (design 0011)
+    mine = [w for w in sd.systems_for(place.geoid) if (w.get("share") or 0) >= SERVES_SHARE]
     near, near_km = (None, None) if serves(mine) else sd.nearest_system(place.geoid)
     use, usgs = county_water_use(state, place.county_fips)
     wells = sd.layer("household_wells")                 # the state's own layers (design 0011), where its data has them
