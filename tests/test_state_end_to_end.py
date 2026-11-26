@@ -45,7 +45,9 @@ def test_a_place_knows_its_state_and_context(places):
         assert c.supply.county_water_use_usgs is None or c.supply.county_water_use_usgs.source == "usgs_wu2015"
         if c.supply.nearest_system_km is not None:
             assert c.supply.nearest_system_km >= 0 and c.supply.nearest_system.population > 3300
-        assert all(q.km <= 40 for q in c.wastewater.plants) and len(c.wastewater.plants) <= 10
+        # a plant the survey's sewers reach can be as far as SERVED_KM_MAX (GLWA's suburbs, 56 km); one chosen by the old rule is within 40 km (design 0023)
+    from waterledger_data.wastewater import SERVED_KM_MAX
+    assert all(q.km <= (SERVED_KM_MAX if q.basis in ("name", "inside", "county") else 40) for q in c.wastewater.plants) and len(c.wastewater.plants) <= 10
 
 
 def test_what_a_state_lacks_is_labeled_not_silently_empty(places):
