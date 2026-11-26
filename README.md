@@ -72,6 +72,7 @@ est.levels                       # the levels a reader sees on waterledger.org, 
 est.not_covered                  # what isn't covered yet for this state, in words
 place.context().jurisdiction.rules   # the state's reviewed rules, each with its sources; empty where they aren't reviewed yet
 wl.rules.load("OH")              # a state's rules as data (waterledger/rules/<st>.toml): withdrawal lines by basin, source, measure and period, and the discharge, septic, Lake Erie and large-load lines
+wl.rules.septic_line("OH", 8000)  # who approves an on-site sewage system of that many gallons a day, from the state's septic lines
 
 cells = wl.Site(place=place, facility=wl.BatteryCellPlant(capacity_gwh=40, design="towers")).estimate()   # a battery cell plant, GWh/yr of cells
 cells.water.withdrawn.avg        # the same roles, comparisons, before and after and levels as a data center (design 0010)

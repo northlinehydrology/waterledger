@@ -17,6 +17,8 @@ change; the sewer plant and the wastewater default change at the places listed i
   only where the survey says nothing.
 - **Who a water system buys from** (`supply.sellers`: EPA SDWIS consecutive connections; `WaterSystem.buys_from`).
 - Snapshots carry `served` (`wastewater.json`) and `sellers` (`supply.json`); older snapshots answer as before.
+- `rules.septic_line(state, gpd)`: who approves an on-site sewage system, from each state's septic lines, as the page does. Michigan's
+  `scenario.septic_rule` now reads Michigan's rules file, so its wording is the file's ("the system falls under", "the system needs").
 - Measured in the twelve states on waterledger.org: survey evidence at 9,056 of 19,781 places, the first plant changes at 2,644, the sewer
   comes into reach at 793 and out of reach at none.
 

@@ -252,11 +252,10 @@ def cooling_estimate(D, region, cool, mw, dest):
 
 
 def septic_rule(gpd):
-    """Michigan's rules for sanitary sewage to a septic system (Part 22: R 323.2210, 2211, 2216), as on the page (WQ.septicRule). `gpd` is what goes to the system, without
-    condensate (a septic estimate's to_sewer)."""
-    return ("the county health department approves the design; no state permit is needed under 6,000 gallons a day" if gpd < 6000
-            else "it falls under a state permit-by-rule (6,000 to 10,000 gallons a day): the county health department approves it, and the flow is metered and reported to EGLE each year" if gpd < 10000
-            else "it needs a groundwater discharge permit from EGLE (above 10,000 gallons a day)")
+    """Michigan's rules for sanitary sewage to a septic system (Part 22: R 323.2210, 2211, 2216), from its rules file (rules.septic_line), as on the page
+    (WQ.septicRule). `gpd` is what goes to the system, without condensate (a septic estimate's to_sewer)."""
+    from waterledger import rules
+    return rules.septic_line("MI", gpd)
 
 
 def _plants_near(p, km=40):
