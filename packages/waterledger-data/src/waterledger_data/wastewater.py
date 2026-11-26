@@ -274,6 +274,9 @@ def nearest(plants_, lat, lon, city=None, km=40, min_design=0.5, township=False,
 NAMED_KM = 15          # a sewer system named for a place counts as its own when it lies within this distance of the place [A] (Gaines Township, Kent
                        # County, not Gaines Township, Genesee County)
 ALBERS_M = 5070
+SERVED_KM_MAX = 80     # a survey link to a plant farther than this is taken as a record error, of location or linkage [A]: Benton Township (Berrien County,
+                       # Michigan) to Benton Harbor-St. Joseph at 424 km, Sugarcreek (Ohio) to Greene County's Sugarcreek plant at 228 km; GLWA's farthest
+                       # served suburbs are 56 km from Detroit's plant
 SERVED_BASIS = {"name": "a sewer system named for the place (EPA CWNS 2022)", "inside": "a sewer system located in the place (EPA CWNS 2022)",
                 "county": "a sewer system whose primary county it is (EPA CWNS 2022)"}
 NAME_STOP = {"twp", "township", "charter", "city", "of", "village", "town", "borough", "boro", "county", "the", "coll", "collection", "sys",
@@ -282,6 +285,22 @@ NAME_STOP = {"twp", "township", "charter", "city", "of", "village", "town", "bor
 
 def _name_words(s):
     return [w for w in re.findall(r"[a-z]+", (s or "").lower()) if w not in NAME_STOP]
+
+
+# after a place's name, a sewer system's name goes on with a word for a sewer or a plant, or ends: "ADA SEWAGE DISPOSAL SYSTE", "GAINES TWP COLLECTION
+# SEWERS", "Scottsville (V) Sewers"; "BENTON HARBOR-ST JOSEPH" is not Benton Township's
+SYSTEM_WORD = re.compile(r"(\((v|t|c|t/v|v/t)\) )?(coll|collection|cs|c s|sys|system|sewers?|sewerage|sewage|sanitary|ss|sd|district|disposal|"
+                         r"utilit(y|ies)|authority)\b")
+
+
+def named_system(name, base):
+    """Whether a sewer system's name is the place's name followed by a sewer or plant word (PLANT_WORD, SYSTEM_WORD), or nothing."""
+    n = re.sub(r"^(city|town|village|borough|charter township|township) of ", "", _words(name))
+    t = _words(base)
+    if not t or not (n == t or n.startswith(t + " ")):
+        return False
+    rest = n[len(t) + 1:]
+    return not rest or bool(PLANT_WORD.match(rest) or SYSTEM_WORD.match(rest))
 
 
 def _sewer_graph(state):
@@ -351,13 +370,13 @@ def served_by(state, places):
         for r in gpd.sjoin(pts.to_crs(ALBERS_M), P.assign(geometry=P.buffer(NAMED_KM * 1000)), predicate="within").itertuples():
             near[r.geoid].add(r.c)
     # a system located in one place but named for another (Meridian Township's, inside Williamstown Township) is the other's
-    bases = {tuple(b) for b in (_name_words(x) for x in places.base) if b}
-    named_for_some = {c for c, v in coll.items() if any(tuple(_name_words(v["name"])[:len(b)]) == b for b in bases)}
+    bases = {x for x in places.base if _name_words(x)}
+    named_for_some = {c for c, v in coll.items() if any(named_system(v["name"], b) for b in bases)}
     out = {}
     for r in places.itertuples():
         base = _name_words(r.base)
         named = {c for c in near[r.geoid] | {c for c, v in coll.items() if r.county_fips in v["counties"]}
-                 if base and _name_words(coll[c]["name"])[:len(base)] == base}
+                 if base and named_system(coll[c]["name"], r.base)}
         mine = named | {c for c in inside[r.geoid] if c not in named_for_some}
         county = not mine and getattr(r, "level", None) == "county" and bool(county_fac.get(r.county_fips))
         if county:
@@ -385,7 +404,7 @@ def ranked_for(plants_, served, lat, lon, city=None, km=40, min_design=0.5, town
     first = []
     for s in served or []:
         q = by.get(s["cwns"])
-        if q is not None:
+        if q is not None and distance_km(lat, lon, q["lat"], q["lon"]) <= SERVED_KM_MAX:
             first.append({**q, "km": distance_km(lat, lon, q["lat"], q["lon"]), "own": False, "system": False, "basis": s["basis"], "served_share": s["share"],
                           "served_systems": s["systems"]})
     rest = [{**q, "basis": "own" if q["own"] else "system" if q.get("system") else "nearest"}
