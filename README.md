@@ -72,6 +72,7 @@ est.levels                       # the levels a reader sees on waterledger.org, 
 est.not_covered                  # what isn't covered yet for this state, in words
 place.context().jurisdiction.rules   # the state's reviewed rules, each with its sources; empty where they aren't reviewed yet
 wl.rules.load("OH")              # a state's rules as data (waterledger/rules/<st>.toml): withdrawal lines by basin, source, measure and period, and the discharge, septic, Lake Erie and large-load lines
+wl.rules.septic_line("OH", 8000)  # who approves an on-site sewage system of that many gallons a day, from the state's septic lines
 
 cells = wl.Site(place=place, facility=wl.BatteryCellPlant(capacity_gwh=40, design="towers")).estimate()   # a battery cell plant, GWh/yr of cells
 cells.water.withdrawn.avg        # the same roles, comparisons, before and after and levels as a data center (design 0010)
@@ -96,7 +97,8 @@ est.model_dump_json()            # the whole estimate as JSON
 
 ctx = place.context()            # the public water facts around the place, by category
 ctx.supply.systems               # public water systems
-ctx.wastewater.plants            # sewer plants: the place's own (the one named for it first), then its main water system's town's, then nearest first
+ctx.wastewater.plants            # sewer plants: where EPA's needs survey says the place's sewers go first (.basis, .served_share), then the place's own, its water system's or its seller's town's, then nearest
+ctx.supply.systems[0].buys_from  # the systems a water system buys its water from (EPA SDWIS)
 ctx.receiving.downstream         # the path the water takes, with impaired waters and cleanup plans; a reach's .assessed says whether the state assessed it
 ctx.climate.design_storms_in     # NOAA Atlas 14 design storms
 ctx.climate.cell                 # the ERA5 cell the cooling weather comes from; .cell_land, .cell_moved, .weather_corrected

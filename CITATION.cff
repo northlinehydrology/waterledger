@@ -6,8 +6,8 @@ authors:
   - family-names: Sommerlot
     given-names: Andrew
     affiliation: Northline Hydrology
-version: 3.28.0
-date-released: 2026-11-25
+version: 3.29.0
+date-released: 2026-11-26
 doi: 10.5281/zenodo.23982423
 identifiers:
   - type: doi

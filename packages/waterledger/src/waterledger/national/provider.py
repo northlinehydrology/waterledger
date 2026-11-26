@@ -5,6 +5,7 @@ import functools
 
 from waterledger.national.data import state_data
 
+SURVEYED = ("name", "inside", "county")      # a plant chosen from the survey's sewers (wastewater.served_by), so reached by sewer whatever the distance
 SEWER_KM = 10           # with no water system mapped, a large plant this close is assumed reachable (as waterledger.scenario)
 PLANTS_KM, PLANTS_MAX = 40, 10
 UTILITY_KM = 50         # with no utility territory over a place, the nearest place that has one within this distance stands in [A]
@@ -81,7 +82,8 @@ def context(state, place):
     sd = state_data(state)
     base = _places(state).set_index("geoid").base.get(place.geoid, place.name)
     sys_ = lambda w: cx.WaterSystem(pwsid=w["pwsid"], name=w["name"].title(), population=w.get("population"),
-                                    connections=w.get("connections"), share_of_place=w.get("share"))
+                                    connections=w.get("connections"), share_of_place=w.get("share"),
+                                    buys_from=[_cap(x["name"]) for x in sd.sellers(w["pwsid"]) if x.get("name")])
     from waterledger_data.supply import SERVES_SHARE
     # the systems that serve the place, on 5% of it or more: one on less is taken not to be there (serves), so it isn't listed, compared with or
     # named as the place's supply (Greenbush Township and Harrisville's system, 0.6% of it); the nearest sizable one stands in (design 0011)
@@ -94,9 +96,12 @@ def context(state, place):
                        nearest_system=sys_(near) if near else None, nearest_system_km=near_km,
                        county_use_mgd=use.mgd if use else {}, county_water_use=use, county_water_use_usgs=usgs,
                        household_wells=(wells or {}).get(place.geoid))
+    # the survey's sewers first (design 0023), then the place's own, its water system's town and the nearest; each says how it was chosen
     plants = [cx.SewerPlant(npdes=q["id"], name=q["name"], design_mgd=q["design_mgd"], flow_mgd=q["flow_mgd"], km=q["km"],
-                            own=q["own"], system=q["system"], receiving_water=_cap(q["receiving"]) or None, combined_sewer=q["cso"], lagoon=q["lagoon"])
-              for q in ww.nearest(sd.plants(), place.lat, place.lon, base, km=PLANTS_KM, township="township" in place.name.lower(), system=ww.main_system(mine))[:PLANTS_MAX]]
+                            own=q["own"], system=q["system"], basis=q["basis"], served_share=q.get("served_share"),
+                            receiving_water=_cap(q["receiving"]) or None, combined_sewer=q["cso"], lagoon=q["lagoon"])
+              for q in ww.ranked_for(sd.plants(), sd.served(place.geoid), place.lat, place.lon, base, km=PLANTS_KM,
+                                     township="township" in place.name.lower(), system=_system_towns(sd, mine))[:PLANTS_MAX]]
     sheds = sd.sheds_for(place.geoid)
     shore = sd.great_lake(place.geoid)
     path = sd.downstream(sheds["h12"][0]["code"]) if sheds["h12"] else []
@@ -168,6 +173,16 @@ def _energy(state, place):
     terr = "mpsc_territory" if sd.layer("utilities") is not None else "hifld_territories"
     return cx.Energy(provider="national", sources=[terr, "eia861", "siddik2024", "eia923_2024", "macknick2012"], utilities=out,
                      nearest_place=near, nearest_place_km=near_km, nearest_utilities=near_out, power_plant_water=_ppw(state))
+
+
+def _system_towns(sd, systems):
+    """The main water system's name and the names of the systems it buys from (design 0023), for the sewer rule's step by town."""
+    from waterledger_data import wastewater as ww
+    main = ww.main_system(systems)
+    if not main:
+        return []
+    pw = next((w["pwsid"] for w in systems if w["name"] == main), None)
+    return [main] + [x["name"] for x in sd.sellers(pw) if x.get("name")] if pw else [main]
 
 
 def _utilities(state, geoid, loads, own):
@@ -313,7 +328,8 @@ def default_wastewater(ctx, evaporative, sewer_mgd, far=None):
     a river or lake and a septic system for the rest."""
     mapped = serves([{"share": w.share_of_place} for w in ctx.supply.systems])
     q = ctx.wastewater.plants[0] if ctx.wastewater.plants else None
-    reach = q is not None and (mapped or q.km <= SEWER_KM)
+    # a plant the survey's sewers reach from the place is in reach whatever the distance (design 0023); otherwise the 10 km line
+    reach = q is not None and (mapped or q.km <= SEWER_KM or q.basis in SURVEYED)
     room = (q.design_mgd - q.flow_mgd) if q and q.design_mgd and q.flow_mgd else None
     why = "far" if not reach else "full" if evaporative and room is not None and sewer_mgd() > room else ""
     return (far or ("water" if evaporative else "septic")) if why else "sewer"

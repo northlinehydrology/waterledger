@@ -143,9 +143,10 @@ def write(state, out, date=None, checks=None, runs_dir=None):
     nearest = {g: [w["pwsid"], km] for g, (w, km) in live.nearest_systems([g for g in pl.geoid if not any(v["share"] >= supply.SERVES_SHARE for v in by.get(g, []))]).items() if w}
     _write(os.path.join(folder, "supply.json"), {
         "systems": {r.pwsid: {"name": r.name, "population": int(r.population or 0), "connections": int(r.connections or 0)} for r in sy.itertuples()},
-        "by_place": {g: [[w["pwsid"], w["share"]] for w in ws] for g, ws in by.items()}, "nearest": nearest})
+        "by_place": {g: [[w["pwsid"], w["share"]] for w in ws] for g, ws in by.items()}, "nearest": nearest,
+        "sellers": supply.sellers(state)})                     # who each system buys from (design 0023)
 
-    _write(os.path.join(folder, "wastewater.json"), {"plants": wastewater.plants(state)})
+    _write(os.path.join(folder, "wastewater.json"), {"plants": wastewater.plants(state), "served": wastewater.served_by(state, pl)})      # design 0023
 
     sheds = receiving.watersheds_by_place(state, pl)
     starts = sorted({v["h12"][0]["code"] for v in sheds.values() if v["h12"]})

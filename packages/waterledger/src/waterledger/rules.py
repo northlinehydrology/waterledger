@@ -94,6 +94,15 @@ def jurisdiction(state):
     return out
 
 
+def septic_line(state, gpd):
+    """Who approves an on-site sewage system of `gpd` gallons a day under a state's rules ([[septic.lines]]: the first line whose `below_gpd`
+    (under) or `max_gpd` (up to) the flow meets, else the last, open line), as the page's WQ.septicRule; "" where the state has no septic lines."""
+    for x in (load(state) or {}).get("septic", {}).get("lines", []):
+        if (gpd < x["below_gpd"]) if "below_gpd" in x else (gpd <= x["max_gpd"]) if "max_gpd" in x else True:
+            return x["text"]
+    return ""
+
+
 def sources(state):
     """{id: source} for a state's rules, each with the date it was read."""
     R = load(state) or {}

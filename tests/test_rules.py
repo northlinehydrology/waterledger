@@ -189,3 +189,14 @@ def test_an_areas_file_is_well_formed():
             assert g.isdigit() and len(g) in (5, 7, 10)
             for grp, v in m.items():
                 assert grp in A["groups"] and A["part"] <= v["share"] <= 1 and set(v["names"]) <= set(A["groups"][grp])
+
+
+def test_septic_line_reads_each_state_file():
+    # the first line the flow meets (under `below_gpd`, up to `max_gpd`), else the last, open line, as the page's WQ.septicRule; Michigan's old reader is the same text
+    from waterledger import scenario
+    for st in rules.states():
+        L = rules.load(st)["septic"]["lines"]
+        assert rules.septic_line(st, 1e9) == L[-1]["text"] and rules.septic_line(st, 0) == L[0]["text"]
+    assert "6,000" in rules.septic_line("MI", 5999) and "permit-by-rule" in rules.septic_line("MI", 6000) and "EGLE" in rules.septic_line("MI", 10000)
+    assert scenario.septic_rule(8000) == rules.septic_line("MI", 8000)
+    assert rules.septic_line("ZZ", 100) == ""
