@@ -1,0 +1,7 @@
+# CoolingPondBmi config for CSDMS bmi-tester: 100 MW of heat into a 1 km2, 3 m pond, one day of hourly steps, inputs set through set_value.
+area_m2: 1000000
+depth_m: 3
+heat_mw: 100
+time_step: 3600
+end_time: 86400
+initial_temperature: 20

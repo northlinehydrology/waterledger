@@ -11,6 +11,7 @@ from waterledger_models.datacenter import bmi as B
 from waterledger_models.datacenter.bmi import CoolingWaterBmi, LakeCoolingBmi
 from waterledger_models.gas.bmi import GasPlantBmi
 from waterledger_models.grid.bmi import GridWaterBmi
+from waterledger_models.ponds import bmi as P
 from test_grid_component import synthetic
 from test_physics_properties import synthetic_weather
 
@@ -40,6 +41,9 @@ def _inputs(cls, step):
         return {"water_user__electric_power": 100 + 10 * (step % 7), TEMP: hot}
     if cls is CoolingWaterBmi:          # a limit that binds on hot hours, so heat not removed and the lost hours (a running sum) move
         return {TEMP: hot, RH: 45 + 3 * (step % 9), B.LIMIT: 0.05 if step % 4 == 0 else np.inf, B.INTAKE.format("chloride"): 0.03}
+    if cls is P.CoolingPondBmi:         # a limit some days, so the pond draws down and refills: its volume, heat and mass carry
+        return {TEMP: hot, RH: 45 + 3 * (step % 9), P.WIND: 2 + step % 4, P.SW: 200 + 20 * (step % 5), P.LW: 350.0,
+                P.RAIN: 0.01 if step % 6 == 0 else 0.0, B.LIMIT: 0.05 if 5 <= step < 20 else np.inf, B.INTAKE.format("chloride"): 0.03}
     if cls is GasPlantBmi:
         return {TEMP: hot, RH: 45 + 3 * (step % 9), "power_plant__electric_power_demand": 300 + 250 * np.sin(step / 5.0)}
     return {TEMP: hot, RH: 45 + 3 * (step % 9)}
@@ -51,6 +55,7 @@ CASES = {
     "lake": (LakeCoolingBmi, lambda tmp: {"it_capacity_mw": 100}),
     "battery": (BatteryCellBmi, lambda tmp: {"design": "towers", "capacity_gwh": 10, "parameters": {"design_h": 70.0}}),
     "gas": (GasPlantBmi, lambda tmp: {"technology": "cc", "design": "towers", "units": 2, "unit_mw": 300}),
+    "cooling pond": (P.CoolingPondBmi, lambda tmp: {"area_m2": 2e5, "depth_m": 2.0, "heat_mw": 40, "time_step": 86400}),
     "grid": (GridWaterBmi, lambda tmp: {"table": _grid_table(), "start": "2021-07-01T00"}),
 }
 
