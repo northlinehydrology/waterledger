@@ -75,3 +75,29 @@ def nearest_sizable(state, points):
     pts = gpd.GeoDataFrame({"geoid": points.geoid.values}, geometry=gpd.points_from_xy(points.lon, points.lat), crs=4326).to_crs(ALBERS)
     hit = gpd.sjoin_nearest(pts, sy, how="left", distance_col="m").sort_values(["geoid", "population", "pwsid"], ascending=[True, False, True]).drop_duplicates("geoid")
     return {r.geoid: ({"pwsid": r.pwsid, "name": r.name, "population": int(r.population), "connections": int(r.connections or 0)}, round(float(r.m) / 1000, 1)) for r in hit.itertuples()}
+
+
+ENVIROFACTS = "https://data.epa.gov/efservice"
+
+
+def sellers(state):
+    """Which water system each of a state's systems buys from (design 0023): EPA SDWIS consecutive connections (facility type CC, active), from
+    Envirofacts' WATER_SYSTEM_FACILITY table: {pwsid: [{"seller": pwsid, "name": seller's name}]}. Ada Township's system buys from Grand Rapids."""
+    path = os.path.join(RAW, f"{state}_sellers.json")
+    if not os.path.exists(path):
+        rows, start = [], 0
+        while True:
+            got = _get(f"{ENVIROFACTS}/WATER_SYSTEM_FACILITY/FACILITY_TYPE_CODE/CC/PWSID/BEGINNING/{state}/rows/{start}:{start + 4999}/JSON", {})
+            rows += got
+            if len(got) < 5000:
+                break
+            start += 5000
+        out = {}
+        for r in rows:
+            if r.get("facility_activity_code") == "A" and r.get("seller_pwsid") and r["seller_pwsid"] != r["pwsid"]:
+                e = {"seller": r["seller_pwsid"], "name": r.get("seller_pws_name") or ""}
+                if e not in out.setdefault(r["pwsid"], []):
+                    out[r["pwsid"]].append(e)
+        os.makedirs(RAW, exist_ok=True)
+        json.dump(out, open(path, "w", encoding="utf-8"))
+    return json.load(open(path, encoding="utf-8"))
