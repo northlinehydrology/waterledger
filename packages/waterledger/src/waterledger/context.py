@@ -25,6 +25,8 @@ class WaterSystem(BaseModel):
     population: int | None = None
     connections: int | None = None
     share_of_place: float | None = None
+    buys_from: list[str] = []       # the systems it buys its water from (EPA SDWIS consecutive connections; design 0023), by name; [] where it buys from none,
+                                    # or in data from before 3.29
 
 
 class CountyWaterUse(BaseModel):
@@ -72,6 +74,9 @@ class SewerPlant(BaseModel):
     receiving_water: str | None = None
     own: bool = False               # the place's own plant (wastewater.is_own)
     system: bool = False            # named for the water system serving most of the place (wastewater.rank), when not its own
+    basis: str | None = None        # how it was chosen (design 0023): "name", "inside" or "county" (the survey's sewers send the place's flow here; see
+                                    # wastewater.SERVED_BASIS), "own", "system" or "nearest"; None in data from before 3.29
+    served_share: float | None = None   # the share of the place's surveyed flow that reaches it, where the survey says
     combined_sewer: bool = False
     lagoon: bool = False
 

@@ -75,12 +75,20 @@ class SnapshotData:
         S = self._json("supply")
         return [{"pwsid": p, **S["systems"][p], "share": sh} for p, sh in S["by_place"].get(geoid, [])]
 
+    def sellers(self, pwsid):
+        """[{seller, name}]: the systems `pwsid` buys from (design 0023), or [] (a snapshot from before 3.29)."""
+        return self._json("supply").get("sellers", {}).get(pwsid, [])
+
     def nearest_system(self, geoid):
         n = self._json("supply").get("nearest", {}).get(geoid)
         return ({"pwsid": n[0], **self._json("supply")["systems"][n[0]]}, n[1]) if n else (None, None)
 
     def plants(self):
         return self._json("wastewater")["plants"]
+
+    def served(self, geoid):
+        """The plants the survey's sewers send the place's flow to (wastewater.served_by; design 0023), or [] (a snapshot from before 3.29)."""
+        return self._json("wastewater").get("served", {}).get(geoid, [])
 
     def sheds_for(self, geoid):
         return self._json("receiving")["by_place"].get(geoid, {"h12": [], "h8": None})
@@ -202,6 +210,10 @@ class LiveData:
         from waterledger_data import supply
         return supply.systems_by_place(self.state, self._pl).get(geoid, [])
 
+    def sellers(self, pwsid):
+        from waterledger_data import supply
+        return supply.sellers(self.state).get(pwsid, [])
+
     def nearest_systems(self, geoids):
         """{geoid: (system, km)} for many places at once: the nearest sizable system to each place's point (supply.nearest_sizable)."""
         from waterledger_data import supply
@@ -213,6 +225,12 @@ class LiveData:
     def plants(self):
         from waterledger_data import wastewater
         return wastewater.plants(self.state)
+
+    def served(self, geoid):
+        from waterledger_data import wastewater
+        if not hasattr(self, "_served"):
+            self._served = wastewater.served_by(self.state, self._pl)
+        return self._served.get(geoid, [])
 
     def sheds_for(self, geoid):
         from waterledger_data import receiving
