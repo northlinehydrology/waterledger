@@ -133,4 +133,6 @@ def test_michigan_places_by_the_rule():
     assert first("Grand Rapids city, MI")["n"] == "GRAND RAPIDS WWTP" and first("Lansing city, MI")["n"] == "LANSING WWTP"
     assert first("Gaines charter township, MI")["n"] == "WYOMING WWTP"
     c = wl.place("Cascade charter township, MI").context()
-    assert c.wastewater.plants[0].name == "GRAND RAPIDS WWTP" and c.wastewater.plants[0].system and not c.wastewater.plants[0].own
+    q = c.wastewater.plants[0]
+    # the same plant either way: from a snapshot with the survey's sewers (3.29, design 0023) the survey's system inside Cascade reaches it; before, its water system's town did
+    assert q.name == "GRAND RAPIDS WWTP" and not q.own and (q.basis in ("name", "inside", "county") or q.system)
