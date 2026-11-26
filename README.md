@@ -272,9 +272,11 @@ center or place number, so it skips the snapshots and reads model 1.11's (`water
 - **Snapshot format 3.** The snapshots carry each cell's results (`cells/`). Rainfall, road salt and golf stay with the
   regions and division stations.
 
-Michigan has its own layers (state-reported water use, domestic wells, trout streams, lake-source cooling)
-and matches [waterledger.org/mi](https://waterledger.org/mi/) exactly. The other states use national datasets only
-([design 0002](docs/design/0002-national-tier.md)). State rules are not part of a snapshot: a state whose rules have been read
+Every state is built the same way, from national datasets ([design 0002](docs/design/0002-national-tier.md)), and a state can add
+layers of its own that add to the base or replace it where they measure better ([design 0011](docs/design/0011-michigan-on-the-base.md);
+`waterledger_data.layers`). Michigan's are the first: EGLE's reported water use and golf courses, domestic wells (Wellogic), trout
+streams (DNR), EGLE's listed waters placed in their own watersheds, MPSC's utility territories and its road-salt regions; Ohio's,
+Texas's and Virginia's county water use is theirs too. State rules are not part of a snapshot: a state whose rules have been read
 against their primary sources carries a rules file in the package (`waterledger/rules/`; every state on waterledger.org: Michigan, Ohio, Georgia, Virginia, Texas, Wisconsin, Indiana, Minnesota, Pennsylvania, Illinois, New York and Arizona), which
 `est.levels` reads for its legal lines; a state without one has no lines and says so. Where a rule applies only inside an area that doesn't follow county lines (Arizona's Active Management Areas, Virginia's groundwater management areas, Texas's groundwater districts, Pennsylvania's Southeastern Ground Water Protected Area), `rules/<st>_areas.json` (built by `tools/rule_areas.py` from the official boundaries) says which places are inside, and a place that straddles an area's edge gets both rules (`wl.rules.place_areas(st, geoid)`); any other state can be built locally with `waterledger build-state ST`.
 Adding a state from start to publication, step by step with what each step writes and how to tell it's done, is in

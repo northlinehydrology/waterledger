@@ -2,9 +2,9 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## 3.28.0 (unreleased; model 1.17)
+## 3.28.0 (Nov 25, 2026; model 1.17)
 
-Every state, Michigan included, is the national base plus its own layers (design 0011). No model change; data changes are listed in the methods log
+waterledger and waterledger-data (waterledger-models unchanged, 3.25.0). Every state, Michigan included, is the national base plus its own layers (design 0011). No model change; data changes are listed in the methods log
 (Nov 25, 2026), and the differences in Michigan's answers, each with its cause, in `docs/design/0011-differences.md`.
 
 - **Michigan on the base.** `build-state MI` and `snapshot MI` build Michigan as every state, and the national provider answers for it.
