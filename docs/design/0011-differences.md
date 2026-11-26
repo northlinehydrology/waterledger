@@ -1,8 +1,8 @@
 # Michigan on the base: every difference from the before record
 
-Design 0011 step 6, Nov 25, 2026: every field that differs between Michigan's answers on its former path (3.27.0, snapshot 2026-11-17; `tests/data/michigan_before_0011.json.xz`) and on the base with its layers (this branch, a local snapshot built Nov 25), by `tests/michigan_after_0011.py`. The causes are in the note, section "Step 6, the after record".
+Design 0011 step 6, Nov 25, 2026 (rerun after a place's water systems were limited to those on 5% of it or more): every field that differs between Michigan's answers on its former path (3.27.0, snapshot 2026-11-17; `tests/data/michigan_before_0011.json.xz`) and on the base with its layers (a local snapshot built Nov 25), by `tests/michigan_after_0011.py`. The causes are in the note, section "Step 6, the after record".
 
-11,112 cases at 1,541 places; 238,209 differing values in 281 fields.
+11,112 cases at 1,541 places; 240,658 differing values in 276 fields.
 
 | Part | Field | Places | Values | Largest relative change | Example (place, before → after) |
 |---|---|---|---|---|---|
@@ -35,10 +35,10 @@ Design 0011 step 6, Nov 25, 2026: every field that differs between Michigan's an
 | reference | `/ok/power_options/state_mix/sources` | 1,541 | 1,541 | | 2600101040 reference: ["eia923_2024", "eia_mi", "macknick2012"] → ["eia923_2024", "eia_sep2024", "macknick2012", "siddik2024"] |
 | reference | `/ok/state_avg_mw` | 1,541 | 1,541 | 9.32e-06 | 2600101040 reference: 11468 → 11468.106849315069 |
 | context | `/ok/energy/utilities[]/avg_mw` | 1,537 | 2,192 | 98.1 | 2600101040 context: 4271.9 → 4271.883219178082 |
-| estimate | `/ok/comparisons[]/existing` | 1,529 | 14,601 | 1.76e+04 | 2600101040 assist: 4271.9 → 4271.883219178082 |
-| estimate | `/ok/comparisons[]/percent/avg/p10` | 1,529 | 14,621 | 98.1 | 2600101040 assist: 4.316425840799294 → 4.316442796593645 |
-| estimate | `/ok/comparisons[]/percent/avg/p50` | 1,529 | 14,621 | 98.1 | 2600101040 assist: 5.309248935406912 → 5.309269791211327 |
-| estimate | `/ok/comparisons[]/percent/avg/p90` | 1,529 | 14,621 | 98.1 | 2600101040 assist: 6.262161944730173 → 6.262186543769759 |
+| estimate | `/ok/comparisons[]/existing` | 1,527 | 15,477 | 98.1 | 2600101040 assist: 4271.9 → 4271.883219178082 |
+| estimate | `/ok/comparisons[]/percent/avg/p10` | 1,527 | 15,503 | 98.1 | 2600101040 assist: 4.316425840799294 → 4.316442796593645 |
+| estimate | `/ok/comparisons[]/percent/avg/p50` | 1,527 | 15,503 | 98.1 | 2600101040 assist: 5.309248935406912 → 5.309269791211327 |
+| estimate | `/ok/comparisons[]/percent/avg/p90` | 1,527 | 15,503 | 98.1 | 2600101040 assist: 6.262161944730173 → 6.262186543769759 |
 | context | `/ok/supply/county_use_mgd/Public water systems` | 1,522 | 1,522 | | 2600101040 context: 0.05 → "<absent>" |
 | context | `/ok/supply/county_use_mgd/public_supply` | 1,522 | 1,522 | | 2600101040 context: "<absent>" → 0.05 |
 | context | `/ok/supply/county_use_mgd/Golf courses` | 1,519 | 1,519 | | 2600101040 context: 0.088 → "<absent>" |
@@ -65,7 +65,7 @@ Design 0011 step 6, Nov 25, 2026: every field that differs between Michigan's an
 | context | `/ok/supply/county_use_mgd/thermoelectric` | 536 | 536 | | 2600101040 context: "<absent>" → 0.0 |
 | context | `/ok/supply/county_use_mgd/Livestock` | 522 | 522 | | 2600501260 context: 1.699 → "<absent>" |
 | context | `/ok/supply/county_use_mgd/livestock` | 522 | 522 | | 2600501260 context: "<absent>" → 1.699 |
-| context | `/ok/supply/systems` | 516 | 516 | | 2600134820 context: [] → [{"pwsid": "MI0003050", "name": "Harrisville, City Of", "pop |
+| context | `/ok/supply/systems[]/share_of_place` | 436 | 499 | 0.807 | 2600136860 context: 0.82 → 0.894 |
 | estimate | `/ok/before_after[]/after` | 364 | 1,438 | 0.253 | 2600101040 lake: 147.30561 → 147.30559883989235 |
 | estimate | `/ok/before_after[]/after_high` | 352 | 1,365 | 0.313 | 2600101040 lake: 194.04045 → 194.04043681080043 |
 | estimate | `/ok/before_after[]/after_low` | 352 | 1,366 | 0.218 | 2600101040 lake: 112.5096 → 112.50960552875644 |
@@ -165,13 +165,10 @@ Design 0011 step 6, Nov 25, 2026: every field that differs between Michigan's an
 | estimate | `/ok/water/withdrawn_max_month/p10` | 328 | 337 | 0.124 | 2600101040 lake: 112.5096 → 112.50960552875644 |
 | estimate | `/ok/water/withdrawn_max_month/p50` | 328 | 337 | 0.081 | 2600101040 lake: 147.30561 → 147.30559883989235 |
 | estimate | `/ok/water/withdrawn_max_month/p90` | 328 | 337 | 0.0611 | 2600101040 lake: 194.04045 → 194.04043681080043 |
-| estimate | `/ok/comparisons[]/percent/peak_day/p10` | 311 | 444 | 77.9 | 2600101040 lake: 4.008651402692162 → 4.008651372654401 |
-| estimate | `/ok/comparisons[]/percent/peak_day/p50` | 311 | 444 | 77.9 | 2600101040 lake: 4.1892914832054355 → 4.189291362101837 |
-| estimate | `/ok/comparisons[]/percent/peak_day/p90` | 311 | 444 | 77.9 | 2600101040 lake: 4.37030142156246 → 4.3703014658144435 |
-| context | `/ok/supply/systems[]/share_of_place` | 297 | 339 | 0.533 | 2600136860 context: 0.82 → 0.894 |
-| estimate | `/ok/comparisons` | 210 | 467 | | 2600134820 assist: [{"against": "county_water", "basis": "Campus water on an av → [{"against": "water_system", "name": "Harrisville, City Of", |
+| estimate | `/ok/comparisons[]/percent/peak_day/p10` | 310 | 444 | 77.9 | 2600101040 lake: 4.008651402692162 → 4.008651372654401 |
+| estimate | `/ok/comparisons[]/percent/peak_day/p50` | 310 | 444 | 77.9 | 2600101040 lake: 4.1892914832054355 → 4.189291362101837 |
+| estimate | `/ok/comparisons[]/percent/peak_day/p90` | 310 | 444 | 77.9 | 2600101040 lake: 4.37030142156246 → 4.3703014658144435 |
 | context | `/ok/energy/utilities[]/share_of_place` | 190 | 233 | 0.286 | 2600101040 context: 0.94 → 0.95 |
-| estimate | `/ok/levels/water_system` | 172 | 348 | | 2600134820 assist: "<absent>" → "large" |
 | context | `/ok/supply/county_use_mgd/Bottled water` | 148 | 148 | | 2605307960 context: 0.005 → "<absent>" |
 | context | `/ok/wastewater/plants[]/name` | 72 | 140 | | 2600501280 context: "GRANDVILLE WWTP" → "SOUTH HAVEN STP" |
 | context | `/ok/wastewater/plants[]/npdes` | 72 | 140 | | 2600501280 context: "MI0023027" → "MI0020320" |
@@ -185,6 +182,7 @@ Design 0011 step 6, Nov 25, 2026: every field that differs between Michigan's an
 | context | `/ok/receiving/basin/huc12` | 60 | 60 | 0.0418 | 2600311960 context: "04030113" → "04020201" |
 | context | `/ok/receiving/basin/name` | 60 | 60 | | 2600311960 context: "Manistique River" → "Betsy-Chocolay" |
 | estimate | `/ok/before_after[]/today` | 31 | 127 | 20.8 | 2601541120 assist: 0.65 → null |
+| estimate | `/ok/comparisons` | 30 | 111 | | 2600528120 assist: [{"against": "county_water", "basis": "Campus water on an av → [{"against": "county_water", "name": "County", "measure": "p |
 | context | `/ok/supply/nearest_system_km` | 29 | 29 | 0.0625 | 2601942000 context: 32.3 → 32.4 |
 | context | `/ok/receiving/watersheds[]/huc12` | 28 | 57 | 0.0418 | 2602312560 context: "041000030203" → "040500010801" |
 | context | `/ok/receiving/watersheds[]/name` | 28 | 57 | | 2602312560 context: "West Fork West Branch Saint Joseph River" → "Snow Lake" |
@@ -193,6 +191,7 @@ Design 0011 step 6, Nov 25, 2026: every field that differs between Michigan's an
 | estimate | `/ok/comparisons[]/second_system_share` | 20 | 80 | 0.122 | 2602170960 assist: 0.32 → 0.326 |
 | estimate | `/ok/site_loads[]/after` | 20 | 444 | 0.109 | 2606521420 hybrid: 45.052175260042056 → 48.81955944232305 |
 | estimate | `/ok/site_loads[]/after_high` | 20 | 444 | 0.109 | 2606521420 hybrid: 97.6130463967578 → 105.77571212503327 |
+| context | `/ok/supply/systems` | 19 | 19 | | 2601754980 context: [{"connections": 1388, "name": "Bangor-Monitor Metro Distric → [{"pwsid": "MI0000400", "name": "Bangor-Monitor Metro Distri |
 | context | `/ok/climate/rain_in` | 17 | 17 | 0.000279 | 2612707300 context: 35.85 → 35.84 |
 | estimate | `/ok/site_loads[]/after_low` | 17 | 438 | 0.000279 | 2612707300 assist: 9.660295871999999 → 9.6576012288 |
 | estimate | `/ok/site_loads[]/today` | 17 | 308 | 0.000279 | 2612707300 assist: 106.41644173800002 → 106.41598571520001 |
@@ -206,14 +205,14 @@ Design 0011 step 6, Nov 25, 2026: every field that differs between Michigan's an
 | estimate | `/ok/levels/sewer` | 11 | 36 | | 2601541120 assist: "large" → "<absent>" |
 | estimate | `/ok/before_after[]/key` | 9 | 32 | | 2601541120 assist: "sewer" → "wastewater" |
 | estimate | `/ok/site/wastewater` | 9 | 32 | | 2601541120 assist: "sewer" → "septic" |
-| estimate | `/ok/comparisons[]/name` | 8 | 50 | | 2604933300 assist: "Grand Blanc, City Of" → "Charter Township Of Grand Blanc" |
+| estimate | `/ok/comparisons[]/name` | 7 | 40 | | 2604933300 assist: "Grand Blanc, City Of" → "Charter Township Of Grand Blanc" |
 | estimate | `/ok/levels/withdrawal_mgd` | 7 | 20 | 0.0757 | 2603150300 assist: "<absent>" → 0.015329681939649774 |
 | estimate | `/ok/levels/withdrawal_peak_day_mgd` | 7 | 20 | 0.0584 | 2603150300 assist: "<absent>" → 0.7193326599910423 |
 | estimate | `/ok/levels/withdrawal_people` | 7 | 20 | 0.0757 | 2603150300 assist: "<absent>" → 111.23846125438169 |
 | estimate | `/ok/levels/withdrawal_people_peak_day` | 7 | 20 | 0.0584 | 2603150300 assist: "<absent>" → 5219.772891729871 |
+| estimate | `/ok/levels/water_system` | 6 | 18 | | 2601754980 dry: "mid" → "small" |
 | context | `/ok/supply/nearest_system` | 5 | 5 | | 2603150300 context: null → {"pwsid": "MI0001360", "name": "Cheboygan, City Of", "popula |
 | context | `/ok/wastewater/plants[]/lagoon` | 5 | 9 | 1 | 2605135340 context: true → false |
-| estimate | `/ok/comparisons[]/basis` | 5 | 24 | | 2600571720 assist: "The only systems mapped here are very small, too small for  → "The main system mapped here is very small; larger ones cove |
 | estimate | `/ok/levels/withdrawal` | 5 | 14 | | 2603150300 assist: "<absent>" → "mid" |
 | estimate | `/ok/levels/withdrawal_flag` | 5 | 14 | | 2603150300 assist: "<absent>" → null |
 | estimate | `/ok/levels/withdrawal_flag_note` | 5 | 10 | | 2603150300 hybrid: "<absent>" → "The estimated need exceeds 1 million gallons a day. Where a |
@@ -271,19 +270,15 @@ Design 0011 step 6, Nov 25, 2026: every field that differs between Michigan's an
 | context | `/ok/climate/cell_moved` | 2 | 2 | 1 | 2601180840 context: true → false |
 | context | `/ok/receiving/downstream[]/coldwater_streams` | 2 | 2 | | 2602343260 context: ["Prairie River"] → [] |
 | context | `/ok/receiving/downstream[]/tmdl` | 2 | 4 | | 2602343260 context: ["Bacteria (E. coli)", "Chemicals in fish (mercury, PCBs, PF → [] |
+| context | `/ok/supply/systems[]/connections` | 2 | 4 | 9.57 | 2601705120 context: 5138 → 486 |
+| context | `/ok/supply/systems[]/name` | 2 | 4 | | 2601705120 context: "Bangor Township" → "Pinconning Township" |
+| context | `/ok/supply/systems[]/population` | 2 | 4 | 7.11 | 2601705120 context: 11999 → 1479 |
+| context | `/ok/supply/systems[]/pwsid` | 2 | 4 | | 2601705120 context: "MI0000390" → "MI0005335" |
 | context | `/ok/energy/nearest_place_km` | 1 | 1 | 1 | 2602970920 context: 22.1 → 0.0 |
 | context | `/ok/energy/nearest_utilities[]/avg_mw` | 1 | 1 | 0.000199 | 2602970920 context: 189.2 → 189.16244292237442 |
 | context | `/ok/energy/utilities[]/customers` | 1 | 2 | 68.7 | 2606765860 context: 27298 → 1901950 |
 | context | `/ok/energy/utilities[]/name` | 1 | 2 | | 2606765860 context: "Homeworks Tri-County Electric Cooperative" → "Consumers Energy Company" |
 | context | `/ok/energy/utilities[]/summer_peak_mw` | 1 | 2 | 77.9 | 2606765860 context: 100.7 → 7949.0 |
 | context | `/ok/energy/utilities[]/type` | 1 | 2 | | 2606765860 context: "Cooperative" → "Investor Owned" |
-| context | `/ok/supply/systems[]/connections` | 1 | 2 | 9.57 | 2601705120 context: 5138 → 486 |
-| context | `/ok/supply/systems[]/name` | 1 | 2 | | 2601705120 context: "Bangor Township" → "Pinconning Township" |
-| context | `/ok/supply/systems[]/population` | 1 | 2 | 7.11 | 2601705120 context: 11999 → 1479 |
-| context | `/ok/supply/systems[]/pwsid` | 1 | 2 | | 2601705120 context: "MI0000390" → "MI0005335" |
 | context | `/ok/wastewater/plants[]/own` | 1 | 1 | | 2606546000 context: false → true |
 | context | `/ok/wastewater/plants[]/system` | 1 | 1 | | 2612517640 context: false → true |
-| estimate | `/ok/comparisons[]/against` | 1 | 8 | | 2608925700 assist: "county_water" → "water_system" |
-| estimate | `/ok/comparisons[]/measure` | 1 | 8 | | 2608925700 assist: "public_water" → "homes_vs_connections" |
-| estimate | `/ok/comparisons[]/percent/peak_day` | 1 | 4 | | 2608925700 assist: null → {"p10": 38.3679377762518, "p50": 56.74386861627573, "p90": 8 |
-| estimate | `/ok/comparisons[]/unit` | 1 | 4 | | 2608925700 assist: "MGD" → "connections" |

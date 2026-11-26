@@ -327,7 +327,7 @@ The base's `watersheds_by_place` took 7.4 hours for Michigan's places. Every oth
 ## Step 6, the after record (Nov 25, 2026)
 
 Every Michigan answer again from a snapshot built on the base with Michigan's layers (`waterledger snapshot MI`, 2.5 minutes), against
-the before record. That covers 11,112 cases at 1,541 places. 281 fields differ, at some place, for some case; the full list, with counts,
+the before record. That covers 11,112 cases at 1,541 places. 276 fields differ, at some place, for some case (281 before the 5% fix below); the full list, with counts,
 largest changes and examples, is `0011-differences.md`. Each has one of the causes below. No better Michigan source was dropped.
 
 **The water estimates.** Cooling, staff and lake-source water are the same, with three exceptions:
@@ -345,14 +345,14 @@ Getting here took one fix in the base for every state: the staff-water draws, 40
 | True positions | 1,540 | Census internal points in place of the page's map coordinates (lat and lon within about 0.001 degree), so distances to sewer plants and water systems change by up to a few hundred metres; at 72 places two plants swap order | Expected |
 | Default source or wastewater | 12 | A distance crossing the 10 km line or a share crossing 5%: Irving, Butterfield and Lake townships lose the sewer default; East Bay, Cambria, Rives, Kalkaska, Burlington and Edwards gain it; Mackinaw and Crockery lose the public water default, and East Bay, Kalkaska and Vernon gain it | Expected; listed by place in the differences file |
 | Eastern Upper Peninsula | 68 | Region, name and station, and road salt at 93 days (decision 3) | Expected |
-| Water systems listed below 5% | 516 listed; about 170 gain a comparison | The base lists systems on 0.5–5% of a place, as in every state. `comparisons.main_system` then compares the campus against one of them where none serves the place (Greenbush Township against Harrisville's system, 0.6% of it). Michigan's path made no comparison there | **For Andrew.** Not a Michigan loss (there was no comparison before), but the shared rule is questionable in every state: the comparison should be with a system that serves the place, or the nearest sizable one the default draws from. Health queue |
+| Water systems at the 5% line | 19 | A system that serves the place is one on 5% of it or more, as Michigan's files always listed them. After a first run, where the base listed systems down to 0.5% and about 170 places gained a comparison with one barely in them (Greenbush Township with Harrisville's system), the base was changed for every state to list only the systems that serve a place (3.28.0). What remains is 19 places whose shares sit within a point of 5% by true outlines, and comparisons or the water-system level change at 30 and 6 of them | Expected; fixed in the base for every state |
 | County water use keys | 1,541 | `county_use_mgd` uses the shared categories (`public_supply`, `golf`, and a `total`), as in every state, in place of EGLE's group names. The numbers are EGLE's | Expected; the page's labels are step 7's job |
 | Watersheds | 1,473 | The base also lists watersheds on 1–5% of a place; the main one differs at 28 places and the HUC8 at 60, where shares are near equal | Expected |
 | Utilities | 1,541 | MPSC's territories as before, the same top utility everywhere but one place (Homeworks Tri-County to Consumers, by true outlines); shares from true outlines at 190 places; loads unrounded | Expected |
 | Power options | 1,541 | MISO's withdrawal is the Siddik table's 54.8 L/kWh (the base reads the shipped table in every state), not the 57.1 typed into Michigan's builder, which matches no column of the table; a PJM grid average is offered, since seven Michigan utilities are in PJM | **For Andrew** (MISO): expected unless 57.1 came from somewhere the table doesn't |
 | Rain | 17 | County rainfall in the fourth figure: the same NOAA series, read again | Expected |
 
-**Two findings for the health queue, not this note.** The water-system comparison above, and two problems step 2 found in other states:
+**For the health queue, not this note:** two problems step 2 found in other states:
 Texas's delivery-only utilities ranked last in ERCOT's open areas, and FirstEnergy Pennsylvania's retired EIA numbers.
 
 ## No better estimate lost: the check
