@@ -1,8 +1,7 @@
 # 0024: State on the BMI components, and a cooling pond that keeps it
 
-Status: **proposed Nov 26, 2026.** Andrew agreed on Nov 26 that some models should keep state, on one condition: no existing estimate
-changes. Part 1 (state functions) is built on branch `claude/bmi-state`. Part 2 (a cooling pond) is proposed, with its open choices
-listed below for Andrew.
+Status: **built Nov 26, 2026** (PR #42). Andrew agreed on Nov 26 that some models should keep state, on one condition: no existing
+estimate changes. Part 1 (state functions) and part 2 (a cooling pond) are built, and part 2's choices are decided (below).
 
 Basin Ledger asked for this (`basinledger/docs/requests.md`, waterledger-models item 6): "State functions (`get_state`/`set_state`, after
 CSDMS bmi PR #112), for any user model that keeps state between steps (ponds, tailings), so scenarios can start from a shared warm-up."
@@ -100,12 +99,16 @@ yesterday. That is the case a stateless hour can't give.
 
 ### Decided (Andrew, Nov 26, 2026: as proposed)
 
+Andrew's answers: "1. Count all, 2. Report, actions should be taken care of in the schedules part not automatically here. 3. Any
+plant."
+
 1. **Consumption: all of the pond's evaporation, or only what the plant's heat adds?** Proposed: all of it, since the pond is built
    for the plant. A shadow pond with no heat, run on the same weather, gives the natural evaporation beside it, so the forced part
    (Diehl and Harris 2014's measure) is reported too.
 2. **A pond too warm for the plant:** report only, or act? Proposed for the first build: the heat still goes into the pond, so energy
-   closes, and the hours above the plant's highest supply temperature [A] are reported (`data_center__setpoint_lost_time`). Chillers or
-   shed load, as in 0006, could come later.
+   closes, and the hours above the plant's highest supply temperature [A] are reported (`water_user__setpoint_lost_time`). The pond
+   doesn't act on it. Shedding load or turning the plant off belongs in a scenario's schedules (Basin Ledger's dated phases and scale
+   multipliers), not in the pond.
 3. **Who drives it:** data centers only, or any heat source? Proposed: any source (`heat_mw` or the input), with the data center's IT
    capacity as a shortcut.
 
