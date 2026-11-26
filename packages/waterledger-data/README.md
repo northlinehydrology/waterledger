@@ -9,8 +9,8 @@ pip install waterledger-data
 | Module | What it fetches |
 |---|---|
 | `census` | places in any state: incorporated places, county subdivisions that are governments, counties (Census TIGERweb) |
-| `supply` | community water system service areas, with SDWIS population and connections (EPA) |
-| `wastewater` | sewer plants: CWNS 2022 design flows matched to ECHO recent flows and receiving waters, active permits only (EPA) |
+| `supply` | community water system service areas, with SDWIS population and connections, and who buys water from whom (EPA) |
+| `wastewater` | sewer plants: CWNS 2022 design flows matched to ECHO recent flows and receiving waters, active permits only, and which plant each place's sewers reach (EPA) |
 | `receiving` | each place's HUC-12 watersheds, impairments and TMDLs by watershed (USGS WBD, EPA ATTAINS) |
 | `trace` | the watershed tracer: follows a HUC-12 upstream or downstream across state lines with the impaired waters on the way (also the `waterledger-trace` command) |
 | `divisions` | NOAA climate divisions, one long-record ISD station for each, county rainfall and Atlas 14 design storms |

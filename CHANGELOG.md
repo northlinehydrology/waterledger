@@ -2,7 +2,7 @@
 
 Package changes (code). Changes to the numbers are listed by model version on the Water Ledger methods page.
 
-## 3.29.0 (unreleased; model 1.17)
+## 3.29.0 (Nov 26, 2026; model 1.17)
 
 waterledger and waterledger-data. Which plant treats a place's sewage and where its water comes from, from who serves whom (design 0023). No model
 change; the sewer plant and the wastewater default change at the places listed in `docs/design/0023-changes.csv`.
