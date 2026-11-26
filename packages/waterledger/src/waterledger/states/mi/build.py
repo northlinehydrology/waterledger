@@ -11,9 +11,9 @@ from waterledger_data import energy, places as pl
 from waterledger_data.wastewater import OWN_KM
 from waterledger_models.datacenter import cooling as cw
 from waterledger_models.datacenter.physics import DRAWS
-from waterledger_data.config import CACHE, SITE as SITE_ROOT, setting
+from waterledger_data.config import CACHE, SITE as SITE_ROOT
 
-from waterledger.comparisons import HOUSEHOLD_GPD, it_mw_from_contract
+from waterledger.comparisons import HOUSEHOLD_GPD
 from waterledger_data import wateruse
 from waterledger.levels import LEVELS  # noqa: F401  re-exported
 from waterledger.citations import CONTEXT, PARAM_SOURCES, SHORT, SOURCES  # noqa: F401  moved (design 0011); re-exported here

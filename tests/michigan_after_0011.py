@@ -65,7 +65,7 @@ def rel(x, y):
 
 def report(rows, before):
     places = {k.split("|")[0] for k in before}
-    out = [f"# Michigan on the base: differences from the before record", "",
+    out = ["# Michigan on the base: differences from the before record", "",
            f"{len(before):,} cases at {len(places):,} places; {sum(len(v) for v in rows.values()):,} differing values in {len(rows)} fields.", "",
            "| Part | Field | Places | Values | Largest relative change | Example (place, before → after) |", "|---|---|---|---|---|---|"]
     for (part, f), v in sorted(rows.items(), key=lambda kv: (-len({g for g, *_ in kv[1]}), kv[0])):
