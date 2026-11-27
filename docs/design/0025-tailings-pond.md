@@ -38,9 +38,9 @@ Each step:
   consumed), less the ore's moisture (`ore_moisture_m3_t`, a gain). Reclaim takes what it can: the pool above its lowest workable volume,
   at most the reclaim pumps' capacity. Makeup covers the rest, up to the limit.
 - **Short of water,** the mill processes only the ore its water allows. That is a physical limit, not an operating rule. The shortfall is
-  reported as unmet demand, and its hours as `water_user__lost_production_time`. To slow or stop the mill on purpose, a scenario's
-  schedules set the solids rate, following Andrew's answer on the cooling pond: "actions should be taken care of in the schedules part not
-  automatically here."
+  reported as unmet demand, and its hours as `water_user__lost_production_time`. Andrew kept this rule on Nov 26 ("ok keep it"). To slow
+  or stop the mill on purpose, a scenario's schedules set the solids rate, following Andrew's answer on the cooling pond: "actions should
+  be taken care of in the schedules part not automatically here."
 - **The tailings** settle at a dry density. Their pores hold saturation x void ratio / specific gravity m3 of water a tonne, about 0.34 m3
   at the defaults. The rest of the slurry's water joins the pool.
 - **The pool** also gains rain on it, and runoff from the beach (the deposit's surface outside the pool) and from a catchment, at a runoff
