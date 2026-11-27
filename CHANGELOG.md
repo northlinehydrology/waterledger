@@ -29,6 +29,17 @@ The pond is a BMI component only, not a design in the runs, the snapshots or the
   - Water, heat and mass close every step (`tests/test_cooling_pond.py`).
 - `tools/compare_bmi_outputs.py`: a digest of every component's outputs over a year of hourly steps, to compare two checkouts. On this
   change and `origin/main` (5345cf0), 19 cases are identical.
+- **A tailings pond, `ponds.bmi.TailingsPondBmi`** (design 0025): a mine's impoundment and the mill's water around it, keeping the pool's
+  volume, temperature and dissolved mass and the tailings' volume between steps. It is a new component; nothing existing changes.
+  - The mill's demand follows from its tailings solids (`tailings_t_per_day`, or `water_user_tailings__mass_flux` set each step).
+    Reclaim from the pool comes first and makeup (the withdrawal) covers the rest. Under a limit the mill processes only what its water
+    allows, and reports the unmet demand and lost hours.
+  - The settled tailings lock water in their pores, counted as consumption beside evaporation (Andrew, Nov 26), and fill the impoundment
+    over its life.
+  - Water above the operating capacity is released to a stream, or with `discharge: zero` held to the crest and reported as freeboard used.
+  - Seepage is a ground return. The pool evaporates on the cooling pond's energy balance with no plant heat. Dissolved mass includes what
+    the solids release.
+  - Water, heat and mass close every step (`tests/test_tailings_pond.py`).
 
 ## 3.29.0 (Nov 26, 2026; model 1.17)
 

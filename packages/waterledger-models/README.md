@@ -44,7 +44,7 @@ pip install "waterledger-models[all]"   # with xarray ensembles, BMI components 
   `CoolingWaterBmi` takes a withdrawal limit, dry mode and intake concentrations, and reports heat not removed, the return's
   temperature and the dissolved mass in it (design 0006); with no limit its outputs are unchanged.
 - `ponds`: a cooling pond that keeps its volume, temperature and dissolved mass between steps, `ponds.bmi.CoolingPondBmi`
-  (`[bmi]`, design 0024).
+  (`[bmi]`, design 0024), and a tailings pond with the mill's water around it, `ponds.bmi.TailingsPondBmi` (design 0025).
 - `state`: every BMI component's `get_state()`/`set_state(text)`, exact JSON with a fingerprint of the settings (design 0024).
 - `datacenter.stac`: ensemble results as zarr with a STAC catalog (`[stac]`).
 - `hydrology`: screening hydrology: SCS curve-number runoff, Theis drawdown and Glover stream depletion (on arrays).
