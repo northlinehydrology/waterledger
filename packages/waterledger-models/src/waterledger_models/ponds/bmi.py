@@ -62,7 +62,7 @@ import numpy as np
 
 from waterledger_models.datacenter import lake
 from waterledger_models.datacenter.bmi import CONSTITUENTS, DRY_MODE, INTAKE, LIMIT, RETURN_MASS, ScalarPointBmi, read_config
-from waterledger_models.ponds import physics
+from waterledger_models.ponds import physics, tailings
 from waterledger_models.weather import relative_humidity
 
 TEMP = "atmosphere_bottom_air__temperature"
@@ -220,6 +220,218 @@ class CoolingPondBmi(ScalarPointBmi):
         for k in CONSTITUENTS:
             v[RETURN_MASS.format(k)][0] = f["mass_out"][k]
             v[GROUND_MASS.format(k)][0] = f["mass_to_ground"][k]
+            v[STORED_MASS.format(k)][0] = new["mass"][k]
+
+    def finalize(self):
+        pass
+
+
+# A tailings pond (design 0025).
+SOLIDS = "water_user_tailings__mass_flux"
+LOCKED_MASS = "water_user_tailings_water_{}__mass_flux"
+
+TAILINGS_INPUTS = {
+    TEMP: "degC", RH: "percent", Q: "kg kg-1", PRESSURE: "Pa", WIND: "m s-1", SW: "W m-2", LW: "W m-2", RAIN: "mm s-1",
+    SOLIDS: "kg s-1", LIMIT: "m3 s-1", DRY_MODE: "1",
+    **{INTAKE.format(k): "kg m-3" for k in CONSTITUENTS},
+}
+TAILINGS_OUTPUTS = {
+    "water_user_water__withdrawal_volume_flux": "m3 s-1",
+    "water_user_water__gain_volume_flux": "m3 s-1",
+    "water_user_water__consumption_volume_flux": "m3 s-1",
+    "water_user_water__evaporation_volume_flux": "m3 s-1",
+    "water_user_water__entrained_volume_flux": "m3 s-1",
+    "water_user_water__demand_volume_flux": "m3 s-1",
+    "water_user_water__reclaim_volume_flux": "m3 s-1",
+    "water_user_water__unmet_demand_volume_flux": "m3 s-1",
+    "water_user_water__return_volume_flux": "m3 s-1",
+    "water_user_water__stream_return_volume_flux": "m3 s-1",
+    "water_user_water__ground_return_volume_flux": "m3 s-1",
+    "water_user_water__volume": "m3",
+    "water_user_water__volume_change_rate": "m3 s-1",
+    "water_user_water__freeboard_used_volume": "m3",
+    "water_user_tailings__volume": "m3",
+    "water_user_processed_tailings__mass_flux": "kg s-1",
+    "water_user_return_water__temperature": "degC",
+    "pond_water_surface__area": "m2",
+    "water_user__lost_production_time": "h",
+    **{RETURN_MASS.format(k): "kg s-1" for k in CONSTITUENTS},
+    **{GROUND_MASS.format(k): "kg s-1" for k in CONSTITUENTS},
+    **{LOCKED_MASS.format(k): "kg s-1" for k in CONSTITUENTS},
+    **{STORED_MASS.format(k): "kg" for k in CONSTITUENTS},
+}
+
+
+class TailingsPondBmi(ScalarPointBmi):
+    """BMI 2.0 component for a tailings pond and the mill's water around it, keeping the pool's volume, temperature and dissolved mass and
+    the tailings' volume between steps (design 0025).
+
+    One impoundment is one scalar grid point. Its state carries with get_state and set_state.
+
+    Configuration (a YAML file, or the same keys as a dict passed to initialize):
+        capacity_m3: 5.0e7             the impoundment's volume to its maximum operating level, m3 (required)
+        capacity_area_m2: 4.0e6        its surface area at that level, m2 (required)
+        tailings_t_per_day: 50000      tailings solids the mill sends at full throughput, t a day (required)
+        initial_pool_m3: 2.0e6         the pool's volume at the start, m3 (required)
+        initial_tailings_m3: 0         tailings already in the impoundment, m3
+        min_pool_m3: 5.0e5             the reclaim can't draw the pool below this, m3 (default a quarter of the initial pool) [A]
+        reclaim_max_m3_s: .inf         the reclaim pumps' capacity, m3 s-1 (default none)
+        catchment_m2: 0                land outside the impoundment draining to the pool, m2
+        discharge: release | zero      above the operating capacity: release to a stream (default), or hold to the crest
+        solids_release: {dissolved_solids: 0.1}   kg each constituent the solids release into the water per tonne [A]
+        time_step: 3600                seconds (hourly default; daily works)
+        end_time: 31536000             seconds; default one year
+        humidity: relative | specific  which humidity inputs are read (default relative)
+        initial_temperature: 15        C; default the first step's air temperature
+        initial_concentration: {dissolved_solids: 2.0}   kg m-3 in the pool at the start (default 0)
+        parameters: {solids_share: 0.35, dry_density_t_m3: 1.4, ...}   tailings.TAILINGS_PARAMETERS
+    A solids rate set through set_value on water_user_tailings__mass_flux is used instead of tailings_t_per_day until it is set again;
+    NaN (the default) goes back to the configured rate. A scenario's schedules (Basin Ledger) set it to slow or stop the mill.
+
+    Variables (one scalar grid point, float64), beside the weather inputs CoolingPondBmi reads:
+        input   water_user_tailings__mass_flux                    kg s-1   the mill's tailings solids at full throughput; NaN is the configured
+        input   water_user_water__withdrawal_volume_flux_limit    m3 s-1   the most makeup this step; infinity (the default) is none
+        input   water_user__dry_mode_flag                         1        1: no makeup this step (a limit of zero)
+        input   water_user_intake_water_<name>__mass_concentration   kg m-3   in the makeup
+        output  water_user_water__withdrawal_volume_flux          m3 s-1   the mill's makeup from its source
+        output  water_user_water__gain_volume_flux                m3 s-1   rain on the pool, runoff from the beach and catchment, the ore's moisture
+        output  water_user_water__consumption_volume_flux         m3 s-1   evaporation, the water locked in the tailings and the mill's other use
+        output  water_user_water__evaporation_volume_flux         m3 s-1   the pool's evaporation
+        output  water_user_water__entrained_volume_flux           m3 s-1   water locked in the settled tailings' pores (Andrew, Nov 26: consumption)
+        output  water_user_water__demand_volume_flux              m3 s-1   the mill's water at full throughput, less the ore's moisture
+        output  water_user_water__reclaim_volume_flux             m3 s-1   water pumped from the pool to the mill
+        output  water_user_water__unmet_demand_volume_flux        m3 s-1   the demand neither reclaim nor makeup could meet
+        output  water_user_water__return_volume_flux              m3 s-1   the two returns below together
+        output  water_user_water__stream_return_volume_flux       m3 s-1   release above the operating capacity (or the crest)
+        output  water_user_water__ground_return_volume_flux       m3 s-1   seepage under the pool
+        output  water_user_water__volume                          m3       the pool at the step's end (the storage role, 0010)
+        output  water_user_water__volume_change_rate              m3 s-1   its change over the step
+        output  water_user_water__freeboard_used_volume           m3       with zero discharge: the pool held above the operating capacity
+        output  water_user_tailings__volume                       m3       the settled tailings in the impoundment
+        output  water_user_processed_tailings__mass_flux          kg s-1   the solids the mill processed on the water it had
+        output  water_user_return_water__temperature              degC     the pool's temperature
+        output  pond_water_surface__area                          m2       the pool's
+        output  water_user__lost_production_time                  h        the mill's hours lost to unmet water, summed since initialize
+        output  water_user_return_water_<name>__mass_flux         kg s-1   dissolved mass in the returns
+        output  water_user_ground_return_water_<name>__mass_flux  kg s-1   the part of it in seepage
+        output  water_user_tailings_water_<name>__mass_flux       kg s-1   dissolved mass locked in the tailings and lost with the mill's other use
+        output  water_user_stored_water_<name>__mass              kg       dissolved mass in the pool
+    Every step: withdrawal + gain = consumption + return + volume change rate; each constituent's mass in (the makeup's and the solids'
+    release) = its return mass + its locked mass + its stored mass's change; and the pool's heat closes (tailings.step's terms).
+    """
+
+    INPUTS = TAILINGS_INPUTS
+    OUTPUTS = TAILINGS_OUTPUTS
+    _name = "Tailings pond"
+    _STATE = ("_pond", "_last")
+
+    def __init__(self):
+        super().__init__()
+        self._params = None
+        self._solids_t_s = 0.0
+        self._humidity = "relative"
+        self._release = {}
+        self._pond = None          # pool (m3), tailings (m3), temperature (None until the first step), mass {constituent: kg}
+        self._last = None          # the last step's terms (tailings.step's fluxes); None before the first step
+
+    def initialize(self, config_file=None):
+        cfg = read_config(config_file)
+        for key in ("capacity_m3", "capacity_area_m2", "tailings_t_per_day", "initial_pool_m3"):
+            if key not in cfg:
+                raise ValueError(f"a tailings pond needs {key}")
+        self._humidity = cfg.get("humidity", "relative")
+        if self._humidity not in HUMIDITY:
+            raise ValueError(f"humidity must be one of {HUMIDITY}")
+        given = {k: float(v) for k, v in (cfg.get("parameters") or {}).items()}
+        unknown = set(given) - set(tailings.TAILINGS_PARAMETERS)
+        if unknown:
+            raise ValueError(f"unknown parameters: {sorted(unknown)}")
+        pool0 = float(cfg["initial_pool_m3"])
+        if not pool0 > 0:
+            raise ValueError("initial_pool_m3 must be positive")
+        self._params = {**tailings.TAILINGS_PARAMETERS, **given,
+                        "capacity_m3": float(cfg["capacity_m3"]), "capacity_area_m2": float(cfg["capacity_area_m2"]),
+                        "min_pool_m3": float(cfg.get("min_pool_m3", 0.25 * pool0)),
+                        "reclaim_max_m3_s": float(cfg.get("reclaim_max_m3_s", math.inf)),
+                        "catchment_m2": float(cfg.get("catchment_m2", 0.0)), "discharge": str(cfg.get("discharge", "release"))}
+        tailings.check(self._params)
+        rate = float(cfg["tailings_t_per_day"])
+        if not rate >= 0:
+            raise ValueError("tailings_t_per_day can't be negative")
+        self._solids_t_s = rate / 86400.0
+        self._release = {k: float(v) for k, v in (cfg.get("solids_release") or {}).items()}
+        conc = {k: float(v) for k, v in (cfg.get("initial_concentration") or {}).items()}
+        for name, d in (("solids_release", self._release), ("initial_concentration", conc)):
+            if set(d) - set(CONSTITUENTS):
+                raise ValueError(f"{name} takes {CONSTITUENTS}")
+        d0 = float(cfg.get("initial_tailings_m3", 0.0))
+        if not 0 <= d0 < self._params["capacity_m3"]:
+            raise ValueError("initial_tailings_m3 must be at least 0 and below capacity_m3")
+        if pool0 + d0 > self._params["capacity_m3"] * (1.0 + (self._params["freeboard_share"] if self._params["discharge"] == "zero" else 0.0)):
+            raise ValueError("the initial pool and tailings are more than the impoundment holds")
+        self._dt = float(cfg.get("time_step", 3600.0))
+        self._end = float(cfg.get("end_time", 365 * 86400.0))
+        self._time = 0.0
+        t0 = cfg.get("initial_temperature")
+        self._pond = {"pool": pool0, "tailings": d0, "temperature": None if t0 is None else float(t0),
+                      "mass": {k: conc.get(k, 0.0) * pool0 for k in CONSTITUENTS}}
+        self._last = None
+        for v in self._values.values():
+            v[:] = 0.0
+        self._values[PRESSURE][0] = 101325.0
+        self._values[SOLIDS][0] = np.nan          # NaN: the configured rate
+        self._values[LIMIT][0] = np.inf
+        self._values["water_user_water__volume"][0] = pool0
+        self._values["water_user_tailings__volume"][0] = d0
+        for k in CONSTITUENTS:
+            self._values[STORED_MASS.format(k)][0] = self._pond["mass"][k]
+        self._set.clear()
+
+    def _compute(self):
+        v, p = self._values, self._params
+        air = float(v[TEMP][0])
+        if self._humidity == "specific":
+            rh = float(relative_humidity(v[TEMP], v[Q], v[PRESSURE])[0])
+        else:
+            rh = float(v[RH][0])
+        given = float(v[SOLIDS][0])
+        solids = self._solids_t_s if math.isnan(given) else max(given, 0.0) / 1000.0
+        cap = 0.0 if v[DRY_MODE][0] >= 0.5 else max(float(v[LIMIT][0]), 0.0)
+        w = {"air": air, "ea": rh / 100.0 * float(physics._es(air)), "pressure_hpa": float(v[PRESSURE][0]) / 100.0,
+             "sw": float(v[SW][0]), "lw": float(v[LW][0]),
+             "u2": physics.wind_at_2m(max(float(v[WIND][0]), 0.0), p["wind_height_m"]), "rain": max(float(v[RAIN][0]), 0.0),
+             "conc": {k: float(v[INTAKE.format(k)][0]) for k in CONSTITUENTS}, "release": self._release}
+        s = dict(self._pond)
+        if s["temperature"] is None:                     # the first step starts at the air's temperature unless one was given
+            s["temperature"] = air
+        v0 = s["pool"]
+        new, f = tailings.step(s, w, solids, cap, self._dt, p)
+        self._pond = new
+        self._last = {k: x for k, x in f.items() if not isinstance(x, dict)} | {
+            k: f[k] for k in ("mass_in", "mass_out", "mass_to_ground", "mass_locked")} | {"volume_before": v0}
+        v["water_user_water__withdrawal_volume_flux"][0] = f["makeup"]
+        v["water_user_water__gain_volume_flux"][0] = f["rain"] + f["runoff"] + f["ore"]
+        v["water_user_water__consumption_volume_flux"][0] = f["evaporation"] + f["locked"] + f["mill_other"]
+        v["water_user_water__evaporation_volume_flux"][0] = f["evaporation"]
+        v["water_user_water__entrained_volume_flux"][0] = f["locked"]
+        v["water_user_water__demand_volume_flux"][0] = f["demand"]
+        v["water_user_water__reclaim_volume_flux"][0] = f["reclaim"]
+        v["water_user_water__unmet_demand_volume_flux"][0] = f["unmet"]
+        v["water_user_water__stream_return_volume_flux"][0] = f["release"]
+        v["water_user_water__ground_return_volume_flux"][0] = f["seepage"]
+        v["water_user_water__return_volume_flux"][0] = f["release"] + f["seepage"]
+        v["water_user_water__volume"][0] = new["pool"]
+        v["water_user_water__volume_change_rate"][0] = (new["pool"] - v0) / self._dt
+        v["water_user_water__freeboard_used_volume"][0] = f["freeboard_used"]
+        v["water_user_tailings__volume"][0] = new["tailings"]
+        v["water_user_processed_tailings__mass_flux"][0] = f["solids"] * 1000.0
+        v["water_user_return_water__temperature"][0] = new["temperature"]
+        v["pond_water_surface__area"][0] = f["area"]
+        v["water_user__lost_production_time"][0] += self._dt / 3600.0 * (1.0 - f["share"])
+        for k in CONSTITUENTS:
+            v[RETURN_MASS.format(k)][0] = f["mass_out"][k]
+            v[GROUND_MASS.format(k)][0] = f["mass_to_ground"][k]
+            v[LOCKED_MASS.format(k)][0] = f["mass_locked"][k]
             v[STORED_MASS.format(k)][0] = new["mass"][k]
 
     def finalize(self):

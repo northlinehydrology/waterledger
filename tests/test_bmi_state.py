@@ -44,6 +44,10 @@ def _inputs(cls, step):
     if cls is P.CoolingPondBmi:         # a limit some days, so the pond draws down and refills: its volume, heat and mass carry
         return {TEMP: hot, RH: 45 + 3 * (step % 9), P.WIND: 2 + step % 4, P.SW: 200 + 20 * (step % 5), P.LW: 350.0,
                 P.RAIN: 0.01 if step % 6 == 0 else 0.0, B.LIMIT: 0.05 if 5 <= step < 20 else np.inf, B.INTAKE.format("chloride"): 0.03}
+    if cls is P.TailingsPondBmi:        # a limit some days and the mill slowed on others: the pool, tailings, heat and mass carry
+        return {TEMP: hot, RH: 45 + 3 * (step % 9), P.WIND: 2 + step % 4, P.SW: 200 + 20 * (step % 5), P.LW: 350.0,
+                P.RAIN: 0.01 if step % 6 == 0 else 0.0, B.LIMIT: 0.02 if 5 <= step < 20 else np.inf,
+                P.SOLIDS: 20.0 if step % 7 == 3 else np.nan, B.INTAKE.format("dissolved_solids"): 0.4}
     if cls is GasPlantBmi:
         return {TEMP: hot, RH: 45 + 3 * (step % 9), "power_plant__electric_power_demand": 300 + 250 * np.sin(step / 5.0)}
     return {TEMP: hot, RH: 45 + 3 * (step % 9)}
@@ -56,6 +60,9 @@ CASES = {
     "battery": (BatteryCellBmi, lambda tmp: {"design": "towers", "capacity_gwh": 10, "parameters": {"design_h": 70.0}}),
     "gas": (GasPlantBmi, lambda tmp: {"technology": "cc", "design": "towers", "units": 2, "unit_mw": 300}),
     "cooling pond": (P.CoolingPondBmi, lambda tmp: {"area_m2": 2e5, "depth_m": 2.0, "heat_mw": 40, "time_step": 86400}),
+    "tailings pond": (P.TailingsPondBmi, lambda tmp: {"capacity_m3": 2e6, "capacity_area_m2": 4e5, "tailings_t_per_day": 2000,
+                                                      "initial_pool_m3": 1.5e5, "min_pool_m3": 1.2e5, "time_step": 86400,
+                                                      "initial_concentration": {"dissolved_solids": 1.0}}),
     "grid": (GridWaterBmi, lambda tmp: {"table": _grid_table(), "start": "2021-07-01T00"}),
 }
 

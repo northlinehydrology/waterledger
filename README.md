@@ -351,6 +351,12 @@ step to the next. Makeup holds its level and blowdown its cycles of concentratio
 blowdown, then draws down and warms. It reports all its evaporation as consumption, and beside it what the same pond with no
 plant heat would evaporate.
 
+`waterledger_models.ponds.bmi.TailingsPondBmi` is a tailings pond (design 0025): a mine's impoundment and the mill's water
+around it. The mill's water follows from its tailings solids; reclaim from the pool comes first and makeup covers the rest.
+The settled tailings lock water in their pores, counted as consumption, and fill the impoundment over its life. Water above
+the operating capacity is released, or held to the crest with zero discharge. Under a limit the mill processes only what its
+water allows and reports what it lost.
+
 Every component has `get_state()` and `set_state(text)` (after CSDMS bmi PR #112): the whole state as one JSON string, exact
 to the bit. A component initialized the same way carries on from it, so scenarios can start from a shared warm-up. A state is
 refused by a component set up differently.
