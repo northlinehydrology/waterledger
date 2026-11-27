@@ -1,0 +1,8 @@
+# TailingsPondBmi config for CSDMS bmi-tester: a 50,000 t a day mill on a 50 Mm3 impoundment, one day of hourly steps, inputs set through set_value.
+capacity_m3: 50000000
+capacity_area_m2: 4000000
+tailings_t_per_day: 50000
+initial_pool_m3: 2000000
+time_step: 3600
+end_time: 86400
+initial_temperature: 15

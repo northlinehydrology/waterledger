@@ -33,6 +33,7 @@ jobs:
           uv run bmi-test waterledger_models.battery.bmi:BatteryCellBmi --root-dir . --config-file battery.yaml
           uv run bmi-test waterledger_models.gas.bmi:GasPlantBmi --root-dir . --config-file gas.yaml
           uv run bmi-test waterledger_models.ponds.bmi:CoolingPondBmi --root-dir . --config-file pond.yaml
+          uv run bmi-test waterledger_models.ponds.bmi:TailingsPondBmi --root-dir . --config-file tailings.yaml
 
   # Windows: the tests and the BMI checks on the newest supported Python
   windows:
@@ -53,3 +54,4 @@ jobs:
           uv run bmi-test waterledger_models.battery.bmi:BatteryCellBmi --root-dir . --config-file battery.yaml
           uv run bmi-test waterledger_models.gas.bmi:GasPlantBmi --root-dir . --config-file gas.yaml
           uv run bmi-test waterledger_models.ponds.bmi:CoolingPondBmi --root-dir . --config-file pond.yaml
+          uv run bmi-test waterledger_models.ponds.bmi:TailingsPondBmi --root-dir . --config-file tailings.yaml
